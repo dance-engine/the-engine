@@ -1,3 +1,33 @@
+# Dance Engine Mono-repo
+
+## Structure
+
+root:
+  - "apps/*"         - apps used by all clients or engine-team
+  - "apps/clients/*" - client websites
+  - "functions/*"    - lambda functions / serverless
+  - "packages/*"     - packages used across all sitees
+
+### Apps and Packages
+
+- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+
+## Config
+
+### Utilities
+
+This Turborepo has some additional tools already setup for you:
+
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+
+---
+
+# Original README
+
 # Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.

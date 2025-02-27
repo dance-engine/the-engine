@@ -2,17 +2,19 @@
 
 ## Structure
 
-root:
-  - "apps/*"         - apps used by all clients or engine-team
-  - "apps/clients/*" - client websites
-  - "functions/*"    - lambda functions / serverless
-  - "packages/*"     - packages used across all sitees
+`@the-engine/`:
+  - `apps/`          - apps used by all clients or engine-team
+    - `core`          - Main admin application for clients
+    - `admin`         - Admin for engine-team
+  - `apps/clients/*`  - client websites
+  - `functions/*`     - lambda functions / serverless
+  - `packages/*`      - packages used across all sitees
 
 ### Apps and Packages
 
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@the-engine/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@the-engine/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@the-engine/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
 ## Config
 
@@ -48,9 +50,9 @@ This Turborepo includes the following packages/apps:
 
 - `docs`: a [Next.js](https://nextjs.org/) app
 - `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@dance-engine/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@dance-engine/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@dance-engine/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 

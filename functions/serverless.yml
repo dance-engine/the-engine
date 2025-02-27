@@ -1,0 +1,112 @@
+# Base serverless.yml
+org: danceenginesystems
+app: dance-engine
+service: example
+frameworkVersion: '4.1'
+
+plugins:
+  - serverless-prune-plugin
+
+custom:
+  prune:
+    automatic: true
+    includeLayers: true
+    number: 10
+
+package:
+  individually: true
+
+#######################
+# Stages
+#######################
+stages:
+  default:
+    observability: false
+    params:
+      # eventTableName: "${sls:stage}-MLF24"
+      # attendeesTableName: "${sls:stage}-mlf-attendees"
+      # stripeProductsTableName: "${sls:stage}-mlf-stripe-products"
+      isProd: false
+      deletionPolicy: Delete 
+      skipTables: true
+      githubBranchDestination: "develop"
+  prod:
+    params:
+      isProd: true
+      deletionPolicy: Retain
+      githubBranchDestination: "main"
+
+#######################
+# Provider Information
+#######################
+provider:
+  name: aws
+  runtime: nodejs20.x # Needed to enable serverless to run on github actions
+  memorySize: 128 # I think this might be overkill
+  region: eu-west-1
+  stage: ${opt:stage, env:stage, 'preview'}
+  iam:
+    role:
+      statements:
+        # - Effect: Allow
+        #   Action:
+        #     - dynamodb:Query
+        #     - dynamodb:Scan
+        #     - dynamodb:GetItem
+        #     - dynamodb:PutItem
+        #     - dynamodb:UpdateItem
+        #     - dynamodb:DeleteItem
+        #     - dynamodb:DescribeStream
+        #     - dynamodb:GetRecords
+        #     - dynamodb:GetShardIterator
+        #     - dynamodb:ListStreams
+        #     - dynamodb:BatchGetItem
+        #   Resource:
+        #     - Fn::GetAtt: [AttendeesTable, Arn]
+        #     - Fn::GetAtt: [StripeProductsTable, Arn]
+        #     - Fn::GetAtt: [MLF24Table, Arn]
+        #     - { "Fn::Join": [ "/", [ 
+        #         { "Fn::GetAtt": ["AttendeesTable", "Arn" ] }, "index", "ticket_number-index" 
+        #       ]]}
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource:
+            - '*'
+        - Effect: Allow
+          Action:
+            - events:PutEvents
+          Resource:
+            - arn:aws:events:eu-west-1:717279731911:event-bus/default
+
+functions:
+
+  TriggerAnEvent:
+    runtime: python3.11
+    handler: event_bridge/lambda_functions.trigger_handler
+    name: "${sls:stage}-trigger-event"
+    package:
+      patterns:
+        - '!**/**'
+        - "event_bridge/**"
+        - "shared/**"
+    # environment:
+    #   STAGE_NAME: ${sls:stage}
+    #   PRODUCTS_TABLE_NAME: ${param:stripeProductsTableName}
+    #   CREATE_TICKET_LAMBDA: "${sls:stage}-create_ticket"
+    # layers:
+    #   - !Ref DynamodbLambdaLayer
+    events:
+      - httpApi:
+          path: /trigger
+          method: get
+
+  ReceiveEvent:
+    runtime: python3.11
+    handler: event_bridge/lambda_functions.receive_handler
+    name: "${sls:stage}-receive-event"
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - some.pattern

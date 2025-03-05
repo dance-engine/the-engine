@@ -52,9 +52,9 @@ Keppel:           #00BA9C
   --color-pear-on-dark: var(--color-pear-logo);
 
   /* Keppel */
-  --color-pear-logo: #00BA9C;
-  --color-pear-on-light: #00856F;
-  --color-pear-on-dark: #00BD9D;
+  --color-keppel-logo: #00BA9C;
+  --color-keppel-on-light: #00856F;
+  --color-keppel-on-dark: #00BD9D;
 
   /* Text */
   --color-primary-text: #F0EEFC;

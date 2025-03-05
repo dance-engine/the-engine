@@ -1,11 +1,14 @@
 'use client'
 import Image from "next/image";
+import { useMenu } from '@dance-engine/ui/MenuContext'
+import { MenuClose } from '@dance-engine/ui/MenuToggle'
 // import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 
 export default function MobileMenu() {
-  
+  const { isOpen } = useMenu();
+
   return (
-    <div className="relative z-50 lg:hidden" role="dialog" aria-modal="true">
+    <div className={`${isOpen ? "" : "hidden"} relative z-50 lg:hidden`} role="dialog" aria-modal="true">
 
           <div className="fixed inset-0 bg-gray-900/80" aria-hidden="true"></div>
 
@@ -14,12 +17,7 @@ export default function MobileMenu() {
             <div className="relative mr-16 flex w-full max-w-xs flex-1">
 
               <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
-                <button type="button" className="-m-2.5 p-2.5">
-                  <span className="sr-only">Close sidebar</span>
-                  <svg className="size-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"  aria-hidden={true} data-slot="icon">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                <MenuClose/>
               </div>
               
               <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-dark-background px-6 pb-4">

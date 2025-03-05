@@ -4,7 +4,17 @@ import "./globals.css";
 import "@dance-engine/ui/styles.css";
 import Head from 'next/head'
 import Image from "next/image";
-import MobileMenu from '@dance-engine/ui/mobileMenu'
+import MobileMenu from '@dance-engine/ui/MobileMenu'
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+import { MenuProvider } from '@dance-engine/ui/MenuContext';  // Adjust the import path
+import { MenuToggle } from '@dance-engine/ui/MenuToggle'
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -21,7 +31,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
   return (
     <html lang="en" className="h-full bg-white">
       <Head>
@@ -31,14 +40,15 @@ export default function RootLayout({
       <body
         className={`${openSans.variable} antialiased h-full`}
       >
-        
+      <ClerkProvider>
+      <MenuProvider>
       <div>
         
         {/* Mobile Menu */}
         <MobileMenu/>
 
         {/* Normal menu */}
-        <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+        <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-row">
           
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-dark-background px-6 pb-4">
             <div className="flex h-16 shrink-0 items-center">
@@ -142,13 +152,8 @@ export default function RootLayout({
         {/* Content */}
         <div className="lg:pl-72">
           <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-            <button type="button" className="-m-2.5 p-2.5 text-gray-700 lg:hidden">
-              <span className="sr-only">Open sidebar</span>
-              <svg className="size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </button>
-
+            
+            <MenuToggle/>
             
             <div className="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 
@@ -195,13 +200,14 @@ export default function RootLayout({
 
           <main className="py-10">
             <div className="px-4 sm:px-6 lg:px-8">
-              
+              <div className="lg:text-keppel-logo">hello</div> 
               {children}
             </div>
           </main>
         </div>
       </div>
-
+      </MenuProvider>
+      </ClerkProvider>
       </body>
     </html>
   );

@@ -18,6 +18,9 @@
 
 ## Config
 
+We can build a templated setup using themes and apply to client sites
+https://medium.com/@philippbtrentmann/setting-up-tailwind-css-v4-in-a-turbo-monorepo-7688f3193039 
+
 ### Utilities
 
 This Turborepo has some additional tools already setup for you:

@@ -1,27 +1,76 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-open-sans);
+  --font-mono: var(--font-open-mono);
+}
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background: #ffffff;
+  --foreground: #311b1b;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background: #0a0a0a;
+    --foreground: #ededed;
   }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--foreground);
+  /* background: var(--background); */
+  font-family: var(--open-sans), Arial, Helvetica, sans-serif;
+}
+/* 
+Dance Engine Core Colours
+-------------------------
+Background Dark:  #01164D
+Background Light: #F0EEFC
+Cerise:           #EB038E
+Pear:             #D5E73C
+Keppel:           #00BA9C
+ */
+@theme {
+
+
+  /* Backgrounds */
+  --color-dark-background: #01164D;
+  --color-dark-highlight: #022379;
+  --color-dark-outline: #86A8FD;
+  --color-light-background: #F0EEFC;
+  --color-base-background: #FFFFFF;
+
+  /* Cerise */
+  --color-cerise-logo: #EB038E;
+  --color-cerise-on-light: #CE037D;
+  --color-cerise-on-dark: #FC27A7;
+
+  /* Pear */
+  --color-pear-logo: #D5E73C;
+  --color-pear-on-light: #859D02; /*! Do not use unless emergency */
+  --color-pear-on-dark: var(--color-pear-logo);
+
+  /* Keppel */
+  --color-pear-logo: #00BA9C;
+  --color-pear-on-light: #00856F;
+  --color-pear-on-dark: #00BD9D;
+
+  /* Text */
+  --color-primary-text: #F0EEFC;
+  --color-primary-text-highlight: #ffffff;
+
+  /* defaults  */
+  --color-primary: var(--theme-color-primary);
+  --color-primary-50: oklch(91.45% 0.023 264);
+  --color-primary-100: oklch(84% 0.053 263);
+  --color-primary-200: oklch(76.41% 0.089 264);
+  --color-primary-300: oklch(68.9% 0.128 263);
+  --color-primary-400: oklch(61.26% 0.165 264);
+  --color-primary-500: oklch(53.73% 0.192 264);
+  --color-primary-600: oklch(46.08% 0.213 264);
+  --color-primary-700: oklch(38.4% 0.211 264);
+  --color-primary-800: oklch(30.46% 0.192 264);
+  --color-primary-900: oklch(21.78% 0.151 264);
+  --color-primary-950: oklch(13.72% 0.074 263);
 }

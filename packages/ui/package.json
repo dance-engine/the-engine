@@ -25,6 +25,7 @@
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/tailwind-config": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",
+    "@clerk/nextjs": "^6.12.3",
     "@types/node": "^22.12.0",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",

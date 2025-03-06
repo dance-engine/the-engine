@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
-import "./globals.css";
 import "@dance-engine/ui/styles.css";
+import "./globals.css";
+
 import Head from 'next/head'
 import Image from "next/image";
 import MobileMenu from '@dance-engine/ui/MobileMenu'
@@ -200,7 +201,7 @@ export default function RootLayout({
 
           <main className="py-10">
             <div className="px-4 sm:px-6 lg:px-8">
-              <div className="lg:text-keppel-logo">hello</div> 
+              <div className="lg:text-pear-logo">hello</div> 
               {children}
             </div>
           </main>

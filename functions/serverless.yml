@@ -78,6 +78,15 @@ provider:
             - events:PutEvents
           Resource:
             - arn:aws:events:eu-west-1:717279731911:event-bus/default
+  httpApi:
+    cors: true
+    authorizers:
+      adminAuthorizer:
+        type: request
+        functionName: authorizerFunc
+layers:
+  auth:
+    path: _layers/auth
 
 functions:
 
@@ -100,6 +109,8 @@ functions:
       - httpApi:
           path: /trigger
           method: get
+          authorizer:
+            adminAuthorizer
 
   ReceiveEvent:
     runtime: python3.11
@@ -110,3 +121,12 @@ functions:
           pattern:
             source:
               - some.pattern
+  authorizerFunc:
+    runtime: python3.11
+    handler: authorizer/lambda_functions.auth_handler
+    layers:
+      - !Ref AuthLambdaLayer
+    package:
+      patterns:
+        - '!**/**'
+        - "authorizer/**"

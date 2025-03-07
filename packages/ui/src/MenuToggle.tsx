@@ -1,5 +1,5 @@
 'use client'
-import { useMenu } from '@dance-engine/ui/MenuContext'; // Import the custom hook
+import { useMenu } from './MenuContext'; // Import the custom hook
 
 const MenuToggle = () => {
   const { toggleMenu } = useMenu();

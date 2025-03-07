@@ -1,0 +1,12 @@
+{
+  "name": "@dance-engine/api-deployment-scripts",
+  "version": "1.1.1",
+  "description": "API deployment",
+  "main": "index.js",
+  "author": "Adam Bardsley & Connor Monaghan",
+  "license": "Speak to Authors",
+  "dependencies": {
+    "serverless": "^4.2.3",
+    "serverless-prune-plugin": "^2.0.2"
+  }
+}

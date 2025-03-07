@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
-import { useMenu } from '@dance-engine/ui/MenuContext'
-import { MenuClose } from '@dance-engine/ui/MenuToggle'
+import { useMenu } from './MenuContext'
+import { MenuClose } from './MenuToggle'
 // import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 
 export default function MobileMenu() {

@@ -1,0 +1,21 @@
+{
+  "name": "@dance-engine/utilties",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "exports": {
+    "./clerkSWR": {
+      "default": "./dist/clerkSWR.js"
+    }
+  },
+  "devDependencies": {
+    "@dance-engine/typescript-config": "workspace:*",
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.12.3",
+    "swr": "^2.3.3"
+  }
+}

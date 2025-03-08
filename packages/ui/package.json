@@ -22,10 +22,11 @@
     "react": "^19"
   },
   "devDependencies": {
+    "@clerk/nextjs": "^6.12.3",
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/tailwind-config": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",
-    "@clerk/nextjs": "^6.12.3",
+    "@tailwindcss/cli": "^4.0.9",
     "@types/node": "^22.12.0",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
@@ -33,7 +34,11 @@
     "eslint": "^9.21.0",
     "postcss": "^8.5.1",
     "tailwindcss": "^4.0.9",
-    "@tailwindcss/cli": "^4.0.9",
     "typescript": "5.7.3"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^5.0.0",
+    "react-select": "^5.10.1"
   }
 }

@@ -2,7 +2,6 @@
 org: danceenginesystems
 app: dance-engine
 service: example
-frameworkVersion: '4.1'
 
 plugins:
   - serverless-prune-plugin
@@ -106,6 +105,11 @@ functions:
     # layers:
     #   - !Ref DynamodbLambdaLayer
     events:
+      - httpApi:
+          path: /{customer}/trigger
+          method: get
+          authorizer:
+            adminAuthorizer
       - httpApi:
           path: /trigger
           method: get

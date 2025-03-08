@@ -1,0 +1,12 @@
+docker run -dit --name amazon-linux-2023 amazonlinux:2023 bash
+docker exec -it amazon-linux-2023 bash
+
+
+dnf install -y python3.11 python3.11-devel python3.11-pip zip
+mkdir -p /lambda-layer/python
+pip3.11 install --platform manylinux2014_x86_64 --only-binary=:all: --target /lambda-layer/python pyjwt[crypto]
+cd /lambda-layer
+zip -r /lambda-layer.zip python
+
+docker ps
+docker cp amazon-linux-2023:/lambda-layer.zip .

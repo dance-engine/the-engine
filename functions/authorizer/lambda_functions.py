@@ -18,12 +18,44 @@ YwIDAQAB
 -----END PUBLIC KEY-----
 """
 
+reserved_values = ["admin", "superuser", "internal","danceengine","dance-engine","public"]
+
+
 def auth_handler(event, context):
     logger.info(f"{event},{context}")
+
+    customer = event.get("pathParameters", {}).get("customer")
+    authorization_header = event.get("headers", {}).get("authorization")
     token = event['headers']['authorization'].split(' ')[1]
-    logger.info(f"TOKEN: {token}")
-    claims = jwt.decode(token,PUBLIC_KEY,algorithms=["RS256"])
+    logger.info(f"CUSTOMER: {customer}\nAUTH HEADER: {authorization_header}\nTOKEN: {token}")
+    if not authorization_header:
+      logger.error("No authorization Header")
+      return generatePolicy(None,"*",'Deny',event['routeArn'])
+
+    if customer in reserved_values:
+      logger.error("Reserved customer area")
+      return generatePolicy(None,"*",'Deny',event['routeArn'])
+  
+    # Looks like might be valid
+    
+    
+    claims = jwt.decode(token,PUBLIC_KEY,algorithms=["RS256"],audience="ClerkJwtAuthorizer")
     logger.info(f"CLAIMS: {claims}")
+
+    if (claims.get("metadata",{}).get("admin")):
+      logger.info("Allowed to use API")
+      admin_on = claims['metadata']['admin']
+      if not customer:
+        return generatePolicy(claims['metadata'], claims['sub'], 'Allow', event['routeArn']) 
+      elif customer in admin_on or "*" in admin_on:
+        return generatePolicy(claims['metadata'], claims['sub'], 'Allow', event['routeArn']) 
+      else:
+        return generatePolicy(None,"*",'Deny',event['routeArn'])
+         
+    else:
+      logger.error("Unauuthorised login attempt")
+      return generatePolicy(None, claims['sub'], 'Deny', event['routeArn'])
+
 
 def generatePolicy(metadata, principalId, effect, resource):
     authResponse = {

@@ -12,9 +12,9 @@ export const eventSchema = z.object({
 
   startDate: z.string().min(1, "Start date is required").default("").describe("Start Date"),
   endDate: z.string().min(1, "End date is required").default("").describe("End Date"),
-  timezone: z.string().default("UTC").describe("Timezone"),
+  // timezone: z.string().default("UTC").describe("Timezone"),
 
-  rsvpRequired: z.boolean().default(false).describe("RSVP Required"),
+  // rsvpRequired: z.boolean().default(false).describe("RSVP Required"),
 });
 
 export type EventSetupValues = z.infer<typeof eventSchema>;

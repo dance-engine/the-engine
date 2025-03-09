@@ -1,8 +1,5 @@
-import json
 import jwt
-from random import randint
 import logging
-from decimal import Decimal
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -20,13 +17,13 @@ YwIDAQAB
 
 reserved_values = ["admin", "superuser", "internal","danceengine","dance-engine","public"]
 
-
 def auth_handler(event, context):
     logger.info(f"{event},{context}")
 
+    #TODO Change customer to organisation
     customer = event.get("pathParameters", {}).get("customer")
     authorization_header = event.get("headers", {}).get("authorization")
-    token = event['headers']['authorization'].split(' ')[1]
+    token = authorization_header.split(' ')[1]
     logger.info(f"CUSTOMER: {customer}\nAUTH HEADER: {authorization_header}\nTOKEN: {token}")
     if not authorization_header:
       logger.error("No authorization Header")
@@ -37,9 +34,7 @@ def auth_handler(event, context):
       return generatePolicy(None,"*",'Deny',event['routeArn'])
   
     # Looks like might be valid
-    
-    
-    claims = jwt.decode(token,PUBLIC_KEY,algorithms=["RS256"],audience="ClerkJwtAuthorizer")
+    claims = jwt.decode(token,PUBLIC_KEY,algorithms=["RS256"],audience="ClerkJwtAuthorizer") #TODO Should recover from error and Deny with malformed token
     logger.info(f"CLAIMS: {claims}")
 
     if (claims.get("metadata",{}).get("admin")):
@@ -53,9 +48,8 @@ def auth_handler(event, context):
         return generatePolicy(None,"*",'Deny',event['routeArn'])
          
     else:
-      logger.error("Unauuthorised login attempt")
+      logger.error("Unauthorised login attempt")
       return generatePolicy(None, claims['sub'], 'Deny', event['routeArn'])
-
 
 def generatePolicy(metadata, principalId, effect, resource):
     authResponse = {

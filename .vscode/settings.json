@@ -3,5 +3,9 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "python.analysis.extraPaths": [
+        "./functions", 
+        "./functions/_layers/auth/python"
+    ]
 }

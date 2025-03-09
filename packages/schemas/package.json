@@ -1,0 +1,20 @@
+{
+  "name": "@dance-engine/schemas",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "exports": {
+    "./schema": {
+      "default": "./dist/event_schema.js"
+    }
+  },
+  "devDependencies": {
+    "@dance-engine/typescript-config": "workspace:*",
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
+}

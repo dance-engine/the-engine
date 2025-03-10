@@ -6,8 +6,8 @@
     "build": "tsc"
   },
   "exports": {
-    "./schema": {
-      "default": "./dist/event_schema.js"
+    "./events": {
+      "default": "./dist/eventSchema.js"
     }
   },
   "devDependencies": {

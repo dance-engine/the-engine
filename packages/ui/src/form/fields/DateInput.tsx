@@ -1,16 +1,20 @@
+import React from "react";
+import { UseFormRegister, FieldValues } from "react-hook-form";
+import { ZodTypeAny } from "zod";
+import CustomComponent from "./CustomComponent";
+
 interface DateInputProps {
   label: string;
   name: string;
-  register: any;
+  register: UseFormRegister<FieldValues>;
   error?: string;
+  fieldSchema: ZodTypeAny;
 }
 
-const DateInput: React.FC<DateInputProps> = ({ label, name, register, error }) => (
-  <div className="flex flex-col">
-    <label className="font-semibold capitalize">{label}</label>
+const DateInput: React.FC<DateInputProps> = ({ label, name, register, error, fieldSchema }) => (
+  <CustomComponent label={label} name={name} register={register} error={error} fieldSchema={fieldSchema}>
     <input {...register(name)} type="date" className="border p-2 rounded-md" />
-    {error && <p className="text-red-500 text-sm">{error}</p>}
-  </div>
+  </CustomComponent>
 );
 
 export default DateInput;

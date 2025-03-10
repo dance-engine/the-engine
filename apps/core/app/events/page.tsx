@@ -11,7 +11,7 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100 p-4">
+    <div className="min-h-screen flex flex-col justify-start items-center">
       <h1 className="text-2xl font-bold mb-4">Test Form</h1>
       <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} />
     </div>

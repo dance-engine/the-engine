@@ -1,3 +1,4 @@
+'use client'
 import React from "react";
 import { UseFormRegister, FieldValues } from "react-hook-form";
 import { ZodTypeAny } from "zod";
@@ -8,13 +9,15 @@ interface SelectProps {
   name: string;
   options: string[];
   register: UseFormRegister<FieldValues>;
+  validate: () => void;
   error?: string;
   fieldSchema: ZodTypeAny;
 }
 
-const Select: React.FC<SelectProps> = ({ label, name, register, error, fieldSchema, options }) => (
-  <CustomComponent label={label} name={name} register={register} error={error} fieldSchema={fieldSchema}>
-    <select {...register(name)} className="border p-2 rounded-md">
+const Select: React.FC<SelectProps> = ({ label, name, register, validate, error, fieldSchema, options }: SelectProps) => (
+  <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
+    <select {...register(name)} onBlur={validate} className="border p-2 rounded-md">
+      <option key={"option-none"} value="">--</option>
       {options.map((option) => (
         <option key={option} value={option}>
           {option}

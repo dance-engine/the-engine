@@ -8,6 +8,9 @@
   "exports": {
     "./clerkSWR": {
       "default": "./dist/clerkSWR.js"
+    },
+    "./getInnerSchema": {
+      "default": "./dist/getInnerSchema.js"
     }
   },
   "devDependencies": {

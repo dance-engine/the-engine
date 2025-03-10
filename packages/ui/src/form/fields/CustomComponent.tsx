@@ -5,7 +5,6 @@ import { ZodTypeAny } from "zod";
 interface CustomComponentProps {
   label: string;
   name: string;
-  register: UseFormRegister<FieldValues>;
   error?: string;
   fieldSchema: ZodTypeAny;
   children: ReactNode;

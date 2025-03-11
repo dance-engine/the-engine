@@ -29,6 +29,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onC
 // export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit.configure({ code: false, codeBlock: false })],
+    immediatelyRender: false,
     content: value,
     editorProps: {
       attributes: {

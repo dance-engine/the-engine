@@ -2,7 +2,7 @@ import React from "react";
 import { useForm, FieldValues, Controller} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodObject, ZodRawShape } from "zod";
-import getInnerSchema from '@dance-engine/utilties/getInnerSchema'
+import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
 import TextInput from "./fields/TextInput";
 import Textarea from "./fields/Textarea";
@@ -27,7 +27,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit })
     control,
     handleSubmit,
     trigger,
-    watch,
+    // watch,
     formState: { errors },
   } = useForm<FieldValues>({ resolver: zodResolver(schema) });
 
@@ -35,7 +35,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
-      <div>{JSON.stringify(watch(),null,2)}</div>
+      {/* <div>{JSON.stringify(watch(),null,2)}</div> */}
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;

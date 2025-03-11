@@ -2,7 +2,7 @@
 import React from "react";
 import { UseFormRegister, FieldValues } from "react-hook-form";
 import { ZodTypeAny } from "zod";
-import getInnerSchema from '@dance-engine/utilties/getInnerSchema'
+import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 import CustomComponent from "./CustomComponent";
 
 interface CheckboxGroupProps {

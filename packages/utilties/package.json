@@ -1,5 +1,5 @@
 {
-  "name": "@dance-engine/utilties",
+  "name": "@dance-engine/utils",
   "type": "module",
   "scripts": {
     "dev": "tsc --watch",

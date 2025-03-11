@@ -25,7 +25,7 @@
     "@clerk/nextjs": "^6.12.3",
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/schemas": "workspace:*",
-    "@dance-engine/utilities": "workspace:*",
+    "@dance-engine/utils": "workspace:*",
     "@dance-engine/tailwind-config": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",
     "@tailwindcss/cli": "^4.0.9",

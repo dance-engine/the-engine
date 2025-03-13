@@ -83,13 +83,27 @@ provider:
       adminAuthorizer:
         type: request
         functionName: authorizerFunc
+
+#######################
+# Layers
+#######################
+
 layers:
   auth:
     path: _layers/auth
   utils:
     path: _layers/utils
   pydantic:
-    path: _layers/pydantic        
+    path: _layers/pydantic
+
+###########################
+# Resources e.g. DynamoDB
+###########################    
+
+
+#######################
+# Functions
+#######################
 
 functions:
 
@@ -120,6 +134,8 @@ functions:
           authorizer:
             adminAuthorizer
 
+#--------------------
+
   ReceiveEvent:
     runtime: python3.11
     handler: event_bridge/lambda_functions.receive_handler
@@ -129,6 +145,26 @@ functions:
           pattern:
             source:
               - some.pattern
+  authorizerFunc:
+    runtime: python3.11
+    handler: authorizer/lambda_functions.auth_handler
+    layers:
+      - !Ref AuthLambdaLayer
+    package:
+      patterns:
+        - '!**/**'
+        - "authorizer/**"
+
+#--------------------
+
+  Events:
+    runtime: python3.11
+    handler: events/lambda_events.handler_create
+    name: "${sls:stage}-events"
+    events:
+      - httpApi:
+          path: /events
+          method: post
   authorizerFunc:
     runtime: python3.11
     handler: authorizer/lambda_functions.auth_handler

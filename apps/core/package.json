@@ -21,6 +21,7 @@
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/tailwind-config": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",
+    "@dance-engine/ui": "workspace:*",
     "@dance-engine/utils": "workspace:*",
     "@next/eslint-plugin-next": "^15.1.6",
     "@types/node": "^22.12.0",

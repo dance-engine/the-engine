@@ -86,6 +86,10 @@ provider:
 layers:
   auth:
     path: _layers/auth
+  utils:
+    path: _layers/utils
+  pydantic:
+    path: _layers/pydantic        
 
 functions:
 

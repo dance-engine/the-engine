@@ -4,7 +4,7 @@ import { useMenu } from './MenuContext'
 import { MenuClose } from './MenuToggle'
 // import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 
-export default function MobileMenu() {
+export function MobileMenu() {
   const { isOpen } = useMenu();
 
   return (

@@ -1,6 +1,6 @@
 'use client'
 import React from "react";
-import { useForm, FieldValues, Controller} from "react-hook-form";
+import { useForm, FieldValues, Controller, FieldError, FieldErrorsImpl} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodObject, ZodRawShape } from "zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
@@ -75,9 +75,20 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
                 error={errors[field]?.message as string} // Display error message for roles
               />
             ) : fieldType === "ZodObject" ? (
+              <div>Errors 
+                {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
               <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
               register={register} setValue={setValue} validate={() => {trigger(field)}}
-              error={errors[field]?.message as string} />
+              error={{
+                name: (errors[field] as unknown as {name: {message:string}})?.name?.message, 
+                lat:(errors[field] as unknown as {lat: {message:string}})?.lat?.message, 
+                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message }}
+              // error={
+              //   errors[field] ? {name: errors[field]['name'].message as string, lat: errors[field]['lat'].message,lng: errors[field]['lng'].message } 
+              //   : {name:"", lat:"", lng:""} 
+              />
+              
+              </div>
             ) : fieldType === "ZodNumber" ? (
               <NumberInput label={field} name={field} fieldSchema={fieldSchema}
               register={register} validate={() => {trigger(field)}}

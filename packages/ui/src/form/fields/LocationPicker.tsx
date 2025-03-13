@@ -16,7 +16,7 @@ interface LocationPickerProps {
   setValue: UseFormSetValue<FieldValues>;
   control: Control<FieldValues>;
   MapComponent?: React.FC<MapPickerProps>;
-  error?: string;
+  error: {name:string, lat:string, lng:string};
   fieldSchema: ZodTypeAny; // This will be the location schema passed to each field
 }
 
@@ -117,13 +117,6 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     },
     [debouncedFetchLocationResults] // ✅ Now ESLint is happy
   );
-  
-  // const loadOptions = useCallback(
-  //   debounce((inputValue, callback) => {
-  //     fetchLocationResults(inputValue).then(callback);
-  //   }, 500), // Adjust debounce delay as needed (500ms)
-  //   []
-  // );
 
   const handleSelectLocation = (location: HereGeocodeResult) => {
     // Set the selected location data into lat/lng fields
@@ -156,8 +149,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         label="Venue Name"
         name={`${name}.name`}
         fieldSchema={fieldSchema}
-        error={error}
+        error={error.name}
       >
+        {/* {JSON.stringify(error['name'])} */}
         { isClient ? <AsyncSelect
           loadOptions={loadOptions}
           isClearable
@@ -178,12 +172,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
       </CustomComponent>
 
-      { MapComponent ? <MapComponent lat={mapCentre.lat} lng={mapCentre.lng} onChange={handleMapChange} /> : null }
+      { MapComponent ? (<MapComponent lat={mapCentre.lat} lng={mapCentre.lng} onChange={handleMapChange} />) : null }
 
       {/* Latitude */}
       <CustomComponent
         label="Latitude" name={`${name}.lat`} fieldSchema={fieldSchema}
-        error={error}
+        error={error.lat}
       >
         <input
           {...register(`${name}.lat`, { valueAsNumber: true })} // Use valueAsNumber for proper numeric input handling
@@ -196,7 +190,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       <CustomComponent
         label="Longitude" name={`${name}.lng`}
         fieldSchema={fieldSchema}
-        error={error}
+        error={error.lng}
       >
         <input
           {...register(`${name}.lng`, { valueAsNumber: true })}
@@ -206,7 +200,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       </CustomComponent>
 
       {/* Error Handling (optional) */}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {/* {error && <p className="text-red-500 text-sm">{error}</p>} */}
     </div>
   );
 };

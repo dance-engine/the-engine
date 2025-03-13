@@ -13,7 +13,7 @@ interface DateInputProps {
 
 const DateInput: React.FC<DateInputProps> = ({ label, name, register, error, fieldSchema }) => (
   <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
-    <input {...register(name)} type="date" className="border p-2 rounded-md" />
+    <input {...register(name)} type="datetime-local" className="border p-2 rounded-md" />
   </CustomComponent>
 );
 

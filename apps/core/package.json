@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.3",
+    "@dance-engine/schemas": "workspace:^",
     "@dance-engine/ui": "workspace:*",
     "next": "^15.1.6",
     "react": "^19.0.0",

@@ -1,36 +1,39 @@
+'use client'
 import React from "react";
 import { useForm, FieldValues, Controller} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ZodObject, ZodRawShape } from "zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
-import TextInput from "./fields/TextInput";
-import Textarea from "./fields/Textarea";
-import RichTextEditor from './fields/RichTextEditor';
-import NumberInput from "./fields/NumberInput";
-import DateInput from "./fields/DateInput";
-import Select from "./fields/Select";
-import CheckboxGroup from "./fields/CheckBoxes";
+import TextInput from "@dance-engine/ui/form/fields/TextInput";
+import Textarea from "@dance-engine/ui/form/fields/Textarea";
+import RichTextEditor from '@dance-engine/ui/form/fields/RichTextEditor';
+import NumberInput from "@dance-engine/ui/form/fields/NumberInput";
+import DateInput from "@dance-engine/ui/form/fields/DateInput";
+import Select from "@dance-engine/ui/form/fields/Select";
+import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
+import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 
-// 🔹 Extracts the actual field type, handling `ZodDefault`
-// const getInnerSchema = (schema: ZodTypeAny) => (schema instanceof ZodDefault ? schema._def.innerType : schema);
+import { MapPickerProps } from '@dance-engine/ui/form/fields/MapPicker'
 
 interface DynamicFormProps {
   schema: ZodObject<ZodRawShape>;
-  metadata?: Record<string, { multiline?: boolean, richText?: boolean, dateField?: boolean, checkboxesField: boolean }>;
+  metadata?: Record<string, { multiline?: boolean, richText?: boolean, dateField?: boolean, checkboxesField?: boolean }>;
   onSubmit: (data: FieldValues) => void;
+  MapComponent?: React.FC<MapPickerProps>
 }
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit }) => {
+const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, MapComponent}) => {
   const {
     register,
     control,
     handleSubmit,
     trigger,
-    // watch,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<FieldValues>({ resolver: zodResolver(schema) });
-
+  
   const fields = Object.keys(schema.shape);
 
   return (
@@ -71,6 +74,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit })
                 fieldSchema={fieldSchema} // Pass the ZodEnum schema for roles
                 error={errors[field]?.message as string} // Display error message for roles
               />
+            ) : fieldType === "ZodObject" ? (
+              <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
+              register={register} setValue={setValue} validate={() => {trigger(field)}}
+              error={errors[field]?.message as string} />
             ) : fieldType === "ZodNumber" ? (
               <NumberInput label={field} name={field} fieldSchema={fieldSchema}
               register={register} validate={() => {trigger(field)}}
@@ -84,7 +91,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit })
               register={register} validate={() => {trigger(field)}}
               error={errors[field]?.message as string}  />
             ) : (
-              <div>Unknown field {field}{fieldType}</div>
+              <div>Unknown field {field} : {fieldType}</div>
             )}
           </div>
         );

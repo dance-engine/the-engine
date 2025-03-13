@@ -1,3 +1,4 @@
+'use client'
 import React, { ReactNode } from "react";
 // import { UseFormRegister, FieldValues } from "react-hook-form";
 import { ZodTypeAny } from "zod";

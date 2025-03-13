@@ -1,5 +1,5 @@
 'use client'
-import Image from "next/image";
+// import Image from "next/image";
 import { useMenu } from './MenuContext'
 import { MenuClose } from './MenuToggle'
 // import {usePathname, useRouter, useSearchParams} from 'next/navigation'
@@ -22,7 +22,7 @@ export default function MobileMenu() {
               
               <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-dark-background px-6 pb-4">
                 <div className="flex h-16 shrink-0 items-center">
-                  <Image className="h-5 w-auto" width={128} height={128} src="/dance-engine-sq.png" alt="Dance Engine - Home"/>
+                  <img className="h-5 w-auto" width={128} height={128} src="/dance-engine-sq.png" alt="Dance Engine - Home"/>
                 </div>
                 <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-7">

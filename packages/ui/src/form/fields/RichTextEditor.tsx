@@ -36,7 +36,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onC
         class: `prose prose-base prose-p:mb-2 prose-p:mt-0  prose-p:leading-tight prose-headings:font-semibold \
         prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
         prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0\
-        max-w-none border border-gray-300 rounded-md p-2 min-h-[150px] focus:outline-none`,
+        max-w-none border border-gray-300 p-2 min-h-[150px] focus:outline-none \
+        border-none `,
       },
     },
     onUpdate({ editor }) {
@@ -54,7 +55,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onC
 
   return (
     <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
-      <div className="border rounded-md overflow-hidden shadow-sm">
+      <div className="border rounded-md overflow-hidden border-gray-300">
       <MenuBar editor={editor} />
       <EditorContent editor={editor} />
       </div>
@@ -69,7 +70,25 @@ interface MenuBarProps {
 const headingLevels: Level[] = [1, 2, 3, 4];
 
 const MenuBar = ({ editor }: MenuBarProps) => (
-  <div className="flex flex-wrap gap-1 border-b bg-gray-50 p-1">
+  <div className="flex flex-wrap gap-1 border-b bg-gray-50 p-1 border-gray-300">
+
+    {/* Heading Dropdown */}
+    <select
+      className="border border-gray-300 rounded p-1 bg-white"
+      value={headingLevels.find((level) => editor.isActive('heading', { level })) || ''}
+      onChange={(e) => {
+        const level = Number(e.target.value) as Level;
+        if (level) editor.chain().focus().toggleHeading({ level }).run();
+      }}
+    >
+      <option value="">Paragraph</option>
+      {headingLevels.map((level) => (
+        <option key={level} value={level}>
+          Heading {level}
+        </option>
+      ))}
+    </select>
+    
     {/* Bold */}
     <button
       type="button"
@@ -103,22 +122,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       <FaStrikethrough />
     </button>
 
-    {/* Heading Dropdown */}
-    <select
-      className="border border-gray-300 rounded p-1 bg-white"
-      value={headingLevels.find((level) => editor.isActive('heading', { level })) || ''}
-      onChange={(e) => {
-        const level = Number(e.target.value) as Level;
-        if (level) editor.chain().focus().toggleHeading({ level }).run();
-      }}
-    >
-      <option value="">Paragraph</option>
-      {headingLevels.map((level) => (
-        <option key={level} value={level}>
-          Heading {level}
-        </option>
-      ))}
-    </select>
+    
 
     {/* Bullet List */}
     <button

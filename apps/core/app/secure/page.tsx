@@ -5,7 +5,8 @@ import useClerkSWR from '@dance-engine/utils/clerkSWR';
 const exampleApiCall = "https://q8ut73qldj.execute-api.eu-west-1.amazonaws.com/trigger"
 
 export default function SecurePage() {
-  const {data: summaryData, error: summaryError, isLoading: summaryLoading, isValidating: summaryValidating} = useClerkSWR(exampleApiCall);
+  // const {data: summaryData, error: summaryError, isLoading: summaryLoading, isValidating: summaryValidating} = useClerkSWR(exampleApiCall);
+  const {data: summaryData} = useClerkSWR(exampleApiCall);
   return <div>
     <h1 className='text-xl'>Secured</h1>
     <pre>{JSON.stringify(summaryData,null,2)}</pre>

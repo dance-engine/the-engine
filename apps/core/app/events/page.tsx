@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import DynamicForm from "@dance-engine/ui/form/DynamicForm";
 import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Import the schema
 import { FieldValues } from "react-hook-form";
+import { MapPickerProps } from '@dance-engine/ui/form/fields/MapPicker'
+const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker'), { ssr: false }) as React.FC<MapPickerProps>
 
 const Page = () => {
   const handleSubmit = (data: FieldValues) => {
@@ -13,7 +16,7 @@ const Page = () => {
   return (
     <div className="min-h-screen flex flex-col justify-start items-center">
       <h1 className="text-2xl font-bold mb-4">Test Form</h1>
-      <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} />
+      <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker}/>
     </div>
   );
 };

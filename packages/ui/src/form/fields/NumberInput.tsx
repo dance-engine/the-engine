@@ -24,7 +24,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ label, name, register, valida
       min={fieldSchema._def.minValue ?? undefined}
       max={fieldSchema._def.maxValue ?? undefined}
       onBlur={validate}
-      className="border p-2 rounded-md"
+      className="border p-2 rounded-md border-gray-300"
     />
   </CustomComponent>
 );

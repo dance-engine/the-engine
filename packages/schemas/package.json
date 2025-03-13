@@ -8,7 +8,11 @@
   "exports": {
     "./events": {
       "default": "./dist/eventSchema.js"
+    },
+    "./location": {
+      "default": "./dist/locationSchema.js"
     }
+    
   },
   "devDependencies": {
     "@dance-engine/typescript-config": "workspace:*",

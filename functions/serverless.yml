@@ -5,8 +5,31 @@ service: example
 
 plugins:
   - serverless-prune-plugin
+  - serverless-openapi-documenter
 
 custom:
+  documentation:
+    description: "Description for my OpenAPI File"
+    version: 1.0.0
+    tags:
+      - name: DynamoDB
+        description: Functions that operate with DynamoDB
+        externalDocumentation:
+          url: https://aws.amazon.com/dynamodb/
+          description: How to use DynamoDB
+    servers:
+      - url: "{url}/content"
+        description: The endpoint
+        variables:
+          url:
+            default: https://uat.example.com
+            description: the API URL
+    securitySchemes:
+      Authorization:
+        type: apiKey
+        name: Authorization
+        description: JWT token from Clerk
+        in: header
   prune:
     automatic: true
     includeLayers: true

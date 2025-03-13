@@ -5,10 +5,10 @@ import "./globals.css";
 
 // import Head from 'next/head'
 import Image from "next/image";
-import { MobileMenu } from '@dance-engine/ui/MobileMenu'
 import { ClerkProvider } from '@clerk/nextjs'
 import { MenuProvider } from '@dance-engine/ui/MenuContext';  // Adjust the import path
 import { MenuToggle } from '@dance-engine/ui/MenuToggle'
+import { MobileMenu } from '@dance-engine/ui/MobileMenu'
 import ProfileControl from '@dance-engine/ui/ProfileControl'
 
 const openSans = Open_Sans({

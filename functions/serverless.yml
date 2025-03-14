@@ -107,6 +107,18 @@ layers:
 
 functions:
 
+  authorizerFunc:
+    runtime: python3.11
+    handler: authorizer/lambda_functions.auth_handler
+    layers:
+      - !Ref AuthLambdaLayer
+    package:
+      patterns:
+        - '!**/**'
+        - "authorizer/**"
+
+#--------------------
+
   TriggerAnEvent:
     runtime: python3.11
     handler: event_bridge/lambda_functions.trigger_handler
@@ -145,15 +157,6 @@ functions:
           pattern:
             source:
               - some.pattern
-  authorizerFunc:
-    runtime: python3.11
-    handler: authorizer/lambda_functions.auth_handler
-    layers:
-      - !Ref AuthLambdaLayer
-    package:
-      patterns:
-        - '!**/**'
-        - "authorizer/**"
 
 #--------------------
 
@@ -165,12 +168,5 @@ functions:
       - httpApi:
           path: /events
           method: post
-  authorizerFunc:
-    runtime: python3.11
-    handler: authorizer/lambda_functions.auth_handler
-    layers:
-      - !Ref AuthLambdaLayer
-    package:
-      patterns:
-        - '!**/**'
-        - "authorizer/**"
+          authorizer:
+            adminAuthorizer          

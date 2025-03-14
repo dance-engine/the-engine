@@ -1,0 +1,14 @@
+documentation:
+  title: "Dance Engine API"
+  description: "The API for Dance Engine"
+  version: 0.0.1
+
+endpoints:
+  Events:
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Success
+      - statusCode: 400
+        responseBody:
+          description: Failed (not implemented)

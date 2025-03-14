@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.0",
+  "components": {
+    "schemas": {}
+  },
+  "info": {
+    "title": "Dance Engine API",
+    "description": "The API for Dance Engine",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/events": {
+      "post": {
+        "summary": "",
+        "description": "",
+        "operationId": "events",
+        "parameters": [],
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {}
+          },
+          "400": {
+            "description": "Failed (not implemented)",
+            "headers": {}
+          }
+        }
+      }
+    }
+  }
+}

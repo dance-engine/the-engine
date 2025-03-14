@@ -5,8 +5,10 @@ service: example
 
 plugins:
   - serverless-prune-plugin
+  - serverless-openapi-documenter
 
 custom:
+  documentation: ${file(serverless.doc.yml):documentation}
   prune:
     automatic: true
     includeLayers: true
@@ -169,4 +171,5 @@ functions:
           path: /events
           method: post
           authorizer:
-            adminAuthorizer          
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events}    

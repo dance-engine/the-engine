@@ -11,6 +11,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ label, name, register, valida
         setValueAs: (value) => (value === '' ? undefined : parseInt(value)),
       })}
       type="number"
+      inputMode="numeric"
       placeholder={fieldSchema._def.placeholder ?? ""}
       min={fieldSchema._def.minValue ?? undefined}
       max={fieldSchema._def.maxValue ?? undefined}

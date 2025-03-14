@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@source "../node_modules/@dance-engine/ui/src/";
+@import "@dance-engine/ui/styles.css";
 
 @theme {
   --font-sans: var(--font-open-sans);

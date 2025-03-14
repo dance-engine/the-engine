@@ -95,9 +95,6 @@ importers:
       '@dance-engine/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@dance-engine/tailwind-config':
-        specifier: workspace:*
-        version: link:../../packages/tailwind-config
       '@dance-engine/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -107,6 +104,9 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^15.1.6
         version: 15.2.2
+      '@tailwindcss/typography':
+        specifier: ^0.5.16
+        version: 0.5.16(tailwindcss@4.0.14)
       '@types/node':
         specifier: ^22.12.0
         version: 22.13.10
@@ -193,18 +193,6 @@ importers:
         specifier: latest
         version: 5.8.2
 
-  packages/tailwind-config:
-    devDependencies:
-      '@dance-engine/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@tailwindcss/cli':
-        specifier: ^4.0.9
-        version: 4.0.14
-      tailwindcss:
-        specifier: ^4.0.9
-        version: 4.0.14
-
   packages/typescript-config: {}
 
   packages/ui:
@@ -252,9 +240,6 @@ importers:
       '@dance-engine/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@dance-engine/tailwind-config':
-        specifier: workspace:*
-        version: link:../tailwind-config
       '@dance-engine/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

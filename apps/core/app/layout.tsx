@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
-import "@dance-engine/ui/styles.css";
 import "./globals.css";
 
 // import Head from 'next/head'
@@ -40,7 +39,7 @@ export default function RootLayout({
         <MobileMenu menuContents={menuContents}/>
 
         {/* Normal menu */}
-        <MainMenu menuContents={menuContents} class/>
+        <MainMenu menuContents={menuContents}/>
         
       
 
@@ -66,7 +65,6 @@ export default function RootLayout({
           <main className="py-10">
             <div className="px-4 sm:px-6 lg:px-8">
               {children}
-              <div className="bg-dark-background"></div>
             </div>
           </main>
         </div>

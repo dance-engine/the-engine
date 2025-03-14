@@ -1,2 +1,6 @@
 @import 'tailwindcss';
-@plugin "@tailwindcss/typography";
+@theme {
+  --color-dark-background: #cc0000;
+}
+
+/* @plugin "@tailwindcss/typography"; */

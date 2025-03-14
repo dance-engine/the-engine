@@ -8,7 +8,7 @@
     "dist"
   ],
   "exports": {
-    "./styles.css": "./dist/index.css",
+    "./styles.css": "./src/styles.css",
     "./*": "./src/*.tsx",
     "./LocationPicker": "./src/LocationPicker.tsx",
     "./MobileMenu": "./src/MobileMenu.tsx",
@@ -28,7 +28,6 @@
     "@clerk/nextjs": "^6.12.3",
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/schemas": "workspace:*",
-    "@dance-engine/tailwind-config": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",
     "@dance-engine/utils": "workspace:*",
     "@tailwindcss/cli": "^4.0.9",

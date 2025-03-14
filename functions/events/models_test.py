@@ -1,5 +1,5 @@
 import json
-import datetime
+from datetime import datetime
 from typing import List
 from enum import Enum
 
@@ -27,4 +27,5 @@ class Event(BaseModel):
     date: datetime = Field(..., description="Select the event date.")
 
 with open("event_schema.json", "w") as f:
-    json.dump(Event.Event.model_json_schema(), f, indent=2)
+    main_model_schema = Event.model_json_schema()
+    json.dump(main_model_schema, f, indent=2)

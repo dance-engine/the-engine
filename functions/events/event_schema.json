@@ -1,0 +1,102 @@
+{
+  "$defs": {
+    "EventCategory": {
+      "enum": [
+        "congress",
+        "workshop",
+        "party",
+        "class",
+        "lecture"
+      ],
+      "title": "EventCategory",
+      "type": "string"
+    },
+    "Location": {
+      "properties": {
+        "name": {
+          "description": "Name is required",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "lat": {
+          "description": "Latitude must be between -90 and 90",
+          "maximum": 90.0,
+          "minimum": -90.0,
+          "title": "Lat",
+          "type": "number"
+        },
+        "lng": {
+          "description": "Longitude must be between -180 and 180",
+          "maximum": 180.0,
+          "minimum": -180.0,
+          "title": "Lng",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "lat",
+        "lng"
+      ],
+      "title": "Location",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "name": {
+      "description": "The name of the event.",
+      "minLength": 2,
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "description": "A brief description of the event.",
+      "minLength": 10,
+      "title": "Description",
+      "type": "string"
+    },
+    "category": {
+      "description": "Must have at least one category",
+      "items": {
+        "$ref": "#/$defs/EventCategory"
+      },
+      "minItems": 1,
+      "title": "Category",
+      "type": "array"
+    },
+    "location": {
+      "$ref": "#/$defs/Location",
+      "description": "The event location"
+    },
+    "address": {
+      "description": "Enter the full event address.",
+      "minLength": 5,
+      "title": "Address",
+      "type": "string"
+    },
+    "capacity": {
+      "default": 100,
+      "description": "Maximum number of attendees.",
+      "minimum": 1,
+      "title": "Capacity",
+      "type": "integer"
+    },
+    "date": {
+      "description": "Select the event date.",
+      "format": "date-time",
+      "title": "Date",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "category",
+    "location",
+    "address",
+    "date"
+  ],
+  "title": "Event",
+  "type": "object"
+}

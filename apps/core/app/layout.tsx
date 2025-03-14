@@ -40,9 +40,9 @@ export default function RootLayout({
         <MobileMenu menuContents={menuContents}/>
 
         {/* Normal menu */}
-        <MainMenu menuContents={menuContents}/>
+        <MainMenu menuContents={menuContents} class/>
         
- 
+      
 
         {/* Content */}
         <div className="lg:pl-72">
@@ -66,6 +66,7 @@ export default function RootLayout({
           <main className="py-10">
             <div className="px-4 sm:px-6 lg:px-8">
               {children}
+              <div className="bg-dark-background"></div>
             </div>
           </main>
         </div>

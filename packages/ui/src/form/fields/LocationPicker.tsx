@@ -14,6 +14,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   register,
   setValue,
   error,
+  validate,
   fieldSchema,
   MapComponent
 }) => {
@@ -71,6 +72,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setValue(`${name}.name`, location.title); // Set location name
     setValue(`${name}.lat`, position.lat); // Set latitude
     setValue(`${name}.lng`, position.lng); // Set longitude
+    if (validate){validate()}
     setmapCentre(position)
   };
 

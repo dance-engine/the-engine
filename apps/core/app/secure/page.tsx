@@ -1,4 +1,3 @@
-'use client'
 import useClerkSWR from '@dance-engine/utils/clerkSWR';
 
 // const mealSummaryApiUrl = "https://a5qvybvrc7.execute-api.eu-west-1.amazonaws.com/test"

@@ -1,15 +1,6 @@
 'use client'
-import React, { ReactNode } from "react";
-// import { UseFormRegister, FieldValues } from "react-hook-form";
-import { ZodTypeAny } from "zod";
-
-interface CustomComponentProps {
-  label: string;
-  name: string;
-  error?: string;
-  fieldSchema: ZodTypeAny;
-  children: ReactNode;
-}
+import React from "react";
+import { CustomComponentProps } from "../../types/form"
 
 const CustomComponent: React.FC<CustomComponentProps> = ({ label, error, fieldSchema, children }) => {
   const description = fieldSchema._def.description ?? "";

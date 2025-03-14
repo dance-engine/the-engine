@@ -1,28 +1,11 @@
 'use client'
+import { RichTextEditorProps } from "../../types/form"
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Level } from '@tiptap/extension-heading';
 import { useEffect } from 'react';
-import {
-  FaBold,
-  FaItalic,
-  FaStrikethrough,
-  FaListUl,
-  FaListOl,
-  FaQuoteRight,
-  FaEraser,
-} from 'react-icons/fa';
+import { FaBold, FaItalic, FaStrikethrough, FaListUl, FaListOl, FaQuoteRight,FaEraser } from 'react-icons/fa';
 import CustomComponent from "./CustomComponent";
-import { ZodTypeAny } from "zod";
-
-interface RichTextEditorProps {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (content: string) => void;
-  error?: string;
-  fieldSchema: ZodTypeAny;
-}
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onChange, error, fieldSchema }: RichTextEditorProps) => {
 

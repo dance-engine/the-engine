@@ -1,64 +1,12 @@
 'use client'
+import { LocationPickerProps, SelectOption, LoadOptionsCallback } from "../../types/form"
+import { HereGeocodeResult, HereGeocodeResponse, LatLng } from "../../types/heroGeocode"
 import React, {useCallback, useState, useMemo, useEffect } from "react";
-import { UseFormRegister, FieldValues, UseFormSetValue, Control } from "react-hook-form";
 import AsyncSelect from "react-select/async";
 import {SingleValue, StylesConfig } from 'react-select'
-import { ZodTypeAny } from "zod";
 import CustomComponent from "./CustomComponent"; // Assuming CustomComponent is already defined
 import debounce from 'debounce'; // Import debounce from the standalone library
-import { MapPickerProps } from '@dance-engine/ui/form/fields/MapPicker'
 
-interface LocationPickerProps {
-  label: string;
-  name: string;
-  register: UseFormRegister<FieldValues>;
-  validate?: () => void;
-  setValue: UseFormSetValue<FieldValues>;
-  control: Control<FieldValues>;
-  MapComponent?: React.FC<MapPickerProps>;
-  error: {name:string, lat:string, lng:string};
-  fieldSchema: ZodTypeAny; // This will be the location schema passed to each field
-}
-
-interface HereGeocodeResult {
-  title: string; // Full formatted address
-  id: string; // Unique identifier for the location
-  resultType: string; // Type of result (e.g., "houseNumber", "street", "place", "locality")
-  address: {
-    label: string; // Formatted address
-    countryCode: string; // Country code (e.g., "US")
-    countryName: string; // Country name
-    state?: string;
-    county?: string;
-    city?: string;
-    district?: string;
-    street?: string;
-    postalCode?: string;
-    houseNumber?: string;
-  };
-  position: {
-    lat: number; // Latitude
-    lng: number; // Longitude
-  };
-  access?: {
-    lat: number;
-    lng: number;
-  }[]; // Alternative access points if available
-}
-
-export interface HereGeocodeResponse {
-  items: HereGeocodeResult[]; // Array of geocoded locations
-}
-
-interface SelectOption {
-  label: string,
-  value: string
-}
-
-interface latlng {
-  lat: number,
-  lng: number
-}
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   label,
@@ -70,7 +18,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   MapComponent
 }) => {
 
-  const [mapCentre,setmapCentre] = useState({lat: 53.40262, lng: -2.96981 } as latlng)
+  const [mapCentre,setmapCentre] = useState({lat: 53.40262, lng: -2.96981 } as LatLng)
   const [cachedOptions, setCachedOptions] = useState<SelectOption[]>([]); 
   
   const [isClient, setIsClient] = useState(false);
@@ -108,8 +56,6 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       }, 500), // ✅ Debounce is only created once
     []
   );
-
-  type LoadOptionsCallback = (options: Array<{ value: string; label: string }>) => void;
   
   const loadOptions = useCallback(
     (inputValue:string, callback: LoadOptionsCallback) => {
@@ -128,7 +74,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setmapCentre(position)
   };
 
-  const handleMapChange = (newLocation: latlng) => {
+  const handleMapChange = (newLocation: LatLng) => {
     setValue(`${name}.lat`, newLocation.lat); // Set latitude
     setValue(`${name}.lng`, newLocation.lng); // Set longitude
   }

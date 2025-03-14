@@ -1,8 +1,7 @@
 'use client'
 import React from "react";
-import { useForm, FieldValues, Controller, FieldError, FieldErrorsImpl} from "react-hook-form";
+import { useForm, FieldValues, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ZodObject, ZodRawShape } from "zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
 import TextInput from "@dance-engine/ui/form/fields/TextInput";
@@ -13,15 +12,7 @@ import DateInput from "@dance-engine/ui/form/fields/DateInput";
 import Select from "@dance-engine/ui/form/fields/Select";
 import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
-
-import { MapPickerProps } from '@dance-engine/ui/form/fields/MapPicker'
-
-interface DynamicFormProps {
-  schema: ZodObject<ZodRawShape>;
-  metadata?: Record<string, { multiline?: boolean, richText?: boolean, dateField?: boolean, checkboxesField?: boolean }>;
-  onSubmit: (data: FieldValues) => void;
-  MapComponent?: React.FC<MapPickerProps>
-}
+import { DynamicFormProps } from '@dance-engine/ui/types' 
 
 const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, MapComponent}) => {
   const {
@@ -29,7 +20,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
     control,
     handleSubmit,
     trigger,
-    watch,
     setValue,
     formState: { errors },
   } = useForm<FieldValues>({ resolver: zodResolver(schema) });

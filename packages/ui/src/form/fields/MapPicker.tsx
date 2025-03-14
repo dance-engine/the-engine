@@ -1,4 +1,5 @@
 'use client'
+import { MapPickerProps } from "../../types/form"
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -11,11 +12,6 @@ const customIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-export interface MapPickerProps {
-  lat: number, 
-  lng: number, 
-  onChange: (latlng: L.LatLngLiteral) => void
-}
 
 const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange }: MapPickerProps) => {
   const [position, setPosition] = useState({ lat, lng } as L.LatLngLiteral);

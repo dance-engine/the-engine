@@ -1,17 +1,8 @@
 'use client'
 import React from "react";
-import { UseFormRegister, FieldValues } from "react-hook-form";
-import { ZodTypeAny } from "zod";
+import { NumberInputProps } from "../../types/form"
 import CustomComponent from "./CustomComponent";
 
-interface NumberInputProps {
-  label: string;
-  name: string;
-  register: UseFormRegister<FieldValues>;
-  validate: () => void;
-  error?: string;
-  fieldSchema: ZodTypeAny;
-}
 
 const NumberInput: React.FC<NumberInputProps> = ({ label, name, register, validate, error, fieldSchema }) => (
   <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>

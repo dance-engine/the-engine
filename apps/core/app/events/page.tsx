@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import DynamicForm from "@dance-engine/ui/form/DynamicForm";
 import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Import the schema
 import { FieldValues } from "react-hook-form";
-import { MapPickerProps } from '@dance-engine/ui/form/fields/MapPicker'
+import { MapPickerProps } from '@dance-engine/ui/types'
 const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker'), { ssr: false }) as React.FC<MapPickerProps>
 
 const Page = () => {

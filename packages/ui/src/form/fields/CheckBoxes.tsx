@@ -1,18 +1,9 @@
 'use client'
 import React from "react";
-import { UseFormRegister, FieldValues } from "react-hook-form";
-import { ZodTypeAny } from "zod";
+
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 import CustomComponent from "./CustomComponent";
-
-interface CheckboxGroupProps {
-  label: string;
-  name: string;
-  register: UseFormRegister<FieldValues>;
-  validate?: () => void;
-  error?: string;
-  fieldSchema: ZodTypeAny;
-}
+import { CheckboxGroupProps } from '../../types/form'
 
 const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
   label,

@@ -11,7 +11,8 @@
     "./styles.css": "./dist/index.css",
     "./*": "./src/*.tsx",
     "./LocationPicker": "./src/LocationPicker.tsx",
-    "./MobileMenu": "./src/MobileMenu.tsx"
+    "./MobileMenu": "./src/MobileMenu.tsx",
+    "./types": "./src/types/index.ts"
   },
   "license": "MIT",
   "scripts": {

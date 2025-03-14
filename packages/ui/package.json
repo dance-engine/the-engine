@@ -47,6 +47,7 @@
     "@tiptap/extension-heading": "^2.11.5",
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
+    "@workos-inc/node": "^7.41.0",
     "leaflet": "^1.9.4",
     "next": "^15.2.2",
     "react-hook-form": "^7.54.2",

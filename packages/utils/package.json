@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.3",
+    "@workos-inc/node": "^7.41.0",
     "swr": "^2.3.3",
     "zod": "^3.24.2"
   }

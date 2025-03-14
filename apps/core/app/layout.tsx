@@ -3,12 +3,13 @@ import { Open_Sans } from "next/font/google";
 import "./globals.css";
 
 // import Head from 'next/head'
-import { ClerkProvider } from '@clerk/nextjs'
+// import { ClerkProvider } from '@clerk/nextjs'
+import { AuthKitProvider } from '@workos-inc/authkit-nextjs/components';
 import { MenuProvider } from '@dance-engine/ui/menu/MenuContext';  // Adjust the import path
 import { MenuToggle } from '@dance-engine/ui/menu/MenuToggle'
 import MobileMenu from '@dance-engine/ui/menu/MobileMenu'
 import MainMenu from '@dance-engine/ui/menu/MainMenu'
-import ProfileControl from '@dance-engine/ui/ProfileControl'
+// import ProfileControl from '@dance-engine/ui/ProfileControl'
 import { menuContents } from './menuContents'
 
 const openSans = Open_Sans({
@@ -31,7 +32,7 @@ export default function RootLayout({
       <body
         className={`${openSans.variable} antialiased h-full bg-base-background dark:bg-uberdark-background text-black dark:text-dark-secondary`}
       >
-      <ClerkProvider>
+      <AuthKitProvider>
       <MenuProvider>
       <div>
         
@@ -56,7 +57,7 @@ export default function RootLayout({
                   <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
                 </svg>
               </form>
-              <ProfileControl/>
+              {/* <ProfileControl/> */}
             </div>
           </div>
 
@@ -68,7 +69,7 @@ export default function RootLayout({
         </div>
       </div>
       </MenuProvider>
-      </ClerkProvider>
+      </AuthKitProvider>
       </body>
     </html>
   );

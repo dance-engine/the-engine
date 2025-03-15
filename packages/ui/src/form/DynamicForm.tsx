@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
 import TextInput from "@dance-engine/ui/form/fields/TextInput";
+import HiddenInput from "@dance-engine/ui/form/fields/HiddenInput"
 import Textarea from "@dance-engine/ui/form/fields/Textarea";
 import RichTextEditor from '@dance-engine/ui/form/fields/RichTextEditor';
 import NumberInput from "@dance-engine/ui/form/fields/NumberInput";
@@ -39,9 +40,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
         const richText = metadata && metadata[field]?.richText; // Get metadata for the field
         const dateField = metadata && metadata[field]?.dateField; // Get metadata for the field
         const checkboxesField = metadata && metadata[field]?.checkboxesField; // Get metadata for the field
+        const isHidden = metadata && metadata[field]?.hidden
+
         return (
           <div key={field} className="flex flex-col">
-            { dateField ? (
+            { isHidden ? (
+              <HiddenInput name={field} register={register} />
+            ) : dateField ? (
               <DateInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema} />
             ) : richText ? (
               <Controller
@@ -65,7 +70,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
                 error={errors[field]?.message as string} // Display error message for roles
               />
             ) : fieldType === "ZodObject" ? (
-              <div>Errors 
+              <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
               <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
               register={register} setValue={setValue} validate={() => {trigger(field)}}

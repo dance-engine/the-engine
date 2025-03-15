@@ -16,16 +16,16 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
 
   return (
     <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
-      <div className="space-y-2 grid grid-cols-1">
+      <div className="space-y-2 grid grid-cols-1 md:flex flex-wrap gap-6 items-start">
         {options && options.map((option: string, index: number) => (
-          <label key={index} className="flex items-baseline  ">
+          <label key={index} className="flex items-center gap-2 capitalize leading-none">
             {/* <input
               {...register(name)} // Register the checkbox group with React Hook Form
               type="checkbox"
               value={option}
               className="mr-2"
             /> */}
-            <div className="group grid size-4 grid-cols-1 mr-2">
+            <div className="group grid size-4 grid-cols-1">
               <input
                 {...register(name)} // Register the checkbox group with React Hook Form
                 type="checkbox"

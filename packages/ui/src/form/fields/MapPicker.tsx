@@ -56,7 +56,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange }: MapPickerPr
   },[lat,lng])
 
   return (
-    <div>
+    <div className="border p-[1px] rounded-md border-gray-300 bg-gray-200">
       <MapContainer center={position} zoom={17} style={{ height: "300px", width: "100%" }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <DraggableMarker />

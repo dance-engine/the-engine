@@ -103,9 +103,26 @@ export interface TextInputProps {
   fieldSchema: ZodTypeAny;
 }
 
+export interface HiddenInputProps {
+  name: string;
+  register: UseFormRegister<FieldValues>;
+}
+
 export interface DynamicFormProps {
   schema: ZodObject<ZodRawShape>;
-  metadata?: Record<string, { multiline?: boolean, richText?: boolean, dateField?: boolean, checkboxesField?: boolean }>;
+  metadata?: MetaData;
   onSubmit: (data: FieldValues) => void;
   MapComponent?: React.FC<MapPickerProps>
+}
+
+export interface DynamicFieldOptions { 
+  multiline?: boolean, 
+  richText?: boolean, 
+  dateField?: boolean, 
+  checkboxesField?: boolean,
+  hidden?: boolean
+}
+
+export type MetaData = {
+  [key: string]: DynamicFieldOptions | MetaData;
 }

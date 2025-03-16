@@ -53,11 +53,11 @@ interface MenuBarProps {
 const headingLevels: Level[] = [1, 2, 3, 4];
 
 const MenuBar = ({ editor }: MenuBarProps) => (
-  <div className="flex flex-wrap gap-1 border-b bg-gray-50 p-1 border-gray-300">
+  <div className="flex flex-wrap gap-1 border-b bg-black/2 dark:bg-white/5  p-1 border-gray-300">
 
     {/* Heading Dropdown */}
     <select
-      className="border border-gray-300 rounded p-1 bg-white"
+      className="border border-gray-300 rounded py-1 pl-2 pr-4 "
       value={headingLevels.find((level) => editor.isActive('heading', { level })) || ''}
       onChange={(e) => {
         const level = Number(e.target.value) as Level;

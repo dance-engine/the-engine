@@ -27,9 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-white">
+    <html lang="en" className="h-full ">
       <body
-        className={`${openSans.variable} antialiased h-full`}
+        className={`${openSans.variable} antialiased h-full bg-base-background dark:bg-uberdark-background text-black dark:text-dark-secondary`}
       >
       <ClerkProvider>
       <MenuProvider>
@@ -41,11 +41,9 @@ export default function RootLayout({
         {/* Normal menu */}
         <MainMenu menuContents={menuContents}/>
         
-      
-
         {/* Content */}
         <div className="lg:pl-72">
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200  px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
             
             <MenuToggle/>
             
@@ -53,7 +51,7 @@ export default function RootLayout({
 
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
               <form className="grid flex-1 grid-cols-1" action="#" method="GET">
-                <input type="search" name="search" aria-label="Search" className="col-start-1 row-start-1 block size-full bg-white pl-8 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6" placeholder="Search"/>
+                <input type="search" name="search" aria-label="Search" className="col-start-1 row-start-1 block size-full  pl-8 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6" placeholder="Search"/>
                 <svg className="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                   <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
                 </svg>

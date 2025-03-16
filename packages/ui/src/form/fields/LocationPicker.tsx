@@ -39,7 +39,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       
       return data.items ? data.items.map((location) => ({
         value: JSON.stringify(location), // ✅ Store full OSM object as a JSON string
-        label: location.title,
+        label: `${location.title}, ${location.address.street}`,
       })) : [];
     } catch (error) {
       console.error("Error fetching location data:", error);
@@ -69,9 +69,12 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     // Set the selected location data into lat/lng fields
     console.log("location",location)
     const position = location.access && location.access[0] ? location.access[0] : location.position
+    const address = location.address ? [`${[location.address.houseNumber,location.address.street].flat().join('-')}`, location.address.district,location.address.city,location.address.county,location.address.postalCode].join(', ') : false
+    console.log(location.address)
     setValue(`${name}.name`, location.title); // Set location name
     setValue(`${name}.lat`, position.lat); // Set latitude
     setValue(`${name}.lng`, position.lng); // Set longitude
+    if(address) { setValue('address',location.address.label) } //TODO This should have a sub fields thing sent in or address should be part of location
     if (validate){validate()}
     setmapCentre(position)
   };
@@ -80,11 +83,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setValue(`${name}.lat`, newLocation.lat); // Set latitude
     setValue(`${name}.lng`, newLocation.lng); // Set longitude
   }
-
+  const styler = (provided: any) => ({
+    ...provided,
+    color: 'var(--foreground)',
+  })
   const customSelectStyles: StylesConfig<SelectOption, false> = {
+    control: (provided) => ({
+      ...provided,
+      color: 'var(--foreground)',
+      backgroundColor: 'var(--background)'
+    }),
+    input: styler,
+    placeholder: styler,
+    valueContainer:styler,
+    option: (provided,state) => (state.isFocused ? {  ...provided, color: 'white', backgroundColor: '#2684ff' } : {...provided}),
     menu: (provided) => ({
       ...provided,
       zIndex: 1001, // Ensure it's above the map
+      color: 'var(--foreground)',
+      backgroundColor: 'var(--background)'
     }),
   };
     
@@ -105,6 +122,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           isClearable
           placeholder="Enter location name"
           styles={customSelectStyles} 
+          classNames={{
+            menuList: () => "bg-green rounded-md border",
+            menuPortal: ()=> "bg-green",
+            control: () => "border rounded-md",
+          }}
           defaultOptions={cachedOptions}
           onChange={(selectedOption: SingleValue<SelectOption>) => {
             console.log("changed",selectedOption)
@@ -116,36 +138,38 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             }
 
           }}
-        /> : <div>Loading</div> }
+        /> : <div>Loading....</div> }
 
       </CustomComponent>
 
       { MapComponent ? (<MapComponent lat={mapCentre.lat} lng={mapCentre.lng} onChange={handleMapChange} />) : null }
 
       {/* Latitude */}
-      <CustomComponent
+      {/* <CustomComponent
         label="Latitude" name={`${name}.lat`} fieldSchema={fieldSchema}
         error={error.lat}
-      >
+      > */}
         <input
+          type="hidden"
           {...register(`${name}.lat`, { valueAsNumber: true })} // Use valueAsNumber for proper numeric input handling
           className="border p-2 rounded-md"
           placeholder="Enter latitude"
         />
-      </CustomComponent>
+      {/* </CustomComponent> */}
 
       {/* Longitude */}
-      <CustomComponent
+      {/* <CustomComponent
         label="Longitude" name={`${name}.lng`}
         fieldSchema={fieldSchema}
         error={error.lng}
-      >
+      > */}
         <input
+        type="hidden"
           {...register(`${name}.lng`, { valueAsNumber: true })}
           className="border p-2 rounded-md"
           placeholder="Enter longitude"
         />
-      </CustomComponent>
+      {/* </CustomComponent> */}
 
       {/* Error Handling (optional) */}
       {/* {error && <p className="text-red-500 text-sm">{error}</p>} */}

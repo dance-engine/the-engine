@@ -8,7 +8,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({ label, error, fieldSc
 
   return (
     <div className="flex flex-col">
-      <label className="font-semibold capitalize">
+      <label className="font-semibold capitalize mb-2">
         {label} <span className="text-gray-400 text-xs">{/*({typeName})*/}</span>
       </label>
       {children}

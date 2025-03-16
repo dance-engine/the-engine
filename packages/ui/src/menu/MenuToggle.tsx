@@ -18,7 +18,7 @@ const MenuClose = () => {
   const { toggleMenu } = useMenu();
  
   return (
-    <button type="button" className="-m-2.5 p-2.5" onClick={toggleMenu}>
+    <button type="button" className="-m-2.5 p-2.5 w-full h-full" onClick={toggleMenu}>
     <span className="sr-only">Close sidebar</span>
     <svg className="size-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"  aria-hidden={true} data-slot="icon">
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />

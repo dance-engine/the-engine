@@ -39,7 +39,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       
       return data.items ? data.items.map((location) => ({
         value: JSON.stringify(location), // ✅ Store full OSM object as a JSON string
-        label: location.title,
+        label: `${location.title}, ${location.address.street}`,
       })) : [];
     } catch (error) {
       console.error("Error fetching location data:", error);

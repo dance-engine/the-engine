@@ -83,11 +83,25 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setValue(`${name}.lat`, newLocation.lat); // Set latitude
     setValue(`${name}.lng`, newLocation.lng); // Set longitude
   }
-
+  const styler = (provided: any) => ({
+    ...provided,
+    color: 'var(--foreground)',
+  })
   const customSelectStyles: StylesConfig<SelectOption, false> = {
+    control: (provided) => ({
+      ...provided,
+      color: 'var(--foreground)',
+      backgroundColor: 'var(--background)'
+    }),
+    input: styler,
+    placeholder: styler,
+    valueContainer:styler,
+    option: (provided,state) => (state.isFocused ? {  ...provided, color: 'white', backgroundColor: '#2684ff' } : {...provided}),
     menu: (provided) => ({
       ...provided,
       zIndex: 1001, // Ensure it's above the map
+      color: 'var(--foreground)',
+      backgroundColor: 'var(--background)'
     }),
   };
     
@@ -108,6 +122,11 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           isClearable
           placeholder="Enter location name"
           styles={customSelectStyles} 
+          classNames={{
+            menuList: () => "bg-green rounded-md border",
+            menuPortal: ()=> "bg-green",
+            control: () => "border rounded-md",
+          }}
           defaultOptions={cachedOptions}
           onChange={(selectedOption: SingleValue<SelectOption>) => {
             console.log("changed",selectedOption)

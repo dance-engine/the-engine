@@ -17,8 +17,9 @@ const SettingsIcon = (<svg className="size-6 shrink-0 text-primary-text group-ho
   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 </svg>)
 
-const AIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-dark-outline bg-dark-highlight text-[0.625rem] font-medium text-white">A</span>)
-const BIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-dark-outline bg-dark-highlight text-[0.625rem] font-medium text-white">B</span>)
+const AIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-cerise-logo text-[0.625rem] font-medium text-white">D</span>)
+const BIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-pear-logo text-[0.625rem] font-medium text-white">-</span>)
+const CIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-keppel-logo text-[0.625rem] font-medium text-white">E</span>)
 
 export const menuContents:MenuSection[] = [
   { 
@@ -45,14 +46,19 @@ export const menuContents:MenuSection[] = [
     name: "Your Teams",
     contents: [
       { 
-        title: "Team A",
+        title: "Dance",
         link: "/events", 
         icon: AIcon
       },
       { 
-        title: "Team B",
+        title: "Engine",
         link: "/secure", 
         icon:  BIcon
+      },
+      { 
+        title: "Core",
+        link: "/secure", 
+        icon:  CIcon
       },
     ] 
   },

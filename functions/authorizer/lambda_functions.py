@@ -21,28 +21,33 @@ def auth_handler(event, context):
     logger.info(f"{event},{context}")
 
     #TODO Change customer to organisation
-    customer = event.get("pathParameters", {}).get("customer")
+    organisation = event.get("pathParameters", {}).get("organisation")
     authorization_header = event.get("headers", {}).get("authorization")
     token = authorization_header.split(' ')[1]
-    logger.info(f"CUSTOMER: {customer}\nAUTH HEADER: {authorization_header}\nTOKEN: {token}")
-    if not authorization_header:
+    logger.info(f"ORG: {organisation}\nAUTH HEADER: {authorization_header}\nTOKEN: {token}")
+    if not authorization_header or token == 'null':
       logger.error("No authorization Header")
       return generatePolicy(None,"*",'Deny',event['routeArn'])
 
-    if customer in reserved_values:
-      logger.error("Reserved customer area")
+    if organisation in reserved_values:
+      logger.error("Reserved organisation name")
       return generatePolicy(None,"*",'Deny',event['routeArn'])
   
     # Looks like might be valid
-    claims = jwt.decode(token,PUBLIC_KEY,algorithms=["RS256"],audience="ClerkJwtAuthorizer") #TODO Should recover from error and Deny with malformed token
+    try:
+        claims = jwt.decode(token,PUBLIC_KEY,algorithms=["RS256"],audience="ClerkJwtAuthorizer")
+    except Exception as error:
+       logger.error(f"Exception: {error}")
+       return generatePolicy(None,"*",'Deny',event['routeArn'])
+    
     logger.info(f"CLAIMS: {claims}")
 
     if (claims.get("metadata",{}).get("admin")):
       logger.info("Allowed to use API")
       admin_on = claims['metadata']['admin']
-      if not customer:
+      if not organisation:
         return generatePolicy(claims['metadata'], claims['sub'], 'Allow', event['routeArn']) 
-      elif customer in admin_on or "*" in admin_on:
+      elif organisation in admin_on or "*" in admin_on:
         return generatePolicy(claims['metadata'], claims['sub'], 'Allow', event['routeArn']) 
       else:
         return generatePolicy(None,"*",'Deny',event['routeArn'])

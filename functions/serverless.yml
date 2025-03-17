@@ -138,7 +138,7 @@ functions:
     #   - !Ref DynamodbLambdaLayer
     events:
       - httpApi:
-          path: /{customer}/trigger
+          path: /{organisation}/trigger
           method: get
           authorizer:
             adminAuthorizer

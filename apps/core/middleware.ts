@@ -11,4 +11,4 @@ export default authkitMiddleware({
 
 // Match against pages that require authentication
 // Leave this out if you want authentication on every page in your application
-export const config = { matcher: ['/', '/events','/account/:page*'] };
+export const config = { matcher: ['/', '/secure', '/events','/account/:page*', '/api/secure/:route*'] };

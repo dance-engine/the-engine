@@ -3,7 +3,6 @@ import { Open_Sans } from "next/font/google";
 import "./globals.css";
 
 // import Head from 'next/head'
-// import { ClerkProvider } from '@clerk/nextjs'
 import { AuthKitProvider } from '@workos-inc/authkit-nextjs/components';
 import { MenuProvider } from '@dance-engine/ui/menu/MenuContext';  // Adjust the import path
 import { MenuToggle } from '@dance-engine/ui/menu/MenuToggle'

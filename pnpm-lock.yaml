@@ -97,6 +97,9 @@ importers:
       react-hook-form:
         specifier: ^7.54.2
         version: 7.54.2(react@19.0.0)
+      swr:
+        specifier: ^2.3.3
+        version: 2.3.3(react@19.0.0)
     devDependencies:
       '@dance-engine/eslint-config':
         specifier: workspace:*
@@ -294,6 +297,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^6.12.3
         version: 6.12.5(next@15.2.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@workos-inc/authkit-nextjs':
+        specifier: ^2.0.1
+        version: 2.0.1(next@15.2.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@workos-inc/node':
         specifier: ^7.41.0
         version: 7.41.0(next@15.2.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))

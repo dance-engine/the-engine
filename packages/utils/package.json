@@ -6,8 +6,8 @@
     "build": "tsc"
   },
   "exports": {
-    "./clerkSWR": {
-      "default": "./dist/clerkSWR.js"
+    "./authdSWR": {
+      "default": "./dist/authdSWR.js"
     },
     "./getInnerSchema": {
       "default": "./dist/getInnerSchema.js"
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.3",
+    "@workos-inc/authkit-nextjs": "^2.0.1",
     "@workos-inc/node": "^7.41.0",
     "swr": "^2.3.3",
     "zod": "^3.24.2"

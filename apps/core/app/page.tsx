@@ -21,8 +21,12 @@ export default async function HomePage() {
       <>
         <Link href={signInUrl}>Sign in</Link>
         <Link href={signUpUrl}>Sign up</Link>
+
+        
       </>
     );
+
+    
   }
 
   return (
@@ -34,6 +38,7 @@ export default async function HomePage() {
     >
       <p>Welcome back{user.firstName && `, ${user.firstName}`}</p>
       <button type="submit">Sign out</button>
+      user {JSON.stringify(user,null,2)}
     </form>
   );
 }

@@ -22,6 +22,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
     control,
     handleSubmit,
     trigger,
+    watch,
     setValue,
     formState: { errors },
   } = useForm<FieldValues>({ resolver: zodResolver(schema) });
@@ -30,7 +31,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
-      {/* <div>{JSON.stringify(watch(),null,2)}</div> */}
+      <div>{JSON.stringify(watch(),null,2)}</div>
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;
@@ -66,7 +67,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
               />
             ) : isSingleFileUpload ? (
               <FileUploader label={field} name={field} fieldSchema={fieldSchema} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/example/generate-presigned-post"
-                register={register} validate={() => {trigger(field)}}
+                register={register} validate={() => {trigger(field)}} setValue={setValue}
                 error={errors[field]?.message as string}
               />
             ) : checkboxesField ? (

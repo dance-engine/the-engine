@@ -133,6 +133,7 @@ export interface FileUploaderProps {
   name: string;
   register: UseFormRegister<FieldValues>;
   validate: () => void;
+  setValue: UseFormSetValue<FieldValues>;
   error?: string;
   fieldSchema: ZodTypeAny;
   uploadUrl: string; // API endpoint for presigned post

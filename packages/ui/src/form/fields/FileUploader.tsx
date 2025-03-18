@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
-import { FileUploaderProps } from '../../types/form'
-import { useAuth } from '@clerk/nextjs'
+import { FileUploaderProps } from '../../types/form';
+import { useAuth } from '@clerk/nextjs';
 import CustomComponent from "./CustomComponent";
 
-const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, validate, error, fieldSchema, uploadUrl }) => {
+const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setValue, error, fieldSchema, uploadUrl }) => {
   const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const { getToken } = useAuth()
-
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { getToken } = useAuth();
 
   // Handle file selection (Drag & Drop or Browse)
   const onDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -19,8 +20,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, vali
 
     if (acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0];
-      setFile(selectedFile as File);
-      uploadFile(selectedFile as File);
+      setFile(selectedFile);
+      setValue(name, selectedFile); // Register file in react-hook-form
+
+      // Generate preview URL
+      const previewUrl = URL.createObjectURL(selectedFile);
+      setFilePreview(previewUrl);
+
+      uploadFile(selectedFile);
     }
   };
 
@@ -30,17 +37,20 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, vali
     accept: { "image/*": [] }, // Accept only images
   });
 
-  // Upload file to S3 using presigned POST URL
+  // Upload file to S3 with progress tracking
   const uploadFile = async (file: File) => {
     setUploading(true);
-    const token = await getToken()
+    setUploadProgress(0); // Reset progress
+
+    const token = await getToken();
+
     try {
       // Step 1: Request presigned URL
       const res = await fetch(uploadUrl, {
         method: "POST",
         body: JSON.stringify({ fileType: file.type }),
-        headers: { 
-          "Content-Type": "application/json", 
+        headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
@@ -48,51 +58,105 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, vali
       if (!res.ok) throw new Error("Failed to get presigned URL");
 
       const { url, fields } = await res.json();
-      console.log("INFO",url,fields)
-      // Step 2: Upload file to S3
+      console.log("INFO", url, fields, "key", fields.key);
+
+      // Step 2: Upload file to S3 with progress tracking
       const formData = new FormData();
       Object.entries(fields).forEach(([key, value]) => {
         formData.append(key, value as string);
       });
       formData.append("file", file);
 
-      const uploadRes = await fetch(url, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "Access-Control-Request-Method": "POST"
+      setValue(name, fields.key); // Store file key from S3
+
+      // Create XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
         }
-      });
+      };
 
-      if (!uploadRes.ok) throw new Error("Upload failed");
+      xhr.onload = () => {
+        if (xhr.status === 204) {
+          console.log("Upload successful!");
+          setUploadProgress(100);
+        } else {
+          console.error("Upload failed");
+        }
+        setUploading(false);
+      };
 
-      console.log("Upload successful!");
+      xhr.onerror = () => {
+        console.error("Upload error");
+        setUploading(false);
+      };
+
+      xhr.send(formData);
     } catch (error) {
       console.error("Upload error:", error);
-    } finally {
       setUploading(false);
     }
   };
 
+  // Clean up preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (filePreview) URL.revokeObjectURL(filePreview);
+    };
+  }, [filePreview]);
+
   return (
     <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
+      <div
+        {...getRootProps()}
+        className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"
+        style={{
+          backgroundImage: filePreview ? `url(${filePreview})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          minHeight: "200px", // Ensures the drop area maintains a visible size
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <input {...register(name)} {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} />
 
-    <div
-      {...getRootProps()}
-      className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition"
-    >
-      <input {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} />
-      {file ? (
-        <div className="mt-2">
-          <p className="font-medium">{file.name}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-900">{file.type}</p>
-        </div>
-      ) : (
-        <p className="text-gray-600 dark:text-gray-200">
-          {uploading ? "Uploading..." : "Drag & drop or click to upload"}
-        </p>
-      )}
-    </div>
+        {!filePreview && (
+          <p className="text-gray-600 dark:text-gray-200">
+            {uploading ? "Uploading..." : "Drag & drop or click to upload"}
+          </p>
+        )}
+
+        {file ? (
+          <div className="mt-2 bg-gray-800/50 p-3 rounded-lg">
+            <p className="font-bold text-gray-100">{file.name}</p>
+            <p className="text-sm text-gray-300">{file.type}</p>
+          </div>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-200">
+            {uploading ? "Uploading..." : "Drag & drop or click to upload"}
+          </p>
+        )}
+
+        {/* Progress Bar */}
+        {uploading && (
+          <div className="absolute bottom-0 left-0 w-full p-2">
+            <span className="text-white text-xs block mb-1 flex">{uploadProgress}% Uploaded</span>
+            <div className="w-full h-2 bg-gray-300 rounded-full">
+              <div
+                className="h-2 bg-blue-500 rounded-full transition-all"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </CustomComponent>
   );
 };

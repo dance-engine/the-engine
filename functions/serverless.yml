@@ -13,6 +13,7 @@ custom:
     automatic: true
     includeLayers: true
     number: 10
+  upload_bucket: "${sls:stage}-danceengine-uploads"
 
 package:
   individually: true
@@ -71,6 +72,14 @@ provider:
         #       ]]}
         - Effect: Allow
           Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+          Resource: 
+            - "arn:aws:s3:::${self:custom.upload_bucket}"
+            - "arn:aws:s3:::${self:custom.upload_bucket}/*"
+        - Effect: Allow
+          Action:
             - lambda:InvokeFunction
           Resource:
             - '*'
@@ -86,6 +95,30 @@ provider:
         type: request
         functionName: authorizerFunc
 
+#######################
+# Resources
+#######################
+resources:
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: "${self:custom.upload_bucket}"
+        
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - "*" # Replace with "https://*.dance-engine.co.uk" for security in prod if we can do wildcards
+              AllowedMethods:
+                - GET
+                - POST
+                - PUT
+                - HEAD
+              AllowedHeaders:
+                - "*"
+              ExposedHeaders:
+                - ETag
+              MaxAge: 3000
 #######################
 # Layers
 #######################
@@ -173,3 +206,25 @@ functions:
           authorizer:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events}    
+
+  GeneratePresignedPost:
+    runtime: python3.11
+    handler: utils/s3.generate_presigned_post
+    package:
+      patterns:
+        - '!**/**'
+        - "utils/**"
+        - "shared/**"
+    environment:
+      BUCKET_NAME: ${self:custom.upload_bucket}
+    events:
+      - httpApi:
+          path: /{organisation}/generate-presigned-post
+          method: post
+          authorizer:
+            adminAuthorizer
+      - httpApi:
+          path: /generate-presigned-post
+          method: post
+          authorizer:
+            adminAuthorizer

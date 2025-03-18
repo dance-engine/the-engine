@@ -17,9 +17,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
   console.log("params",ksuid)
 
-  const eventKsuid = ksuid || KSUID.randomSync(); // Extract the ksuid if it exists
+  const eventKsuid = ksuid || `EVENT#${KSUID.randomSync().string}`; // Extract the ksuid if it exists
 
-  return <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} initValues={{event_ksuid: eventKsuid}}/>
+  return <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} initValues={{ksuid: eventKsuid}}/>
 }
 
 export default PageClient

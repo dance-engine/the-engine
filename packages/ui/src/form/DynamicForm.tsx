@@ -70,7 +70,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
                 error={errors[field]?.message as string}
               />
             ) : isSingleFileUpload ? (
-              <FileUploader label={field} name={field} fieldSchema={fieldSchema} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/example/generate-presigned-post"
+              <FileUploader label={field} name={field} fieldSchema={fieldSchema} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/organisation/generate-presigned-post"
+                {...(initValues?.ksuid ? { entity: initValues.ksuid } : {})}
                 register={register} validate={() => {trigger(field)}} setValue={setValue}
                 error={errors[field]?.message as string}
               />

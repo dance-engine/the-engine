@@ -4,7 +4,7 @@ import { FileUploaderProps } from '../../types/form';
 import { useAuth } from '@clerk/nextjs';
 import CustomComponent from "./CustomComponent";
 
-const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setValue, error, fieldSchema, uploadUrl }) => {
+const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, register, setValue, error, fieldSchema, uploadUrl }) => {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -30,7 +30,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setV
       setFilePreview(previewUrl);
   
       // Pass name (fieldName) when calling uploadFile
-      uploadFile(selectedFile, name);
+      uploadFile(selectedFile, entity?entity:'', name);
     }
   };
   
@@ -43,7 +43,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setV
   });
 
   // Upload file to S3 with progress tracking
-  const uploadFile = async (file: File, fieldName: string) => {
+  const uploadFile = async (file: File, entity:string, fieldName: string) => {
     if (!file) return; // Prevents potential null issues
 
     setUploading(true);
@@ -57,7 +57,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setV
         method: "POST",
         body: JSON.stringify({ 
           fileType: file.type,
-          fieldName: fieldName // Pass react-hook-form field name
+          fieldName: [entity,fieldName].flat().join('/') // Pass react-hook-form field name
         }),
         headers: {
           "Content-Type": "application/json",

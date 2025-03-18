@@ -140,6 +140,7 @@ export type MetaData = {
 export interface FileUploaderProps {
   label: string;
   name: string;
+  entity?: string,
   register: UseFormRegister<FieldValues>;
   validate: () => void;
   setValue: UseFormSetValue<FieldValues>;

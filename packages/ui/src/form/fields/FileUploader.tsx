@@ -17,19 +17,24 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setV
       console.error("Invalid file type or size");
       return;
     }
-
+  
     if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
+      const selectedFile = acceptedFiles[0]; // Now TypeScript knows this is always a File
+      if (!selectedFile) return; // ✅ Extra safety check (not really needed but extra safe)
+  
       setFile(selectedFile);
       setValue(name, selectedFile); // Register file in react-hook-form
-
-      // Generate preview URL
+  
+      // ✅ Ensure selectedFile is defined before creating a preview URL
       const previewUrl = URL.createObjectURL(selectedFile);
       setFilePreview(previewUrl);
-
-      uploadFile(selectedFile);
+  
+      // Pass name (fieldName) when calling uploadFile
+      uploadFile(selectedFile, name);
     }
   };
+  
+  
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -38,17 +43,22 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setV
   });
 
   // Upload file to S3 with progress tracking
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, fieldName: string) => {
+    if (!file) return; // Prevents potential null issues
+
     setUploading(true);
     setUploadProgress(0); // Reset progress
 
     const token = await getToken();
 
     try {
-      // Step 1: Request presigned URL
+      // Step 1: Request presigned URL with fieldName
       const res = await fetch(uploadUrl, {
         method: "POST",
-        body: JSON.stringify({ fileType: file.type }),
+        body: JSON.stringify({ 
+          fileType: file.type,
+          fieldName: fieldName // Pass react-hook-form field name
+        }),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -67,7 +77,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, setV
       });
       formData.append("file", file);
 
-      setValue(name, fields.key); // Store file key from S3
+      setValue(fieldName, fields.key); // Store file key from S3
 
       // Create XMLHttpRequest to track upload progress
       const xhr = new XMLHttpRequest();

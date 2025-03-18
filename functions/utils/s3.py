@@ -11,9 +11,10 @@ def generate_presigned_post(event, context):
 
         data = json.loads(event["body"])
         file_type = data.get("fileType", "image/jpeg")
+        field_name = data.get("fieldName","")
         organisation = event.get("pathParameters", {}).get("organisation","unknown")
 
-        key = f"uploads/{organisation}/{uuid.uuid4()}"
+        key = f"uploads/{organisation}/{field_name}/{uuid.uuid4()}"
 
         presigned_post = s3_client.generate_presigned_post(
             Bucket=BUCKET_NAME,

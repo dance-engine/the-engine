@@ -13,6 +13,7 @@ import DateInput from "@dance-engine/ui/form/fields/DateInput";
 import Select from "@dance-engine/ui/form/fields/Select";
 import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
+import FileUploader from "./fields/FileUploader";
 import { DynamicFormProps } from '@dance-engine/ui/types' 
 
 const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, MapComponent}) => {
@@ -41,6 +42,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
         const dateField = metadata && metadata[field]?.dateField; // Get metadata for the field
         const checkboxesField = metadata && metadata[field]?.checkboxesField; // Get metadata for the field
         const isHidden = metadata && metadata[field]?.hidden
+        const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
 
         return (
           <div key={field} className="flex flex-col">
@@ -59,6 +61,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
               />
             ) : isMultiline ? (
               <Textarea label={field} name={field} fieldSchema={fieldSchema} 
+                register={register} validate={() => {trigger(field)}}
+                error={errors[field]?.message as string}
+              />
+            ) : isSingleFileUpload ? (
+              <FileUploader label={field} name={field} fieldSchema={fieldSchema} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/example/generate-presigned-post"
                 register={register} validate={() => {trigger(field)}}
                 error={errors[field]?.message as string}
               />

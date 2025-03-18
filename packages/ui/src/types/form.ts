@@ -120,9 +120,20 @@ export interface DynamicFieldOptions {
   richText?: boolean, 
   dateField?: boolean, 
   checkboxesField?: boolean,
-  hidden?: boolean
+  hidden?: boolean,
+  fileUploadField?: string
 }
 
 export type MetaData = {
   [key: string]: DynamicFieldOptions | MetaData;
+}
+
+export interface FileUploaderProps {
+  label: string;
+  name: string;
+  register: UseFormRegister<FieldValues>;
+  validate: () => void;
+  error?: string;
+  fieldSchema: ZodTypeAny;
+  uploadUrl: string; // API endpoint for presigned post
 }

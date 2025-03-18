@@ -14,6 +14,7 @@
     "@clerk/nextjs": "^6.12.3",
     "@dance-engine/schemas": "workspace:^",
     "@dance-engine/ui": "workspace:*",
+    "ksuid": "^3.0.0",
     "next": "^15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

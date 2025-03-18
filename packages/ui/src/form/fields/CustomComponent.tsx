@@ -12,7 +12,7 @@ const CustomComponent: React.FC<CustomComponentProps> = ({ label, error, fieldSc
         {label} <span className="text-gray-400 text-xs">{/*({typeName})*/}</span>
       </label>
       {children}
-      {error ? <p className="text-red-500 text-sm">{error}</p> : description && <p className="text-gray-500 text-sm">{description}</p>}
+      {error ? <p className="text-red-500 text-sm">{error}</p> : description && <p className="text-gray-500 dark:text-gray-200 text-sm">{description}</p>}
     </div>
   );
 };

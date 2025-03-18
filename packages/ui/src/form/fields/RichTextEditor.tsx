@@ -51,7 +51,7 @@ interface MenuBarProps {
 }
 
 const headingLevels: Level[] = [1, 2, 3, 4];
-
+const bgColorClasses = 'bg-gray-200 dark:bg-gray-100/20'
 const MenuBar = ({ editor }: MenuBarProps) => (
   <div className="flex flex-wrap gap-1 border-b bg-black/2 dark:bg-white/5  p-1 border-gray-300">
 
@@ -78,7 +78,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       aria-label="Bold"
       title="Bold"
       onClick={() => editor.chain().focus().toggleBold().run()}
-      className={`p-2 rounded ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
+      className={`p-2 rounded ${editor.isActive('bold') ? bgColorClasses : ''}`}
     >
       <FaBold />
     </button>
@@ -89,7 +89,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       aria-label="Italic"
       title="Italic"
       onClick={() => editor.chain().focus().toggleItalic().run()}
-      className={`p-2 rounded ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
+      className={`p-2 rounded ${editor.isActive('italic') ? bgColorClasses : ''}`}
     >
       <FaItalic />
     </button>
@@ -100,7 +100,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       aria-label="Strikethrough"
       title="Strikethrough"
       onClick={() => editor.chain().focus().toggleStrike().run()}
-      className={`p-2 rounded ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
+      className={`p-2 rounded ${editor.isActive('strike') ? bgColorClasses : ''}`}
     >
       <FaStrikethrough />
     </button>
@@ -113,7 +113,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       aria-label="Bullet List"
       title="Bullet List"
       onClick={() => editor.chain().focus().toggleBulletList().run()}
-      className={`p-2 rounded ${editor.isActive('bulletList') ? 'bg-gray-200' : ''}`}
+      className={`p-2 rounded ${editor.isActive('bulletList') ? bgColorClasses : ''}`}
     >
       <FaListUl />
     </button>
@@ -124,7 +124,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       aria-label="Ordered List"
       title="Ordered List"
       onClick={() => editor.chain().focus().toggleOrderedList().run()}
-      className={`p-2 rounded ${editor.isActive('orderedList') ? 'bg-gray-200' : ''}`}
+      className={`p-2 rounded ${editor.isActive('orderedList') ? bgColorClasses : ''}`}
     >
       <FaListOl />
     </button>
@@ -135,7 +135,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
       aria-label="Quote"
       title="Quote"
       onClick={() => editor.chain().focus().toggleBlockquote().run()}
-      className={`p-2 rounded ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
+      className={`p-2 rounded ${editor.isActive('blockquote') ? bgColorClasses : ''}`}
     >
       <FaQuoteRight />
     </button>

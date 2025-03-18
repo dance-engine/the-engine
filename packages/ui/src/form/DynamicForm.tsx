@@ -15,8 +15,9 @@ import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
 import { DynamicFormProps } from '@dance-engine/ui/types' 
+import { ZodObject, ZodRawShape } from "zod";
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, MapComponent}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues}) => {
   const {
     register,
     control,
@@ -25,7 +26,10 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FieldValues>({ resolver: zodResolver(schema) });
+  } = useForm<FieldValues>({ 
+    defaultValues: initValues,
+    resolver: zodResolver(schema) 
+  });
   
   const fields = Object.keys(schema.shape);
 

@@ -1,5 +1,5 @@
 import { UseFormRegister, FieldValues, UseFormSetValue, Control } from "react-hook-form";
-import { ZodTypeAny, ZodObject, ZodRawShape } from "zod";
+import { ZodTypeAny, ZodObject, ZodRawShape, infer as ZodInfer } from "zod";
 import { ReactNode } from "react";
 import { LatLngLiteral } from 'leaflet'
 
@@ -108,11 +108,20 @@ export interface HiddenInputProps {
   register: UseFormRegister<FieldValues>;
 }
 
-export interface DynamicFormProps {
-  schema: ZodObject<ZodRawShape>;
+// export interface DynamicFormProps {
+//   schema: ZodObject<ZodRawShape>;
+//   metadata?: MetaData;
+//   onSubmit: (data: FieldValues) => void;
+//   MapComponent?: React.FC<MapPickerProps>
+//   initValues?: 
+// }
+
+export interface DynamicFormProps<T extends ZodObject<ZodRawShape>> {
+  schema: T;
   metadata?: MetaData;
   onSubmit: (data: FieldValues) => void;
-  MapComponent?: React.FC<MapPickerProps>
+  MapComponent?: React.FC<MapPickerProps>;
+  initValues?: ZodInfer<T>; // 🔥 Extracts the correct type from schema
 }
 
 export interface DynamicFieldOptions { 

@@ -4,6 +4,7 @@ import { locationSchema } from "./locationSchema.js";
 
 // Define the event schema
 export const eventSchema = z.object({
+  event_ksuid: z.string().describe("ID of the event"),
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
   banner: z.string().describe('Appears at the top of your page'),
   date: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
@@ -22,6 +23,7 @@ export type EventType = z.infer<typeof eventSchema>;
 
 // Additional no validation metadata relating to how we display data in forms
 export const eventMetadata = {
+  event_ksuid: { hidden: true },
   banner: { fileUploadField: 'single' },
   description: { richText: true },
   date: { dateField: true },

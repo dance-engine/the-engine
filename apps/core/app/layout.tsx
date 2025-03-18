@@ -11,6 +11,8 @@ import MainMenu from '@dance-engine/ui/menu/MainMenu'
 import ProfileControl from '@dance-engine/ui/ProfileControl'
 import { menuContents } from './menuContents'
 
+import MessengerRedirect from "./components/MessengerRedirect";
+
 const openSans = Open_Sans({
   variable: "--font-open-sans",
   subsets: ["latin"],
@@ -31,6 +33,7 @@ export default function RootLayout({
       <body
         className={`${openSans.variable} antialiased h-full bg-base-background dark:bg-uberdark-background text-black dark:text-dark-secondary`}
       >
+      <MessengerRedirect />
       <ClerkProvider>
       <MenuProvider>
       <div>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
 import { FileUploaderProps } from '../../types/form'
 import { useAuth } from '@clerk/nextjs'
-
+import CustomComponent from "./CustomComponent";
 
 const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, validate, error, fieldSchema, uploadUrl }) => {
   const [file, setFile] = useState<File | null>(null);
@@ -75,22 +75,25 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, register, vali
   };
 
   return (
+    <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
+
     <div
       {...getRootProps()}
-      className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer bg-gray-100 hover:bg-gray-200 transition"
+      className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition"
     >
       <input {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} />
       {file ? (
         <div className="mt-2">
           <p className="font-medium">{file.name}</p>
-          <p className="text-sm text-gray-500">{file.type}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-900">{file.type}</p>
         </div>
       ) : (
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-200">
           {uploading ? "Uploading..." : "Drag & drop or click to upload"}
         </p>
       )}
     </div>
+    </CustomComponent>
   );
 };
 

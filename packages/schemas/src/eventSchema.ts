@@ -5,7 +5,7 @@ import { locationSchema } from "./locationSchema.js";
 // Define the event schema
 export const eventSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
-  banner: z.string(),
+  banner: z.string().describe('Appears at the top of your page'),
   date: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date",
   }).describe("Select the event date."),

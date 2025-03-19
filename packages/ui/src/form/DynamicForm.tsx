@@ -1,5 +1,5 @@
 'use client'
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, FieldValues, Controller } from "react-hook-form";
 import useFormPersist from 'react-hook-form-persist'
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,15 +19,6 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
-// const emptyStorage = {
-//   getItem: (key:string)=> key ? "" : "",
-//   setItem: (key: string, value: string)=> key || value ? "" : "",
-//   removeItem: (key:string)=> key ? "" : "",
-//   length: 0,
-//   key: (index:number) => index ? "" : "",
-//   clear: ()=>{}
-// }
-
 const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey}) => {
   const {
     register,
@@ -43,6 +34,14 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   });
 
   useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', {watch,setValue, ...(typeof window === "undefined" ? {} : { storage: window.localStorage })})
+  useEffect(()=>{
+    if(typeof window !== "undefined" && persistKey ) {
+      const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
+      const currentHistory = JSON.parse(currentHistoryString)
+      const newHistory = [...new Set([...(currentHistory.flat()),...persistKey.ksuid])]
+      window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
+    }
+  },[persistKey])
   
   const fields = Object.keys(schema.shape);
 

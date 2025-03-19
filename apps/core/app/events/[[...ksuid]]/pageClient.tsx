@@ -5,6 +5,8 @@ import DynamicForm from "@dance-engine/ui/form/DynamicForm";
 import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Import the schema
 import { FieldValues } from "react-hook-form";
 import KSUID from "ksuid";
+import { useRouter,usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker'), { ssr: false }) as React.FC<MapPickerProps>
 
@@ -13,12 +15,20 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const handleSubmit = (data: FieldValues) => {
     console.log("Form Submitted:", data);
   };
+  const router = useRouter()
+  const path = usePathname()
+  const generatedKsuid = `${KSUID.randomSync().string}`
+  useEffect(() => {
+    console.log("effect",ksuid,generatedKsuid)
+    if (!ksuid) { router.replace([path,generatedKsuid].join('/')) }
+  },[])
 
   const eventEntityId = {
     type: "EVENT",
-    ksuid: ksuid || `${KSUID.randomSync().string}` // Extract the ksuid if it exists
+    ksuid: ksuid // Extract the ksuid if it exists
   } as DanceEngineEntity
-  return eventEntityId ? <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
+
+  return ksuid ? <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
 }
 
 export default PageClient

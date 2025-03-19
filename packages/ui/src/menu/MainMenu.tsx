@@ -2,13 +2,13 @@ import Image from "next/image";
 import { MenuProps } from '../types/menu'
 
 export const MainMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
-  return (<div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-row">
+  return (<nav className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-row">
           
     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-dark-background px-6 pb-4">
       <div className="flex h-16 shrink-0 items-center">
         <Image className="h-5 w-auto" width={1354} height={128} src="/dance-engine-logo-wide.png" alt="Dance Engine - Home"/>
       </div>
-      <nav className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col">
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
         {menuContents?.map((section,idx)=>{
           return (<li key={`section-${idx}`} className={section.position == 'bottom' ? 'mt-auto': '' }>
@@ -26,9 +26,9 @@ export const MainMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
           </li>)
         })}
         </ul>
-      </nav>
+      </div>
     </div>
-  </div>)
+  </nav>)
 }
 
 export default MainMenu

@@ -9,7 +9,7 @@ const MobileMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
   const { isOpen } = useMenu();
 
   return (
-    <div className={`${isOpen ? "" : "hidden"} relative lg:hidden`} role="dialog" style={{zIndex: 1002}} aria-modal="true">
+    <div className={`${isOpen ? "" : "hidden"} relative lg:hidden`} role="dialog" aria-label="Mobile Menu"  style={{zIndex: 1002}} aria-modal="true">
 
       <div className="fixed inset-0 bg-gray-900/80" aria-hidden="true"></div>
 

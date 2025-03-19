@@ -159,7 +159,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   }, [filePreview]);
 
   return (
-    <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
+    <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
       <div
         {...getRootProps()}
         className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"
@@ -174,7 +174,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
           justifyContent: "center",
         }}
       >
-        <input {...register(name)} {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} />
+        <input {...register(name)} {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} name={name} id={name}/>
 
         {file ? (
           <div className="mt-2 bg-gray-800/50 p-3 rounded-lg">

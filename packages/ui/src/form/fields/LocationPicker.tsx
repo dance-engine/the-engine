@@ -114,6 +114,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       <CustomComponent
         label="Venue Name"
         name={`${name}.name`}
+        htmlFor={name}
         fieldSchema={fieldSchema}
         error={error.name}
       >
@@ -128,6 +129,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
             menuPortal: ()=> "bg-green",
             control: () => "border rounded-md",
           }}
+          aria-label={name}
           defaultOptions={cachedOptions}
           onChange={(selectedOption: SingleValue<SelectOption>) => {
             console.log("changed",selectedOption)
@@ -174,7 +176,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       {/* </CustomComponent> */}
 
       {/* Error Handling (optional) */}
-      {/* {error && <p className="text-red-500 text-sm">{error}</p>} */}
+      {/* {error && <p className="text-red-600 text-sm">{error}</p>} */}
     </div>
   );
 };

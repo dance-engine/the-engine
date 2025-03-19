@@ -60,6 +60,7 @@ const MenuBar = ({ editor }: MenuBarProps) => (
     <select
       className="border border-gray-300 rounded py-1 pl-2 pr-4 "
       value={headingLevels.find((level) => editor.isActive('heading', { level })) || ''}
+      aria-label="Heading Level"
       onChange={(e) => {
         const level = Number(e.target.value) as Level;
         if (level) editor.chain().focus().toggleHeading({ level }).run();

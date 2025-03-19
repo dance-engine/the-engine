@@ -6,6 +6,7 @@ import { LatLngLiteral } from 'leaflet'
 export interface CustomComponentProps {
   label: string;
   name: string;
+  htmlFor?: string;
   error?: string;
   fieldSchema: ZodTypeAny;
   children: ReactNode;

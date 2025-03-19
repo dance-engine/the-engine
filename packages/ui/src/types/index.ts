@@ -1,2 +1,2 @@
-export type { MapPickerProps, DynamicFormProps } from "./form";   // ✅ Expose only selected types
+export type { MapPickerProps, DynamicFormProps, DanceEngineEntity } from "./form";   // ✅ Expose only selected types
 

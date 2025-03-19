@@ -26,6 +26,7 @@ export const eventMetadata = {
   ksuid: { hidden: true },
   banner: { fileUploadField: 'single' },
   description: { richText: true },
+  // description: { multiLine: true },
   date: { dateField: true },
   category: { checkboxesField: true },
   location: {

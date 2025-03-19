@@ -1,4 +1,4 @@
-import { UseFormRegister, FieldValues, UseFormSetValue, Control } from "react-hook-form";
+import { UseFormRegister, FieldValues, UseFormSetValue, Control, UseFormWatch } from "react-hook-form";
 import { ZodTypeAny, ZodObject, ZodRawShape, infer as ZodInfer } from "zod";
 import { ReactNode } from "react";
 import { LatLngLiteral } from 'leaflet'
@@ -120,8 +120,9 @@ export interface DynamicFormProps<T extends ZodObject<ZodRawShape>> {
   schema: T;
   metadata?: MetaData;
   onSubmit: (data: FieldValues) => void;
-  MapComponent?: React.FC<MapPickerProps>;
+  MapComponent?: React.FC<MapPickerProps>; // Has to be a client component and load dynamically from nextjs
   initValues?: ZodInfer<T>; // 🔥 Extracts the correct type from schema
+  persistKey?: DanceEngineEntity
 }
 
 export interface DynamicFieldOptions { 
@@ -140,11 +141,17 @@ export type MetaData = {
 export interface FileUploaderProps {
   label: string;
   name: string;
-  entity?: string,
+  entity?: DanceEngineEntity,
   register: UseFormRegister<FieldValues>;
   validate: () => void;
   setValue: UseFormSetValue<FieldValues>;
+  watch: UseFormWatch<FieldValues>;
   error?: string;
   fieldSchema: ZodTypeAny;
   uploadUrl: string; // API endpoint for presigned post
+}
+
+export interface DanceEngineEntity {
+  type: string,
+  ksuid: string
 }

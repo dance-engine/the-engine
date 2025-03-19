@@ -6,6 +6,7 @@ import AsyncSelect from "react-select/async";
 import {SingleValue, StylesConfig } from 'react-select'
 import CustomComponent from "./CustomComponent"; // Assuming CustomComponent is already defined
 import debounce from 'debounce'; // Import debounce from the standalone library
+import { useWatch } from "react-hook-form";
 
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
@@ -14,13 +15,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   register,
   setValue,
   error,
+  control,
   validate,
   fieldSchema,
   MapComponent
 }) => {
 
-  const [mapCentre,setmapCentre] = useState({lat: 53.40262, lng: -2.96981 } as LatLng)
   const [cachedOptions, setCachedOptions] = useState<SelectOption[]>([]); 
+  const [lat,lng] = useWatch({control, name: [`${name}.lat`,`${name}.lng`], defaultValue: [0,0]})
   
   const [isClient, setIsClient] = useState(false);
   useEffect(() => { setIsClient(true); }, []);
@@ -76,7 +78,6 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setValue(`${name}.lng`, position.lng); // Set longitude
     if(address) { setValue('address',location.address.label) } //TODO This should have a sub fields thing sent in or address should be part of location
     if (validate){validate()}
-    setmapCentre(position)
   };
 
   const handleMapChange = (newLocation: LatLng) => {
@@ -141,8 +142,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         /> : <div>Loading....</div> }
 
       </CustomComponent>
-
-      { MapComponent ? (<MapComponent lat={mapCentre.lat} lng={mapCentre.lng} onChange={handleMapChange} />) : null }
+        
+      {/* <div>{JSON.stringify([lat,lng])}</div> */}
+      { MapComponent && lat && lng ? (<MapComponent lat={lat} lng={lng} onChange={handleMapChange} />) : null }
 
       {/* Latitude */}
       {/* <CustomComponent

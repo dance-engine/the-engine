@@ -13,7 +13,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onC
   const editor = useEditor({
     extensions: [StarterKit.configure({ code: false, codeBlock: false })],
     immediatelyRender: false,
-    content: value,
+    content: value ? JSON.parse(value) : value,
     editorProps: {
       attributes: {
         class: `prose prose-base prose-p:mb-2 prose-p:mt-0  prose-p:leading-tight prose-headings:font-semibold \
@@ -29,8 +29,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onC
   });
 
   useEffect(() => {
-    if (editor && JSON.stringify(editor.getJSON()) !== value) {
-      editor.commands.setContent(value);
+    const newValue = value ? JSON.parse(value) : {}
+    if (editor && editor.getJSON() !== newValue) {
+      editor.commands.setContent(newValue);
     }
   }, [value, editor]);
 

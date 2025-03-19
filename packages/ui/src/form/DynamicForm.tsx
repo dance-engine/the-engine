@@ -1,6 +1,7 @@
 'use client'
 import React from "react";
 import { useForm, FieldValues, Controller } from "react-hook-form";
+import useFormPersist from 'react-hook-form-persist'
 import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
@@ -17,7 +18,16 @@ import FileUploader from "./fields/FileUploader";
 import { DynamicFormProps } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
 
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues}) => {
+// const emptyStorage = {
+//   getItem: (key:string)=> key ? "" : "",
+//   setItem: (key: string, value: string)=> key || value ? "" : "",
+//   removeItem: (key:string)=> key ? "" : "",
+//   length: 0,
+//   key: (index:number) => index ? "" : "",
+//   clear: ()=>{}
+// }
+
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey}) => {
   const {
     register,
     control,
@@ -30,12 +40,14 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     defaultValues: initValues,
     resolver: zodResolver(schema) 
   });
+
+  useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', {watch,setValue, ...(typeof window === "undefined" ? {} : { storage: window.localStorage })})
   
   const fields = Object.keys(schema.shape);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
-      <div>{JSON.stringify(watch(),null,2)}</div>
+      <div suppressHydrationWarning>{JSON.stringify(watch(),null,2)}</div>
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;
@@ -70,8 +82,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
                 error={errors[field]?.message as string}
               />
             ) : isSingleFileUpload ? (
-              <FileUploader label={field} name={field} fieldSchema={fieldSchema} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/organisation/generate-presigned-post"
-                {...(initValues?.ksuid ? { entity: initValues.ksuid } : {})}
+              <FileUploader label={field} name={field} fieldSchema={fieldSchema} watch={watch} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/organisation/generate-presigned-url"
+                {...(persistKey ? { entity: persistKey } : {})}
                 register={register} validate={() => {trigger(field)}} setValue={setValue}
                 error={errors[field]?.message as string}
               />
@@ -85,6 +97,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
             ) : fieldType === "ZodObject" ? (
               <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
+                {/* {JSON.stringify(getValues(field))} */}
               <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
               register={register} setValue={setValue} validate={() => {trigger(field)}}
               error={{

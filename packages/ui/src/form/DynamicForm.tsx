@@ -17,6 +17,7 @@ import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
 import { DynamicFormProps } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
+import Debug from '@dance-engine/ui/utils/Debug'
 
 // const emptyStorage = {
 //   getItem: (key:string)=> key ? "" : "",
@@ -47,7 +48,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
-      <div suppressHydrationWarning>{JSON.stringify(watch(),null,2)}</div>
+      <Debug debug={watch()} className="absolute right-10 "/>
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;

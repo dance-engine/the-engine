@@ -17,7 +17,7 @@ const MobileMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
       
         <div className="relative mr-16 flex w-full max-w-xs flex-1">
 
-          <div className="absolute left-full top-0 flex w-full h-full justify-center pt-5">
+          <div className="absolute left-full top-0 flex w-full h-full justify-center">
             <MenuClose/>
           </div>
           

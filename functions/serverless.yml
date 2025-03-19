@@ -207,9 +207,9 @@ functions:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events}    
 
-  GeneratePresignedPost:
+  GeneratePresignedURL:
     runtime: python3.11
-    handler: utils/s3.generate_presigned_post
+    handler: utils/s3.generate_presigned_url
     package:
       patterns:
         - '!**/**'
@@ -219,12 +219,12 @@ functions:
       BUCKET_NAME: ${self:custom.upload_bucket}
     events:
       - httpApi:
-          path: /{organisation}/generate-presigned-post
+          path: /{organisation}/generate-presigned-url
           method: post
           authorizer:
             adminAuthorizer
       - httpApi:
-          path: /generate-presigned-post
+          path: /generate-presigned-url
           method: post
           authorizer:
             adminAuthorizer

@@ -1,15 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
-import { FileUploaderProps } from '../../types/form';
+import { FileUploaderProps, DanceEngineEntity} from '../../types/form';
 import { useAuth } from '@clerk/nextjs';
 import CustomComponent from "./CustomComponent";
 
-const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, register, setValue, error, fieldSchema, uploadUrl }) => {
+const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, register, setValue, watch, error, fieldSchema, uploadUrl }) => {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [hasUploaded,setHasUploaded] = useState(false)
   const { getToken } = useAuth();
+  const storedFileKey = watch(name);
+  
+  
+
+  useEffect(() => {
+    if (storedFileKey && !hasUploaded) {
+      const fetchPresignedUrl = async () => {
+        try {
+          const token = await getToken();
+          const res = await fetch(uploadUrl, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "GET", // Requesting a GET presigned URL
+              fileKey: storedFileKey,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+  
+          if (!res.ok) throw new Error("Failed to get presigned URL");
+  
+          const { presignedUrl } = await res.json();
+          setFilePreview(presignedUrl); // ✅ Use presigned URL for preview
+        } catch (error) {
+          console.error("Error fetching presigned URL:", error);
+        }
+      };
+  
+      fetchPresignedUrl();
+    }
+  }, [storedFileKey]);
+  
 
   // Handle file selection (Drag & Drop or Browse)
   const onDrop = (acceptedFiles: File[], fileRejections: FileRejection[]) => {
@@ -30,7 +65,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
       setFilePreview(previewUrl);
   
       // Pass name (fieldName) when calling uploadFile
-      uploadFile(selectedFile, entity?entity:'', name);
+      uploadFile(selectedFile, entity ? entity : {type:'',ksuid:''}, name);
     }
   };
   
@@ -43,13 +78,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   });
 
   // Upload file to S3 with progress tracking
-  const uploadFile = async (file: File, entity:string, fieldName: string) => {
+  const uploadFile = async (file: File, entity:DanceEngineEntity, fieldName: string) => {
     if (!file) return; // Prevents potential null issues
-
+    console.log("entity",entity)
     setUploading(true);
     setUploadProgress(0); // Reset progress
+    setHasUploaded(true)
 
     const token = await getToken();
+
+    
 
     try {
       // Step 1: Request presigned URL with fieldName
@@ -57,7 +95,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
         method: "POST",
         body: JSON.stringify({ 
           fileType: file.type,
-          fieldName: [entity,fieldName].flat().join('/') // Pass react-hook-form field name
+          action: 'POST',
+          fieldName: [(entity ? `${entity.type}#${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
         }),
         headers: {
           "Content-Type": "application/json",
@@ -120,7 +159,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   }, [filePreview]);
 
   return (
-    <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
+    <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
       <div
         {...getRootProps()}
         className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"
@@ -135,13 +174,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
           justifyContent: "center",
         }}
       >
-        <input {...register(name)} {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} />
-
-        {!filePreview && (
-          <p className="text-gray-600 dark:text-gray-200">
-            {uploading ? "Uploading..." : "Drag & drop or click to upload"}
-          </p>
-        )}
+        <input {...register(name)} {...(getInputProps() as React.InputHTMLAttributes<HTMLInputElement>)} name={name} id={name}/>
 
         {file ? (
           <div className="mt-2 bg-gray-800/50 p-3 rounded-lg">
@@ -149,8 +182,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
             <p className="text-sm text-gray-300">{file.type}</p>
           </div>
         ) : (
-          <p className="text-gray-600 dark:text-gray-200">
-            {uploading ? "Uploading..." : "Drag & drop or click to upload"}
+          <p className="mt-2 bg-gray-800/70 p-3 rounded-lg text-gray-100 dark:text-gray-100">
+            {uploading ? "Uploading..." : filePreview ? "Drag & drop or click to replace": "Drag & drop or click to upload"}
           </p>
         )}
 

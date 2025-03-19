@@ -11,7 +11,7 @@ import { useEffect } from "react";
 const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker'), { ssr: false }) as React.FC<MapPickerProps>
 
 
-const PageClient = ({ ksuid }: { ksuid?: string }) => {
+const PageClient = ({ ksuid }: { ksuid?: string[] }) => {
   const handleSubmit = (data: FieldValues) => {
     console.log("Form Submitted:", data);
   };
@@ -20,15 +20,15 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const generatedKsuid = `${KSUID.randomSync().string}`
   useEffect(() => {
     console.log("effect",ksuid,generatedKsuid)
-    if (!ksuid) { router.replace([path,generatedKsuid].join('/')) }
+    if (!ksuid || ksuid?.[0] == 'new') { router.replace([path.replace('/new',''),generatedKsuid].join('/')) }
   },[])
 
   const eventEntityId = {
     type: "EVENT",
-    ksuid: ksuid // Extract the ksuid if it exists
+    ksuid: ksuid?.[0] // Extract the ksuid if it exists
   } as DanceEngineEntity
 
-  return ksuid ? <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
+  return ksuid?.[0] && ksuid?.[0] != 'new' ? <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
 }
 
 export default PageClient

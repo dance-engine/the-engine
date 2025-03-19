@@ -38,7 +38,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     if(typeof window !== "undefined" && persistKey ) {
       const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
       const currentHistory = JSON.parse(currentHistoryString)
-      const newHistory = [...new Set([...(currentHistory.flat()),...persistKey.ksuid])]
+      const newHistory = [...new Set([...(currentHistory.flat()),persistKey.ksuid])]
       window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
     }
   },[persistKey])

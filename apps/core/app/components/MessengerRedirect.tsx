@@ -18,7 +18,7 @@ const MessengerRedirect = () => {
   return (
     <div className="w-full h-full flex flex-col justify-center p-6 border">
       <h3>⚠️ Open in browser</h3>
-      <p>Messenger's browser blocks some features.</p>
+      <p>Messenger&apos;s browser blocks some features.</p>
       <p>Tap the three dots ••• and choose Open in external browser</p>
       <span className="absolute block bottom-4 text-3xl right-4 animate-bounce">⬇️</span>
     </div>

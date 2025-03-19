@@ -3,7 +3,7 @@ import Link from 'next/link'
 const CachedEntities = ({entityType, className}: {entityType:string, className?:string}) => {
   const getEntity = (entityType: string) => {
     const cached = window.localStorage.getItem(entityType)
-    return cached ? JSON.parse(cached)?.map((entry)=>{
+    return cached ? JSON.parse(cached)?.map((entry: any)=>{
       return JSON.parse(window.localStorage.getItem(`${entityType}#${entry}`) || '{}')
     }) : []
   }
@@ -16,7 +16,7 @@ const CachedEntities = ({entityType, className}: {entityType:string, className?:
         <table className='block md:table w-full'>
           <thead className='hidden md:table-header-group'><th>Name</th><th>Date</th><td className='sr-only'>Actions</td></thead>
           <tbody className='grid md:table-row-group grid-col-1 gap-4 '>
-          {entities.filter((enty)=>enty.name ? true : false).map((enty) => {
+          {entities.filter((enty:any)=>enty.name ? true : false).map((enty:any) => {
             return (
               <tr key={enty.ksuid} className='grid md:table-row  grid-col-1 gap-3 border border-gray-300 p-3 rounded bg-gray-50'>
                 <td className='block md:table-cell p-2'>

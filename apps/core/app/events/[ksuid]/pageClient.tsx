@@ -17,8 +17,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   };
   const router = useRouter()
   const path = usePathname()
-  const generatedKsuid = `${KSUID.randomSync().string}`
+  
   useEffect(() => {
+    const generatedKsuid = `${KSUID.randomSync().string}`
     console.log("effect",ksuid,generatedKsuid)
     if (!ksuid || ksuid == 'new') { router.replace([path.replace('/new',''),generatedKsuid].join('/')) }
   },[])

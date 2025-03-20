@@ -147,6 +147,8 @@ functions:
     handler: authorizer/lambda_functions.auth_handler
     layers:
       - !Ref AuthLambdaLayer
+    environment:
+      CLERK_KEY: ${ssm:/danceengine/${sls:stage}/clerk/public_key}
     package:
       patterns:
         - '!**/**'

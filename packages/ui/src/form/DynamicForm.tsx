@@ -19,6 +19,8 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
+const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/organisation/generate-presigned-url`
+
 const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey}) => {
   const {
     register,
@@ -61,6 +63,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         const isHidden = metadata && metadata[field]?.hidden
         const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
 
+
         return (
           <div key={field} className="flex flex-col">
             { isHidden ? (
@@ -82,7 +85,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
                 error={errors[field]?.message as string}
               />
             ) : isSingleFileUpload ? (
-              <FileUploader label={field} name={field} fieldSchema={fieldSchema} watch={watch} uploadUrl="https://3s7fkaui3i.execute-api.eu-west-1.amazonaws.com/organisation/generate-presigned-url"
+              <FileUploader label={field} name={field} fieldSchema={fieldSchema} watch={watch} uploadUrl={presignedUrlEndpoint}
                 {...(persistKey ? { entity: persistKey } : {})}
                 register={register} validate={() => {trigger(field)}} setValue={setValue}
                 error={errors[field]?.message as string}

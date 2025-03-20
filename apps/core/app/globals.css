@@ -15,7 +15,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(13% 0.1053 262.26);;
+    --background: oklch(13% 0.1053 262.26);
     --foreground: #ededed;
   }
 }
@@ -52,7 +52,7 @@ Keppel:           #00BA9C
   --color-dark-highlight: oklch(30% 0.1499 262.26); /* #002479 */
   --color-dark-outline: oklch(37% 0.1292 262.26); /* #86A8FD */ 
   --color-light-background: oklch(97.47% 0.0188 262.26); /* #F0EEFC; */
-  --color-base-background: oklch(100% 0 262.26); /*#FFFFFF*/;
+  --color-base-background: oklch(100% 0 262.26); /*#FFFFFF*/
 
   /* Cerise */
   --color-cerise-logo: oklch(61.16% 0.2522 354.34); /* #ea008d */

@@ -11,6 +11,9 @@
     },
     "./getInnerSchema": {
       "default": "./dist/getInnerSchema.js"
+    },
+    "./textHelpers": {
+      "default": "./dist/textHelpers.js"
     }
   },
   "devDependencies": {

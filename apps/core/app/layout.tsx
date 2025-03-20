@@ -46,7 +46,9 @@ export default function RootLayout({
         
         {/* Content */}
         <div className="lg:pl-72">
-          <header className="sticky bg- top-0 z-40 flex h-16 shrink-0 dark:bg-uberdark-background items-center gap-x-4 border-b border-gray-200  px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-40 flex h-16 shrink-0 dark:bg-uberdark-background bg-white items-center gap-x-4 border-b border-gray-200 shadow-sm \
+          sm:gap-x-6 \
+          px-4 sm:px-6 lg:px-8">
             
             <MenuToggle/>
             
@@ -63,8 +65,8 @@ export default function RootLayout({
             </div>
           </header>
 
-          <main className="py-10">
-            <div className="px-4 sm:px-6 lg:px-8">
+          <main className="py-4 sm:py-6 lg:py-10">
+            <div className=" #px-4 #sm:px-6 #lg:px-8">
               {children}
             </div>
           </main>

@@ -14,7 +14,7 @@ const PageClient = ({ entity }: { entity?: string }) => {
 
   const entities = typeof window !== "undefined" && entity ? getEntity(entity): []
 
-  return <BasicList columns={["name","start_date","category"]} records={entities}/>
+  return <BasicList columns={["name","starts_at","starts_at","ends_at","category"]} formats={[undefined,undefined,'time','time',undefined]} records={entities}/>
 }
 
 export default PageClient

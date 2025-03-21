@@ -14,6 +14,9 @@
     },
     "./textHelpers": {
       "default": "./dist/textHelpers.js"
+    },
+    "./arrayHelpers": {
+      "default": "./dist/arrayHelpers.js"
     }
   },
   "devDependencies": {

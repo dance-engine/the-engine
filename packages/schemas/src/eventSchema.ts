@@ -7,9 +7,12 @@ export const eventSchema = z.object({
   ksuid: z.string().describe("ID of the event"),
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
   banner: z.string().describe('Appears at the top of your page'),
-  start_date: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
-    message: "Invalid date",
-  }).describe("Select the event date."),
+  starts_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
+    message: "Invalid date or time",
+  }).describe("Select the event start."),
+  ends_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
+    message: "Invalid date or time",
+  }).describe("Select the event end."),
   description: z.string().min(10, "Description must be at least 10 characters").describe("A brief description of the event."), //TODO This should deal with the fact it's a JSON  
   category: z.enum(["congress", "workshop", "party", "class", "lecture"]).array().min(1,"Must have at least one category").describe("Category"),
   // venue: z.enum(["Indoor", "Outdoor", "Virtual"]).describe("Select the type of venue."),
@@ -27,7 +30,8 @@ export const eventMetadata = {
   banner: { fileUploadField: 'single' },
   description: { richText: true },
   // description: { multiLine: true },
-  start_date: { dateField: true },
+  starts_at: { dateField: true },
+  ends_at: { dateField: true },
   category: { checkboxesField: true },
   location: {
     lat: { hidden: true},

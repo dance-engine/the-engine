@@ -18,7 +18,7 @@ const EventPage = async () => {
           <Link 
             href="/events/new"
             type="button"
-            className="flex w-fit gap-1 items-center blu rounded-md bg-dark-background px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-dark-highlight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dark-highlight"
+            className="flex w-fit gap-1 items-center rounded-md bg-dark-background px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-dark-highlight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dark-highlight"
           >
             <LuCalendarPlus2 className="w-6 h-6"/> Add Event
           </Link>

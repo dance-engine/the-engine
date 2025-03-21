@@ -1,6 +1,27 @@
 @import 'tailwindcss';
 @theme {
-  --color-dark-background: #cc0000;
+  /* Backgrounds */
+  --color-uberdark-background: oklch(13% 0.1053 262.26);
+  --color-dark-background: oklch(23% 0.1053 262.26); /* #01164d */
+  --color-dark-highlight: oklch(30% 0.1499 262.26); /* #002479 */
+  --color-dark-outline: oklch(37% 0.1292 262.26); /* #86A8FD */ 
+  --color-light-background: oklch(97.47% 0.0188 262.26); /* #F0EEFC; */
+  --color-base-background: oklch(100% 0 262.26); /*#FFFFFF*/
+
+  /* Cerise */
+  --color-cerise-logo: oklch(61.16% 0.2522 354.34); /* #ea008d */
+  --color-cerise-on-light: #CE037D;
+  --color-cerise-on-dark: #FC27A7;
+
+  /* Pear */
+  --color-pear-logo: oklch(81.18% 0.1841 115.59); /* #bdce05 */
+  --color-pear-on-light: #859D02; /*! Do not use unless emergency */
+  --color-pear-on-dark: var(--color-pear-logo);
+
+  /* Keppel */
+  --color-keppel-logo: oklch(61.16% 0.132201 175.5753); /* #009c80 */
+  --color-keppel-on-light: #00856F;
+  --color-keppel-on-dark: #00BD9D;
 }
 
 /* @plugin "@tailwindcss/typography"; */

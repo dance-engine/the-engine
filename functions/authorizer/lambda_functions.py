@@ -35,7 +35,7 @@ def auth_handler(event, context):
 
     if (claims.get("metadata",{}).get("admin")):
       logger.info("Allowed to use API")
-      admin_on = claims['metadata']['admin']
+      admin_on = [*claims['metadata']['organisations']] # Unpack keys of orgsanisations which means you ahve some role
       if not organisation:
         return generatePolicy(claims['metadata'], claims['sub'], 'Allow', event['routeArn']) 
       elif organisation in admin_on or "*" in admin_on:

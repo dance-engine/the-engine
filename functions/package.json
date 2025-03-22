@@ -9,5 +9,8 @@
     "serverless": "^4.2.3",
     "serverless-openapi-documenter": "^0.0.109",
     "serverless-prune-plugin": "^2.0.2"
+  },
+  "devDependencies": {
+    "serverless-s3-sync": "^3.4.0"
   }
 }

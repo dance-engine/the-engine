@@ -22,6 +22,8 @@ All lambda functions sit behind an authoriser function that return IAM policies
     │   │   │── {admin for clients}
     │   │── clients/ 
     │   │   │── {client websites}
+    |── aws/s3 
+    |   |── { files copied to config bucket }  
     │── functions/
     │   │── {Holds a serverless setup with python 3.11 for lambdas}
     │   │── _layers/:

@@ -1,11 +1,12 @@
 # Base serverless.yml
 org: danceenginesystems
 app: dance-engine
-service: example
+service: core
 
 plugins:
   - serverless-prune-plugin
   - serverless-openapi-documenter
+  - serverless-s3-sync # USed to move the aws cloudformation template we use to build customer resources
 
 custom:
   documentation: ${file(serverless.doc.yml):documentation}
@@ -13,7 +14,14 @@ custom:
     automatic: true
     includeLayers: true
     number: 10
+  config_bucket: "${sls:stage}-danceengine-config"
   upload_bucket: "${sls:stage}-danceengine-uploads"
+  dynamodb_table_format: "${sls:stage}-org_name-events"
+  s3Sync:
+    - bucketName: ${self:custom.config_bucket}
+      localDir: ../aws/s3/
+      acl: private
+      dependsOn: ConfigBucket
 
 package:
   individually: true
@@ -78,6 +86,8 @@ provider:
           Resource: 
             - "arn:aws:s3:::${self:custom.upload_bucket}"
             - "arn:aws:s3:::${self:custom.upload_bucket}/*"
+            - "arn:aws:s3:::${self:custom.config_bucket}"
+            - "arn:aws:s3:::${self:custom.config_bucket}/*"
         - Effect: Allow
           Action:
             - lambda:InvokeFunction
@@ -88,6 +98,7 @@ provider:
             - events:PutEvents
           Resource:
             - arn:aws:events:eu-west-1:717279731911:event-bus/default
+
   httpApi:
     cors: true
     authorizers:
@@ -99,12 +110,12 @@ provider:
 # Resources
 #######################
 resources:
+  Description: Resources for ${self:service} (${sls:stage})
   Resources:
-    S3Bucket:
+    S3UploadBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: "${self:custom.upload_bucket}"
-        
         CorsConfiguration:
           CorsRules:
             - AllowedOrigins:
@@ -119,6 +130,13 @@ resources:
               ExposedHeaders:
                 - ETag
               MaxAge: 3000
+    ConfigBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.config_bucket}
+    DeployOrgRole: ${file(serverless.privileged.yaml):resources.Resources.DeployOrgRole}
+    
+                
 #######################
 # Layers
 #######################
@@ -200,23 +218,35 @@ functions:
   Events:
     runtime: python3.11
     handler: events/lambda_events.handler_create
-    name: "${sls:stage}-events"
+    name: "${sls:stage}-${self:service}-events"
+    package:
+      patterns:
+        - '!**/**'
+        - "events/**"
+        - "_shared/**"
+    environment:
+      EVENT_BASE_TABLE_NAME: ${self:custom.dynamodb_table_format}
+    layers:
+      - !Ref UtilsLambdaLayer
     events:
       - httpApi:
-          path: /events
-          method: post
+          path: /{organisation}/events
+          method: get
           authorizer:
             adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events}    
+          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+
+#--------------------
 
   GeneratePresignedURL:
     runtime: python3.11
     handler: utils/s3.generate_presigned_url
+    name: "${sls:stage}-${self:service}-presigned_url"
     package:
       patterns:
         - '!**/**'
         - "utils/**"
-        - "shared/**"
+        - "_shared/**"
     environment:
       BUCKET_NAME: ${self:custom.upload_bucket}
     events:
@@ -230,3 +260,5 @@ functions:
           method: post
           authorizer:
             adminAuthorizer
+
+  CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}

@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Resources Created per Organisation in Dance Engine
+
+Parameters:
+  OrganisationId:
+    Type: String
+
+  Stage:
+    Type: String
+    Default: preview
+
+Conditions:
+  IsProd: !Equals [!Ref Stage, "prod"]
+
+Resources:
+  organisationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    Properties:
+      DeletionProtectionEnabled:        
+        Fn::If:
+          - IsProd
+          - true
+          - false
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled:
+          Fn::If:
+            - IsProd
+            - true
+            - false
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: ticket_number
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+        - AttributeName: ticket_number
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      TableName:
+        Fn::Sub: ${Stage}-${OrganisationId}
+
+Outputs:
+  OrganisationTableName:
+    Description: The name of the organisation's DynamoDB table
+    Value:
+      Fn::Sub: ${Stage}-${OrganisationId}
+    Export:
+      Name:
+        Fn::Sub: ${OrganisationId}-${Stage}-OrganisationTableName

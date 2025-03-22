@@ -1,0 +1,69 @@
+# serverless.privileged.yaml
+
+functions:
+  CreateOrgStack:
+    runtime: python3.11
+    handler: organisations/lambda_organisations.create_handler
+    name: "${sls:stage}-${self:service}-organisations"
+    role:
+      Fn::GetAtt:
+        - DeployOrgRole
+        - Arn
+    environment:
+      TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/customer.yaml
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - "app.organisation"
+            detail-type:
+              - "CreateOrganisation"
+
+resources:
+  Resources:
+    DeployOrgRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${sls:stage}-org-stack-deployer-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: org-stack-deploy-policy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - cloudformation:CreateStack
+                  Resource:
+                    - arn:aws:cloudformation:*:*:stack/${sls:stage}-customer-*/*
+                - Effect: Allow
+                  Action:
+                    - dynamodb:CreateTable
+                    - dynamodb:DescribeTable
+                    - dynamodb:TagResource 
+                  Resource:
+                    - arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-*
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:*
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:GetObject
+                    - s3:ListBucket
+                  Resource: 
+                    - "arn:aws:s3:::${self:custom.config_bucket}"
+                    - "arn:aws:s3:::${self:custom.config_bucket}/*"

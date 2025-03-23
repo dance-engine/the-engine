@@ -7,6 +7,7 @@ interface UserPermissions {
   admin?: string[]; // The admin key is optional and can be an array of strings, or undefined
   roles: { [key: string]: string[] }; // A dictionary where keys are strings and values are arrays of strings
   title?: string; // A string
+  organisations?:  Record<string, string[]>;
 }
 const CustomPage = () => {
   const { isSignedIn, user, isLoaded } = useUser()
@@ -21,7 +22,7 @@ const CustomPage = () => {
       <SignInButton ><button className="block px-3 py-1 text-gray-900" role="menuitem" tabIndex={-1} id="user-menu-item-1">Sign-in</button></SignInButton></div>
   }
   const permissions = user?.publicMetadata && user?.publicMetadata.roles ? user?.publicMetadata as unknown as UserPermissions : {admin: [], roles: {}} as UserPermissions
-  const sitesAdmind = permissions.admin ? permissions.admin : []
+  const sitesAdmind = permissions.organisations ? Object.keys(permissions.organisations) : []
   return (
     <div>
       <h1 className='text-xl'>Your current privileges</h1>

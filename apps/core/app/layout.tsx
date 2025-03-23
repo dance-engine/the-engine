@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from 'next/headers'
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +13,9 @@ import ProfileControl from '@dance-engine/ui/ProfileControl'
 import { menuContents } from './menuContents'
 
 import MessengerRedirect from "./components/MessengerRedirect";
+import { OrgProvider } from "../lib/OrgContext";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import OrgSelector from '../lib/OrgSelector'
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -23,11 +27,32 @@ export const metadata: Metadata = {
   description: "Replace admin hassle with dancing passion",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const { userId } = await auth();
+  const cookieStore = await cookies()
+
+  let orgSlugs = [] as string[];
+  let initialOrgSlug: string | null = null;
+
+  if (userId) {
+    const user = await (await clerkClient()).users.getUser(userId);
+    orgSlugs = Object.keys((user.publicMetadata?.organisations ?? [])) || [];
+
+    if (orgSlugs.length === 1) {
+      initialOrgSlug = orgSlugs[0] || null;
+    } else if (orgSlugs.length > 1) {
+      const lastUsed = cookieStore.get("lastOrgSlug")?.value;
+      if (orgSlugs.includes(lastUsed || "nothing-set")) {
+        initialOrgSlug = lastUsed || null;
+      }
+    }
+  }
+
   return (
     <html lang="en" className="h-full ">
       <body
@@ -35,14 +60,16 @@ export default function RootLayout({
       >
       <MessengerRedirect />
       <ClerkProvider>
+      <OrgProvider initialOrgSlug={initialOrgSlug} orgOptions={orgSlugs}>
       <MenuProvider>
+      
       <div>
         
         {/* Mobile Menu */}
         <MobileMenu menuContents={menuContents}/>
 
         {/* Normal menu */}
-        <MainMenu menuContents={menuContents}/>
+        <MainMenu menuContents={menuContents} orgSelector={<OrgSelector/>}/>
         
         {/* Content */}
         <div className="lg:pl-72">
@@ -72,7 +99,9 @@ export default function RootLayout({
           </main>
         </div>
       </div>
+      
       </MenuProvider>
+      </OrgProvider>
       </ClerkProvider>
       </body>
     </html>

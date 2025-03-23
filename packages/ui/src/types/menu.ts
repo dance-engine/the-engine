@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 export interface MenuProps {
   menuContents?:  MenuSection[]
+  orgSelector?: ReactNode
 }
 
 export interface MenuSection  {

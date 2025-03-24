@@ -5,7 +5,6 @@ import { BiSolidLockOpen } from "react-icons/bi";
 import Badge from '@dance-engine/ui/Badge'
 
 import { nameFromHypenated } from '@dance-engine/utils/textHelpers'
-
 interface UserPermissions {
   admin?: string[]; // The admin key is optional and can be an array of strings, or undefined
   roles: { [key: string]: string[] }; // A dictionary where keys are strings and values are arrays of strings
@@ -40,7 +39,9 @@ const CustomPage = () => {
               <div>
                 <h2 className='text-lg'>{nameFromHypenated(siteName)}  {active ? <Badge>active</Badge> : null}</h2>
                 <ul className='list-disc pl-4'>
-                  {roles.map((role : string)=>{ return <li key={`role-${role}`} >{role}</li>})}
+                  {roles.map((role : string)=>{ 
+                    return <li key={`role-${role}`} >{nameFromHypenated(role == "*" ? "all-permissions": role)}</li>
+                  })}
                 </ul>
               </div>
               {active ? null : <button className="bg-cerise-on-light text-white text-sm rounded-md font-bold px-3 py-1" onClick={()=>{switchOrg(siteName)}}>Switch to {nameFromHypenated(siteName)}</button>}

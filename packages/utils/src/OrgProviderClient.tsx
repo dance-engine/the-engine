@@ -31,7 +31,7 @@ export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
     setActiveOrg(slug)
     if(user) {
       console.log(user)
-      await updateLastOrg(user, slug)
+      await updateLastOrg(slug)
     }
     
   }

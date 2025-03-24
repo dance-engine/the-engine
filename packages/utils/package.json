@@ -20,6 +20,12 @@
     },
     "./OrgContext": {
       "default": "./src/OrgContext.tsx"
+    },
+    "./actions/*": "./dist/actions/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "actions/*": ["dist/actions/*.d.ts"]
     }
   },
   "devDependencies": {

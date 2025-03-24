@@ -2,11 +2,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import type { UserResource } from "@clerk/types"
 import { OrgProviderClient } from './OrgProviderClient'
+import { setLastOrg } from './actions/setLastOrg'
 
 export const OrgProvider = ({ children }: { children: React.ReactNode }) => {
   return <OrgProviderClient>{children}</OrgProviderClient>
 }
-
 
 export type OrgSlug = string
 
@@ -20,14 +20,9 @@ export type OrgContextType = {
 export const OrgContext = createContext<OrgContextType | undefined>(undefined)
 
 export const updateLastOrg = async (
-  user: UserResource,
   slug: string
 ) => {
-  await (user as unknown as {
-    update: (data: { publicMetadata: Record<string, unknown> }) => Promise<void>
-  }).update({
-    publicMetadata: { lastOrg: slug },
-  })
+  await setLastOrg(slug)
 }
 
 export const useOrgContext = () => {

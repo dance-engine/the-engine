@@ -17,6 +17,15 @@
     },
     "./arrayHelpers": {
       "default": "./dist/arrayHelpers.js"
+    },
+    "./OrgContext": {
+      "default": "./src/OrgContext.tsx"
+    },
+    "./actions/*": "./dist/actions/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "actions/*": ["dist/actions/*.d.ts"]
     }
   },
   "devDependencies": {
@@ -25,6 +34,11 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.12.3",
+    "@clerk/types": "^4.49.1",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "swr": "^2.3.3",
     "zod": "^3.24.2"
   }

@@ -26,7 +26,7 @@ export const updateLastOrg = async (
 }
 
 
-export const OrgProvider = ({ children }: { children: ReactNode }): ReactNode => {
+export const OrgProviderClient = ({ children }: { children: ReactNode }): ReactNode => {
   const { user, isLoaded: isUserLoaded } = useUser()
   const [activeOrg, setActiveOrg] = useState<OrgSlug | null>(null)
   const [availableOrgs, setAvailableOrgs] = useState<OrgSlug[]>([])

@@ -1,32 +1,13 @@
 'use client'
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { useEffect, useState, ReactNode } from "react"
+import type { FC, PropsWithChildren } from "react"
 import { useUser } from "@clerk/nextjs"
-import type { UserResource } from "@clerk/types"
+import { OrgContext, updateLastOrg } from "./OrgContext"
+import type { OrgSlug } from "./OrgContext"
 
-type OrgSlug = string
+export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
 
-type OrgContextType = {
-  activeOrg: OrgSlug | null
-  availableOrgs: OrgSlug[]
-  switchOrg: (slug: OrgSlug) => Promise<void>
-  isLoaded: boolean
-}
-
-const OrgContext = createContext<OrgContextType | undefined>(undefined)
-
-export const updateLastOrg = async (
-  user: UserResource,
-  slug: string
-) => {
-  await (user as unknown as {
-    update: (data: { publicMetadata: Record<string, unknown> }) => Promise<void>
-  }).update({
-    publicMetadata: { lastOrg: slug },
-  })
-}
-
-
-export const OrgProviderClient = ({ children }: { children: ReactNode }): ReactNode => {
+// export const OrgProviderClient = ({ children }: { children: ReactNode }): ReactNode => {
   const { user, isLoaded: isUserLoaded } = useUser()
   const [activeOrg, setActiveOrg] = useState<OrgSlug | null>(null)
   const [availableOrgs, setAvailableOrgs] = useState<OrgSlug[]>([])
@@ -60,10 +41,4 @@ export const OrgProviderClient = ({ children }: { children: ReactNode }): ReactN
       {children}
     </OrgContext.Provider>
   )
-}
-
-export const useOrgContext = () => {
-  const ctx = useContext(OrgContext)
-  if (!ctx) throw new Error("useOrgContext must be used within <OrgProvider>")
-  return ctx
 }

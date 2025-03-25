@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import Link from "next/link";
 import { FaArrowRightLong } from "react-icons/fa6";
 
-export function Card({
+export function PromoCard({
   title,
   href,
   cta,

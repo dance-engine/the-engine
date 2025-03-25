@@ -1,4 +1,4 @@
-import { Card } from '@dance-engine/ui/Card'
+import { PromoCard } from '@dance-engine/ui/PromoCard'
 
 export default function Home() {
   return (
@@ -7,17 +7,17 @@ export default function Home() {
       <p>As soon as you have some events we&apos;ll show you stats here. For now lets get started</p>
       <div className="grid grid-cols-3 gap-6 pt-6">
 
-        <Card title='Congress' href="/events/new?type=congress&stuff=true" cta="Start a congress" colour='cerise'>
+        <PromoCard title='Congress' href="/events/new?type=congress&stuff=true" cta="Start a congress" colour='cerise'>
           <p>Multiple passes, bundles and deals across a multi day event</p>
-        </Card>
+        </PromoCard>
 
-        <Card title='Party' href="/events/new?type=party" cta="Plan a party" colour='pear'>
+        <PromoCard title='Party' href="/events/new?type=party" cta="Plan a party" colour='pear'>
           <p>Evening event or series of events we can run them all</p>
-        </Card>
+        </PromoCard>
 
-        <Card title='Congress' href="/events/new?type=congress" cta="Start a congress" colour='keppel'>
+        <PromoCard title='Congress' href="/events/new?type=congress" cta="Start a congress" colour='keppel'>
           <p>Multiple passes, bundles and deals across a multi day event</p>
-        </Card>
+        </PromoCard>
 
       </div>
     </div>

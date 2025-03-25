@@ -39,7 +39,13 @@ export const menuContents:MenuSection[] = [
         title: "Secure",
         link: "/secure", 
         icon: SecureIcon
+      },
+      { 
+        title: "Test",
+        link: "/test", 
+        icon: SecureIcon
       }
+
     ] 
   },
   { 

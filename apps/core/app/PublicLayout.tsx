@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
+import {shadesOfPurple } from '@clerk/themes'
 import MessengerRedirect from "./components/MessengerRedirect";
 
 const openSans = Open_Sans({
@@ -21,13 +22,21 @@ export default function ProtectedLayout({
 }>) {
   return (
   
-  <html lang="en" className="h-full ">
+  <html lang="en" className="h-full">
     <body
-      className={`${openSans.variable} antialiased h-full bg-base-background dark:bg-uberdark-background text-black dark:text-dark-secondary`}
+      className={`${openSans.variable} antialiased h-full bg-uberdark-background dark:bg-uberdark-background text-black dark:text-dark-secondary`}
     >
       <MessengerRedirect />
       
-      <ClerkProvider>
+      <ClerkProvider appearance={{
+        baseTheme: [shadesOfPurple],
+        variables: {
+          colorBackground: '#01164d',
+          colorTextOnPrimaryBackground: 'white',
+          colorPrimary: '#FC27A7',
+
+        }
+      }}>
         {children}
       </ClerkProvider>
     </body>

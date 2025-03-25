@@ -49,4 +49,4 @@ Outputs:
       Fn::Sub: ${Stage}-${OrganisationId}
     Export:
       Name:
-        Fn::Sub: ${OrganisationId}-${Stage}-OrganisationTableName
+        Fn::Sub: ${Stage}-${OrganisationId}-OrganisationTableName

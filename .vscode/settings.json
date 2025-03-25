@@ -5,9 +5,13 @@
     }
   ],
   "python.analysis.extraPaths": [
-        "./functions", 
-        "./functions/_layers/auth/python",
-        "./functions/_layers/pydantic/python",
-        "./functions/_layers/utils/python"
-    ]
+    "./functions", 
+    "./functions/_layers/auth/python",
+    "./functions/_layers/pydantic/python",
+    "./functions/_layers/utils/python"
+  ],
+  "tailwindCSS.experimental.configFile": {
+    "packages/ui/src/styles.css": "packages/ui/src/**",
+    "apps/core/app/globals.css": "apps/core/app/**"
+  }
 }

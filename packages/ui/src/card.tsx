@@ -1,30 +1,33 @@
 import { type ReactNode } from "react";
+import Link from "next/link";
+import { FaArrowRightLong } from "react-icons/fa6";
 
 export function Card({
   title,
-  children,
   href,
+  cta,
+  colour,
+  children
 }: {
   title: string;
-  children: ReactNode;
   href: string;
+  cta: string;
+  colour?: string
+  children: ReactNode;
 }) {
+
+  const colourClass = colour == 'cerise' ? "bg-cerise-on-light" : colour == 'pear' ? "bg-pear-on-light" : colour == 'keppel' ? "bg-keppel-on-light" : "bg-dark-background"
   return (
-    <a
-      className="ui-group ui-rounded-lg ui-border ui-border-transparent ui-px-5 ui-py-4 ui-transition-colors hover:ui-border-neutral-700 hover:ui-bg-neutral-800/30"
-      href={`${href}?utm_source=create-turbo&utm_medium=with-tailwind&utm_campaign=create-turbo"`}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <h2 className="ui-mb-3 ui-text-2xl ui-font-semibold">
-        {title}{" "}
-        <span className="ui-inline-block ui-transition-transform group-hover:ui-translate-x-1 motion-reduce:ui-transform-none">
-          -&gt;
-        </span>
-      </h2>
-      <p className="ui-m-0 ui-max-w-[30ch] ui-text-sm ui-opacity-50">
+    <div className="relative rounded-xl shadow-contained  ">
+    <div className="overflow-hidden rounded-lg bg-white ">
+      <div className="px-4 py-5 sm:p-6">
+        <h2 className="text-2xl">{title}</h2>
         {children}
-      </p>
-    </a>
+      </div>
+      <div className={`${colourClass} px-4 py-4 sm:px-6`}>
+       <Link href={href} className="text-white font-bold flex items-center justify-between">{cta} <FaArrowRightLong /></Link>
+      </div>
+    </div>
+    </div>
   );
 }

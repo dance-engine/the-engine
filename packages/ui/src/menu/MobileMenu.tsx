@@ -3,6 +3,7 @@
 import { useMenu } from './MenuContext'
 import { MenuClose } from './MenuToggle'
 import { MenuProps } from '../types/menu'
+import Link from 'next/link'
 // import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 
 const MobileMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
@@ -35,10 +36,10 @@ const MobileMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
                     <ul role="list" className="-mx-2 mt-2 space-y-1">
                       {section.contents.map((menuItem,idx)=>{
                         return (<li key={`menu-item-${idx}`}>
-                          <a href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
+                          <Link href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
                             {menuItem.icon}
                             {menuItem.title}
-                          </a>
+                          </Link>
                         </li>)
                       })}
                     </ul>

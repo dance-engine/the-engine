@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { MenuProps } from '../types/menu'
+import Link from "next/link";
 
 export const MainMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
   return (<nav className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-row">
@@ -16,10 +17,10 @@ export const MainMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
             <ul role="list" className="-mx-2 mt-2 space-y-1">
               {section.contents.map((menuItem,idx)=>{
                 return (<li key={`menu-item-${idx}`}>
-                  <a href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
+                  <Link href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
                     {menuItem.icon}
                     {menuItem.title}
-                  </a>
+                  </Link>
                 </li>)
               })}
             </ul>

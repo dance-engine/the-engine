@@ -93,6 +93,8 @@ Resources:
       Tags:
         - Key: "STAGE"
           Value: !Ref Stage
+        - Key: DanceEngineVersion
+          Value: v2
 Outputs:
   OrganisationTableName:
     Description: The name of the organisation's DynamoDB table

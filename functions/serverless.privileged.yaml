@@ -5,12 +5,16 @@ functions:
     runtime: python3.11
     handler: organisations/lambda_organisations.create_handler
     name: "${sls:stage}-${self:service}-organisations"
-    role:
-      Fn::GetAtt:
-        - DeployOrgRole
-        - Arn
+    role: DeployOrgRole
     environment:
       TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
+      CORE_TABLE_NAME: ${self:custom.core_table_name}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    package:
+      patterns:
+        - '!**/**'
+        - "organisations/**"
+        - "_shared/**"
     events:
       - eventBridge:
           pattern:
@@ -67,3 +71,12 @@ resources:
                   Resource: 
                     - "arn:aws:s3:::${self:custom.config_bucket}"
                     - "arn:aws:s3:::${self:custom.config_bucket}/*"
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                  Resource: 
+                    - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}"
+                    - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}/*"
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2

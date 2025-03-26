@@ -3,13 +3,23 @@ import os
 import logging
 from urllib.parse import urlparse
 
+import traceback
+from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
+
+
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
 cloudformation = boto3.client("cloudformation")
 s3 = boto3.client("s3")
+db = boto3.resource("dynamodb")
 
 TEMPLATE_URL = os.environ.get("TEMPLATE_URL")  # e.g. https://bucket-name.s3.amazonaws.com/path/to/template.yaml
+ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
+CORE_TABLE_NAME = os.environ.get("CORE_TABLE_NAME")
+table = db.Table(CORE_TABLE_NAME)
+
 
 def create_handler(event, context):
     detail = event.get("detail", {})
@@ -41,18 +51,50 @@ def create_handler(event, context):
 
     logger.info(f"Using signed template URL: {signed_url}")
 
-    response = cloudformation.create_stack(
-        StackName=stack_name,
-        TemplateURL=signed_url,
-        Parameters=[
-            {"ParameterKey": "OrganisationId", "ParameterValue": organisation_id},
-            {"ParameterKey": "Stage", "ParameterValue": stage},
-        ],
-        Capabilities=["CAPABILITY_NAMED_IAM"],
-        Tags=[
-            {"Key": "OrganisationId", "Value": organisation_id}
-        ]
-    )
+    try:
 
-    logger.info(f"Created stack: {stack_name}")
-    return response
+        response = cloudformation.create_stack(
+            StackName=stack_name,
+            TemplateURL=signed_url,
+            Parameters=[
+                {"ParameterKey": "OrganisationId", "ParameterValue": organisation_id},
+                {"ParameterKey": "Stage", "ParameterValue": stage},
+            ],
+            Capabilities=["CAPABILITY_NAMED_IAM"],
+            Tags=[
+                {"Key": "OrganisationId", "Value": organisation_id}
+            ]
+        )
+        logger.info(f"Created stack: {stack_name}")
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "AlreadyExistsException":
+            logger.warning(f"Stack for {organisation_id} already exists")
+        else:
+            logger.error("Error creating organisation stack %s: %s", organisation_id, str(e))
+            logger.error(traceback.format_exc())
+            raise
+
+    try:
+        table.put_item(Item=create_organisation(organisation_id), ConditionExpression="attribute_not_exists(PK)")
+        return response
+
+    except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                logger.warning("Organisation with this name already exists: %s", organisation_id)
+                return None
+            else:
+                logger.error("Error creating organisation %s: %s", organisation_id, str(e))
+                logger.error(traceback.format_exc())
+                raise
+
+
+
+def create_organisation(orgSlug):
+    org = {
+        "PK": f"ORGANISATION#{orgSlug}",
+        "SK": f"ORGANISATION#{orgSlug}",
+        "type": f"ORGANISATION",
+        "org-slug": f"{orgSlug}"
+    }
+    return org
+

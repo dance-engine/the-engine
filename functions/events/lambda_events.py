@@ -18,7 +18,7 @@ from ksuid import KsuidMs
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
-BASE_TABLE_NAME = os.environ.get("EVENT_BASE_TABLE_NAME")
+ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
 
 
 def handler_create(event, context):
@@ -32,6 +32,6 @@ def handler_create(event, context):
 
     logger.info(f"{event},{context}")
     ORGANISATION = event.get("pathParameters", {}).get("organisation")
-    TABLE_NAME = BASE_TABLE_NAME.replace("org_name",ORGANISATION)
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",ORGANISATION)
     newKsuid = KsuidMs()
     return {"statusCode": 200, "body": json.dumps({'event_ksuid': f"{newKsuid}", 'message':f"Here is your ksuid for :) {ORGANISATION} to use in {TABLE_NAME}"})}

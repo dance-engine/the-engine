@@ -1,0 +1,75 @@
+resources:
+  Resources:
+    CoreDanceEngineTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Delete
+      Properties:
+        DeletionProtectionEnabled: ${param:isProd}      
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: ${param:isProd}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: gsi1PK
+            AttributeType: S
+          - AttributeName: gsi1SK
+            AttributeType: S
+          - AttributeName: gsi2PK
+            AttributeType: S
+          - AttributeName: gsi2SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.core_table_name}
+        GlobalSecondaryIndexes:
+          - IndexName: IDXinv
+            KeySchema:
+              - AttributeName: SK
+                KeyType: HASH
+              - AttributeName: PK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: gsi1
+            KeySchema:
+              - AttributeName: gsi1PK
+                KeyType: HASH
+              - AttributeName: gsi1SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: gsi1inv
+            KeySchema:
+              - AttributeName: gsi1SK
+                KeyType: HASH
+              - AttributeName: gsi1PK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: gsi2
+            KeySchema:
+              - AttributeName: gsi2PK
+                KeyType: HASH
+              - AttributeName: gsi2SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: gsi2inv
+            KeySchema:
+              - AttributeName: gsi2SK
+                KeyType: HASH
+              - AttributeName: gsi2PK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        Tags:
+          - Key: "STAGE"
+            Value: ${sls:stage}
+          - Key: DanceEngineVersion
+            Value: v2

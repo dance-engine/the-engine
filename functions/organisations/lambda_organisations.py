@@ -19,7 +19,7 @@ def create_handler(event, context):
     if not organisation_id:
         raise ValueError("Missing OrganisationId in event detail")
 
-    stack_name = f"{stage}-customer-{organisation_id}"
+    stack_name = f"{stage}-org-{organisation_id}"
 
     # Parse bucket and key from TEMPLATE_URL
     if not TEMPLATE_URL:
@@ -50,8 +50,7 @@ def create_handler(event, context):
         ],
         Capabilities=["CAPABILITY_NAMED_IAM"],
         Tags=[
-            {"Key": "OrganisationId", "Value": organisation_id},
-            {"Key": "Stage", "Value": stage}
+            {"Key": "OrganisationId", "Value": organisation_id}
         ]
     )
 

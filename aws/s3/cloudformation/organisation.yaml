@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Resources Created per Organisation in Dance Engine
+
+Parameters:
+  OrganisationId:
+    Type: String
+
+  Stage:
+    Type: String
+    Default: preview
+
+Conditions:
+  IsProd: !Equals [!Ref Stage, "prod"]
+
+Resources:
+  organisationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    Properties:
+      DeletionProtectionEnabled:        
+        Fn::If:
+          - IsProd
+          - true
+          - false
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled:
+          Fn::If:
+            - IsProd
+            - true
+            - false
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: gsi1PK
+          AttributeType: S
+        - AttributeName: gsi1SK
+          AttributeType: S
+        - AttributeName: gsi2PK
+          AttributeType: S
+        - AttributeName: gsi2SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      TableName:
+        Fn::Sub: ${Stage}-org-${OrganisationId}
+      GlobalSecondaryIndexes:
+        - IndexName: IDXinv
+          KeySchema:
+            - AttributeName: SK
+              KeyType: HASH
+            - AttributeName: PK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: gsi1
+          KeySchema:
+            - AttributeName: gsi1PK
+              KeyType: HASH
+            - AttributeName: gsi1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: gsi1inv
+          KeySchema:
+            - AttributeName: gsi1SK
+              KeyType: HASH
+            - AttributeName: gsi1PK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: gsi2
+          KeySchema:
+            - AttributeName: gsi2PK
+              KeyType: HASH
+            - AttributeName: gsi2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: gsi2inv
+          KeySchema:
+            - AttributeName: gsi2SK
+              KeyType: HASH
+            - AttributeName: gsi2PK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: "STAGE"
+          Value: !Ref Stage
+Outputs:
+  OrganisationTableName:
+    Description: The name of the organisation's DynamoDB table
+    Value:
+      Fn::Sub: ${Stage}-${OrganisationId}
+    Export:
+      Name:
+        Fn::Sub: ${Stage}-org-${OrganisationId}-OrganisationTableName

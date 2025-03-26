@@ -10,7 +10,7 @@ functions:
         - DeployOrgRole
         - Arn
     environment:
-      TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/customer.yaml
+      TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
     events:
       - eventBridge:
           pattern:
@@ -41,7 +41,7 @@ resources:
                   Action:
                     - cloudformation:CreateStack
                   Resource:
-                    - arn:aws:cloudformation:*:*:stack/${sls:stage}-customer-*/*
+                    - arn:aws:cloudformation:*:*:stack/${sls:stage}-org-*/*
                 - Effect: Allow
                   Action:
                     - dynamodb:CreateTable

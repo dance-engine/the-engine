@@ -239,7 +239,7 @@ functions:
 
   Events:
     runtime: python3.11
-    handler: events/lambda_events.handler_create
+    handler: events/lambda_events.lambda_handler
     name: "${sls:stage}-${self:service}-events"
     package:
       patterns:
@@ -253,7 +253,7 @@ functions:
     events:
       - httpApi:
           path: /{organisation}/events
-          method: get
+          method: post
           authorizer:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events} 

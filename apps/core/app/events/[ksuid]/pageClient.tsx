@@ -4,6 +4,8 @@ import { MapPickerProps, DanceEngineEntity } from '@dance-engine/ui/types'
 import DynamicForm from "@dance-engine/ui/form/DynamicForm";
 import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Import the schema
 import { FieldValues } from "react-hook-form";
+import {useOrgContext} from '@dance-engine/utils/OrgContext'
+import { useAuth } from '@clerk/nextjs'
 // import KSUID from "ksuid";
 // import { useRouter,usePathname } from "next/navigation";
 // import { useEffect } from "react";
@@ -12,9 +14,41 @@ const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker')
 
 
 const PageClient = ({ ksuid }: { ksuid?: string }) => {
-  const handleSubmit = (data: FieldValues) => {
-    console.log("Form Submitted:", data);
+  
+  
+    
+  
+  
+  const { activeOrg } = useOrgContext() 
+  const { getToken } = useAuth()
+  const createUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
+
+
+  const handleSubmit = async (data: FieldValues) => {
+    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
+    try {
+      const res = await fetch(createUrlEndpoint, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await getToken()}`
+
+        },
+        body: JSON.stringify(data),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        throw new Error(result.message || "Something went wrong")
+      }
+
+      console.log("Event created!", result)
+    } catch (err) {
+      console.error("Error creating event", err)
+    }
   };
+
   // const router = useRouter()
   // const path = usePathname()
   
@@ -29,7 +63,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     ksuid: ksuid // Extract the ksuid if it exists
   } as DanceEngineEntity
 
-  return ksuid && ksuid != 'new' ? <DynamicForm schema={eventSchema} metadata={eventMetadata} onSubmit={handleSubmit} MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
+  return ksuid && ksuid != 'new' && activeOrg ? <DynamicForm schema={eventSchema} {...(activeOrg ? {orgSlug: activeOrg} : {})} metadata={eventMetadata} onSubmit={handleSubmit}  MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
 }
 
 export default PageClient

@@ -19,7 +19,7 @@ $entriesJson = @(
   @{
     Source = "app.organisation"
     DetailType = "CreateOrganisation"
-    Detail = '{"OrganisationId":"demo","Stage":"preview"}'
+    Detail = '{"OrganisationSlug":"demo","Stage":"preview"}'
   }
 ) | ConvertTo-Json -Compress | ConvertTo-Json -Compress
 

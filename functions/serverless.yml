@@ -16,7 +16,7 @@ custom:
     number: 10
   config_bucket: "${sls:stage}-danceengine-config"
   upload_bucket: "${sls:stage}-danceengine-uploads"
-  dynamodb_table_format: "${sls:stage}-org_name-events"
+  dynamodb_table_format: "${sls:stage}-org-org_name"
   core_table_name: "${sls:stage}-core-danceengine"
   s3Sync:
     - bucketName: ${self:custom.config_bucket}
@@ -81,6 +81,8 @@ provider:
             - { "Fn::Join": [ "/", [ 
                 { "Fn::GetAtt": ["CoreDanceEngineTable", "Arn" ] }, "*" 
               ]]}
+            - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*"
+            - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*/*"
         #     - Fn::GetAtt: [StripeProductsTable, Arn]
         #     - Fn::GetAtt: [MLF24Table, Arn]
         #     - { "Fn::Join": [ "/", [ 
@@ -282,3 +284,4 @@ functions:
             adminAuthorizer
 
   CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}
+  StackProvisioned: ${file(serverless.privileged.yaml):functions.StackProvisioned}

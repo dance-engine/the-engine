@@ -48,7 +48,12 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   const fields = Object.keys(schema.shape);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
+    <form onSubmit={handleSubmit((data) => {
+        onSubmit(data)
+        console.log("submitted")
+        setValue("meta.saved", "sent") 
+      })} 
+      className="space-y-4 w-full">
       <Debug debug={watch()} className="absolute right-10 "/>
       {fields.map((field) => {
         const rawSchema = schema.shape[field];

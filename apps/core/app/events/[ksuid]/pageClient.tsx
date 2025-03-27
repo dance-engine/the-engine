@@ -21,6 +21,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
   const handleSubmit = async (data: FieldValues) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
+    const {_meta, ...cleanedData} = data
+    console.log("Meta", _meta)
+    const eventId = `EVENT#${data.ksuid}`
     try {
       const res = await fetch(createUrlEndpoint, {
         method: "POST",
@@ -29,16 +32,24 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(cleanedData),
       })
 
       const result = await res.json()
 
+      const previousCache = JSON.parse(localStorage.getItem(eventId) || '{}')
       if (!res.ok) {
+        const failedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'failed' }}})
+        localStorage.setItem(eventId,failedCache)
+        console.error("Failed to save",eventId,failedCache)
         throw new Error(result.message || "Something went wrong")
+      } else {
+        const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved' }}})
+        localStorage.setItem(eventId,savedCache)
+        console.log("Event created!", result, eventId,savedCache)
       }
-
-      console.log("Event created!", result)
+     
+      
     } catch (err) {
       console.error("Error creating event", err)
     }

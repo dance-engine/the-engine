@@ -19,9 +19,7 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
-const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/organisation/generate-presigned-url`
-
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -34,6 +32,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     defaultValues: initValues,
     resolver: zodResolver(schema) 
   });
+
+  const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
 
   useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', {watch,setValue, ...(typeof window === "undefined" ? {} : { storage: window.localStorage })})
   useEffect(()=>{

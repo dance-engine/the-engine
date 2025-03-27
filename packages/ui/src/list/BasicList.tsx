@@ -1,8 +1,8 @@
 'use client'
 import Link from 'next/link'
 import { BasicListProps } from '@dance-engine/ui/types' 
-import { labelFromSnake, formatField } from '@dance-engine/utils/textHelpers'
-import { deDupKeys } from '@dance-engine/utils/arrayHelpers'
+import { labelFromSnake, formatField, nameFromHypenated } from '@dance-engine/utils/textHelpers'
+import { deDupKeys,groupByToArray, getNestedValue } from '@dance-engine/utils/arrayHelpers'
 
 
 const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ columns, formats, records, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
@@ -10,25 +10,6 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   const restHeaderClasses = "px-3"
   const allHeaderClasses = "py-3.5 text-left text-sm font-semibold text-gray-900"
   const columnKeys = deDupKeys(columns)
-
-
-  const getNestedValue = (obj: Record<string, any>, path: string): string | number | boolean | null => {
-    const raw = path.split('.').reduce((acc, key) => {
-      return acc && acc[key] !== undefined ? acc[key] : undefined
-    }, obj)
-  
-    if (raw === undefined || raw === null) return null
-  
-    if (typeof raw === 'object') {
-      try {
-        return JSON.stringify(raw)
-      } catch {
-        return '[Object]'
-      }
-    }
-  
-    return raw
-  }
 
   return (
   <div className='w-full'>
@@ -52,23 +33,31 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {records.map((record)=>{
-                return <tr key={`${record.ksuid}`}>
-                  {
-                    columns.map((col,idx)=>{
-                      const value = getNestedValue(record, col) || ''
-                      return <td key={`${record.ksuid}-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses].join(' ')}>
-                        {formatField(value || '',formats?.[idx] ) || "-"}
+              {groupByToArray(records, r => getNestedValue(r, "meta.saved")).map((group)=>{
+                return (
+                  <>
+                    <tr><td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved"))}</h2></td></tr>
+                    {group[1].map((record)=>{
+                      return <tr key={`${record.ksuid}`}>
+                        {
+                          columns.map((col,idx)=>{
+                            const value = getNestedValue(record, col) || ''
+                            return <td key={`${record.ksuid}-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses].join(' ')}>
+                              {formatField(String(value || ''),formats?.[idx] ) || "-"}
+                            </td>
+                          })
+                        }
+                        <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 ">
+                        <Link href={`/events/${record.ksuid}`} className=" bg-cerise-logo text-white px-3 py-1 rounded">
+                          Edit<span className="sr-only">, {record.name}</span>
+                        </Link>
                       </td>
-                    })
-                  }
-                  <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 ">
-                  <Link href={`/events/${record.ksuid}`} className=" bg-cerise-logo text-white px-3 py-1 rounded">
-                    Edit<span className="sr-only">, {record.name}</span>
-                  </Link>
-                </td>
-                </tr>
+                      </tr>
+                    })}   
+                  </>
+                )
               })}
+              
             </tbody>
           </table>
         </div>

@@ -19,13 +19,13 @@ export function PromoCard({
   const colourClass = colour == 'cerise' ? "bg-cerise-on-light" : colour == 'pear' ? "bg-pear-on-light" : colour == 'keppel' ? "bg-keppel-on-light" : "bg-dark-background"
   return (
     <div className="relative rounded-xl shadow-contained  ">
-    <div className="overflow-hidden rounded-lg bg-white ">
+    <div className="overflow-hidden rounded-lg bg-white flex flex-col justify-between h-full">
       <div className="px-4 py-5 sm:p-6">
         <h2 className="text-2xl">{title}</h2>
         {children}
       </div>
-      <div className={`${colourClass} px-4 py-4 sm:px-6`}>
-       <Link href={href} className="text-white font-bold flex items-center justify-between">{cta} <FaArrowRightLong /></Link>
+      <div className={`${colourClass} `}>
+       <Link href={href} className="text-white font-bold flex items-center justify-between h-full w-full px-4 py-4 sm:px-6">{cta} <FaArrowRightLong /></Link>
       </div>
     </div>
     </div>

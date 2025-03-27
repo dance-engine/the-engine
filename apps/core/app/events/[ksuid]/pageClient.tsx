@@ -15,14 +15,9 @@ const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker')
 
 const PageClient = ({ ksuid }: { ksuid?: string }) => {
   
-  
-    
-  
-  
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
   const createUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
-
 
   const handleSubmit = async (data: FieldValues) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
@@ -48,15 +43,6 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
       console.error("Error creating event", err)
     }
   };
-
-  // const router = useRouter()
-  // const path = usePathname()
-  
-  // useEffect(() => {
-  //   const generatedKsuid = `${KSUID.randomSync().string}`
-  //   console.log("effect",ksuid,generatedKsuid)
-  //   if (!ksuid || ksuid == 'new') { router.replace([path.replace('/new',''),generatedKsuid].join('/')) }
-  // },[])
 
   const eventEntityId = {
     type: "EVENT",

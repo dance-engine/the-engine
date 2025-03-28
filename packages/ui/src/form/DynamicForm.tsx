@@ -106,7 +106,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
                 {/* {JSON.stringify(getValues(field))} */}
-                {typeof window !== "undefined" &&<LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
+                {typeof window !== "undefined" && <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
               register={register} setValue={setValue} validate={() => {trigger(field)}}
               error={{
                 name: (errors[field] as unknown as {name: {message:string}})?.name?.message, 
@@ -137,7 +137,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         );
       })}
 
-      <button type="submit" onClick={(e)=>{console.log("Clieck",e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md">
+      <button type="submit" onClick={(e)=>{console.log("Click", e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md">
         Save
       </button>
     </form>

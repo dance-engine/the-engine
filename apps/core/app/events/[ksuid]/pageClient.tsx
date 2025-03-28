@@ -6,6 +6,7 @@ import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Im
 import { FieldValues } from "react-hook-form";
 import {useOrgContext} from '@dance-engine/utils/OrgContext'
 import { useAuth } from '@clerk/nextjs'
+import { useRouter } from "next/navigation";
 // import KSUID from "ksuid";
 // import { useRouter,usePathname } from "next/navigation";
 // import { useEffect } from "react";
@@ -14,7 +15,7 @@ const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker')
 
 
 const PageClient = ({ ksuid }: { ksuid?: string }) => {
-  
+  const router = useRouter()
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
   const createUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
@@ -47,6 +48,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved' }}})
         localStorage.setItem(eventId,savedCache)
         console.log("Event created!", result, eventId,savedCache)
+        router.push("/events")
       }
      
       

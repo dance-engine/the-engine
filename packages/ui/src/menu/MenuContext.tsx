@@ -5,6 +5,7 @@ import React, { createContext, useState, ReactNode, useContext } from 'react';
 type MenuContextType = {
   isOpen: boolean;
   toggleMenu: () => void;
+  closeMenu: () => void;
 };
 
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
@@ -16,8 +17,12 @@ export const MenuProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsOpen((prev) => !prev);
   };
 
+  const closeMenu = () => {
+    setIsOpen(false)
+  }
+
   return (
-    <MenuContext.Provider value={{ isOpen, toggleMenu }}>
+    <MenuContext.Provider value={{ isOpen, toggleMenu, closeMenu }}>
       {children}
     </MenuContext.Provider>
   );

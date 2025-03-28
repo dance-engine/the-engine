@@ -7,7 +7,7 @@ import Link from 'next/link'
 // import {usePathname, useRouter, useSearchParams} from 'next/navigation'
 
 const MobileMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
-  const { isOpen } = useMenu();
+  const { isOpen, closeMenu } = useMenu();
 
   return (
     <div className={`${isOpen ? "" : "hidden"} relative lg:hidden`} role="dialog" aria-label="Mobile Menu"  style={{zIndex: 1002}} aria-modal="true">
@@ -36,7 +36,12 @@ const MobileMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
                     <ul role="list" className="-mx-2 mt-2 space-y-1">
                       {section.contents.map((menuItem,idx)=>{
                         return (<li key={`menu-item-${idx}`}>
-                          <Link href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
+                          <Link href={menuItem.link} onClick={(e) => {
+                              e.currentTarget.blur()
+                              closeMenu()
+                            }}
+
+                            className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
                             {menuItem.icon}
                             {menuItem.title}
                           </Link>

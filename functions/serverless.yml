@@ -16,7 +16,8 @@ custom:
     number: 10
   config_bucket: "${sls:stage}-danceengine-config"
   upload_bucket: "${sls:stage}-danceengine-uploads"
-  dynamodb_table_format: "${sls:stage}-org_name-events"
+  dynamodb_table_format: "${sls:stage}-org-org_name"
+  core_table_name: "${sls:stage}-core-danceengine"
   s3Sync:
     - bucketName: ${self:custom.config_bucket}
       localDir: ../aws/s3/
@@ -55,24 +56,33 @@ provider:
   memorySize: 128 # I think this might be overkill
   region: eu-west-1
   stage: ${opt:stage, env:stage, 'preview'}
+
+  tags:
+    DanceEngineVersion: v2
+
   iam:
     role:
       statements:
-        # - Effect: Allow
-        #   Action:
-        #     - dynamodb:Query
-        #     - dynamodb:Scan
-        #     - dynamodb:GetItem
-        #     - dynamodb:PutItem
-        #     - dynamodb:UpdateItem
-        #     - dynamodb:DeleteItem
-        #     - dynamodb:DescribeStream
-        #     - dynamodb:GetRecords
-        #     - dynamodb:GetShardIterator
-        #     - dynamodb:ListStreams
-        #     - dynamodb:BatchGetItem
-        #   Resource:
-        #     - Fn::GetAtt: [AttendeesTable, Arn]
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:DescribeStream
+            - dynamodb:GetRecords
+            - dynamodb:GetShardIterator
+            - dynamodb:ListStreams
+            - dynamodb:BatchGetItem
+          Resource:
+            - Fn::GetAtt: [CoreDanceEngineTable, Arn]
+            - { "Fn::Join": [ "/", [ 
+                { "Fn::GetAtt": ["CoreDanceEngineTable", "Arn" ] }, "*" 
+              ]]}
+            - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*"
+            - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*/*"
         #     - Fn::GetAtt: [StripeProductsTable, Arn]
         #     - Fn::GetAtt: [MLF24Table, Arn]
         #     - { "Fn::Join": [ "/", [ 
@@ -104,7 +114,7 @@ provider:
     authorizers:
       adminAuthorizer:
         type: request
-        functionName: authorizerFunc
+        functionName: AuthorizerFunc
 
 #######################
 # Resources
@@ -130,12 +140,18 @@ resources:
               ExposedHeaders:
                 - ETag
               MaxAge: 3000
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
     ConfigBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.config_bucket}
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
     DeployOrgRole: ${file(serverless.privileged.yaml):resources.Resources.DeployOrgRole}
-    
+    CoreDanceEngineTable: ${file(serverless.resource.yaml):resources.Resources.CoreDanceEngineTable}
                 
 #######################
 # Layers
@@ -160,9 +176,10 @@ layers:
 
 functions:
 
-  authorizerFunc:
+  AuthorizerFunc:
     runtime: python3.11
     handler: authorizer/lambda_functions.auth_handler
+    name: "${sls:stage}-${self:service}-authoriser"
     layers:
       - !Ref AuthLambdaLayer
     environment:
@@ -177,7 +194,7 @@ functions:
   TriggerAnEvent:
     runtime: python3.11
     handler: event_bridge/lambda_functions.trigger_handler
-    name: "${sls:stage}-trigger-event"
+    name: "${sls:stage}-${self:service}-trigger-eventbridge"
     package:
       patterns:
         - '!**/**'
@@ -206,7 +223,12 @@ functions:
   ReceiveEvent:
     runtime: python3.11
     handler: event_bridge/lambda_functions.receive_handler
-    name: "${sls:stage}-receive-event"
+    name: "${sls:stage}-${self:service}-receive-eventbridge"
+    package:
+      patterns:
+        - '!**/**'
+        - "event_bridge/**"
+        - "shared/**"
     events:
       - eventBridge:
           pattern:
@@ -217,7 +239,7 @@ functions:
 
   Events:
     runtime: python3.11
-    handler: events/lambda_events.handler_create
+    handler: events/lambda_events.lambda_handler
     name: "${sls:stage}-${self:service}-events"
     package:
       patterns:
@@ -225,13 +247,19 @@ functions:
         - "events/**"
         - "_shared/**"
     environment:
-      EVENT_BASE_TABLE_NAME: ${self:custom.dynamodb_table_format}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
     layers:
       - !Ref UtilsLambdaLayer
     events:
       - httpApi:
           path: /{organisation}/events
           method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+      - httpApi:
+          path: /{organisation}/events
+          method: post
           authorizer:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events} 
@@ -262,3 +290,4 @@ functions:
             adminAuthorizer
 
   CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}
+  StackProvisioned: ${file(serverless.privileged.yaml):functions.StackProvisioned}

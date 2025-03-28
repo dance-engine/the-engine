@@ -19,9 +19,7 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
-const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/organisation/generate-presigned-url`
-
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -34,6 +32,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     defaultValues: initValues,
     resolver: zodResolver(schema) 
   });
+
+  const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
 
   useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', {watch,setValue, ...(typeof window === "undefined" ? {} : { storage: window.localStorage })})
   useEffect(()=>{
@@ -48,7 +48,12 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   const fields = Object.keys(schema.shape);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
+    <form onSubmit={handleSubmit((data) => {
+        onSubmit(data)
+        console.log("submitted")
+        setValue("meta.saved", "saving") 
+      })} 
+      className="space-y-4 w-full">
       <Debug debug={watch()} className="absolute right-10 "/>
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
@@ -101,7 +106,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
                 {/* {JSON.stringify(getValues(field))} */}
-              <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
+                {typeof window !== "undefined" &&<LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
               register={register} setValue={setValue} validate={() => {trigger(field)}}
               error={{
                 name: (errors[field] as unknown as {name: {message:string}})?.name?.message, 
@@ -110,7 +115,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               // error={
               //   errors[field] ? {name: errors[field]['name'].message as string, lat: errors[field]['lat'].message,lng: errors[field]['lng'].message } 
               //   : {name:"", lat:"", lng:""} 
-              />
+              />}
               
               </div>
             ) : fieldType === "ZodNumber" ? (
@@ -132,8 +137,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         );
       })}
 
-      <button type="submit" className="bg-blue-600 text-white py-2 px-4 rounded-md">
-        Submit
+      <button type="submit" onClick={(e)=>{console.log("Clieck",e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md">
+        Save
       </button>
     </form>
   );

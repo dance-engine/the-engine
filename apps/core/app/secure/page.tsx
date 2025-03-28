@@ -3,7 +3,7 @@ import useClerkSWR from '@dance-engine/utils/clerkSWR';
 import { useOrgContext } from '@dance-engine/utils/OrgContext';
 
 // const mealSummaryApiUrl = "https://a5qvybvrc7.execute-api.eu-west-1.amazonaws.com/test"
-const exampleApiCall = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}{org}/events`
+const exampleApiCall = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`
 
 export default function SecurePage() {
   // const {data: summaryData, error: summaryError, isLoading: summaryLoading, isValidating: summaryValidating} = useClerkSWR(exampleApiCall);

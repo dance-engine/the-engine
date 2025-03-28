@@ -27,9 +27,9 @@ export const getIcon = (fieldValue: string | string | number | boolean | null ) 
         createElement(IoCloudOffline, { className: 'w-6 h-6' }, ''),
         createElement('span', { className: 'sr-only' }, 'Failed')
       )
-    case 'sent':
+    case 'saving':
       return createElement('span',{ className: ''},
-        createElement(IoCloudUpload, { className: 'w-6 h-6' }, ''),
+        createElement(IoCloudUpload, { className: 'w-6 h-6 animate-pulse' }, ''),
         createElement('span', { className: 'sr-only' }, 'Sent')
       )      
     default:

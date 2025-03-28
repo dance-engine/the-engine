@@ -51,7 +51,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     <form onSubmit={handleSubmit((data) => {
         onSubmit(data)
         console.log("submitted")
-        setValue("meta.saved", "sent") 
+        setValue("meta.saved", "saving") 
       })} 
       className="space-y-4 w-full">
       <Debug debug={watch()} className="absolute right-10 "/>

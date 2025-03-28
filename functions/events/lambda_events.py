@@ -21,6 +21,18 @@ logger.setLevel("INFO")
 db = boto3.resource("dynamodb")
 ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
 
+def get_events(organisationSlug):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
+
+    response = table.query(
+                IndexName="gsi1",
+                KeyConditionExpression=Key("gsi1PK").eq(f"EVENTLIST#{organisationSlug}") & Key("gsi1SK").begins_with("EVENT#"),
+                ScanIndexForward=True
+            )
+    events = response.get("Items", [])
+    return events
 
 def create_event(event_data,organisationSlug):
     """
@@ -40,19 +52,22 @@ def create_event(event_data,organisationSlug):
     location_data = event_data.get('location')
     current_time = datetime.now(timezone.utc).isoformat()
     event_item = {
-            "event_slug":       f"{generate_slug(event_data.get('name'))}",
-            "organisation":     organisationSlug,
-            "type":             "EVENT",
-            "name":             event_data.get('name'),
-            "starts_at":        event_data.get("starts_at"),
-            "ends_at":          event_data.get("ends_at"),
-            "category":         ", ".join(str(cat) for cat in event_data.get("category")),
-            "total_capacity":   event_data.get("capacity"),
-            "number_sold":      0,
-            "created_at":       current_time,
-            "updated_at":       current_time,
-            "description":      event_data.get("description"),
-        }
+        "ksuid":            f"{clientKsuid}",
+        "event_slug":       f"{generate_slug(event_data.get('name'))}",
+        "organisation":     organisationSlug,
+        "type":             "EVENT",
+        "name":             event_data.get('name'),
+        "starts_at":        event_data.get("starts_at"),
+        "ends_at":          event_data.get("ends_at"),
+        "category":         ", ".join(str(cat) for cat in event_data.get("category")),
+        "total_capacity":   event_data.get("capacity"),
+        "number_sold":      0,
+        "created_at":       current_time,
+        "updated_at":       current_time,
+        "description":      event_data.get("description"),
+        "gsi1PK":           f"EVENTLIST#{organisationSlug}",
+        "gsi1SK":           f"EVENT#{clientKsuid}"
+    }
     
 
     try:
@@ -120,7 +135,10 @@ def lambda_handler(event, context):
             return {"statusCode": 201, "body": json.dumps({"message": "Event created successfully.", "event": created_event}, cls=DecimalEncoder)}
 
         elif http_method == "GET":
-            return {"statusCode": 405, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}
+            events = get_events(organisationSlug)
+            if events is None:
+                return {"statusCode": 404, "body": json.dumps({"message": "No Events found."})}
+            return {"statusCode": 200, "body": json.dumps(events, cls=DecimalEncoder)}
 
         elif http_method == "PUT":
             return {"statusCode": 405, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}

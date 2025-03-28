@@ -19,7 +19,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
         <div className="inline-block min-w-full py-2 align-middle">
           <table className="min-w-full divide-y divide-gray-300 " {...tableProps}>
             <thead className=''>
-              <tr className='sticky top-16 '>
+              <tr className='sticky top-16 z-10'>
                 { columns.map((col,idx) => {
                                       
                   return <th key={`${columnKeys[idx]}-key`} scope="col" className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses,"bg-dark-highlight/90  text-white"].join(' ')} >
@@ -48,8 +48,8 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                           })
                         }
                         <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 ">
-                        <Link href={`/events/${record.ksuid}`} className=" bg-cerise-logo text-white px-3 py-1 rounded">
-                          Edit<span className="sr-only">, {record.name}</span>
+                        <Link href={`/events/${record.ksuid}`} className=" bg-cerise-logo text-white px-3 py-1 rounded z-0">
+                          Edit<span className="sr-only">, {String(record.name)}</span>
                         </Link>
                       </td>
                       </tr>

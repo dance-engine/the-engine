@@ -253,6 +253,12 @@ functions:
     events:
       - httpApi:
           path: /{organisation}/events
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+      - httpApi:
+          path: /{organisation}/events
           method: post
           authorizer:
             adminAuthorizer

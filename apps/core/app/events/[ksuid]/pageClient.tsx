@@ -61,7 +61,6 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   } as DanceEngineEntity
 
   return ksuid && ksuid != 'new' && activeOrg ? <DynamicForm schema={eventSchema} {...(activeOrg ? {orgSlug: activeOrg} : {})} metadata={eventMetadata} onSubmit={handleSubmit}  MapComponent={MapPicker} persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
-  // return ksuid && ksuid != 'new' && activeOrg ? <DynamicForm schema={eventSchema} {...(activeOrg ? {orgSlug: activeOrg} : {})} metadata={eventMetadata} onSubmit={handleSubmit}  persistKey={eventEntityId} initValues={{ksuid: eventEntityId.ksuid}}/> : null
 }
 
 export default PageClient

@@ -5,12 +5,12 @@ import {
   SignInButton,
   // SignUpButton,
   SignedIn,
-  SignedOut,
+  // SignedOut,
   // UserButton,
   SignOutButton,
   useUser
 } from '@clerk/nextjs'
-import Link from 'next/link'
+// import Link from 'next/link'
 
 const ProfileControl = () => {
   const [profileMenuOpen,setProfileMenuOpen] = useState(false)

@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useForm, FieldValues, Controller } from "react-hook-form";
 import useFormPersist from 'react-hook-form-persist'
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,7 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey, orgSlug}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, defaultValues, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -29,21 +29,33 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     setValue,
     formState: { errors },
   } = useForm<FieldValues>({ 
-    defaultValues: initValues,
+    defaultValues: defaultValues,
     resolver: zodResolver(schema) 
   });
 
-  const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
+  // console.log("persistKey",persistKey)
 
-  useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', {watch,setValue, ...(typeof window === "undefined" ? {} : { storage: window.localStorage })})
-  useEffect(()=>{
-    if(typeof window !== "undefined" && persistKey ) {
-      const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
-      const currentHistory = JSON.parse(currentHistoryString)
-      const newHistory = [...new Set([...(currentHistory.flat()),persistKey.ksuid])]
-      window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
-    }
-  },[persistKey])
+  const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
+  const hasBeenRestored = useRef(false)
+  // useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', 
+  //   {-
+  //     watch,
+  //     setValue, 
+  //     ...(typeof window === "undefined" ? {} : { storage: window.localStorage }),
+  //     onDataRestored: (data) => {
+  //         hasBeenRestored.current = true
+  //         console.log("Restored", data)
+  //     }
+  //   }
+  // )
+  // useEffect(()=>{
+  //   if(typeof window !== "undefined" && persistKey ) {
+  //     const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
+  //     const currentHistory = JSON.parse(currentHistoryString)
+  //     const newHistory = [...new Set([...(currentHistory.flat()),persistKey.ksuid])]
+  //     window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
+  //   }
+  // },[])
   
   const fields = Object.keys(schema.shape);
 
@@ -52,6 +64,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         onSubmit(data)
         console.log("submitted")
         setValue("meta.saved", "saving") 
+        setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full">
       <Debug debug={watch()} className="absolute right-10 "/>
@@ -131,7 +144,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               register={register} validate={() => {trigger(field)}}
               error={errors[field]?.message as string}  />
             ) : (
-              <div>Unknown field {field} : {fieldType}</div>
+              <div className="hidden">Unknown field {field} : {fieldType}</div>
             )}
           </div>
         );

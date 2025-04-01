@@ -122,7 +122,7 @@ export interface DynamicFormProps<T extends ZodObject<ZodRawShape>> {
   metadata?: MetaData;
   onSubmit: (data: FieldValues) => void;
   MapComponent?: React.FC<MapPickerProps>; // Has to be a client component and load dynamically from nextjs
-  initValues?: ZodInfer<T>; // 🔥 Extracts the correct type from schema
+  defaultValues?: ZodInfer<T>; // 🔥 Extracts the correct type from schema
   persistKey?: DanceEngineEntity
   orgSlug?: string
 }

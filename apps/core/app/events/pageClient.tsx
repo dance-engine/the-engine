@@ -29,7 +29,7 @@ const PageClient = ({ entity }: { entity?: string }) => {
   
   const localEntities = useMemo(() => {
     return typeof window !== "undefined" && entity ? getEntity(entity): []
-  },[])
+  },[entity])
 
   const allEntities = useMemo(() => {
     // return [...remoteEntities,...localEntities]
@@ -45,7 +45,13 @@ const PageClient = ({ entity }: { entity?: string }) => {
     localEntities.forEach((r: EventType) => {
       const id = String(r.ksuid)
       if (!byId.has(id)) {
-        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local' } })
+        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-only' } })
+      }
+      else if(byId.get(id) && r.meta && byId.get(id)?.updated_at && r.meta.updated_at && r.meta.updated_at > byId.get(id)?.updated_at ) {
+        byId.set(id, { ...byId.get(id), ...r, meta: { ...(r.meta ?? {}), valid: true, source: 'both', saved: "changed-locally"} })
+      }
+      else {
+        console.log("Remote ent: ",id,byId.get(id).updated_at,r.meta.updated_at)
       }
     })
     return Array.from(byId.values())

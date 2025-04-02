@@ -20,7 +20,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
   const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
-  const createUrlEndpoint = baseUrlEndpoint+"fail"
+  const createUrlEndpoint = baseUrlEndpoint
   const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
   // const { data: remoteEntity = { type: "EVENT", ksuid: ksuid }, error, isLoading} = useClerkSWR(eventsApiUrl)
   const defaultEntity = useMemo(() => ({ type: "EVENT", ksuid }), [ksuid])
@@ -66,6 +66,18 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   };
 
 
+  // useEffect(()=>{
+  //   console.log("Effected",remoteEntity[0])
+  //   const blankEntity = {
+  //     type: "EVENT",
+  //     ksuid: ksuid // Extract the ksuid if it exists
+  //   } as DanceEngineEntity
+  //   const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
+  //   // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
+  //   const initEntity = {...blankEntity, ...remoteEntity[0]}
+  //   setEntity(initEntity)
+  // },[remoteEntity])
+
   useEffect(()=>{
     console.log("Effected",remoteEntity[0])
     const blankEntity = {
@@ -73,7 +85,8 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
       ksuid: ksuid // Extract the ksuid if it exists
     } as DanceEngineEntity
     const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
-    const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
+    // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
+    const initEntity = {...blankEntity, ...remoteEntity[0]}
     setEntity(initEntity)
   },[remoteEntity])
 
@@ -87,17 +100,20 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
   
 
-  return entity && entity.ksuid && entity.ksuid != ''
-    ? <DynamicForm 
+  return !isLoading && entity && entity.ksuid && entity.ksuid != ""
+    ? <><DynamicForm 
         schema={eventSchema} 
         {...(activeOrg ? {orgSlug: activeOrg} : {})} 
         metadata={eventMetadata} 
         onSubmit={handleSubmit}  
         MapComponent={MapPicker} 
         persistKey={entity} 
-        defaultValues={entity}
-      /> 
-    : null
+        data={entity}
+      />
+      {JSON.stringify(entity)}
+        <pre>{JSON.stringify(entity,null,2)}</pre>
+      </> 
+    : <pre>{JSON.stringify(entity,null,2)}</pre>
 
   return <pre>{JSON.stringify(entity,null,2)}</pre>
 }

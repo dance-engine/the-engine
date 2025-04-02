@@ -39,7 +39,7 @@ export interface LocationPickerProps {
   setValue: UseFormSetValue<FieldValues>;
   control: Control<FieldValues>;
   MapComponent?: React.FC<MapPickerProps>;
-  error: {name:string, lat:string, lng:string};
+  error?: {name:string, lat:string, lng:string, address:string };
   fieldSchema: ZodTypeAny; // This will be the location schema passed to each field
 }
 
@@ -122,7 +122,7 @@ export interface DynamicFormProps<T extends ZodObject<ZodRawShape>> {
   metadata?: MetaData;
   onSubmit: (data: FieldValues) => void;
   MapComponent?: React.FC<MapPickerProps>; // Has to be a client component and load dynamically from nextjs
-  defaultValues?: ZodInfer<T>; // 🔥 Extracts the correct type from schema
+  data?: ZodInfer<T>; // 🔥 Extracts the correct type from schema
   persistKey?: DanceEngineEntity
   orgSlug?: string
 }

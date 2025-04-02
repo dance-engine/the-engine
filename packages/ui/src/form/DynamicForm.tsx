@@ -1,7 +1,6 @@
 'use client'
 import React, { useEffect, useRef } from "react";
 import { useForm, FieldValues, Controller } from "react-hook-form";
-import useFormPersist from 'react-hook-form-persist'
 import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
@@ -19,7 +18,7 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, defaultValues, persistKey, orgSlug}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -27,27 +26,17 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     trigger,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FieldValues>({ 
-    defaultValues: defaultValues,
+    defaultValues: data,
     resolver: zodResolver(schema) 
   });
 
   // console.log("persistKey",persistKey)
 
   const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
-  const hasBeenRestored = useRef(false)
-  // useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', 
-  //   {-
-  //     watch,
-  //     setValue, 
-  //     ...(typeof window === "undefined" ? {} : { storage: window.localStorage }),
-  //     onDataRestored: (data) => {
-  //         hasBeenRestored.current = true
-  //         console.log("Restored", data)
-  //     }
-  //   }
-  // )
+
   // useEffect(()=>{
   //   if(typeof window !== "undefined" && persistKey ) {
   //     const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
@@ -56,6 +45,11 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   //     window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
   //   }
   // },[])
+
+  useEffect(() => {
+    console.log("RESET",data)
+    reset(data)
+  },[data,reset])
   
   const fields = Object.keys(schema.shape);
 
@@ -68,6 +62,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
       })} 
       className="space-y-4 w-full">
       <Debug debug={watch()} className="absolute right-10 "/>
+      {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;
@@ -124,7 +119,10 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               error={{
                 name: (errors[field] as unknown as {name: {message:string}})?.name?.message, 
                 lat:(errors[field] as unknown as {lat: {message:string}})?.lat?.message, 
-                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message }}
+                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message,
+                address: (errors[field] as unknown as {address: {message:string}})?.address?.message 
+              }}
+
               // error={
               //   errors[field] ? {name: errors[field]['name'].message as string, lat: errors[field]['lat'].message,lng: errors[field]['lng'].message } 
               //   : {name:"", lat:"", lng:""} 

@@ -76,7 +76,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     setValue(`${name}.name`, location.title); // Set location name
     setValue(`${name}.lat`, position.lat); // Set latitude
     setValue(`${name}.lng`, position.lng); // Set longitude
-    if(address) { setValue('address',location.address.label) } //TODO This should have a sub fields thing sent in or address should be part of location
+    setValue(`${name}.address`,address) //TODO This should have a sub fields thing sent in or address should be part of location
     if (validate){validate()}
   };
 
@@ -116,7 +116,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         name={`${name}.name`}
         htmlFor={name}
         fieldSchema={fieldSchema}
-        error={error.name}
+        error={error?.name}
       >
         {/* {JSON.stringify(error['name'])} */}
         { isClient ? <AsyncSelect
@@ -156,7 +156,6 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         <input
           type="hidden"
           {...register(`${name}.lat`, { valueAsNumber: true })} // Use valueAsNumber for proper numeric input handling
-          className="border p-2 rounded-md"
           placeholder="Enter latitude"
         />
       {/* </CustomComponent> */}
@@ -170,10 +169,21 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         <input
         type="hidden"
           {...register(`${name}.lng`, { valueAsNumber: true })}
-          className="border p-2 rounded-md"
           placeholder="Enter longitude"
         />
       {/* </CustomComponent> */}
+      
+      <CustomComponent
+        label="Address" name={`${name}.address`} fieldSchema={fieldSchema}
+        error={error?.address}
+      >
+        <input
+          type="text"
+          {...register(`${name}.address`)} // Use valueAsNumber for proper numeric input handling
+          className="border p-2 rounded-md border-gray-300"
+          placeholder="Address"
+        />
+      </CustomComponent>
 
       {/* Error Handling (optional) */}
       {/* {error && <p className="text-red-600 text-sm">{error}</p>} */}

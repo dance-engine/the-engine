@@ -6,7 +6,7 @@ import { locationSchema } from "./locationSchema.js";
 export const eventSchema = z.object({
   ksuid: z.string().describe("ID of the event"),
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
-  banner: z.string().describe('Appears at the top of your page'),
+  banner: z.string().optional().describe('Appears at the top of your page'),
   starts_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
   }).describe("Select the event start."),
@@ -17,8 +17,7 @@ export const eventSchema = z.object({
   category: z.enum(["congress", "workshop", "party", "class", "lecture"]).array().min(1,"Must have at least one category").describe("Category"),
   // venue: z.enum(["Indoor", "Outdoor", "Virtual"]).describe("Select the type of venue."),
   location: locationSchema.describe("The event location"),
-  address: z.string().min(5, "Address must be at least 5 characters").describe("Enter the full event address."),
-  capacity: z.coerce.number().min(1,"Capacity must be at least 1 if set").optional().describe("Maximum number of attendees."),
+  capacity: z.coerce.number().min(1,"Capacity must be at least 1 if set").describe("Maximum number of attendees."),
   meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
 });
 

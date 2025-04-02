@@ -15,9 +15,9 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   return (
   <div className='w-full'>
     {/* {columns} */}
-    <div className="mt-4 flow-root">
+    <div className=" flow-root ">
       <div className="relative">
-        <div className="inline-block min-w-full py-2 align-middle">
+        <div className="inline-block min-w-full py-0 align-middle">
           <table className="min-w-full divide-y divide-gray-300 " {...tableProps}>
             <thead className=''>
               <tr className='sticky top-16 z-10'>

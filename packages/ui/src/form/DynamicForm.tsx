@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { useForm, FieldValues, Controller,} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
+import { EventType } from '@dance-engine/schemas/events'
 
 import TextInput from "@dance-engine/ui/form/fields/TextInput";
 import HiddenInput from "@dance-engine/ui/form/fields/HiddenInput"
@@ -17,6 +18,7 @@ import FileUploader from "./fields/FileUploader";
 import { DynamicFormProps } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
+import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
 
 const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
@@ -27,20 +29,32 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<FieldValues>({ 
     defaultValues: data,
     resolver: zodResolver(schema) 
   });
 
   const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
+  const watchedValues = watch();
+  const { status: autosaveStatus, isStatusVisible: isAutosaveStatusVisible,  loadFromStorage } = useLocalAutoSave<EventType>({
+    data: watchedValues as EventType,
+    entityType: 'EVENT',
+    remoteUpdatedAt: data?.updated_at,
+    isDirty
+  });
 
   useEffect(() => {
-    reset(data)
-  },[data,reset])
+    const draft = loadFromStorage();
+    if (draft) { 
+      reset(draft)
+    } else { 
+      reset(data)
+    }  
+  }, [loadFromStorage, data, reset]);
   
   const fields = Object.keys(schema.shape);
-  const watchedValues = watch();
+  // const watchedValues = watch();
 
   return (
     <form onSubmit={handleSubmit((data) => {
@@ -49,8 +63,9 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         setValue("meta.saved", "saving") 
         setValue("meta.updated_at", new Date().toISOString())
       })} 
-      className="space-y-4 w-full">
-      <Debug debug={watchedValues} className="absolute right-10 "/>
+      className="space-y-4 w-full relative">
+      <Debug debug={watchedValues} className="absolute right-0"/>
+      <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
         const rawSchema = schema.shape[field];

@@ -21,9 +21,10 @@ const PageClient = ({ entity }: { entity?: string }) => {
   });
   
   const getEntity = (entityType: string) => {
-    const cached = window.localStorage.getItem(entityType)
+    const cached = window.localStorage.getItem(`local:${entityType}`)
+    console.log("cached",cached)
     return cached ? JSON.parse(cached)?.map((entry: EventType)=>{
-      const parsed = JSON.parse(window.localStorage.getItem(`${entityType}#${entry}`) || '{}')
+      const parsed = JSON.parse(window.localStorage.getItem(`${entry}`) || '{}')
       const result = eventSchema.safeParse(parsed)
       const entity = result.success
         ? { ...result.data, meta: { ...(result.data.meta ?? {}), valid: true } }
@@ -33,6 +34,7 @@ const PageClient = ({ entity }: { entity?: string }) => {
   }
   
   const localEntities = useMemo(() => {
+    console.log("Getting ",entity)
     return typeof window !== "undefined" && entity ? getEntity(entity): []
   },[entity])
 
@@ -49,16 +51,17 @@ const PageClient = ({ entity }: { entity?: string }) => {
 
     // Step 2: Add local ones that aren't already present
     localEntities.forEach((r: EventType) => {
+      console.log("Local ", r)
       const id = String(r.ksuid)
       const mapEntity = byId.get(id)
       if (!byId.has(id)) {
         byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-only' } })
       }
-      else if( mapEntity && r.meta && mapEntity?.meta && mapEntity?.meta?.updated_at && r.meta.updated_at && r.meta.updated_at > mapEntity.meta.updated_at ) {
+      else if( mapEntity && r.meta && mapEntity?.meta && mapEntity?.updated_at && r.meta.updated_at && r.meta.updated_at > (mapEntity?.updated_at || '1971-01-01T00:00:00.000Z') ) {
         byId.set(id, { ...byId.get(id), ...r, meta: { ...(r.meta ?? {}), valid: true, source: 'both', saved: "changed-locally"} })
       }
       else {
-        console.log("Remote ent: ",id, mapEntity?.meta?.updated_at,r.meta?.updated_at)
+        console.log("Remote ent: ",id, r.meta?.updated_at, " > ", mapEntity?.updated_at)
       }
     })
     return Array.from(byId.values())
@@ -76,7 +79,7 @@ const PageClient = ({ entity }: { entity?: string }) => {
         records={allEntities}
       /> : null
     }
-    {/* {JSON.stringify(error)} - {JSON.stringify(remoteEntities)} */}
+    
   </div>
     
   )

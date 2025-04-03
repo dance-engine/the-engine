@@ -231,9 +231,6 @@ importers:
       react:
         specifier: ^19
         version: 19.0.0
-      react-autosave:
-        specifier: ^0.5.0
-        version: 0.5.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-dropzone:
         specifier: ^14.3.8
         version: 14.3.8(react@19.0.0)
@@ -316,6 +313,9 @@ importers:
       react:
         specifier: ^19.0.0
         version: 19.0.0
+      react-autosave:
+        specifier: ^0.5.0
+        version: 0.5.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-dom:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
@@ -326,6 +326,9 @@ importers:
         specifier: ^3.24.2
         version: 3.24.2
     devDependencies:
+      '@dance-engine/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       '@dance-engine/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

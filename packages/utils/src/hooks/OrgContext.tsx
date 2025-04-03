@@ -1,8 +1,8 @@
 'use client'
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import type { UserResource } from "@clerk/types"
-import { OrgProviderClient } from './OrgProviderClient'
-import { setLastOrg } from './actions/setLastOrg'
+import { OrgProviderClient } from '../OrgProviderClient'
+import { setLastOrg } from '../actions/setLastOrg'
 
 export const OrgProvider = ({ children }: { children: React.ReactNode }) => {
   return <OrgProviderClient>{children}</OrgProviderClient>

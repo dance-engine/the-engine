@@ -19,6 +19,12 @@ export const eventSchema = z.object({
   location: locationSchema.describe("The event location"),
   capacity: z.coerce.number().min(1,"Capacity must be at least 1 if set").describe("Maximum number of attendees."),
   meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
+  created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
+    message: "Invalid date or time",
+  }).optional().describe("Updated timstamp"),
+  updated_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
+    message: "Invalid date or time",
+  }).optional().describe("Updated timstamp"),
 });
 
 // Generate TypeScript type from the schema

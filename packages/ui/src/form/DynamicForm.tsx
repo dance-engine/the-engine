@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useRef } from "react";
-import { useForm, FieldValues, Controller } from "react-hook-form";
+import { useForm, FieldValues, Controller,} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
@@ -33,35 +33,24 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     resolver: zodResolver(schema) 
   });
 
-  // console.log("persistKey",persistKey)
-
   const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
 
-  // useEffect(()=>{
-  //   if(typeof window !== "undefined" && persistKey ) {
-  //     const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
-  //     const currentHistory = JSON.parse(currentHistoryString)
-  //     const newHistory = [...new Set([...(currentHistory.flat()),persistKey.ksuid])]
-  //     window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
-  //   }
-  // },[])
-
   useEffect(() => {
-    console.log("RESET",data)
     reset(data)
   },[data,reset])
   
   const fields = Object.keys(schema.shape);
+  const watchedValues = watch();
 
   return (
     <form onSubmit={handleSubmit((data) => {
         onSubmit(data)
-        console.log("submitted")
+        console.log("submitted",data)
         setValue("meta.saved", "saving") 
         setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full">
-      <Debug debug={watch()} className="absolute right-10 "/>
+      <Debug debug={watchedValues} className="absolute right-10 "/>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
         const rawSchema = schema.shape[field];

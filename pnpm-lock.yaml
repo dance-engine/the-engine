@@ -231,6 +231,9 @@ importers:
       react:
         specifier: ^19
         version: 19.0.0
+      react-autosave:
+        specifier: ^0.5.0
+        version: 0.5.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-dropzone:
         specifier: ^14.3.8
         version: 14.3.8(react@19.0.0)
@@ -2806,6 +2809,12 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+
+  react-autosave@0.5.0:
+    resolution: {integrity: sha512-Pp4R4K5uz5i7ggccrxNiGYvQPQMeHDrG98iCXMSi0QA9BQSVzopwRa3Zs/0VQHwdtYrbk33O23sBhHu2JdfNWA==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   react-dom@19.0.0:
     resolution: {integrity: sha512-4GV5sHFG0e/0AD4X+ySy6UJd3jVl1iNsNHdpad0qhABJ11twS3TTBnseqsKurKcsNqCEFeGL3uLpVChpIO3QfQ==}
@@ -6056,6 +6065,11 @@ snapshots:
   querystring@0.2.0: {}
 
   queue-microtask@1.2.3: {}
+
+  react-autosave@0.5.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   react-dom@19.0.0(react@19.0.0):
     dependencies:

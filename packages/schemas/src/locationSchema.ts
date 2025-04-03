@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Define location schema
 export const locationSchema = z.object({
+  ksuid: z.string().optional(),
   name: z.string().min(1, "Name is required"),
   address: z.string().min(5, "Address must be at least 5 characters").optional().describe("Enter the full event address."),
   lat: z.number().min(-90, "Latitude must be between -90 and 90").max(90, "Latitude must be between -90 and 90"),

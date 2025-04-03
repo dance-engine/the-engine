@@ -264,6 +264,10 @@ functions:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events} 
       - httpApi:
+          path: /public/{organisation}/events/{ksuid}
+          method: get
+          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+      - httpApi:
           path: /{organisation}/events
           method: post
           authorizer:

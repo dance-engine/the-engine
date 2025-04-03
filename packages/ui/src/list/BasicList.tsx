@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { Fragment } from 'react/jsx-runtime'
 import { BasicListProps } from '@dance-engine/ui/types' 
 import { labelFromSnake, formatField, nameFromHypenated } from '@dance-engine/utils/textHelpers'
 import { deDupKeys,groupByToArray, getNestedValue } from '@dance-engine/utils/arrayHelpers'
@@ -14,9 +15,9 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   return (
   <div className='w-full'>
     {/* {columns} */}
-    <div className="mt-4 flow-root">
+    <div className=" flow-root ">
       <div className="relative">
-        <div className="inline-block min-w-full py-2 align-middle">
+        <div className="inline-block min-w-full py-0 align-middle">
           <table className="min-w-full divide-y divide-gray-300 " {...tableProps}>
             <thead className=''>
               <tr className='sticky top-16 z-10'>
@@ -33,10 +34,10 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {groupByToArray(records, r => getNestedValue(r, "meta.saved")).map((group)=>{
+              {groupByToArray(records, r => getNestedValue(r, "meta.saved")).map((group,idx)=>{
                 return (
-                  <>
-                    <tr><td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved"))}</h2></td></tr>
+                  <Fragment key={`group-${idx}`}>
+                    <tr key=""><td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved"))}</h2></td></tr>
                     {group[1].map((record)=>{
                       return <tr key={`${record.ksuid}`}>
                         {
@@ -48,13 +49,13 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                           })
                         }
                         <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 ">
-                        <Link href={`/events/${record.ksuid}`} className=" bg-cerise-logo text-white px-3 py-1 rounded z-0">
+                        <Link href={`/events/${record.ksuid}/edit`} className=" bg-cerise-logo text-white px-3 py-1 rounded z-0">
                           Edit<span className="sr-only">, {String(record.name)}</span>
                         </Link>
                       </td>
                       </tr>
                     })}   
-                  </>
+                  </Fragment>
                 )
               })}
               

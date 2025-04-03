@@ -9,7 +9,7 @@ const Debug = ({debug, className}: {debug:any, className?:string}) => {
       <button onClick={(e)=>{e.preventDefault(); setShown(!shown)}} className="rounded-full p-2 bg-gray-200 " aria-label="Toggle Debug Window">
       <CgDebug />
       </button>
-      <pre suppressHydrationWarning className={`${shown ? '' : 'hidden'} z-[1010] absolute right-0 bg-white p-3 border rounded w-[90vw] whitespace-pre-line`}>
+      <pre suppressHydrationWarning className={`${shown ? '' : 'hidden'} z-[1010] absolute right-0 bg-white p-3 border rounded w-[90vw] whitespace-pre`}>
         {JSON.stringify(debug,null,2)}
       </pre>
     </div>

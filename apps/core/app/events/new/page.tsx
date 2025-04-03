@@ -12,7 +12,7 @@ export default async function Page({
   const ksuid = KSUID.randomSync().string;
 
   const query = new URLSearchParams(params as Record<string, string>).toString();
-  const redirectUrl = `/events/${ksuid}${query ? `?${query}` : ''}`;
+  const redirectUrl = `/events/${ksuid}/edit${query ? `?${query}` : ''}`;
 
 
   redirect(redirectUrl);

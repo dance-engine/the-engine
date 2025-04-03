@@ -3,11 +3,12 @@ import os
 import logging
 from urllib.parse import urlparse
 import re
+import json
 
 import traceback
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
-
+from _shared.DecimalEncoder import DecimalEncoder
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -109,7 +110,7 @@ def provisioned_handler(event, context):
         return
 
     # Get the record from the core DB
-    item = get_db_item(table,createKeyFromOrgSlug(organisation_slug),createKeyFromOrgSlug(organisation_slug))
+    item = getDbItem(table,createKeyFromOrgSlug(organisation_slug),createKeyFromOrgSlug(organisation_slug))
     logger.info(f"Read Item {item}")
 
     if not item:
@@ -129,7 +130,11 @@ def provisioned_handler(event, context):
                 logger.error("Error creating organisation %s: %s", organisation_slug, str(e))
                 logger.error(traceback.format_exc())
                 raise
-    
+
+def public_handler(event, context):
+    logger.info(f"Get Organisations: {event}")
+    orgItems = getOrgItems()
+    return {"statusCode": 200, "body": json.dumps(orgItems, cls=DecimalEncoder)}
 
 def splitArn(arn):
     arn_regex = re.compile(r"^arn:(?P<partition>[^:]+):(?P<service>[^:]*):(?P<region>[^:]*):(?P<account_id>[^:]*):(?P<resource>.+)$")
@@ -149,7 +154,6 @@ def getOrgIdFromStackResource(resource):
         logger.error(f"Invalid Resource: {resource}")
         return [None,None]
     
-
 def create_organisation(orgSlug):
     org = {
         "PK": createKeyFromOrgSlug(orgSlug),
@@ -159,9 +163,15 @@ def create_organisation(orgSlug):
     }
     return org
 
-
 def createKeyFromOrgSlug(orgSlug):
     return f"ORGANISATION#{orgSlug}"
 
-def get_db_item(table, pk, sk):
+def getDbItem(table, pk, sk):
     return table.get_item(Key={"PK": pk, "SK": sk}).get("Item")
+
+def getOrgItems():
+    response = table.query(
+        IndexName= 'typeIDX',
+        KeyConditionExpression=Key('type').eq('ORGANISATION') & Key('PK').begins_with('ORGANISATION#')
+    )
+    return response.get("Items")

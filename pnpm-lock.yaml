@@ -237,9 +237,6 @@ importers:
       react-hook-form:
         specifier: ^7.54.2
         version: 7.54.2(react@19.0.0)
-      react-hook-form-persist:
-        specifier: ^3.0.0
-        version: 3.0.0(react-hook-form@7.54.2(react@19.0.0))(react@19.0.0)
       react-leaflet:
         specifier: ^5.0.0
         version: 5.0.0(leaflet@1.9.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -2820,12 +2817,6 @@ packages:
     engines: {node: '>= 10.13'}
     peerDependencies:
       react: '>= 16.8 || 18.0.0'
-
-  react-hook-form-persist@3.0.0:
-    resolution: {integrity: sha512-6nwW65JyFpBem9RjLYAWvIFxOLoCk0E13iB9e5yeF5jeHlwx1ua0M77FvwhPpD8eaCz7hG4ziCdOxRcnJVUSxQ==}
-    peerDependencies:
-      react: '>= 16.3'
-      react-hook-form: '>= 6'
 
   react-hook-form@7.54.2:
     resolution: {integrity: sha512-eHpAUgUjWbZocoQYUHposymRb4ZP6d0uwUnooL2uOybA9/3tPUvoAKqEWK1WaSiTxxOfTpffNZP7QwlnM3/gEg==}
@@ -6077,11 +6068,6 @@ snapshots:
       file-selector: 2.1.2
       prop-types: 15.8.1
       react: 19.0.0
-
-  react-hook-form-persist@3.0.0(react-hook-form@7.54.2(react@19.0.0))(react@19.0.0):
-    dependencies:
-      react: 19.0.0
-      react-hook-form: 7.54.2(react@19.0.0)
 
   react-hook-form@7.54.2(react@19.0.0):
     dependencies:

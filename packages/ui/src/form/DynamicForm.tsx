@@ -1,7 +1,6 @@
 'use client'
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useForm, FieldValues, Controller } from "react-hook-form";
-import useFormPersist from 'react-hook-form-persist'
 import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
 
@@ -19,7 +18,7 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, initValues, persistKey, orgSlug}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -27,23 +26,30 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     trigger,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FieldValues>({ 
-    defaultValues: initValues,
+    defaultValues: data,
     resolver: zodResolver(schema) 
   });
 
+  // console.log("persistKey",persistKey)
+
   const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
 
-  useFormPersist(persistKey ? `${persistKey?.type}#${persistKey?.ksuid}` : 'default', {watch,setValue, ...(typeof window === "undefined" ? {} : { storage: window.localStorage })})
-  useEffect(()=>{
-    if(typeof window !== "undefined" && persistKey ) {
-      const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
-      const currentHistory = JSON.parse(currentHistoryString)
-      const newHistory = [...new Set([...(currentHistory.flat()),persistKey.ksuid])]
-      window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
-    }
-  },[persistKey])
+  // useEffect(()=>{
+  //   if(typeof window !== "undefined" && persistKey ) {
+  //     const currentHistoryString = window.localStorage.getItem(persistKey?.type) || "[]"
+  //     const currentHistory = JSON.parse(currentHistoryString)
+  //     const newHistory = [...new Set([...(currentHistory.flat()),persistKey.ksuid])]
+  //     window.localStorage.setItem(persistKey?.type,JSON.stringify(newHistory))
+  //   }
+  // },[])
+
+  useEffect(() => {
+    console.log("RESET",data)
+    reset(data)
+  },[data,reset])
   
   const fields = Object.keys(schema.shape);
 
@@ -52,9 +58,11 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         onSubmit(data)
         console.log("submitted")
         setValue("meta.saved", "saving") 
+        setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full">
       <Debug debug={watch()} className="absolute right-10 "/>
+      {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;
@@ -111,7 +119,10 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               error={{
                 name: (errors[field] as unknown as {name: {message:string}})?.name?.message, 
                 lat:(errors[field] as unknown as {lat: {message:string}})?.lat?.message, 
-                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message }}
+                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message,
+                address: (errors[field] as unknown as {address: {message:string}})?.address?.message 
+              }}
+
               // error={
               //   errors[field] ? {name: errors[field]['name'].message as string, lat: errors[field]['lat'].message,lng: errors[field]['lng'].message } 
               //   : {name:"", lat:"", lng:""} 
@@ -131,7 +142,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               register={register} validate={() => {trigger(field)}}
               error={errors[field]?.message as string}  />
             ) : (
-              <div>Unknown field {field} : {fieldType}</div>
+              <div className="hidden">Unknown field {field} : {fieldType}</div>
             )}
           </div>
         );

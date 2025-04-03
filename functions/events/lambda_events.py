@@ -34,6 +34,17 @@ def get_events(organisationSlug):
     events = response.get("Items", [])
     return events
 
+def get_single_event(organisationSlug,eventId):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting event {eventId} for {organisationSlug} from {TABLE_NAME} / ")
+
+    response = table.get_item(
+        Key={ 'PK': f'EVENT#{eventId}', 'SK': f'EVENT#{eventId}'}
+    )
+    event = response.get("Item", {})
+    return event
+
 def create_event(event_data,organisationSlug):
     """
     # TODO implement
@@ -122,11 +133,12 @@ def lambda_handler(event, context):
         parsed_event = parse_event(event)
         http_method = event['requestContext']["http"]["method"]
         organisationSlug = event.get("pathParameters", {}).get("organisation")
+        eventId = event.get("pathParameters", {}).get("ksuid",None)
 
 
         if http_method == "POST":
             validated_event = validate_event(parsed_event, ["name", "starts_at", "ends_at", "location", "capacity"])
-            valiedated_location = validate_event(validated_event["location"], ["name", "lat", "lng"])
+            validated_location = validate_event(validated_event["location"], ["name", "lat", "lng"])
 
             created_event = create_event(validated_event,organisationSlug)
             if created_event is None:
@@ -135,7 +147,8 @@ def lambda_handler(event, context):
             return {"statusCode": 201, "body": json.dumps({"message": "Event created successfully.", "event": created_event}, cls=DecimalEncoder)}
 
         elif http_method == "GET":
-            events = get_events(organisationSlug)
+            logger.info(f"{organisationSlug}:{eventId}")
+            events = [get_single_event(organisationSlug,eventId)] if eventId else get_events(organisationSlug)
             if events is None:
                 return {"statusCode": 404, "body": json.dumps({"message": "No Events found."})}
             return {"statusCode": 200, "body": json.dumps(events, cls=DecimalEncoder)}

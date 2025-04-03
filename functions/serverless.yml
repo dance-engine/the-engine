@@ -258,13 +258,19 @@ functions:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events} 
       - httpApi:
+          path: /{organisation}/events/{ksuid}
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+      - httpApi:
           path: /{organisation}/events
           method: post
           authorizer:
             adminAuthorizer
           documentation: ${file(serverless.doc.yml):endpoints.Events} 
 
-#--------------------
+#-------------------- AWS s3
 
   GeneratePresignedURL:
     runtime: python3.11
@@ -289,5 +295,26 @@ functions:
           authorizer:
             adminAuthorizer
 
+#---------------------- Org and provisoning
+
   CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}
   StackProvisioned: ${file(serverless.privileged.yaml):functions.StackProvisioned}
+
+  PublicOrganisations:
+    runtime: python3.11
+    handler: organisations/lambda_organisations.public_handler
+    name: "${sls:stage}-${self:service}-public-organisations"
+    package:
+      patterns:
+        - '!**/**'
+        - "organisations/**"
+        - "_shared/**"
+    environment:
+      CORE_TABLE_NAME: ${self:custom.core_table_name}
+    layers:
+      - !Ref UtilsLambdaLayer
+    events:
+      - httpApi:
+          path: /public/organisations
+          method: get
+          documentation: ${file(serverless.doc.yml):endpoints.Events} 

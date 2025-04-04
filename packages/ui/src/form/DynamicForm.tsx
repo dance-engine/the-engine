@@ -1,11 +1,12 @@
 'use client'
-import React from "react";
-import { useForm, FieldValues, Controller, FieldError, FieldErrorsImpl} from "react-hook-form";
+import React, { useEffect, useRef } from "react";
+import { useForm, FieldValues, Controller,} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ZodObject, ZodRawShape } from "zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
+import { EventType } from '@dance-engine/schemas/events'
 
 import TextInput from "@dance-engine/ui/form/fields/TextInput";
+import HiddenInput from "@dance-engine/ui/form/fields/HiddenInput"
 import Textarea from "@dance-engine/ui/form/fields/Textarea";
 import RichTextEditor from '@dance-engine/ui/form/fields/RichTextEditor';
 import NumberInput from "@dance-engine/ui/form/fields/NumberInput";
@@ -13,17 +14,13 @@ import DateInput from "@dance-engine/ui/form/fields/DateInput";
 import Select from "@dance-engine/ui/form/fields/Select";
 import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
+import FileUploader from "./fields/FileUploader";
+import { DynamicFormProps } from '@dance-engine/ui/types' 
+import { ZodObject, ZodRawShape } from "zod";
+import Debug from '@dance-engine/ui/utils/Debug'
+import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
 
-import { MapPickerProps } from '@dance-engine/ui/form/fields/MapPicker'
-
-interface DynamicFormProps {
-  schema: ZodObject<ZodRawShape>;
-  metadata?: Record<string, { multiline?: boolean, richText?: boolean, dateField?: boolean, checkboxesField?: boolean }>;
-  onSubmit: (data: FieldValues) => void;
-  MapComponent?: React.FC<MapPickerProps>
-}
-
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, MapComponent}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -31,14 +28,45 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
     trigger,
     watch,
     setValue,
-    formState: { errors },
-  } = useForm<FieldValues>({ resolver: zodResolver(schema) });
+    reset,
+    formState: { errors, isDirty },
+  } = useForm<FieldValues>({ 
+    defaultValues: data,
+    resolver: zodResolver(schema) 
+  });
+
+  const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
+  const watchedValues = watch();
+  const { status: autosaveStatus, isStatusVisible: isAutosaveStatusVisible,  loadFromStorage } = useLocalAutoSave<EventType>({
+    data: watchedValues as EventType,
+    entityType: 'EVENT',
+    remoteUpdatedAt: data?.updated_at,
+    isDirty
+  });
+
+  useEffect(() => {
+    const draft = loadFromStorage();
+    if (draft) { 
+      reset(draft)
+    } else { 
+      reset(data)
+    }  
+  }, [loadFromStorage, data, reset]);
   
   const fields = Object.keys(schema.shape);
+  // const watchedValues = watch();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
-      {/* <div>{JSON.stringify(watch(),null,2)}</div> */}
+    <form onSubmit={handleSubmit((data) => {
+        onSubmit(data)
+        console.log("submitted",data)
+        setValue("meta.saved", "saving") 
+        setValue("meta.updated_at", new Date().toISOString())
+      })} 
+      className="space-y-4 w-full relative">
+      <Debug debug={watchedValues} className="absolute right-0"/>
+      <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
+      {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
         const rawSchema = schema.shape[field];
         if (!rawSchema) return null;
@@ -49,9 +77,15 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
         const richText = metadata && metadata[field]?.richText; // Get metadata for the field
         const dateField = metadata && metadata[field]?.dateField; // Get metadata for the field
         const checkboxesField = metadata && metadata[field]?.checkboxesField; // Get metadata for the field
+        const isHidden = metadata && metadata[field]?.hidden
+        const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
+
+
         return (
           <div key={field} className="flex flex-col">
-            { dateField ? (
+            { isHidden ? (
+              <HiddenInput name={field} register={register} />
+            ) : dateField ? (
               <DateInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema} />
             ) : richText ? (
               <Controller
@@ -67,6 +101,12 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
                 register={register} validate={() => {trigger(field)}}
                 error={errors[field]?.message as string}
               />
+            ) : isSingleFileUpload ? (
+              <FileUploader label={field} name={field} fieldSchema={fieldSchema} watch={watch} uploadUrl={presignedUrlEndpoint}
+                {...(persistKey ? { entity: persistKey } : {})}
+                register={register} validate={() => {trigger(field)}} setValue={setValue}
+                error={errors[field]?.message as string}
+              />
             ) : checkboxesField ? (
               <CheckboxGroup
                 label={field} name={field}            
@@ -75,18 +115,22 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
                 error={errors[field]?.message as string} // Display error message for roles
               />
             ) : fieldType === "ZodObject" ? (
-              <div>Errors 
+              <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
-              <LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
+                {/* {JSON.stringify(getValues(field))} */}
+                {typeof window !== "undefined" &&<LocationPicker label={field} control={control} name={field} fieldSchema={fieldSchema} MapComponent={MapComponent}
               register={register} setValue={setValue} validate={() => {trigger(field)}}
               error={{
                 name: (errors[field] as unknown as {name: {message:string}})?.name?.message, 
                 lat:(errors[field] as unknown as {lat: {message:string}})?.lat?.message, 
-                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message }}
+                lng: (errors[field] as unknown as {lng: {message:string}})?.lng?.message,
+                address: (errors[field] as unknown as {address: {message:string}})?.address?.message 
+              }}
+
               // error={
               //   errors[field] ? {name: errors[field]['name'].message as string, lat: errors[field]['lat'].message,lng: errors[field]['lng'].message } 
               //   : {name:"", lat:"", lng:""} 
-              />
+              />}
               
               </div>
             ) : fieldType === "ZodNumber" ? (
@@ -102,14 +146,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, metadata, onSubmit, M
               register={register} validate={() => {trigger(field)}}
               error={errors[field]?.message as string}  />
             ) : (
-              <div>Unknown field {field} : {fieldType}</div>
+              <div className="hidden">Unknown field {field} : {fieldType}</div>
             )}
           </div>
         );
       })}
 
-      <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded-md">
-        Submit
+      <button type="submit" onClick={(e)=>{console.log("Clieck",e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md">
+        Save
       </button>
     </form>
   );

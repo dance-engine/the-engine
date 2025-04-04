@@ -1,27 +1,19 @@
 'use client'
-import React, { ReactNode } from "react";
-// import { UseFormRegister, FieldValues } from "react-hook-form";
-import { ZodTypeAny } from "zod";
+import React from "react";
+import { CustomComponentProps } from "../../types/form"
+import { labelFromSnake } from '@dance-engine/utils/textHelpers'
 
-interface CustomComponentProps {
-  label: string;
-  name: string;
-  error?: string;
-  fieldSchema: ZodTypeAny;
-  children: ReactNode;
-}
-
-const CustomComponent: React.FC<CustomComponentProps> = ({ label, error, fieldSchema, children }) => {
+const CustomComponent: React.FC<CustomComponentProps> = ({ label, htmlFor, error, fieldSchema, children }) => {
   const description = fieldSchema._def.description ?? "";
   // const typeName = fieldSchema._def.typeName; // For debugging
 
   return (
     <div className="flex flex-col">
-      <label className="font-semibold capitalize">
-        {label} <span className="text-gray-400 text-xs">{/*({typeName})*/}</span>
+      <label className="font-semibold capitalize mb-2"  {...(htmlFor ? {htmlFor}:{})}>
+        {labelFromSnake(label)}
       </label>
       {children}
-      {error ? <p className="text-red-500 text-sm">{error}</p> : description && <p className="text-gray-500 text-sm">{description}</p>}
+      {error ? <p className="text-red-600 text-sm">{error}</p> : description && <p className="text-gray-500 dark:text-gray-200 text-sm">{description}</p>}
     </div>
   );
 };

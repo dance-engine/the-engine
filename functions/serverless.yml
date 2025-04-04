@@ -1,39 +1,28 @@
 # Base serverless.yml
 org: danceenginesystems
 app: dance-engine
-service: example
+service: core
 
 plugins:
   - serverless-prune-plugin
   - serverless-openapi-documenter
+  - serverless-s3-sync # USed to move the aws cloudformation template we use to build customer resources
 
 custom:
-  documentation:
-    description: "Description for my OpenAPI File"
-    version: 1.0.0
-    tags:
-      - name: DynamoDB
-        description: Functions that operate with DynamoDB
-        externalDocumentation:
-          url: https://aws.amazon.com/dynamodb/
-          description: How to use DynamoDB
-    servers:
-      - url: "{url}/content"
-        description: The endpoint
-        variables:
-          url:
-            default: https://uat.example.com
-            description: the API URL
-    securitySchemes:
-      Authorization:
-        type: apiKey
-        name: Authorization
-        description: JWT token from Clerk
-        in: header
+  documentation: ${file(serverless.doc.yml):documentation}
   prune:
     automatic: true
     includeLayers: true
     number: 10
+  config_bucket: "${sls:stage}-danceengine-config"
+  upload_bucket: "${sls:stage}-danceengine-uploads"
+  dynamodb_table_format: "${sls:stage}-org-org_name"
+  core_table_name: "${sls:stage}-core-danceengine"
+  s3Sync:
+    - bucketName: ${self:custom.config_bucket}
+      localDir: ../aws/s3/
+      acl: private
+      dependsOn: ConfigBucket
 
 package:
   individually: true
@@ -67,29 +56,49 @@ provider:
   memorySize: 128 # I think this might be overkill
   region: eu-west-1
   stage: ${opt:stage, env:stage, 'preview'}
+
+  tags:
+    DanceEngineVersion: v2
+
   iam:
     role:
       statements:
-        # - Effect: Allow
-        #   Action:
-        #     - dynamodb:Query
-        #     - dynamodb:Scan
-        #     - dynamodb:GetItem
-        #     - dynamodb:PutItem
-        #     - dynamodb:UpdateItem
-        #     - dynamodb:DeleteItem
-        #     - dynamodb:DescribeStream
-        #     - dynamodb:GetRecords
-        #     - dynamodb:GetShardIterator
-        #     - dynamodb:ListStreams
-        #     - dynamodb:BatchGetItem
-        #   Resource:
-        #     - Fn::GetAtt: [AttendeesTable, Arn]
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:DescribeStream
+            - dynamodb:GetRecords
+            - dynamodb:GetShardIterator
+            - dynamodb:ListStreams
+            - dynamodb:BatchGetItem
+          Resource:
+            - Fn::GetAtt: [CoreDanceEngineTable, Arn]
+            - { "Fn::Join": [ "/", [ 
+                { "Fn::GetAtt": ["CoreDanceEngineTable", "Arn" ] }, "*" 
+              ]]}
+            - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*"
+            - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*/*"
         #     - Fn::GetAtt: [StripeProductsTable, Arn]
         #     - Fn::GetAtt: [MLF24Table, Arn]
         #     - { "Fn::Join": [ "/", [ 
         #         { "Fn::GetAtt": ["AttendeesTable", "Arn" ] }, "index", "ticket_number-index" 
         #       ]]}
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            - s3:ListBucket
+          Resource: 
+            - "arn:aws:s3:::${self:custom.upload_bucket}"
+            - "arn:aws:s3:::${self:custom.upload_bucket}/*"
+            - "arn:aws:s3:::${self:custom.config_bucket}"
+            - "arn:aws:s3:::${self:custom.config_bucket}/*"
         - Effect: Allow
           Action:
             - lambda:InvokeFunction
@@ -100,22 +109,70 @@ provider:
             - events:PutEvents
           Resource:
             - arn:aws:events:eu-west-1:717279731911:event-bus/default
+
   httpApi:
     cors: true
     authorizers:
       adminAuthorizer:
         type: request
-        functionName: authorizerFunc
+        functionName: AuthorizerFunc
+
+#######################
+# Resources
+#######################
+resources:
+  Description: Resources for ${self:service} (${sls:stage})
+  Resources:
+    S3UploadBucket: ${file(serverless.resource.yaml):resources.Resources.S3UploadBucket}
+    CdnOAC: ${file(serverless.resource.yaml):resources.Resources.CdnOAC}
+    CdnDistribution: ${file(serverless.resource.yaml):resources.Resources.CdnDistribution}
+    BucketPolicy: ${file(serverless.resource.yaml):resources.Resources.BucketPolicy}
+    ConfigBucket: ${file(serverless.resource.yaml):resources.Resources.ConfigBucket}
+    DeployOrgRole: ${file(serverless.privileged.yaml):resources.Resources.DeployOrgRole}
+    CoreDanceEngineTable: ${file(serverless.resource.yaml):resources.Resources.CoreDanceEngineTable}
+                
+#######################
+# Layers
+#######################
+
 layers:
   auth:
     path: _layers/auth
+  utils:
+    path: _layers/utils
+  pydantic:
+    path: _layers/pydantic
+
+###########################
+# Resources e.g. DynamoDB
+###########################    
+
+
+#######################
+# Functions
+#######################
 
 functions:
+
+  AuthorizerFunc:
+    runtime: python3.11
+    handler: authorizer/lambda_functions.auth_handler
+    name: "${sls:stage}-${self:service}-authoriser"
+    layers:
+      - !Ref AuthLambdaLayer
+    environment:
+      CLERK_KEY: ${ssm:/danceengine/${sls:stage}/clerk/public_key}
+    package:
+      patterns:
+        - '!**/**'
+        - "authorizer/**"
+
+#--------------------
 
   TriggerAnEvent:
     runtime: python3.11
     handler: event_bridge/lambda_functions.trigger_handler
-    name: "${sls:stage}-trigger-event"
+    name: "${sls:stage}-${self:service}-trigger-eventbridge"
     package:
       patterns:
         - '!**/**'
@@ -129,31 +186,153 @@ functions:
     #   - !Ref DynamodbLambdaLayer
     events:
       - httpApi:
-          path: /{customer}/trigger
+          path: /{organisation}/trigger
           method: get
           authorizer:
             adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
       - httpApi:
           path: /trigger
           method: get
           authorizer:
             adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
+
+#--------------------
 
   ReceiveEvent:
     runtime: python3.11
     handler: event_bridge/lambda_functions.receive_handler
-    name: "${sls:stage}-receive-event"
+    name: "${sls:stage}-${self:service}-receive-eventbridge"
+    package:
+      patterns:
+        - '!**/**'
+        - "event_bridge/**"
+        - "shared/**"
     events:
       - eventBridge:
           pattern:
             source:
-              - some.pattern
-  authorizerFunc:
+              - prefix: "dance-engine."
+
+#--------------------
+
+  Events:
     runtime: python3.11
-    handler: authorizer/lambda_functions.auth_handler
-    layers:
-      - !Ref AuthLambdaLayer
+    handler: events/lambda_events.lambda_handler
+    name: "${sls:stage}-${self:service}-events"
     package:
       patterns:
         - '!**/**'
-        - "authorizer/**"
+        - "events/**"
+        - "_shared/**"
+    environment:
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    layers:
+      - !Ref UtilsLambdaLayer
+    events:
+      - httpApi:
+          path: /{organisation}/events
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETall} 
+      - httpApi:
+          path: /{organisation}/events/{ksuid}
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETone} 
+      - httpApi:
+          path: /public/{organisation}/events/{ksuid}
+          method: get
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETpub} 
+      - httpApi:
+          path: /{organisation}/events
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events.POST} 
+
+#-------------------- AWS s3
+
+  GeneratePresignedURL:
+    runtime: python3.11
+    handler: utils/s3.generate_presigned_url
+    name: "${sls:stage}-${self:service}-presigned_url"
+    package:
+      patterns:
+        - '!**/**'
+        - "utils/**"
+        - "_shared/**"
+    environment:
+      BUCKET_NAME: ${self:custom.upload_bucket}
+    events:
+      - httpApi:
+          path: /{organisation}/generate-presigned-url
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
+      - httpApi:
+          path: /generate-presigned-url
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}  
+
+  UploadProcessor:
+    runtime: python3.11
+    handler: utils/s3.move_upload
+    name: "${sls:stage}-${self:service}-upload-processor"
+    package:
+      patterns:
+        - '!**/**'
+        - "utils/**"
+        - "_shared/**"
+    environment:
+      BUCKET_NAME: ${self:custom.upload_bucket}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - prefix: "dance-engine."
+            detail-type:
+              - prefix: "Upsert"
+      - eventBridge:
+          pattern:
+            source:
+              - prefix: "dance-engine."
+            detail-type:
+              - prefix: "Update"
+      - eventBridge:
+          pattern:
+            source:
+              - prefix: "dance-engine."
+            detail-type:
+              - prefix: "Create"
+
+#---------------------- Org and provisoning
+
+  CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}
+  StackProvisioned: ${file(serverless.privileged.yaml):functions.StackProvisioned}
+
+  PublicOrganisations:
+    runtime: python3.11
+    handler: organisations/lambda_organisations.public_handler
+    name: "${sls:stage}-${self:service}-public-organisations"
+    package:
+      patterns:
+        - '!**/**'
+        - "organisations/**"
+        - "_shared/**"
+    environment:
+      CORE_TABLE_NAME: ${self:custom.core_table_name}
+    layers:
+      - !Ref UtilsLambdaLayer
+    events:
+      - httpApi:
+          path: /public/organisations
+          method: get
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   

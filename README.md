@@ -2,13 +2,41 @@
 
 ## Structure
 
-`@the-engine/`:
-  - `apps/`          - apps used by all clients or engine-team
-    - `core`          - Main admin application for clients
-    - `admin`         - Admin for engine-team
-  - `apps/clients/*`  - client websites
-  - `functions/*`     - lambda functions / serverless
-  - `packages/*`      - packages used across all sitees
+# Dance Engine Tech Stack
+- NextJS 
+- Vercel for deployment
+- PNPM for package managment
+- eslint and typescript to check types
+- zod for valdiation
+- Clerk for use management
+- Serverless for deployment in eu-west-1
+- Using tailwind v4 for styling
+
+### Structure:
+Turbo Repo with the following packages structure
+All lambda functions sit behind an authoriser function that return IAM policies
+
+    @the-engine/
+    │── apps/
+    │   │── core/
+    │   │   │── {admin for clients}
+    │   │── clients/ 
+    │   │   │── {client websites}
+    |── aws/s3 
+    |   |── { files copied to config bucket }  
+    │── functions/
+    │   │── {Holds a serverless setup with python 3.11 for lambdas}
+    │   │── _layers/:
+    │   │   │──  {Lambda python layers}
+    │── packages/
+    │   │── ui/
+    │   │   │── {various resuable react components}
+    │   │── utils/
+    │   │   │── {Cross package utilties}
+    │   │── schemas/
+    │   │   │── {zod schemas}
+
+
 
 ### Apps and Packages
 
@@ -28,6 +56,9 @@ This Turborepo has some additional tools already setup for you:
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
+
+### Gitmoji
+⚡️ Lets use Gitmoji 
 
 ---
 

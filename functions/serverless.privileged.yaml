@@ -1,0 +1,113 @@
+# serverless.privileged.yaml
+
+functions:
+  CreateOrgStack:
+    runtime: python3.11
+    handler: organisations/lambda_organisations.create_handler
+    name: "${sls:stage}-${self:service}-organisations-create"
+    role: DeployOrgRole
+    environment:
+      TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
+      CORE_TABLE_NAME: ${self:custom.core_table_name}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    package:
+      patterns:
+        - '!**/**'
+        - "organisations/**"
+        - "_shared/**"
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - "app.organisation"
+            detail-type:
+              - "CreateOrganisation"
+  StackProvisioned:
+    runtime: python3.11
+    handler: organisations/lambda_organisations.provisioned_handler
+    name: "${sls:stage}-${self:service}-organisations-provision"
+    role: DeployOrgRole
+    environment:
+      TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
+      CORE_TABLE_NAME: ${self:custom.core_table_name}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    package:
+      patterns:
+        - '!**/**'
+        - "organisations/**"
+        - "_shared/**"
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - "aws.cloudformation"
+            detail-type:
+              - "CloudFormation Stack Status Change"
+            detail:
+              # stack-id: 
+              #   - "arn:aws:cloudformation:eu-west-1:*:stack/${sls:stage}-org-*"
+              status-details:
+                status:
+                  - "CREATE_COMPLETE"
+
+resources:
+  Resources:
+    DeployOrgRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${sls:stage}-org-stack-deployer-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: org-stack-deploy-policy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - cloudformation:CreateStack
+                  Resource:
+                    - arn:aws:cloudformation:*:*:stack/${sls:stage}-org-*/*
+                - Effect: Allow
+                  Action:
+                    - dynamodb:CreateTable
+                    - dynamodb:DescribeTable
+                    - dynamodb:TagResource 
+                    - dynamodb:UpdateContinuousBackups
+                  Resource:
+                    - arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-*
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource: "*"
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:*
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:GetObject
+                    - s3:ListBucket
+                  Resource: 
+                    - "arn:aws:s3:::${self:custom.config_bucket}"
+                    - "arn:aws:s3:::${self:custom.config_bucket}/*"
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:GetItem
+                  Resource: 
+                    - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}"
+                    - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}/*"
+                    - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*"
+                    - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*/*"
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2

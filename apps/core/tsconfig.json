@@ -1,6 +1,7 @@
 {
   "extends": "@dance-engine/typescript-config/nextjs.json",
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "plugins": [
       {
         "name": "next"

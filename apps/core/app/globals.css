@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@source "../node_modules/@dance-engine/ui/src/";
+@import "@dance-engine/ui/styles.css";
 
 @theme {
   --font-sans: var(--font-open-sans);
@@ -12,16 +15,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: oklch(13% 0.1053 262.26);
     --foreground: #ededed;
   }
 }
 
-body {
+/* body {
   color: var(--foreground);
-  /* background: var(--background); */
+  background: var(--background);
   font-family: var(--open-sans), Arial, Helvetica, sans-serif;
-}
+}*/
 /* 
 Dance Engine Core Colours
 -------------------------
@@ -33,28 +36,17 @@ Keppel:           #00BA9C
  */
 @theme {
 
+  --color-primary: hsl(233, 50%, 90%);
+  --color-secondary: hsl(233, 50%, 10%);
+  --color-tertiary: hsl(293, 80%, 20%);
+  --color-accent: hsl(173, 80%, 20%);
 
-  /* Backgrounds */
-  --color-dark-background: #01164D;
-  --color-dark-highlight: #022379;
-  --color-dark-outline: #86A8FD;
-  --color-light-background: #F0EEFC;
-  --color-base-background: #FFFFFF;
+  --color-dark-primary: hsl(233, 50%, 10%);
+  --color-dark-secondary: hsl(233, 50%, 90%);
+  --color-dark-tertiary: hsl(293, 80%, 80%);
+  --color-dark-accent: hsl(173, 80%, 80%);
 
-  /* Cerise */
-  --color-cerise-logo: #EB038E;
-  --color-cerise-on-light: #CE037D;
-  --color-cerise-on-dark: #FC27A7;
-
-  /* Pear */
-  --color-pear-logo: #D5E73C;
-  --color-pear-on-light: #859D02; /*! Do not use unless emergency */
-  --color-pear-on-dark: var(--color-pear-logo);
-
-  /* Keppel */
-  --color-keppel-logo: #00BA9C;
-  --color-keppel-on-light: #00856F;
-  --color-keppel-on-dark: #00BD9D;
+  
 
   /* Text */
   --color-primary-text: #F0EEFC;
@@ -73,4 +65,17 @@ Keppel:           #00BA9C
   --color-primary-800: oklch(30.46% 0.192 264);
   --color-primary-900: oklch(21.78% 0.151 264);
   --color-primary-950: oklch(13.72% 0.074 263);
+}
+
+@layer utilities {
+  .shadow-contained::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.3 -0.0201882 -0.148534 / 0.5) 0px 25px 50px -12px;
+    
+    /* border: solid 1px red !important; */
+  }
 }

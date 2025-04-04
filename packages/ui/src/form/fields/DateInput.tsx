@@ -1,19 +1,13 @@
 import React from "react";
-import { UseFormRegister, FieldValues } from "react-hook-form";
-import { ZodTypeAny } from "zod";
+import { DateInputProps } from "../../types/form"
 import CustomComponent from "./CustomComponent";
 
-interface DateInputProps {
-  label: string;
-  name: string;
-  register: UseFormRegister<FieldValues>;
-  error?: string;
-  fieldSchema: ZodTypeAny;
-}
+
 
 const DateInput: React.FC<DateInputProps> = ({ label, name, register, error, fieldSchema }) => (
-  <CustomComponent label={label} name={name} error={error} fieldSchema={fieldSchema}>
-    <input {...register(name)} type="datetime-local" className="border p-2 rounded-md" />
+  <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
+    <input {...register(name)} type="datetime-local" id={name} className="border p-2 rounded-md border-gray-300" />
+    {error}
   </CustomComponent>
 );
 

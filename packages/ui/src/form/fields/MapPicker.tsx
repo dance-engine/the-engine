@@ -1,4 +1,5 @@
 'use client'
+import { MapPickerProps } from "../../types/form"
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -11,11 +12,6 @@ const customIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-export interface MapPickerProps {
-  lat: number, 
-  lng: number, 
-  onChange: (latlng: L.LatLngLiteral) => void
-}
 
 const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange }: MapPickerProps) => {
   const [position, setPosition] = useState({ lat, lng } as L.LatLngLiteral);
@@ -60,7 +56,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange }: MapPickerPr
   },[lat,lng])
 
   return (
-    <div>
+    <div className="border p-[1px] rounded-md border-gray-300 bg-gray-200">
       <MapContainer center={position} zoom={17} style={{ height: "300px", width: "100%" }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <DraggableMarker />

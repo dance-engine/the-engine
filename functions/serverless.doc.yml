@@ -1,37 +1,145 @@
 documentation:
-  description: "Description for my OpenAPI File"
-  version: 1.0.0
-  tags:
-    - name: DynamoDB
-      description: Functions that operate with DynamoDB
-      externalDocumentation:
-        url: https://aws.amazon.com/dynamodb/
-        description: How to use DynamoDB
-  servers:
-    - url: "{url}/content"
-      description: The endpoint
-      variables:
-        url:
-          default: https://uat.example.com
-          description: the API URL
+  title: "Dance Engine API"
+  description: "The API for Dance Engine"
+  version: 0.0.1
+  models: ${file(serverless.models.yml):models}
   securitySchemes:
-    Authorization:
-      type: apiKey
-      name: Authorization
-      description: JWT token from Clerk
-      in: header
+    clerk_jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT issued by Clerk. The token must be included in the `Authorization` header as a Bearer token.
+        Users must be part of the target organisation and have the required role (e.g., `admin`)
+        to access protected resources.
+  security:
+    - clerk_jwt: []
 
 endpoints:
-  TriggerAnEvent:
-    summary: This is the summary
-    description: This is a longer more detailed description
-    requestBody:
-      description: Description of requestBody
+  nodoc-org:
+    summary: "No Docs"
+    description: "Docs for this endpoint are not yet written. This includes org as a path param."
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string    
     methodResponses:
       - statusCode: 200
         responseBody:
-          description: "Success"
+          description: Success
+      - statusCode: 404
+        responseBody:
+          description: Not found.
       - statusCode: 500
         responseBody:
-          description: "Error occured"
-    
+          description: Internal server error.
+  nodoc:
+    summary: "No Docs"
+    description: "Docs for this endpoint are not yet written"  
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Success
+      - statusCode: 404
+        responseBody:
+          description: Not found.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+  Events:
+    GETall:
+      summary: "Get All Events"
+      description: "Returns a list of all events for a given organisation."
+      tags:
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Returns a list of all events.
+        - statusCode: 404
+          responseBody:
+            description: No events found.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+    GETone:
+      summary: "Get Single Event"
+      description: "Fetch details of a specific event by its KSUID."
+      tags:
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique event ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The event object.
+        - statusCode: 404
+          responseBody:
+            description: Event not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+    GETpub:
+      summary: "Public Get Event"
+      description: "Public endpoint to get a specific event by its KSUID."
+      security:
+        - {}
+      tags:
+        - Public
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique event ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The event object.
+        - statusCode: 404
+          responseBody:
+            description: Event not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+    POST:
+      summary: "Create Event"
+      description: "Creates a new event and stores its location."
+      tags:
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+      requestBody:
+        description: "Event details"
+      requestModels:
+        application/json: "CreateEventRequest"
+      methodResponses:
+        - statusCode: 201
+          responseBody:
+            description: Event created successfully.
+        - statusCode: 404
+          responseBody:
+            description: Invalid input
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.

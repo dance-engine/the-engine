@@ -78,6 +78,7 @@ resources:
                     - dynamodb:CreateTable
                     - dynamodb:DescribeTable
                     - dynamodb:TagResource 
+                    - dynamodb:UpdateContinuousBackups
                   Resource:
                     - arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-*
                 - Effect: Allow

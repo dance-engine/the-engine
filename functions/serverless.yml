@@ -92,6 +92,7 @@ provider:
           Action:
             - s3:PutObject
             - s3:GetObject
+            - s3:DeleteObject
             - s3:ListBucket
           Resource: 
             - "arn:aws:s3:::${self:custom.upload_bucket}"
@@ -122,34 +123,11 @@ provider:
 resources:
   Description: Resources for ${self:service} (${sls:stage})
   Resources:
-    S3UploadBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: "${self:custom.upload_bucket}"
-        CorsConfiguration:
-          CorsRules:
-            - AllowedOrigins:
-                - "*" # Replace with "https://*.dance-engine.co.uk" for security in prod if we can do wildcards
-              AllowedMethods:
-                - GET
-                - POST
-                - PUT
-                - HEAD
-              AllowedHeaders:
-                - "*"
-              ExposedHeaders:
-                - ETag
-              MaxAge: 3000
-        Tags:
-          - Key: DanceEngineVersion
-            Value: v2
-    ConfigBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:custom.config_bucket}
-        Tags:
-          - Key: DanceEngineVersion
-            Value: v2
+    S3UploadBucket: ${file(serverless.resource.yaml):resources.Resources.S3UploadBucket}
+    CdnOAC: ${file(serverless.resource.yaml):resources.Resources.CdnOAC}
+    CdnDistribution: ${file(serverless.resource.yaml):resources.Resources.CdnDistribution}
+    BucketPolicy: ${file(serverless.resource.yaml):resources.Resources.BucketPolicy}
+    ConfigBucket: ${file(serverless.resource.yaml):resources.Resources.ConfigBucket}
     DeployOrgRole: ${file(serverless.privileged.yaml):resources.Resources.DeployOrgRole}
     CoreDanceEngineTable: ${file(serverless.resource.yaml):resources.Resources.CoreDanceEngineTable}
                 
@@ -235,7 +213,7 @@ functions:
       - eventBridge:
           pattern:
             source:
-              - some.pattern
+              - prefix: "dance-engine."
 
 #--------------------
 
@@ -301,7 +279,39 @@ functions:
           method: post
           authorizer:
             adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}  
+
+  UploadProcessor:
+    runtime: python3.11
+    handler: utils/s3.move_upload
+    name: "${sls:stage}-${self:service}-upload-processor"
+    package:
+      patterns:
+        - '!**/**'
+        - "utils/**"
+        - "_shared/**"
+    environment:
+      BUCKET_NAME: ${self:custom.upload_bucket}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - prefix: "dance-engine."
+            detail-type:
+              - prefix: "Upsert"
+      - eventBridge:
+          pattern:
+            source:
+              - prefix: "dance-engine."
+            detail-type:
+              - prefix: "Update"
+      - eventBridge:
+          pattern:
+            source:
+              - prefix: "dance-engine."
+            detail-type:
+              - prefix: "Create"
 
 #---------------------- Org and provisoning
 

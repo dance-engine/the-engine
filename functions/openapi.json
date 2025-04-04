@@ -1,19 +1,399 @@
 {
   "openapi": "3.0.0",
   "components": {
-    "schemas": {}
+    "schemas": {
+      "Location": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "ksuid": {
+            "type": "string"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "ksuid": {
+            "type": "string"
+          },
+          "banner": {
+            "type": "string"
+          },
+          "event_slug": {
+            "type": "string"
+          },
+          "organisation": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capacity": {
+            "type": "integer"
+          },
+          "number_sold": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              },
+              "ksuid": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "CreateEventRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "starts_at",
+          "ends_at",
+          "location",
+          "capacity"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "banner": {
+            "type": "string"
+          },
+          "category": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "capacity": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "location": {
+            "type": "object",
+            "required": [
+              "name",
+              "lat",
+              "lng"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              },
+              "ksuid": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "EventResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "event": {
+            "type": "object",
+            "properties": {
+              "ksuid": {
+                "type": "string"
+              },
+              "banner": {
+                "type": "string"
+              },
+              "event_slug": {
+                "type": "string"
+              },
+              "organisation": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "starts_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "ends_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "category": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "capacity": {
+                "type": "integer"
+              },
+              "number_sold": {
+                "type": "integer"
+              },
+              "description": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  },
+                  "ksuid": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "EventListResponse": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "ksuid": {
+              "type": "string"
+            },
+            "banner": {
+              "type": "string"
+            },
+            "event_slug": {
+              "type": "string"
+            },
+            "organisation": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "starts_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "ends_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "category": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "capacity": {
+              "type": "integer"
+            },
+            "number_sold": {
+              "type": "integer"
+            },
+            "description": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "location": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "lat": {
+                  "type": "number"
+                },
+                "lng": {
+                  "type": "number"
+                },
+                "ksuid": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "organisation": {
+        "type": "string"
+      },
+      "ksuid": {
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "clerk_jwt": {
+        "description": "JWT issued by Clerk. The token must be included in the `Authorization` header as a Bearer token. Users must be part of the target organisation and have the required role (e.g., `admin`) to access protected resources.\n",
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
   },
   "info": {
     "title": "Dance Engine API",
     "description": "The API for Dance Engine",
     "version": "0.0.1"
   },
+  "security": [
+    {
+      "clerk_jwt": []
+    }
+  ],
   "paths": {
-    "/events": {
-      "post": {
-        "summary": "",
-        "description": "",
-        "operationId": "events",
+    "/{organisation}/trigger": {
+      "get": {
+        "summary": "No Docs",
+        "description": "Docs for this endpoint are not yet written. This includes org as a path param.",
+        "operationId": "eventbridge",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {}
+          },
+          "404": {
+            "description": "Not found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/trigger": {
+      "get": {
+        "summary": "No Docs",
+        "description": "Docs for this endpoint are not yet written",
+        "operationId": "eventbridge-984bb3ce-5e08-4975-a56a-8d483b87ec83",
         "parameters": [],
         "tags": [],
         "responses": {
@@ -21,8 +401,262 @@
             "description": "Success",
             "headers": {}
           },
-          "400": {
-            "description": "Failed (not implemented)",
+          "404": {
+            "description": "Not found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/events": {
+      "get": {
+        "summary": "Get All Events",
+        "description": "Returns a list of all events for a given organisation.",
+        "operationId": "events",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Events"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of all events.",
+            "headers": {}
+          },
+          "404": {
+            "description": "No events found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Event",
+        "description": "Creates a new event and stores its location.",
+        "operationId": "events-cdb2109c-8551-48b2-8897-0ab9b99776fa",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Events"
+        ],
+        "requestBody": {
+          "description": "Event details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event created successfully.",
+            "headers": {}
+          },
+          "404": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/events/{ksuid}": {
+      "get": {
+        "summary": "Get Single Event",
+        "description": "Fetch details of a specific event by its KSUID.",
+        "operationId": "events-d039dbf5-827c-4baf-94ff-8cd9e2509237",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique event ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Events"
+        ],
+        "responses": {
+          "200": {
+            "description": "The event object.",
+            "headers": {}
+          },
+          "404": {
+            "description": "Event not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/{organisation}/events/{ksuid}": {
+      "get": {
+        "summary": "Public Get Event",
+        "description": "Public endpoint to get a specific event by its KSUID.",
+        "operationId": "events-aebeb310-1687-4883-bf5f-aa883f329367",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique event ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Events"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "The event object.",
+            "headers": {}
+          },
+          "404": {
+            "description": "Event not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/generate-presigned-url": {
+      "post": {
+        "summary": "No Docs",
+        "description": "Docs for this endpoint are not yet written. This includes org as a path param.",
+        "operationId": "presigned_url",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {}
+          },
+          "404": {
+            "description": "Not found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/generate-presigned-url": {
+      "post": {
+        "summary": "No Docs",
+        "description": "Docs for this endpoint are not yet written",
+        "operationId": "presigned_url-443a27e9-9c8d-4d12-a7ce-efb3ac21a160",
+        "parameters": [],
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {}
+          },
+          "404": {
+            "description": "Not found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/organisations": {
+      "get": {
+        "summary": "No Docs",
+        "description": "Docs for this endpoint are not yet written",
+        "operationId": "organisations",
+        "parameters": [],
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {}
+          },
+          "404": {
+            "description": "Not found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
             "headers": {}
           }
         }

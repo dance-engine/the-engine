@@ -212,11 +212,13 @@ functions:
           method: get
           authorizer:
             adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
       - httpApi:
           path: /trigger
           method: get
           authorizer:
             adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
 
 #--------------------
 
@@ -256,23 +258,23 @@ functions:
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETall} 
       - httpApi:
           path: /{organisation}/events/{ksuid}
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETone} 
       - httpApi:
           path: /public/{organisation}/events/{ksuid}
           method: get
-          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETpub} 
       - httpApi:
           path: /{organisation}/events
           method: post
           authorizer:
             adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+          documentation: ${file(serverless.doc.yml):endpoints.Events.POST} 
 
 #-------------------- AWS s3
 
@@ -293,11 +295,13 @@ functions:
           method: post
           authorizer:
             adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
       - httpApi:
           path: /generate-presigned-url
           method: post
           authorizer:
             adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
 
 #---------------------- Org and provisoning
 
@@ -321,4 +325,4 @@ functions:
       - httpApi:
           path: /public/organisations
           method: get
-          documentation: ${file(serverless.doc.yml):endpoints.Events} 
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   

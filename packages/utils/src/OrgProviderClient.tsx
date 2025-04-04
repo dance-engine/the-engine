@@ -2,8 +2,8 @@
 import { useEffect, useState, ReactNode } from "react"
 import type { FC, PropsWithChildren } from "react"
 import { useUser } from "@clerk/nextjs"
-import { OrgContext, updateLastOrg } from "./OrgContext"
-import type { OrgSlug } from "./OrgContext"
+import { OrgContext, updateLastOrg } from "./hooks/OrgContext"
+import type { OrgSlug } from "./hooks/OrgContext"
 
 export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
 

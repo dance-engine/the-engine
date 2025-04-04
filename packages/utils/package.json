@@ -19,17 +19,23 @@
       "default": "./dist/arrayHelpers.js"
     },
     "./OrgContext": {
-      "default": "./src/OrgContext.tsx"
+      "default": "./src/hooks/OrgContext.tsx"
+    },
+    "./LocalAutosave": {
+      "default": "./src/hooks/LocalAutosave.ts"
     },
     "./actions/*": "./dist/actions/*.js"
   },
   "typesVersions": {
     "*": {
-      "actions/*": ["dist/actions/*.d.ts"]
+      "actions/*": [
+        "dist/actions/*.d.ts"
+      ]
     }
   },
   "devDependencies": {
     "@dance-engine/typescript-config": "workspace:*",
+    "@dance-engine/schemas": "workspace:*",
     "typescript": "latest"
   },
   "dependencies": {
@@ -38,6 +44,7 @@
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "react": "^19.0.0",
+    "react-autosave": "^0.5.0",
     "react-dom": "^19.0.0",
     "swr": "^2.3.3",
     "zod": "^3.24.2"

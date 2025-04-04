@@ -96,7 +96,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
         body: JSON.stringify({ 
           fileType: file.type,
           action: 'POST',
-          fieldName: [(entity ? `${entity.type}#${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
+          fieldName: [(entity ? `${entity.type.toLowerCase()}/${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
         }),
         headers: {
           "Content-Type": "application/json",

@@ -39,11 +39,30 @@ def get_single_event(organisationSlug,eventId):
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting event {eventId} for {organisationSlug} from {TABLE_NAME} / ")
 
-    response = table.get_item(
-        Key={ 'PK': f'EVENT#{eventId}', 'SK': f'EVENT#{eventId}'}
+    # response = table.get_item(
+    #     Key={ 'PK': f'EVENT#{eventId}', 'SK': f'EVENT#{eventId}'}
+    # )
+    response = table.query(
+        IndexName='IDXinv',  # Replace with your actual index name
+        KeyConditionExpression=Key('SK').eq(f'EVENT#{eventId}')
     )
-    event = response.get("Item", {})
-    return event
+    event_related_items = response.get("Items", None)
+    if not event_related_items:
+        logger.info(f"Event not found {event_related_items}")
+        return []
+    else: 
+        logger.info(f"Event Related Response {event_related_items}")
+        event_item = event_related_items[0] #! BAd Code! need to think about how much checking is needed
+        event_item["category"] = [item.strip() for item in event_item["category"].split(',')]
+        event_item["location"] = {
+            "name": event_related_items[1].get("name"),
+            "address": event_related_items[1].get("address"),
+            "lat": event_related_items[1].get("lat"),
+            "lng": event_related_items[1].get("lng"),
+            "ksuid": event_related_items[1].get("ksuid"),
+        }
+        # event = response.get("Items", {})
+    return event_item
 
 def create_event(event_data,organisationSlug):
     """
@@ -60,10 +79,13 @@ def create_event(event_data,organisationSlug):
     logger.info(f"Adding event for {organisationSlug} into {TABLE_NAME}")
 
     clientKsuid = KsuidMs.from_base62(event_data.get('ksuid'))
+    location_ksuid = event_data.get("location",{}).get("ksuid",KsuidMs())
     location_data = event_data.get('location')
     current_time = datetime.now(timezone.utc).isoformat()
+
     event_item = {
         "ksuid":            f"{clientKsuid}",
+        "banner":           event_data.get("banner"),
         "event_slug":       f"{generate_slug(event_data.get('name'))}",
         "organisation":     organisationSlug,
         "type":             "EVENT",
@@ -71,24 +93,35 @@ def create_event(event_data,organisationSlug):
         "starts_at":        event_data.get("starts_at"),
         "ends_at":          event_data.get("ends_at"),
         "category":         ", ".join(str(cat) for cat in event_data.get("category")),
-        "total_capacity":   event_data.get("capacity"),
+        "capacity":         event_data.get("capacity"),
         "number_sold":      0,
         "created_at":       current_time,
         "updated_at":       current_time,
         "description":      event_data.get("description"),
         "gsi1PK":           f"EVENTLIST#{organisationSlug}",
-        "gsi1SK":           f"EVENT#{clientKsuid}"
+        "gsi1SK":           f"EVENT#{clientKsuid}"    }
+    location_item = {
+        "ksuid":            f"{location_ksuid}",
+        "organisation":     organisationSlug,
+        "type":             "LOCATION",
+        "name":             location_data.get('name'),
+        "address":          location_data.get('address'),
+        "lat":              location_data.get('lat'),
+        "lng":              location_data.get('lng'),
+        "gsi1PK":           f"EVENTLIST#{organisationSlug}",
+        "gsi1SK":           f"LOCATION#{location_ksuid}"
     }
     
 
     try:
-        response = upsert_event(table,clientKsuid,event_item, ["event_slug","created_at"])
+        event_response = upsert_event(table,clientKsuid,event_item, ["event_slug","created_at"])
+        location_response = upsert_location(table,location_ksuid, f"EVENT#{clientKsuid}", location_item, ["event_slug","created_at"])
     except ClientError as e:
         if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
             logger.error(f"Item already exists! {event_item}")
         else:
             raise
-    return event_item, response
+    return event_item, event_response, location_response
 
 def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
     update_parts = []
@@ -110,6 +143,33 @@ def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
 
     response = table.update_item(
         Key={"PK": f"EVENT#{ksuid}", "SK": f"EVENT#{ksuid}"},
+        UpdateExpression=update_expression,
+        ExpressionAttributeNames=expression_attr_names,
+        ExpressionAttributeValues=expression_attr_values,
+        ReturnValues="ALL_NEW"
+    )
+    return response
+
+def upsert_location(table, ksuid: str, parent_ksuid: str, item: dict, only_set_once: list = []):
+    update_parts = []
+    expression_attr_names = {}
+    expression_attr_values = {}
+
+    for key, value in item.items():
+        name_placeholder = f"#{key}"
+        value_placeholder = f":{key}"
+        expression_attr_names[name_placeholder] = key
+        expression_attr_values[value_placeholder] = value
+
+        if key in only_set_once:
+            update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
+        else:
+            update_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+    update_expression = "SET " + ", ".join(update_parts)
+
+    response = table.update_item(
+        Key={"PK": f"LOCATION#{ksuid}", "SK": parent_ksuid},
         UpdateExpression=update_expression,
         ExpressionAttributeNames=expression_attr_names,
         ExpressionAttributeValues=expression_attr_values,
@@ -142,22 +202,22 @@ def lambda_handler(event, context):
 
             created_event = create_event(validated_event,organisationSlug)
             if created_event is None:
-                return {"statusCode": 400, "body": json.dumps({"message": "Event with this name already exists."})}
+                return { "statusCode": 400, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event with this name already exists."})}
 
-            return {"statusCode": 201, "body": json.dumps({"message": "Event created successfully.", "event": created_event}, cls=DecimalEncoder)}
+            return {"statusCode": 201, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event created successfully.", "event": created_event}, cls=DecimalEncoder)}
 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{eventId}")
             events = [get_single_event(organisationSlug,eventId)] if eventId else get_events(organisationSlug)
             if events is None:
-                return {"statusCode": 404, "body": json.dumps({"message": "No Events found."})}
-            return {"statusCode": 200, "body": json.dumps(events, cls=DecimalEncoder)}
+                return {"statusCode": 404, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "No Events found."})}
+            return {"statusCode": 200, "headers": { "Content-Type": "application/json" }, "body": json.dumps(events, cls=DecimalEncoder)}
 
         elif http_method == "PUT":
-            return {"statusCode": 405, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}
+            return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}
         
         else:
-            return {"statusCode": 405, "body": json.dumps({"message": "Method not allowed."})}
+            return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not allowed."})}
 
     except ValueError as e:
         logger.error("Validation error: %s", str(e))

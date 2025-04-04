@@ -83,3 +83,80 @@ resources:
             Value: ${sls:stage}
           - Key: DanceEngineVersion
             Value: v2
+    S3UploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: "${self:custom.upload_bucket}"
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - "*" # Replace with "https://*.dance-engine.co.uk" for security in prod if we can do wildcards
+              AllowedMethods:
+                - GET
+                - POST
+                - PUT
+                - HEAD
+              AllowedHeaders:
+                - "*"
+              ExposedHeaders:
+                - ETag
+              MaxAge: 3000
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
+    CdnOAC:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: "CdnAccessControl"
+          OriginAccessControlOriginType: "s3"
+          SigningBehavior: "always"
+          SigningProtocol: "sigv4"
+    CdnDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          DefaultRootObject: index.html
+          Origins:
+            - Id: S3Origin
+              DomainName:
+                Fn::GetAtt: [S3UploadBucket, RegionalDomainName]
+              OriginAccessControlId:
+                Ref: CdnOAC
+              OriginPath: "/cdn"
+              S3OriginConfig: {}  # Required even if OAC is used
+          DefaultCacheBehavior:
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+          ViewerCertificate:
+            CloudFrontDefaultCertificate: true
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref S3UploadBucket
+        PolicyDocument:
+          Statement:
+            - Sid: AllowCloudFrontToAccessCDNPrefix
+              Effect: Allow
+              Principal:
+                Service: cloudfront.amazonaws.com
+              Action: s3:GetObject
+              Resource: !Sub "${S3UploadBucket.Arn}/cdn/*"
+              Condition:
+                StringEquals:
+                  AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}"
+    ConfigBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.config_bucket}
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2

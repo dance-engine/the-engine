@@ -22,7 +22,6 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
   const createUrlEndpoint = baseUrlEndpoint
   const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
-  // const { data: remoteEntity = { type: "EVENT", ksuid: ksuid }, error, isLoading} = useClerkSWR(eventsApiUrl)
   const defaultEntity = useMemo(() => ({ type: "EVENT", ksuid }), [ksuid])
   const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
   const remoteEntity = data || defaultEntity
@@ -88,9 +87,13 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
     const initEntity = {...blankEntity, ...remoteEntity[0]}
     setEntity(initEntity)
-  },[remoteEntity])
+  },[remoteEntity,ksuid])
+  
+  if(error) {
+    console.error(error)
+  }
 
-  if(isLoading || error || !entity) {
+  if(isLoading || !entity) {
     return "Loading..."
   }
 
@@ -110,10 +113,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
         persistKey={entity} 
         data={entity}
       />
-      {JSON.stringify(entity)}
-        <pre>{JSON.stringify(entity,null,2)}</pre>
+        {/* <pre className="max-w-full">{JSON.stringify(entity,null,2)}</pre> */}
       </> 
-    : <pre>{JSON.stringify(entity,null,2)}</pre>
+    : null
 
   return <pre>{JSON.stringify(entity,null,2)}</pre>
 }

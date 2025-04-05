@@ -1,0 +1,71 @@
+---
+id: events-aebeb-310-1687-4883-bf-5-f-aa-883-f-329367
+title: "Public Get Event"
+description: "Public endpoint to get a specific event by its KSUID."
+sidebar_label: "Public Get Event"
+hide_title: true
+hide_table_of_contents: true
+api: eJydVE1z4zYM/SsYnJIZ+iPr7K5Xt7RJd9wemukm00PqaSAJsriRSYWE3Loa/fcOJCXrxukechJFPgIPjw9oMeeYBVuL9Q4TvG7SymbALq+9dQLiYcMCBLHmzBZ6tGMnkO7BSoRfvtyuLqdo0NccSGOsckywx8QJccrp4mw+Ofuw/Dg5Xy4Xk7R4X0yIlstFsXj3afHhIxqsKdCWhUPE5K5FR1vGBH3YkLOxD4oGrbKrSUo0Lyj/egCEWDUbNBj4sbGBc0wkNGwwZiVvCZMWZV9r9CjBOkWKleooXdeZZx4PsbH5dwncOvvY8CjM6hJOelVO30RjyNZ1a4NCGxVkfBI0eNWrimuDkbMmWNmrXgoNHGvvIkcN/W4+189/Od6UTwR9+pUz0TcrmfJe9LbrDJ7Pz4+v9SnBeYHCNy4/uvT+tVwrJxwcVRA57DgAh+DDy4SdwS1L6dUuG5beBlJigrO6r3fWHr5INxssNWt7gTr8psEX1XSoPKs4PPz59S855vTz7zdgY2w4V+v+qMApqCjiH9jBtokCKYN1WdXknIN1ICXD/UUjpQ/2n57FPQwVAEUg+IEpcBgCTOE2cojPcWoKAr7oYwgFbaHDcoBcDiXtuAc8uQSCrxhOeLqZGrinfGvd/al2IGUZxwh18MKZKJCjb0LGcfqH9sZoplKkxtFk+p/2BNGMi5982JIMWqjD0brC914cvXdJLmO4chvrGC6uV0dGV70urldQ+ACHYDS44xAH0Hw6n55hZ7D2UbbkNMPYSuNw+cwCvbFeJmgx80704O2DaNRC+G+Z1RVZp1SaUGn0wWF3WD91VPJiyAwm04OhD9cGSx9F77RtSpFvQ9V1uv3YcND2WxvcUbCUqoJ3LeY26jrHpKAq8ncKPPltfPZTeG2CvVrHuElur5JT1egfGnzg/dEIM28k8//T7A2UxnG2Puz2z1c3aJAafYvnQeh8v2GeFsnduuu6fwGqFj89
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Public Get Event"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/public/{organisation}/events/{ksuid}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Public endpoint to get a specific event by its KSUID.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"ksuid","in":"path","description":"Unique event ID (KSUID)","required":true,"schema":{"type":"string","title":"ksuid"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"The event object.","headers":{}},"404":{"description":"Event not found","headers":{}},"500":{"description":"Internal server error.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

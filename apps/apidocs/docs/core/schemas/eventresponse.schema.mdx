@@ -1,0 +1,33 @@
+---
+id: eventresponse
+title: "EventResponse"
+description: ""
+sidebar_label: "EventResponse"
+hide_title: true
+hide_table_of_contents: true
+schema: true
+sample: {"message":"string","event":{"ksuid":"string","banner":"string","event_slug":"string","organisation":"string","type":"string","name":"string","starts_at":"2024-07-29T15:51:28.071Z","ends_at":"2024-07-29T15:51:28.071Z","category":["string"],"capacity":0,"number_sold":0,"description":"string","created_at":"2024-07-29T15:51:28.071Z","updated_at":"2024-07-29T15:51:28.071Z","location":{"name":"string","address":"string","lat":0,"lng":0,"ksuid":"string"}}}
+custom_edit_url: null
+---
+
+import Schema from "@theme/Schema";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"EventResponse"}
+>
+</Heading>
+
+
+
+
+
+<Schema
+  schema={{"type":"object","properties":{"message":{"type":"string"},"event":{"type":"object","properties":{"ksuid":{"type":"string"},"banner":{"type":"string"},"event_slug":{"type":"string"},"organisation":{"type":"string"},"type":{"type":"string"},"name":{"type":"string"},"starts_at":{"type":"string","format":"date-time"},"ends_at":{"type":"string","format":"date-time"},"category":{"type":"array","items":{"type":"string"}},"capacity":{"type":"integer"},"number_sold":{"type":"integer"},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"location":{"type":"object","properties":{"name":{"type":"string"},"address":{"type":"string"},"lat":{"type":"number"},"lng":{"type":"number"},"ksuid":{"type":"string"}}}}}},"title":"EventResponse"}}
+  schemaType={"response"}
+>
+  
+</Schema>
+            

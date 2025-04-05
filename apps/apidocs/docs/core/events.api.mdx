@@ -1,0 +1,71 @@
+---
+id: events
+title: "Get All Events"
+description: "Returns a list of all events for a given organisation."
+sidebar_label: "Get All Events"
+hide_title: true
+hide_table_of_contents: true
+api: eJylVMFu00AQ/ZXRnIpkuQGVi28BQhUOUJVWHEJENvbEXrredWfHgWD539HYaUmTCiFx8u76zZvZN2+2w4JizrYRGzxmeE3Sso9gwNkoEDZgnAPakpcIm8BgoLRb8hC4NN5Go3EpJhga4mEzLzDDMQATbAybmoQ4Yrbo0JuaMMPDYEzQaubGSIXJUTmfDoAQXVtigkz3rWUqMBNuKcGYV1QbzDqUXaPsUdh6RYoVd5Ku75cJiim1IJyNdS6VNTbBR4pK9Goy0c+/S6MKVGSK4Z5d3yd4Mbk4pfgY/kjZ+uI06vVziedeiL1xEIm3xEDMgY9j+wRrkiqo+iXJIL1UmOF5d3j9/vyxNZHylq3shsbkjvju2/cfgtliqQo9/P2s6o6qHGCOS/zw5QZsjC0VsN7BWwWmcFMRSLgjD3UbBdYE1ueuLagA60EqgtW0lSqw/TXUtoLxQmBU5DdkmHgkSOE2EsdHnsbw0ADlEMMlyRM/gvEFVGZLA+DBL8DBEZxRWqYJrExRW796ARLA5DnFCA0HoVwUSDG0nFNMv6o997aqRBrc203366FATPaL94FrI6MWqO2wfhMGV+5d+M74nGDmS+sJplfzE7OrXtOr+TBmh2BMcEscR9AknaQvsU+wCVFq4zXDfqouSWDqHMweOvyEvsM8eCEv/zPleymEfsp544z1WknLTulHvy0wO5puepyxKkT1F3bd2kS6Zdf3enzfEqsLlwluDVuzVrkWHRY26rrAbGNcpL/c5+x63+MX8NyL8WzV+0Pjd6qvca3uMME72p08GcvD6bqcaX9/Azi/zbI=
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get All Events"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/events"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a list of all events for a given organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list of all events.","headers":{}},"404":{"description":"No events found.","headers":{}},"500":{"description":"Internal server error.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

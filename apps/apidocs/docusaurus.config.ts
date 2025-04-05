@@ -59,7 +59,8 @@ const config: Config = {
           } satisfies OpenApiPlugin.Options,
        }
       }
-    ]
+    ],
+    "@gracefullight/docusaurus-plugin-tailwind"
   ],
   themes: ["docusaurus-theme-openapi-docs", '@docusaurus/theme-mermaid'], // export theme components
   markdown: {

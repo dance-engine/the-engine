@@ -5,29 +5,54 @@
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
+
+   --color-primary-50: oklch(91.45% 0.023 264);
+  --color-primary-100: oklch(84% 0.053 263);
+  --color-primary-200: oklch(76.41% 0.089 264);
+  --color-primary-300: oklch(68.9% 0.128 263);
+  --color-primary-400: oklch(61.26% 0.165 264);
+  --color-primary-500: oklch(53.73% 0.192 264);
+  --color-primary-600: oklch(46.08% 0.213 264);
+  --color-primary-700: oklch(38.4% 0.211 264);
+  --color-primary-800: oklch(30.46% 0.192 264);
+  --color-primary-900: oklch(21.78% 0.151 264);
+  --color-primary-950: oklch(13.72% 0.074 263);
  */
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: hsl(233, 50%, 10%);
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #01164d;
+  --ifm-color-primary-dark: #011445;
+  --ifm-color-primary-darker: #011341;
+  --ifm-color-primary-darkest: #010f36;
+  --ifm-color-primary-light: #011855;
+  --ifm-color-primary-lighter: #011959;
+  --ifm-color-primary-lightest: #011d64;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-navbar-background-color:#F0EEFC;
+  --ifm-footer-background-color:#011445;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+[data-theme='dark'] { 
+  --ifm-color-primary: #f0eefc;
+  --ifm-color-primary-dark: #cbc4f5;
+  --ifm-color-primary-darker: #b9b0f1;
+  --ifm-color-primary-darkest: #8271e6;
+  --ifm-color-primary-light: #ffffff;
+  --ifm-color-primary-lighter: #ffffff;
+  --ifm-color-primary-lightest: #ffffff;
+  --ifm-navbar-background-color: #011445;
+  --ifm-hero-background-color:#ffffff;
+  --ifm-badge-color: var(--ifm-background-color);
+  --ifm-footer-background-color:#011445;
+}
+
+.footer--dark {
+  --ifm-footer-background-color:#011445;
+}
+
+[data-theme='dark'] .docMainContainer_zFYD {
+  --ifm-background-color:#010f36;
 }

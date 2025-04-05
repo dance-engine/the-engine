@@ -25,6 +25,7 @@ export const eventSchema = z.object({
   updated_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
   }).optional().describe("Updated timstamp"),
+  version: z.coerce.number().optional().describe("Version Number")
 });
 
 // Generate TypeScript type from the schema

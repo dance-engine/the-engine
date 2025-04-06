@@ -1,0 +1,33 @@
+---
+id: location
+title: "Location"
+description: ""
+sidebar_label: "Location"
+hide_title: true
+hide_table_of_contents: true
+schema: true
+sample: {"name":"string","address":"string","lat":0,"lng":0,"ksuid":"string"}
+custom_edit_url: null
+---
+
+import Schema from "@theme/Schema";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Location"}
+>
+</Heading>
+
+
+
+
+
+<Schema
+  schema={{"type":"object","properties":{"name":{"type":"string"},"address":{"type":"string"},"lat":{"type":"number"},"lng":{"type":"number"},"ksuid":{"type":"string"}},"title":"Location"}}
+  schemaType={"response"}
+>
+  
+</Schema>
+            

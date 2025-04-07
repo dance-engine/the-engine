@@ -11,7 +11,7 @@
         ".env.development",
         ".env"
       ],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**","build/**"],
       "passThroughEnv": ["HERE_MAPS_APPID", "HERE_MAPS_API_KEY", "CLERK_SECRET_KEY"]
     },
     "lint": {

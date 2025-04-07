@@ -102,6 +102,7 @@ def create_event(event_data,organisationSlug):
         "description":      event_data.get("description"),
         "created_at":       current_time,
         "updated_at":       current_time,
+        "version":          event_data.get("version"),
         "gsi1PK":           f"EVENTLIST#{organisationSlug}",
         "gsi1SK":           f"EVENT#{clientKsuid}"    }
     
@@ -153,7 +154,7 @@ def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
     update_expression = "SET " + ", ".join(update_parts)
 
     # Only update if existing version is less than the one being replaced
-    condition_expression = "attribute_not_exists(#version) OR #version < :incoming_version"
+    condition_expression = "attribute_not_exists(#version) OR #version <= :incoming_version"
     expression_attr_names["#version"] = "version"
     expression_attr_values[":incoming_version"] = incoming_version
 

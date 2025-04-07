@@ -38,12 +38,14 @@ export const getIcon = (fieldValue: string | string | number | boolean | null ) 
 }
 
 export const formatField = (fieldValue: string | string | number | boolean | null, formatAs = "default") => {
+  const isTimeRelated = formatAs == 'time' || formatAs == 'date'
   const timestamp = Date.parse(fieldValue as unknown as string)
   const isDateTimeString = !isNaN(timestamp)
   const isArray = Array.isArray(fieldValue)
+
   if(formatAs == 'icon')
     return getIcon(fieldValue)
-  else if(isDateTimeString) {
+  else if(isTimeRelated && isDateTimeString) {
     return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString() : new Date(timestamp).toLocaleDateString()
   }
   else if(isArray) {

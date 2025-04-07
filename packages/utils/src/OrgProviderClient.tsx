@@ -30,7 +30,6 @@ export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
     if (!availableOrgs.includes(slug)) return
     setActiveOrg(slug)
     if(user) {
-      console.log(user)
       await updateLastOrg(slug)
     }
     

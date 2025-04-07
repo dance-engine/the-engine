@@ -82,7 +82,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   // Upload file to S3 with progress tracking
   const uploadFile = async (file: File, entity:DanceEngineEntity, fieldName: string) => {
     if (!file) return; // Prevents potential null issues
-    console.log("entity",entity)
     setUploading(true);
     setUploadProgress(0); // Reset progress
     setHasUploaded(true)
@@ -163,7 +162,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   return (
     <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
       {/* {filePreview}<br/>:{JSON.stringify(storedFileKey)} */}
-      {name}
       <div
         {...getRootProps()}
         className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"

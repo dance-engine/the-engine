@@ -47,7 +47,6 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   });
 
   useEffect(() => {
-    console.log("Effct in Dynamic")
     const draft = loadFromStorage();
     if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
       console.info("Loading cached version", draft, data)
@@ -64,7 +63,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   return (
     <form onSubmit={handleSubmit((data) => {
         onSubmit(data)
-        console.log("submitted",data)
+        console.log("Submitted",data)
         setValue("meta.saved", "saving") 
         setValue("meta.updated_at", new Date().toISOString())
       })} 
@@ -164,7 +163,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         );
       })}
 
-      <button type="submit" onClick={(e)=>{console.log("Clieck",e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md mt-3">
+      <button type="submit" className="bg-cerise-on-light text-white py-2 px-4 rounded-md mt-3">
         Save
       </button>
     </form>

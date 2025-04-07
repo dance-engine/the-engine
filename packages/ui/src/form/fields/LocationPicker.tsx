@@ -69,10 +69,8 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
 
   const handleSelectLocation = (location: HereGeocodeResult) => {
     // Set the selected location data into lat/lng fields
-    console.log("location",location)
     const position = location.access && location.access[0] ? location.access[0] : location.position
     const address = location.address ? [`${[location.address.houseNumber,location.address.street].flat().join('-')}`, location.address.district,location.address.city,location.address.county,location.address.postalCode].join(', ') : false
-    console.log(location.address)
     setValue(`${name}.name`, location.title); // Set location name
     setValue(`${name}.lat`, position.lat); // Set latitude
     setValue(`${name}.lng`, position.lng); // Set longitude

@@ -22,7 +22,6 @@ const PageClient = ({ entity }: { entity?: string }) => {
   
   const getEntity = (entityType: string) => {
     const cached = window.localStorage.getItem(`local:${entityType}`)
-    console.log("cached",cached)
     return cached ? JSON.parse(cached)?.map((entry: EventType)=>{
       const parsed = JSON.parse(window.localStorage.getItem(`${entry}`) || '{}')
       const result = eventSchema.safeParse(parsed)
@@ -34,7 +33,6 @@ const PageClient = ({ entity }: { entity?: string }) => {
   }
   
   const localEntities = useMemo(() => {
-    console.log("Getting ",entity)
     return typeof window !== "undefined" && entity ? getEntity(entity): []
   },[entity])
 
@@ -51,19 +49,15 @@ const PageClient = ({ entity }: { entity?: string }) => {
 
     // Step 2: Add local ones that aren't already present or have updates
     localEntities.forEach((r: EventType) => {
-      console.log("Local ", r)
       const id = String(r.ksuid)
       const remoteEntity = byId.get(id)
 
       if(!remoteEntity) {
-        console.log("Only local add")
         byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-only' } })
       } else if( remoteEntity.version && r.version && remoteEntity.version <= r.version) {
         byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-newer' } })
       } else {
-        console.log("REemote.new")
         byId.set(`${id}`, { ...remoteEntity, meta: { ...(remoteEntity.meta ?? {}), source: `local-older#${id}` } })
-        
       }
     })
     return Array.from(byId.values())

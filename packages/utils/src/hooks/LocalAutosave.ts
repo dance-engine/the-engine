@@ -25,16 +25,11 @@ export function useLocalAutoSave<T extends { ksuid: string, meta?: { updated_at?
   const resetTimer = useRef<NodeJS.Timeout | null>(null);
 
   const setStatusWithReset = useCallback((newStatus: typeof status) => {
-    console.log("Changing Status to", newStatus)
     setStatus(newStatus);
     setIsStatusVisible(true);
     if (resetTimer.current) clearTimeout(resetTimer.current);
     if (newStatus !== 'Idle') {
-      console.log("PREP TO HIDE")
-      // 
       resetTimer.current = setTimeout(() => {
-        console.log("HIDE")
-        
         setIsStatusVisible(false)
         resetTimer.current = setTimeout(() => { setStatus("Idle");},1000)
       }, 3000);

@@ -68,23 +68,6 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   };
 
   useEffect(()=>{
-    console.log("rendered with ", ksuid)
-  })
-
-  // useEffect(()=>{
-  //   console.log("Effected",remoteEntity[0])
-  //   const blankEntity = {
-  //     type: "EVENT",
-  //     ksuid: ksuid // Extract the ksuid if it exists
-  //   } as DanceEngineEntity
-  //   const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
-  //   // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
-  //   const initEntity = {...blankEntity, ...remoteEntity[0]}
-  //   setEntity(initEntity)
-  // },[remoteEntity])
-
-  useEffect(()=>{
-    console.log("Effected",remoteEntity[0])
     const blankEntity = {
       type: "EVENT",
       ksuid: ksuid // Extract the ksuid if it exists

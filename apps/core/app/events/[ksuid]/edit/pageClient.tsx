@@ -19,12 +19,15 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const router = useRouter()
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
+
   const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
   const createUrlEndpoint = baseUrlEndpoint
   const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
   const defaultEntity = useMemo(() => ({ type: "EVENT", ksuid }), [ksuid])
   const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
+  
   const remoteEntity = data || defaultEntity
+  
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
   const handleSubmit = async (data: FieldValues) => {
@@ -64,6 +67,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     }
   };
 
+  useEffect(()=>{
+    console.log("rendered with ", ksuid)
+  })
 
   // useEffect(()=>{
   //   console.log("Effected",remoteEntity[0])
@@ -83,7 +89,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
       type: "EVENT",
       ksuid: ksuid // Extract the ksuid if it exists
     } as DanceEngineEntity
-    const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
+    // const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
     // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
     const initEntity = {...blankEntity, ...remoteEntity[0]}
     setEntity(initEntity)

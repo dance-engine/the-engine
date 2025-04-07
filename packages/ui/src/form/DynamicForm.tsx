@@ -47,16 +47,19 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   });
 
   useEffect(() => {
+    console.log("Effct in Dynamic")
     const draft = loadFromStorage();
-    if (draft) { 
-      reset(draft)
+    if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
+      console.info("Loading cached version", draft, data)
+      reset(draft as EventType)
     } else { 
+      console.info("Loading remote version", draft, data)
       reset(data)
     }  
   }, [loadFromStorage, data, reset]);
   
   const fields = Object.keys(schema.shape);
-  // const watchedValues = watch();
+  
 
   return (
     <form onSubmit={handleSubmit((data) => {
@@ -67,6 +70,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
       })} 
       className="space-y-4 w-full relative">
       <Debug debug={watchedValues} className="absolute right-0"/>
+      {isDirty ? "Dirty" : "Clean"}
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {

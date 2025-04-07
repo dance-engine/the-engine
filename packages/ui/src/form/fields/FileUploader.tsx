@@ -160,6 +160,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
 
   return (
     <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
+      {/* {filePreview} */}
       <div
         {...getRootProps()}
         className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"

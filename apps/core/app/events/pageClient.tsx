@@ -53,11 +53,11 @@ const PageClient = ({ entity }: { entity?: string }) => {
       const remoteEntity = byId.get(id)
 
       if(!remoteEntity) {
-        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-only' } })
+        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local (unsaved)' } })
       } else if( remoteEntity.version && r.version && remoteEntity.version <= r.version) {
-        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-newer' } })
+        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local (newer)' } })
       } else {
-        byId.set(`${id}`, { ...remoteEntity, meta: { ...(remoteEntity.meta ?? {}), source: `local-older#${id}` } })
+        byId.set(`${id}`, { ...remoteEntity, meta: { ...(remoteEntity.meta ?? {}), source: `remote (newer)` } })
       }
     })
     return Array.from(byId.values())

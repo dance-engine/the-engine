@@ -46,7 +46,7 @@ export const formatField = (fieldValue: string | string | number | boolean | nul
   if(formatAs == 'icon')
     return getIcon(fieldValue)
   else if(isTimeRelated && isDateTimeString) {
-    return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString() : new Date(timestamp).toLocaleDateString()
+    return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString().slice(0, -3) : new Date(timestamp).toLocaleDateString()
   }
   else if(isArray) {
     return fieldValue.join(', ')

@@ -104,7 +104,8 @@ def create_event(event_data,organisationSlug):
         "updated_at":       current_time,
         "version":          event_data.get("version"),
         "gsi1PK":           f"EVENTLIST#{organisationSlug}",
-        "gsi1SK":           f"EVENT#{clientKsuid}"    }
+        "gsi1SK":           f"EVENT#{clientKsuid}"    
+    }
     
     location_item = {
         "ksuid":            f"{location_ksuid}",
@@ -137,8 +138,8 @@ def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
     expression_attr_names = {}
     expression_attr_values = {}
 
-    incoming_version = item.get("version", 0)  # Default to 0 if not provided and then +1 it
-    item["version"] = incoming_version + 1     # This will be the new version stored in DynamoDB
+    incoming_version = item.get("version") if isinstance(item.get("version"), int) else 0
+    item["version"] = incoming_version + 1
 
     for key, value in item.items():
         name_placeholder = f"#{key}"

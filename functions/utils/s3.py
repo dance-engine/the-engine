@@ -62,7 +62,9 @@ def generate_presigned_post(data):
 
 def generate_presigned_get(file_key):
     """Generate a presigned URL for file retrieval."""
+    logger.warning(f"Generate presigned URL for: {file_key}")
     if not file_key:
+        logger.warning(f"No fileKey sent: {file_key}")
         return {"statusCode": 400, "body": json.dumps({"error": "Missing fileKey"})}
 
     presigned_url = s3.generate_presigned_url(

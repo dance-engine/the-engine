@@ -23,8 +23,8 @@ def trigger_handler(event, context):
         Entries=[
             {
                 'Detail': '{ "message": "Hello, EventBridge!" }',
-                'DetailType': 'some.type',
-                'Source': 'some.pattern',
+                'DetailType': 'TestType',
+                'Source': 'dance-engine.test',
             },
         ]
     )

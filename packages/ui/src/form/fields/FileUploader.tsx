@@ -13,10 +13,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   const { getToken } = useAuth();
   const storedFileKey = watch(name);
   
-  
-
   useEffect(() => {
-    if (storedFileKey && !hasUploaded) {
+    const webUrlregex = /http(s?):\/\//
+    if (storedFileKey && !hasUploaded && !webUrlregex.test(storedFileKey)) {
       const fetchPresignedUrl = async () => {
         try {
           const token = await getToken();
@@ -43,7 +42,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   
       fetchPresignedUrl();
     }
-  }, [storedFileKey]);
+    else if(storedFileKey && webUrlregex.test(storedFileKey)) {
+      setFilePreview(storedFileKey)
+    }
+  }, [storedFileKey,getToken,hasUploaded,uploadUrl,name]);
   
 
   // Handle file selection (Drag & Drop or Browse)
@@ -107,7 +109,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
       if (!res.ok) throw new Error("Failed to get presigned URL");
 
       const { url, fields } = await res.json();
-      console.log("INFO", url, fields, "key", fields.key);
+      console.info("INFO", url, fields, "key", fields.key);
 
       // Step 2: Upload file to S3 with progress tracking
       const formData = new FormData();
@@ -116,7 +118,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
       });
       formData.append("file", file);
 
-      setValue(fieldName, fields.key); // Store file key from S3
+      setValue(fieldName, fields.key, { shouldDirty: true }); // Store file key from S3
 
       // Create XMLHttpRequest to track upload progress
       const xhr = new XMLHttpRequest();
@@ -160,6 +162,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
 
   return (
     <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
+      {/* {filePreview}<br/>:{JSON.stringify(storedFileKey)} */}
+      {name}
       <div
         {...getRootProps()}
         className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"

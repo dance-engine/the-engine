@@ -19,6 +19,8 @@ import { DynamicFormProps } from '@dance-engine/ui/types'
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
+import { labelFromSnake } from '@dance-engine/utils/textHelpers'
+
 
 const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
@@ -45,16 +47,19 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   });
 
   useEffect(() => {
+    console.log("Effct in Dynamic")
     const draft = loadFromStorage();
-    if (draft) { 
-      reset(draft)
+    if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
+      console.info("Loading cached version", draft, data)
+      reset(draft as EventType)
     } else { 
+      console.info("Loading remote version", draft, data)
       reset(data)
     }  
   }, [loadFromStorage, data, reset]);
   
   const fields = Object.keys(schema.shape);
-  // const watchedValues = watch();
+  
 
   return (
     <form onSubmit={handleSubmit((data) => {
@@ -65,6 +70,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
       })} 
       className="space-y-4 w-full relative">
       <Debug debug={watchedValues} className="absolute right-0"/>
+      {isDirty ? "Dirty" : "Clean"}
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
@@ -79,10 +85,11 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         const checkboxesField = metadata && metadata[field]?.checkboxesField; // Get metadata for the field
         const isHidden = metadata && metadata[field]?.hidden
         const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
+        const isDisplayInfo = metadata && metadata[field]?.info
 
 
         return (
-          <div key={field} className="flex flex-col">
+          <div key={field} className={`flex flex-col ${isDisplayInfo ? "mb-1" : null}`}>
             { isHidden ? (
               <HiddenInput name={field} register={register} />
             ) : dateField ? (
@@ -114,7 +121,12 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
                 fieldSchema={fieldSchema} // Pass the ZodEnum schema for roles
                 error={errors[field]?.message as string} // Display error message for roles
               />
-            ) : fieldType === "ZodObject" ? (
+            ) : isDisplayInfo ? (
+              <div className="text-sm leading-none">
+                <span className="text-gray-400 capitalize text-sm mr-2">{labelFromSnake(field)}: </span>
+                <span className="font-medium text-gray-500">{watch(field)}</span>
+              </div>
+            ) : fieldType === "ZodObject" ? ( //TODO Don't assume all object are LocationPickers
               <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}
                 {/* {JSON.stringify(getValues(field))} */}
@@ -152,7 +164,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         );
       })}
 
-      <button type="submit" onClick={(e)=>{console.log("Clieck",e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md">
+      <button type="submit" onClick={(e)=>{console.log("Clieck",e)}} className="bg-cerise-on-light text-white py-2 px-4 rounded-md mt-3">
         Save
       </button>
     </form>

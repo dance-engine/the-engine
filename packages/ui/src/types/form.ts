@@ -133,7 +133,8 @@ export interface DynamicFieldOptions {
   dateField?: boolean, 
   checkboxesField?: boolean,
   hidden?: boolean,
-  fileUploadField?: string
+  fileUploadField?: string;
+  info?: boolean;
 }
 
 export type MetaData = {

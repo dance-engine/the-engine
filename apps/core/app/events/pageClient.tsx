@@ -45,23 +45,25 @@ const PageClient = ({ entity }: { entity?: string }) => {
     // Step 1: Add remote records
     remoteEntities.forEach((r: EventType) => {
       const id = String(r.ksuid)
-      const newMeta = { ...(r.meta ?? {}), valid: true, source: 'remote', saved: "saved"}
+      const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
       byId.set(id, { ...r, meta: newMeta})
     })
 
-    // Step 2: Add local ones that aren't already present
+    // Step 2: Add local ones that aren't already present or have updates
     localEntities.forEach((r: EventType) => {
       console.log("Local ", r)
       const id = String(r.ksuid)
-      const mapEntity = byId.get(id)
-      if (!byId.has(id)) {
+      const remoteEntity = byId.get(id)
+
+      if(!remoteEntity) {
+        console.log("Only local add")
         byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-only' } })
-      }
-      else if( mapEntity && r.meta && mapEntity?.meta && mapEntity?.updated_at && r.meta.updated_at && r.meta.updated_at > (mapEntity?.updated_at || '1971-01-01T00:00:00.000Z') ) {
-        byId.set(id, { ...byId.get(id), ...r, meta: { ...(r.meta ?? {}), valid: true, source: 'both', saved: "changed-locally"} })
-      }
-      else {
-        console.log("Remote ent: ",id, r.meta?.updated_at, " > ", mapEntity?.updated_at)
+      } else if( remoteEntity.version && r.version && remoteEntity.version <= r.version) {
+        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-newer' } })
+      } else {
+        console.log("REemote.new")
+        byId.set(`${id}`, { ...remoteEntity, meta: { ...(remoteEntity.meta ?? {}), source: `local-older#${id}` } })
+        
       }
     })
     return Array.from(byId.values())
@@ -74,8 +76,8 @@ const PageClient = ({ entity }: { entity?: string }) => {
     { (error instanceof CorsError) ? <div>Looks like a CORS issue (server unreachable or blocked)</div> : null }
     { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null }
     { allEntities ? <BasicList 
-        columns={["name","starts_at","starts_at","ends_at","category","meta.saved"]} 
-        formats={[undefined,undefined,'time','time',undefined,'icon']} 
+        columns={["name","starts_at","starts_at","ends_at","category","meta.saved","version","meta.source"]} 
+        formats={[undefined,'date','time','time',undefined,'icon',undefined]} 
         records={allEntities}
       /> : null
     }

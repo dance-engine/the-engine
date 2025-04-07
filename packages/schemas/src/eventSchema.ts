@@ -43,5 +43,8 @@ export const eventMetadata = {
   location: {
     lat: { hidden: true},
     lng: { hidden: true }
-  }
+  },
+  created_at: { info: true },
+  updated_at: { info: true },
+  version: { info: true }
 }

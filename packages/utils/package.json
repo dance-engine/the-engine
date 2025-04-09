@@ -21,6 +21,9 @@
     "./OrgContext": {
       "default": "./src/hooks/OrgContext.tsx"
     },
+    "./StateContext": {
+      "default": "./src/hooks/GlobalState.ts"
+    },
     "./LocalAutosave": {
       "default": "./src/hooks/LocalAutosave.ts"
     },

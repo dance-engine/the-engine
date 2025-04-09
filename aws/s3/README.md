@@ -46,3 +46,15 @@ $response.ResourceTagMappingList |
   } | Sort-Object ARN | Format-Table -AutoSize
 
 '''
+
+Test Eventbridge
+---
+$entriesJson = @(
+  @{
+    Source = "dance-engine.test"
+    DetailType = "TestEvent"
+    Detail = '{"OrganisationSlug":"test","Stage":"preview"}'
+  }
+) | ConvertTo-Json -Compress | ConvertTo-Json -Compress
+
+aws events put-events --entries "$entriesJson" --profile "AdministratorAccess-717279731911"

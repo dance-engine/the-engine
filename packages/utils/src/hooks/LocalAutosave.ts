@@ -25,16 +25,11 @@ export function useLocalAutoSave<T extends { ksuid: string, meta?: { updated_at?
   const resetTimer = useRef<NodeJS.Timeout | null>(null);
 
   const setStatusWithReset = useCallback((newStatus: typeof status) => {
-    console.log("Changing Status to", newStatus)
     setStatus(newStatus);
     setIsStatusVisible(true);
     if (resetTimer.current) clearTimeout(resetTimer.current);
     if (newStatus !== 'Idle') {
-      console.log("PREP TO HIDE")
-      // 
       resetTimer.current = setTimeout(() => {
-        console.log("HIDE")
-        
         setIsStatusVisible(false)
         resetTimer.current = setTimeout(() => { setStatus("Idle");},1000)
       }, 3000);
@@ -49,26 +44,31 @@ export function useLocalAutoSave<T extends { ksuid: string, meta?: { updated_at?
     interval: 1500,
     onSave: (newData: T) => {
       if (!isDirty) return;
-      try {
-        const updated_at = new Date().toISOString();
-        const updatedData: T = {
-          ...newData,
-          meta: {
-            ...(newData.meta || {}),
-            updated_at,
-          },
-        };
-        const currentHistory = JSON.parse(localStorage.getItem(STORAGE_LIST_KEY) || "[]")
-        const newHistory = [...new Set([...(currentHistory.flat()),STORAGE_KEY])]
-        localStorage.setItem(STORAGE_LIST_KEY, JSON.stringify(newHistory));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-        setStatusWithReset('Draft saved locally');
-      } catch (e) {
-        console.error('Local save failed', e);
-        setStatusWithReset('Local save error');
-      }
-    },
+      saveLocally(newData)
+    }
   });
+
+  const saveLocally = (newData: T ) => {
+    try {
+      const updated_at = new Date().toISOString();
+      const updatedData: T = {
+        ...newData,
+        meta: {
+          ...(newData.meta || {}),
+          updated_at,
+        },
+      };
+      const currentHistory = JSON.parse(localStorage.getItem(STORAGE_LIST_KEY) || "[]")
+      const newHistory = [...new Set([...(currentHistory.flat()),STORAGE_KEY])]
+      localStorage.setItem(STORAGE_LIST_KEY, JSON.stringify(newHistory));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+      setStatusWithReset('Draft saved locally');
+    } catch (e) {
+      console.error('Local save failed', e);
+      setStatusWithReset('Local save error');
+    }
+  }
+  
 
 
   // Load draft if it's newer than remote version
@@ -97,7 +97,7 @@ export function useLocalAutoSave<T extends { ksuid: string, meta?: { updated_at?
     }
   }, [STORAGE_KEY, remoteUpdatedAt]);
 
-  return { status, isStatusVisible, loadFromStorage };
+  return { status, isStatusVisible, loadFromStorage, saveLocally };
 }
 
 

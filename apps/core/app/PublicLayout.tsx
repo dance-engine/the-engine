@@ -24,7 +24,7 @@ export default function ProtectedLayout({
   
   <html lang="en" className="h-full">
     <body
-      className={`${openSans.variable} antialiased h-full bg-uberdark-background dark:bg-uberdark-background text-black dark:text-dark-secondary`}
+      className={`${openSans.variable} antialiased h-full bg-uberdark-background dark:bg-uberdark-background  text-black dark:text-dark-secondary bg-[url(/circuits.jpg)]`}
     >
       <MessengerRedirect />
       

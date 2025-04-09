@@ -1,6 +1,6 @@
 'use client'
 import dynamic from "next/dynamic";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import useClerkSWR, { CorsError }  from '@dance-engine/utils/clerkSWR'
 import { useOrgContext } from '@dance-engine/utils/OrgContext';
 import {EventType, eventSchema} from '@dance-engine/schemas/events'
@@ -22,7 +22,6 @@ const PageClient = ({ entity }: { entity?: string }) => {
   
   const getEntity = (entityType: string) => {
     const cached = window.localStorage.getItem(`local:${entityType}`)
-    console.log("cached",cached)
     return cached ? JSON.parse(cached)?.map((entry: EventType)=>{
       const parsed = JSON.parse(window.localStorage.getItem(`${entry}`) || '{}')
       const result = eventSchema.safeParse(parsed)
@@ -34,7 +33,6 @@ const PageClient = ({ entity }: { entity?: string }) => {
   }
   
   const localEntities = useMemo(() => {
-    console.log("Getting ",entity)
     return typeof window !== "undefined" && entity ? getEntity(entity): []
   },[entity])
 
@@ -45,23 +43,21 @@ const PageClient = ({ entity }: { entity?: string }) => {
     // Step 1: Add remote records
     remoteEntities.forEach((r: EventType) => {
       const id = String(r.ksuid)
-      const newMeta = { ...(r.meta ?? {}), valid: true, source: 'remote', saved: "saved"}
+      const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
       byId.set(id, { ...r, meta: newMeta})
     })
 
-    // Step 2: Add local ones that aren't already present
+    // Step 2: Add local ones that aren't already present or have updates
     localEntities.forEach((r: EventType) => {
-      console.log("Local ", r)
       const id = String(r.ksuid)
-      const mapEntity = byId.get(id)
-      if (!byId.has(id)) {
-        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local-only' } })
-      }
-      else if( mapEntity && r.meta && mapEntity?.meta && mapEntity?.updated_at && r.meta.updated_at && r.meta.updated_at > (mapEntity?.updated_at || '1971-01-01T00:00:00.000Z') ) {
-        byId.set(id, { ...byId.get(id), ...r, meta: { ...(r.meta ?? {}), valid: true, source: 'both', saved: "changed-locally"} })
-      }
-      else {
-        console.log("Remote ent: ",id, r.meta?.updated_at, " > ", mapEntity?.updated_at)
+      const remoteEntity = byId.get(id)
+
+      if(!remoteEntity) {
+        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local (unsaved)' } })
+      } else if( remoteEntity.version && r.version && remoteEntity.version <= r.version) {
+        byId.set(id, { ...r, meta: { ...(r.meta ?? {}), source: 'local (newer)' } })
+      } else {
+        byId.set(`${id}`, { ...remoteEntity, meta: { ...(remoteEntity.meta ?? {}), source: `remote (newer)` } })
       }
     })
     return Array.from(byId.values())
@@ -74,8 +70,8 @@ const PageClient = ({ entity }: { entity?: string }) => {
     { (error instanceof CorsError) ? <div>Looks like a CORS issue (server unreachable or blocked)</div> : null }
     { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null }
     { allEntities ? <BasicList 
-        columns={["name","starts_at","starts_at","ends_at","category","meta.saved"]} 
-        formats={[undefined,undefined,'time','time',undefined,'icon']} 
+        columns={["name","starts_at","starts_at","ends_at","category","meta.saved","version","meta.source"]} 
+        formats={[undefined,'date','time','time',undefined,'icon',undefined]} 
         records={allEntities}
       /> : null
     }

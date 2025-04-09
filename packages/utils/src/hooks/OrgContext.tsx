@@ -1,8 +1,6 @@
 'use client'
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import type { UserResource } from "@clerk/types"
+import { createContext, useContext } from "react"
 import { OrgProviderClient } from '../OrgProviderClient'
-import { setLastOrg } from '../actions/setLastOrg'
 
 export const OrgProvider = ({ children }: { children: React.ReactNode }) => {
   return <OrgProviderClient>{children}</OrgProviderClient>
@@ -22,7 +20,13 @@ export const OrgContext = createContext<OrgContextType | undefined>(undefined)
 export const updateLastOrg = async (
   slug: string
 ) => {
-  await setLastOrg(slug)
+  // await setLastOrg(slug)
+  const response = fetch('/api/user/meta',{
+    method: 'POST',
+    body: JSON.stringify({ slug })
+  })
+  console.log(response)
+
 }
 
 export const useOrgContext = () => {

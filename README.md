@@ -36,7 +36,9 @@ All lambda functions sit behind an authoriser function that return IAM policies
     │   │── schemas/
     │   │   │── {zod schemas}
 
+## TODO
 
+- Add ENV var for cloudfront distribution in serverless
 
 ### Apps and Packages
 

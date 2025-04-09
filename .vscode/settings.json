@@ -12,6 +12,7 @@
   ],
   "tailwindCSS.experimental.configFile": {
     "packages/ui/src/styles.css": "packages/ui/src/**",
-    "apps/core/app/globals.css": "apps/core/app/**"
+    "apps/core/app/globals.css": "apps/core/app/**",
+    "apps/clients/solo/app/globals.css": ["apps/clients/solo/app/**","apps/clients/solo/components/**"]
   }
 }

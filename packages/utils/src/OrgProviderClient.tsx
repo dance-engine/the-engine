@@ -1,9 +1,11 @@
 'use client'
-import { useEffect, useState, ReactNode } from "react"
+import { useEffect, useState } from "react"
 import type { FC, PropsWithChildren } from "react"
 import { useUser } from "@clerk/nextjs"
 import { OrgContext, updateLastOrg } from "./hooks/OrgContext"
 import type { OrgSlug } from "./hooks/OrgContext"
+import { } from './init/globalState';
+
 
 export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
 
@@ -30,7 +32,6 @@ export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
     if (!availableOrgs.includes(slug)) return
     setActiveOrg(slug)
     if(user) {
-      console.log(user)
       await updateLastOrg(slug)
     }
     

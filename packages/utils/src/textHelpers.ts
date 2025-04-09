@@ -38,13 +38,15 @@ export const getIcon = (fieldValue: string | string | number | boolean | null ) 
 }
 
 export const formatField = (fieldValue: string | string | number | boolean | null, formatAs = "default") => {
+  const isTimeRelated = formatAs == 'time' || formatAs == 'date'
   const timestamp = Date.parse(fieldValue as unknown as string)
   const isDateTimeString = !isNaN(timestamp)
   const isArray = Array.isArray(fieldValue)
+
   if(formatAs == 'icon')
     return getIcon(fieldValue)
-  else if(isDateTimeString) {
-    return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString() : new Date(timestamp).toLocaleDateString()
+  else if(isTimeRelated && isDateTimeString) {
+    return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString().slice(0, -3) : new Date(timestamp).toLocaleDateString()
   }
   else if(isArray) {
     return fieldValue.join(', ')

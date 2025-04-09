@@ -11,6 +11,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
+from _shared.naming import getOrganisationTableName
 # import inflection
 
 from ksuid import KsuidMs
@@ -20,6 +21,7 @@ logger.setLevel("INFO")
 
 db = boto3.resource("dynamodb")
 ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
+eventbridge = boto3.client('events')
 
 def get_events(organisationSlug):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -81,7 +83,9 @@ def create_event(event_data,organisationSlug):
     clientKsuid = KsuidMs.from_base62(event_data.get('ksuid'))
     location_ksuid = event_data.get("location",{}).get("ksuid",KsuidMs())
     location_data = event_data.get('location')
-    current_time = datetime.now(timezone.utc).isoformat()
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+
+    logger.info(f"Current Time: {current_time}")
 
     event_item = {
         "ksuid":            f"{clientKsuid}",
@@ -95,11 +99,14 @@ def create_event(event_data,organisationSlug):
         "category":         ", ".join(str(cat) for cat in event_data.get("category")),
         "capacity":         event_data.get("capacity"),
         "number_sold":      0,
+        "description":      event_data.get("description"),
         "created_at":       current_time,
         "updated_at":       current_time,
-        "description":      event_data.get("description"),
+        "version":          event_data.get("version"),
         "gsi1PK":           f"EVENTLIST#{organisationSlug}",
-        "gsi1SK":           f"EVENT#{clientKsuid}"    }
+        "gsi1SK":           f"EVENT#{clientKsuid}"    
+    }
+    
     location_item = {
         "ksuid":            f"{location_ksuid}",
         "organisation":     organisationSlug,
@@ -108,6 +115,8 @@ def create_event(event_data,organisationSlug):
         "address":          location_data.get('address'),
         "lat":              location_data.get('lat'),
         "lng":              location_data.get('lng'),
+        "created_at":       current_time,
+        "updated_at":       current_time,
         "gsi1PK":           f"EVENTLIST#{organisationSlug}",
         "gsi1SK":           f"LOCATION#{location_ksuid}"
     }
@@ -116,6 +125,7 @@ def create_event(event_data,organisationSlug):
     try:
         event_response = upsert_event(table,clientKsuid,event_item, ["event_slug","created_at"])
         location_response = upsert_location(table,location_ksuid, f"EVENT#{clientKsuid}", location_item, ["event_slug","created_at"])
+
     except ClientError as e:
         if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
             logger.error(f"Item already exists! {event_item}")
@@ -127,6 +137,9 @@ def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
     update_parts = []
     expression_attr_names = {}
     expression_attr_values = {}
+
+    incoming_version = item.get("version") if isinstance(item.get("version"), int) else 0
+    item["version"] = incoming_version + 1
 
     for key, value in item.items():
         name_placeholder = f"#{key}"
@@ -141,14 +154,28 @@ def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
 
     update_expression = "SET " + ", ".join(update_parts)
 
-    response = table.update_item(
-        Key={"PK": f"EVENT#{ksuid}", "SK": f"EVENT#{ksuid}"},
-        UpdateExpression=update_expression,
-        ExpressionAttributeNames=expression_attr_names,
-        ExpressionAttributeValues=expression_attr_values,
-        ReturnValues="ALL_NEW"
-    )
-    return response
+    # Only update if existing version is less than the one being replaced
+    condition_expression = "attribute_not_exists(#version) OR #version <= :incoming_version"
+    expression_attr_names["#version"] = "version"
+    expression_attr_values[":incoming_version"] = incoming_version
+
+    try:
+        response = table.update_item(
+            Key={"PK": f"EVENT#{ksuid}", "SK": f"EVENT#{ksuid}"},
+            UpdateExpression=update_expression,
+            ConditionExpression=condition_expression,
+            ExpressionAttributeNames=expression_attr_names,
+            ExpressionAttributeValues=expression_attr_values,
+            ReturnValues="ALL_NEW"
+        )
+        trigger_eb_event("events", "UpsertEvent", response)
+        return response
+    except table.meta.client.exceptions.ConditionalCheckFailedException:
+        # Handle conflict (incoming version is too old)
+        return {
+            "error": "Version conflict",
+            "reason": f"Incoming version ({incoming_version}) is not newer."
+        }
 
 def upsert_location(table, ksuid: str, parent_ksuid: str, item: dict, only_set_once: list = []):
     update_parts = []
@@ -177,7 +204,18 @@ def upsert_location(table, ksuid: str, parent_ksuid: str, item: dict, only_set_o
     )
     return response
 
-def trigger_eb_event():
+def trigger_eb_event(source = "core", detail_type = "General", detail = {}):
+    logger.info(f"Trigger Event Bus: \n{source} \n {detail_type} \n {detail}")
+    eventbridge.put_events(
+        Entries=[
+            {
+                # 'Detail': '{ "message": "Hello, EventBridge!" }',
+                'Detail': json.dumps(detail, cls=DecimalEncoder),
+                'DetailType': detail_type,
+                'Source': f"dance-engine.{source}",
+            },
+        ]
+    )
     return True
 
 def generate_slug(name):

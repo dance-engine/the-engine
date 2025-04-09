@@ -37,7 +37,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
               {groupByToArray(records, r => getNestedValue(r, "meta.saved")).map((group,idx)=>{
                 return (
                   <Fragment key={`group-${idx}`}>
-                    <tr key=""><td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved"))}</h2></td></tr>
+                    <tr key=""><td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved Changes"))}</h2></td></tr>
                     {group[1].map((record)=>{
                       return <tr key={`${record.ksuid}`}>
                         {

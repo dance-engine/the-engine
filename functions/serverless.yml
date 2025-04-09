@@ -41,11 +41,13 @@ stages:
       deletionPolicy: Delete 
       skipTables: true
       githubBranchDestination: "develop"
+      cdn_url: 'https://d232d73chhwq10.cloudfront.net'
   prod:
     params:
       isProd: true
       deletionPolicy: Retain
       githubBranchDestination: "main"
+      cdn_url: 'https://d3khkjlsqdjkui.cloudfront.net'
 
 #######################
 # Provider Information
@@ -297,6 +299,7 @@ functions:
     environment:
       BUCKET_NAME: ${self:custom.upload_bucket}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      CDN_URL: ${param:cdn_url}   
     events:
       - eventBridge:
           pattern:

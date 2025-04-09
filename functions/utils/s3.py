@@ -97,6 +97,7 @@ def move_upload(event,context):
 
 
 def move_and_cleanup_uploaded_files(detail,organisationSlug):
+    CDN_URL = os.environ["CDN_URL"]
     prefix = f"uploads/{organisationSlug}/"
     cdn_prefix = f"cdn/{organisationSlug}/"
 
@@ -114,7 +115,7 @@ def move_and_cleanup_uploaded_files(detail,organisationSlug):
                 Key=new_key
             )
             s3.delete_object(Bucket=BUCKET_NAME, Key=value)
-            url = f"https://d232d73chhwq10.cloudfront.net/{new_key.replace('cdn/','')}"
+            url = f"{CDN_URL}/{new_key.replace('cdn/','')}"
             moved_files.append([key, url])
 
     # Optional: delete any leftover files in uploads/org/* not used

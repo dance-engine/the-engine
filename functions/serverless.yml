@@ -248,6 +248,10 @@ functions:
           method: get
           documentation: ${file(serverless.doc.yml):endpoints.Events.GETpub} 
       - httpApi:
+          path: /public/{organisation}/events
+          method: get
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETallpub} 
+      - httpApi:
           path: /{organisation}/events
           method: post
           authorizer:

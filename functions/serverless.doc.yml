@@ -119,6 +119,33 @@ endpoints:
         - statusCode: 500
           responseBody:
             description: Internal server error.
+    GETallpub:
+      summary: "Public Get ALL Events"
+      description: "Public endpoint to get a specific event by its KSUID."
+      security:
+        - {}
+      tags:
+        - Public
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique event ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The event object.
+        - statusCode: 404
+          responseBody:
+            description: Event not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
     POST:
       summary: "Create Event"
       description: "Creates a new event and stores its location."

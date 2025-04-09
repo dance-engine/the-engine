@@ -16,7 +16,7 @@ export default function SecurePage() {
       className='bg-amber-700 rounded text-white px-4 py-1'
       onClick={()=>{ actions.setCurrentOrg({currentOrg: activeOrg})}}
     >
-      Set state
+      Set Current Org
     </button>
   </div>
 }

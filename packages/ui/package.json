@@ -22,10 +22,10 @@
     "lint": "eslint src --max-warnings 0"
   },
   "peerDependencies": {
-    "react": "^19"
+    "react": "^19",
+    "@clerk/nextjs": "^6.14.0"
   },
   "devDependencies": {
-    "@clerk/nextjs": "^6.12.3",
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/schemas": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",

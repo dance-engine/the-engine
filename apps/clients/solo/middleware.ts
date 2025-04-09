@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 const orgDomains: Record<string, string[]> = {
   'rebel-sbk': ['www.rbelsbk.com', 'rbelsbk.com'],
   'other-org': ['otherdomain.com', 'app.otherdomain.com'],
-  'demo': ['localhost', '127.0.0.1'],
+  'demo': ['localhost', '127.0.0.1','dance.likenobodyswatching.co.uk'],
 };
 
 const orgThemes: Record<string, string[]> = {

@@ -75,7 +75,7 @@ const config: Config = {
       title: 'Dance Engine Documentation',
       logo: {
         alt: 'Dance Engine Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo-light.png',
         srcDark: 'img/logo-dark.png',
         width: 30,
         height:30,

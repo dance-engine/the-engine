@@ -1,4 +1,5 @@
 'use client'
+import { EventType } from '@dance-engine/schemas/events';
 import useClerkSWR from '@dance-engine/utils/clerkSWR';
 import { useOrgContext } from '@dance-engine/utils/OrgContext';
 
@@ -14,6 +15,6 @@ export default function SecurePage() {
   }
   return <div>
     <h1 className='text-xl'>Secured {activeOrg}</h1>
-    <pre>{JSON.stringify([...summaryData.map((r) => { return {...r, description: JSON.parse(r.description)} })],null,2)}</pre>
+    <pre>{JSON.stringify([...summaryData.map((r: EventType) => { return {...r, description: JSON.parse(r.description)} })],null,2)}</pre>
   </div>
 }

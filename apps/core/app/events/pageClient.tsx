@@ -1,6 +1,6 @@
 'use client'
 import dynamic from "next/dynamic";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import useClerkSWR, { CorsError }  from '@dance-engine/utils/clerkSWR'
 import { useOrgContext } from '@dance-engine/utils/OrgContext';
 import {EventType, eventSchema} from '@dance-engine/schemas/events'

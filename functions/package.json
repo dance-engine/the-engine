@@ -6,6 +6,7 @@
   "author": "Adam Bardsley & Connor Monaghan",
   "license": "Speak to Authors",
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "serverless": "^4.2.3",
     "serverless-openapi-documenter": "^0.0.109",
     "serverless-prune-plugin": "^2.0.2"

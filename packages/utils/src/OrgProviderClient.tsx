@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, ReactNode } from "react"
+import { useEffect, useState } from "react"
 import type { FC, PropsWithChildren } from "react"
 import { useUser } from "@clerk/nextjs"
 import { OrgContext, updateLastOrg } from "./hooks/OrgContext"

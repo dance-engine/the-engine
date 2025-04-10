@@ -103,6 +103,7 @@ resources:
                   Action:
                     - dynamodb:PutItem
                     - dynamodb:GetItem
+                    - dynamodb:DescribeContinuousBackups
                   Resource: 
                     - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}"
                     - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}/*"

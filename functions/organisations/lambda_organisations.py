@@ -158,8 +158,8 @@ def create_organisation(orgSlug):
     org = {
         "PK": createKeyFromOrgSlug(orgSlug),
         "SK": createKeyFromOrgSlug(orgSlug),
-        "type": f"ORGANISATION",
-        "org-slug": f"{orgSlug}"
+        "entity_type": f"ORGANISATION",
+        "org_slug": f"{orgSlug}"
     }
     return org
 

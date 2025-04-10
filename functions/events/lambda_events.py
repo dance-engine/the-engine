@@ -91,8 +91,8 @@ def create_event(event_data,organisationSlug):
         "ksuid":            f"{clientKsuid}",
         "banner":           event_data.get("banner"),
         "event_slug":       f"{generate_slug(event_data.get('name'))}",
-        "organisation":     organisationSlug,
-        "type":             "EVENT",
+        "org_slug":         organisationSlug,
+        "entity_type":      "EVENT",
         "name":             event_data.get('name'),
         "starts_at":        event_data.get("starts_at"),
         "ends_at":          event_data.get("ends_at"),
@@ -109,8 +109,8 @@ def create_event(event_data,organisationSlug):
     
     location_item = {
         "ksuid":            f"{location_ksuid}",
-        "organisation":     organisationSlug,
-        "type":             "LOCATION",
+        "org_slug":         organisationSlug,
+        "entity_type":      "LOCATION",
         "name":             location_data.get('name'),
         "address":          location_data.get('address'),
         "lat":              location_data.get('lat'),

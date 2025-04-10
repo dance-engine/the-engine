@@ -155,6 +155,6 @@ export interface FileUploaderProps {
 }
 
 export interface DanceEngineEntity {
-  type: string,
+  entity_type: string,
   ksuid: string
 }

@@ -11,7 +11,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.naming import getOrganisationTableName
+from _shared.naming import getOrganisationTableName, generateSlug
 # import inflection
 
 from ksuid import KsuidMs
@@ -90,7 +90,7 @@ def create_event(event_data,organisationSlug):
     event_item = {
         "ksuid":            f"{clientKsuid}",
         "banner":           event_data.get("banner"),
-        "event_slug":       f"{generate_slug(event_data.get('name'))}",
+        "event_slug":       f"{generateSlug(event_data.get('name'))}",
         "organisation":     organisationSlug,
         "entity_type":      "EVENT",
         "name":             event_data.get('name'),
@@ -217,13 +217,6 @@ def trigger_eb_event(source = "core", detail_type = "General", detail = {}):
         ]
     )
     return True
-
-def generate_slug(name):
-    """
-    Generates a slug based on the name
-    """
-    base_slug = re.sub(r'[^a-zA-Z0-9]+', '-', name.strip().lower()).strip('-')
-    return f"{base_slug}"
 
 def lambda_handler(event, context):
     try:

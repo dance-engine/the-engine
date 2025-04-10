@@ -67,7 +67,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
       setFilePreview(previewUrl);
   
       // Pass name (fieldName) when calling uploadFile
-      uploadFile(selectedFile, entity ? entity : {type:'',ksuid:''}, name);
+      uploadFile(selectedFile, entity ? entity : {entity_type:'',ksuid:''}, name);
     }
   };
   
@@ -97,7 +97,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
         body: JSON.stringify({ 
           fileType: file.type,
           action: 'POST',
-          fieldName: [(entity ? `${entity.type.toLowerCase()}/${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
+          fieldName: [(entity ? `${entity.entity_type.toLowerCase()}/${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
         }),
         headers: {
           "Content-Type": "application/json",

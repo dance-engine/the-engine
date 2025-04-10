@@ -320,6 +320,37 @@ functions:
             detail-type:
               - prefix: "Create"
 
+#---------------------- Customers
+
+  Customers:
+    runtime: python3.11
+    handler: customers/lambda_customers.private_handler
+    name: "${sls:stage}-${self:service}-customers"
+    package:
+      patterns:
+        - '!**/**'
+        - "customers/**"
+        - "_shared/**"
+    environment:
+      CORE_TABLE_NAME: ${self:custom.core_table_name}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    layers:
+      - !Ref UtilsLambdaLayer
+    events:
+      - httpApi:
+          path: /{organisation}/customers
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}
+      - httpApi:
+          path: /{organisation}/customers
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc} 
+
+
 #---------------------- Org and provisoning
 
   CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}

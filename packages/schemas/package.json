@@ -13,6 +13,12 @@
     },
     "./location": {
       "default": "./dist/locationSchema.js"
+    },
+    "./customer": {
+      "default": "./dist/customerSchema.js"
+    },
+    ".": {
+      "default": "./dist/index.js"
     }
     
   },

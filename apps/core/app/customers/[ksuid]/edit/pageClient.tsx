@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { MapPickerProps, DanceEngineEntity } from '@dance-engine/ui/types'
 import DynamicForm from "@dance-engine/ui/form/DynamicForm";
-import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Import the schema
+import { customerSchema, customerMetadata, CustomerType } from "@dance-engine/schemas/customer"; // Import the schema
 import { FieldValues } from "react-hook-form";
 import {useOrgContext} from '@dance-engine/utils/OrgContext'
 import { useAuth } from '@clerk/nextjs'
@@ -20,10 +20,10 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
 
-  const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
+  const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/customers`.replace('/{org}',`/${activeOrg}`)
   const createUrlEndpoint = baseUrlEndpoint
   const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
-  const defaultEntity = useMemo(() => ({ type: "EVENT", ksuid }), [ksuid])
+  const defaultEntity = useMemo(() => ({ entity_type: "CUSTOMER", ksuid }), [ksuid])
   const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
   
   const remoteEntity = data || defaultEntity
@@ -34,7 +34,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const eventId = `EVENT#${data.ksuid}`
+    const eventId = `CUSTOMER#${data.ksuid}`
     try {
       const res = await fetch(createUrlEndpoint, {
         method: "POST",
@@ -58,7 +58,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
         localStorage.setItem(eventId,savedCache)
         console.log("Event created!", result, eventId,savedCache)
-        router.push("/events")
+        router.push("/customers")
       }
      
       
@@ -69,7 +69,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
   useEffect(()=>{
     const blankEntity = {
-      entity_type: "EVENT",
+      entity_type: "CUSTOMER",
       ksuid: ksuid, // Extract the ksuid if it exists
       version: 0
     } as DanceEngineEntity
@@ -95,9 +95,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
   return !isLoading && entity && entity.ksuid && entity.ksuid != ""
     ? <><DynamicForm 
-        schema={eventSchema} 
+        schema={customerSchema} 
         {...(activeOrg ? {orgSlug: activeOrg} : {})} 
-        metadata={eventMetadata} 
+        metadata={customerMetadata} 
         onSubmit={handleSubmit}  
         MapComponent={MapPicker} 
         persistKey={entity} 

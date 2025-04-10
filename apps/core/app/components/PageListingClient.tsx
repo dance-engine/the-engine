@@ -3,28 +3,29 @@ import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import useClerkSWR, { CorsError }  from '@dance-engine/utils/clerkSWR'
 import { useOrgContext } from '@dance-engine/utils/OrgContext';
-import {EventType, eventSchema} from '@dance-engine/schemas/events'
+// import {EventType, eventSchema} from '@dance-engine/schemas/events'
+import { validateEntity, EntityNameType, EntityType } from '@dance-engine/schemas'
 import Spinner from '@dance-engine/ui/general/Spinner'
 import { IoCloudOffline } from "react-icons/io5";
 
-const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
+const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //TODO Does this actually need to be dynamic?
   ssr: false, // ⬅ Disables SSR for this component
 });
 
-const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`
 
-
-const PageClient = ({ entity }: { entity?: string }) => {
+const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined] }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[] }) => {
+  const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${entity?.toLowerCase()}s`
   const { activeOrg } = useOrgContext() 
   const { data: remoteEntities = [], error, isLoading } = useClerkSWR(eventsApiUrl.replace('/{org}',activeOrg ? `/${activeOrg}`: ''),{
     suspense: false, // Make sure this is off for now
   });
-  
-  const getEntity = (entityType: string) => {
+
+
+  const getEntity = (entityType: EntityNameType) => {
     const cached = window.localStorage.getItem(`local:${entityType}`)
-    return cached ? JSON.parse(cached)?.map((entry: EventType)=>{
+    return cached ? JSON.parse(cached)?.map((entry: EntityType)=>{
       const parsed = JSON.parse(window.localStorage.getItem(`${entry}`) || '{}')
-      const result = eventSchema.safeParse(parsed)
+      const result = validateEntity(entityType,parsed)
       const entity = result.success
         ? { ...result.data, meta: { ...(result.data.meta ?? {}), valid: true } }
         : { ...(parsed ?? {}), meta: { ...(parsed?.meta ?? {}), valid: false } }
@@ -32,23 +33,23 @@ const PageClient = ({ entity }: { entity?: string }) => {
     }).filter(Boolean) : []
   }
   
+  
   const localEntities = useMemo(() => {
     return typeof window !== "undefined" && entity ? getEntity(entity): []
   },[entity])
 
   const allEntities = useMemo(() => {
     // return [...remoteEntities,...localEntities]
-    const byId = new Map<string, EventType>()
-
+    const byId = new Map<string, EntityType>() 
     // Step 1: Add remote records
-    remoteEntities.forEach((r: EventType) => {
+    remoteEntities.forEach((r: EntityType) => {
       const id = String(r.ksuid)
       const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
       byId.set(id, { ...r, meta: newMeta})
     })
 
     // Step 2: Add local ones that aren't already present or have updates
-    localEntities.forEach((r: EventType) => {
+    localEntities.forEach((r: EntityType) => {
       const id = String(r.ksuid)
       const remoteEntity = byId.get(id)
 
@@ -70,8 +71,9 @@ const PageClient = ({ entity }: { entity?: string }) => {
     { (error instanceof CorsError) ? <div>Looks like a CORS issue (server unreachable or blocked)</div> : null }
     { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null }
     { allEntities ? <BasicList 
-        columns={["name","starts_at","starts_at","ends_at","category","meta.saved","version","meta.source"]} 
-        formats={[undefined,'date','time','time',undefined,'icon',undefined]} 
+        entity={entity}
+        columns={columns}
+        formats={formats}
         records={allEntities}
       /> : null
     }
@@ -81,4 +83,4 @@ const PageClient = ({ entity }: { entity?: string }) => {
   )
 }
 
-export default PageClient
+export default PageListingClient

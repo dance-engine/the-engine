@@ -6,12 +6,12 @@ import { labelFromSnake, formatField, nameFromHypenated } from '@dance-engine/ut
 import { deDupKeys,groupByToArray, getNestedValue } from '@dance-engine/utils/arrayHelpers'
 
 
-const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ columns, formats, records, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
+const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ entity, columns, formats, records, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
   const firstHeaderClasses = "pr-3 pl-4 sm:pl-4 lg:pl-8"
   const restHeaderClasses = "px-3"
   const allHeaderClasses = "py-3.5 text-left text-sm font-semibold text-gray-900"
   const columnKeys = deDupKeys(columns)
-
+  const enitytUrl = `${entity.toLocaleLowerCase()}s`
   return (
   <div className='w-full'>
     {/* {columns} */}
@@ -49,8 +49,9 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                           })
                         }
                         <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 ">
-                        <Link href={`/events/${record.ksuid}/edit`} className=" bg-cerise-logo text-white px-3 py-1 rounded z-0">
-                          Edit<span className="sr-only">, {String(record.name)}</span>
+                        <Link href={`/${enitytUrl}/${record.ksuid}/edit`} className=" bg-cerise-logo text-white px-3 py-1 rounded z-0">
+                          Edit
+                          <span className="sr-only">, {String(record.name)}</span>
                         </Link>
                       </td>
                       </tr>

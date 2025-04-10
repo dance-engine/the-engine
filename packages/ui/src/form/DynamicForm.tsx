@@ -68,8 +68,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full relative">
-      <Debug debug={watchedValues} className="absolute right-0"/>
-      {isDirty ? "Dirty" : "Clean"}
+      <Debug debug={{ formState: isDirty ? "Dirty" : "Clean", values: watchedValues}} className="absolute right-0"/>
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {

@@ -127,7 +127,7 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "core/schemas/organisation",
-          label: "organisation",
+          label: "org_slug",
           className: "schema",
         },
         {

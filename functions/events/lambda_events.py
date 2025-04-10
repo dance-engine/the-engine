@@ -230,7 +230,7 @@ def lambda_handler(event, context):
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
         parsed_event = parse_event(event)
         http_method = event['requestContext']["http"]["method"]
-        organisationSlug = event.get("pathParameters", {}).get("organisation")
+        organisationSlug = event.get("pathParameters", {}).get("org_slug")
         eventId = event.get("pathParameters", {}).get("ksuid",None)
 
 

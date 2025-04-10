@@ -3,7 +3,7 @@ import { z } from "zod";
 
 // Define the event schema
 export const customerSchema = z.object({
-  ksuid: z.string().describe("ID of the event"),
+  ksuid: z.string().describe("ID of the event").optional(),
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
   bio: z.string().describe("About this person"),
   meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),

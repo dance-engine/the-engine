@@ -45,12 +45,11 @@ export const formatField = (fieldValue: string | string | number | boolean | nul
 
   if(formatAs == 'icon')
     return getIcon(fieldValue)
-  else if(isTimeRelated && isDateTimeString) {
+  else if(isTimeRelated && isDateTimeString) 
     return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString().slice(0, -3) : new Date(timestamp).toLocaleDateString()
-  }
-  else if(isArray) {
+  else if(isArray)
     return fieldValue.join(', ')
-  } else {
-    return fieldValue
-  }
+  else 
+    return fieldValue 
+  
 }

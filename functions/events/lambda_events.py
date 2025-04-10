@@ -12,6 +12,8 @@ from botocore.exceptions import ClientError
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
+from _shared.EventBridge import triggerEBEvent
+
 # import inflection
 
 from ksuid import KsuidMs
@@ -168,7 +170,7 @@ def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
             ExpressionAttributeValues=expression_attr_values,
             ReturnValues="ALL_NEW"
         )
-        trigger_eb_event("events", "UpsertEvent", response)
+        triggerEBEvent(eventbridge, "events", "UpsertEvent", response)
         return response
     except table.meta.client.exceptions.ConditionalCheckFailedException:
         # Handle conflict (incoming version is too old)
@@ -203,20 +205,6 @@ def upsert_location(table, ksuid: str, parent_ksuid: str, item: dict, only_set_o
         ReturnValues="ALL_NEW"
     )
     return response
-
-def trigger_eb_event(source = "core", detail_type = "General", detail = {}):
-    logger.info(f"Trigger Event Bus: \n{source} \n {detail_type} \n {detail}")
-    eventbridge.put_events(
-        Entries=[
-            {
-                # 'Detail': '{ "message": "Hello, EventBridge!" }',
-                'Detail': json.dumps(detail, cls=DecimalEncoder),
-                'DetailType': detail_type,
-                'Source': f"dance-engine.{source}",
-            },
-        ]
-    )
-    return True
 
 def lambda_handler(event, context):
     try:

@@ -4,7 +4,7 @@ import { locationSchema } from "./locationSchema.js";
 
 // Define the event schema
 export const eventSchema = z.object({
-  ksuid: z.string().describe("ID of the event"),
+  ksuid: z.string().describe("ID of the event").optional(),
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
   banner: z.string().optional().describe('Appears at the top of your page'),
   starts_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {

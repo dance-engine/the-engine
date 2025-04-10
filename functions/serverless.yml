@@ -348,7 +348,13 @@ functions:
           method: post
           authorizer:
             adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc} 
+          documentation: ${file(serverless.doc.yml):endpoints.nodoc}
+      - httpApi:
+          path: /{organisation}/customers/{ksuid}
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(serverless.doc.yml):endpoints.Events.GETone} 
 
 
 #---------------------- Org and provisoning

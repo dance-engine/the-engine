@@ -1,9 +1,8 @@
 'use client'
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useForm, FieldValues, Controller,} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import getInnerSchema from '@dance-engine/utils/getInnerSchema'
-import { EventType } from '@dance-engine/schemas/events'
 
 import TextInput from "@dance-engine/ui/form/fields/TextInput";
 import HiddenInput from "@dance-engine/ui/form/fields/HiddenInput"
@@ -20,7 +19,9 @@ import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
 import { labelFromSnake } from '@dance-engine/utils/textHelpers'
+import { EntityType } from '@dance-engine/schemas'
 
+//! TODO Fix this to be generic not EVENT type
 
 const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
@@ -39,21 +40,22 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
 
   const presignedUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/generate-presigned-url`.replace('/{org}',`/${orgSlug}`)
   const watchedValues = watch();
-  const { status: autosaveStatus, isStatusVisible: isAutosaveStatusVisible,  loadFromStorage } = useLocalAutoSave<EventType>({
-    data: watchedValues as EventType,
-    entityType: 'EVENT',
+  const { status: autosaveStatus, isStatusVisible: isAutosaveStatusVisible,  loadFromStorage } = useLocalAutoSave<EntityType>({
+    data: watchedValues as EntityType,
+    entityType: data?.entity_type || "UNKNOWN",
     remoteUpdatedAt: data?.updated_at,
     isDirty
   });
 
   useEffect(() => {
     const draft = loadFromStorage();
+    console.log("Comparing versions local:",draft?.version," remote:",data?.version, "[",(draft && draft.version && data && draft.version >= data.version),"]")
     if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
       console.info("Loading cached version", draft, data)
-      reset(draft as EventType)
+      reset(draft as EntityType)
     } else { 
       console.info("Loading remote version", draft, data)
-      reset(data)
+      reset(data as EntityType)
     }  
   }, [loadFromStorage, data, reset]);
   
@@ -68,7 +70,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full relative">
-      <Debug debug={{ formState: isDirty ? "Dirty" : "Clean", values: watchedValues}} className="absolute right-0"/>
+      <Debug debug={{ formState: isDirty ? "Dirty" : "Clean", values: watchedValues, errors: errors}} className="absolute right-0"/>
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {
@@ -95,7 +97,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
             ) : richText ? (
               <Controller
                 control={control}
-                name="description"
+                name={field}
                 defaultValue=""
                 render={({ field: fieldController }) => (
                   <RichTextEditor label={field} name={field} value={fieldController.value} onChange={fieldController.onChange} error={errors[field]?.message as string} fieldSchema={fieldSchema}/>

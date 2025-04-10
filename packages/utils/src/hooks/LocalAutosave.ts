@@ -2,14 +2,14 @@ import { EventType } from '@dance-engine/schemas/events'
 import { useAutosave } from 'react-autosave';
 import { useCallback, useState, useRef } from 'react';
 
-interface AutoSaveOptions<T extends { ksuid: string, meta?: { updated_at?: string } }> {
+interface AutoSaveOptions<T extends { ksuid?: string, meta?: { updated_at?: string } }> {
   data: T;
   entityType: string;
   remoteUpdatedAt?: string; // ISO timestamp from the server
   isDirty?: boolean;
 }
 
-export function useLocalAutoSave<T extends { ksuid: string, meta?: { updated_at?: string } }>({
+export function useLocalAutoSave<T extends { ksuid?: string, meta?: { updated_at?: string } }>({
   data,
   entityType,
   remoteUpdatedAt,
@@ -22,6 +22,7 @@ export function useLocalAutoSave<T extends { ksuid: string, meta?: { updated_at?
   >('Idle');
   const [isStatusVisible, setIsStatusVisible] = useState(false);
 
+  // console.log(`setting up localAutoSave ${entityType}:`,data)
   const resetTimer = useRef<NodeJS.Timeout | null>(null);
 
   const setStatusWithReset = useCallback((newStatus: typeof status) => {

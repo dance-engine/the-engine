@@ -70,7 +70,8 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   useEffect(()=>{
     const blankEntity = {
       type: "EVENT",
-      ksuid: ksuid // Extract the ksuid if it exists
+      ksuid: ksuid, // Extract the ksuid if it exists
+      version: 0
     } as DanceEngineEntity
     // const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
     // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}

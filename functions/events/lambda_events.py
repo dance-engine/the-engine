@@ -91,7 +91,7 @@ def create_event(event_data,organisationSlug):
         "ksuid":            f"{clientKsuid}",
         "banner":           event_data.get("banner"),
         "event_slug":       f"{generate_slug(event_data.get('name'))}",
-        "org_slug":         organisationSlug,
+        "organisation":     organisationSlug,
         "entity_type":      "EVENT",
         "name":             event_data.get('name'),
         "starts_at":        event_data.get("starts_at"),
@@ -109,7 +109,7 @@ def create_event(event_data,organisationSlug):
     
     location_item = {
         "ksuid":            f"{location_ksuid}",
-        "org_slug":         organisationSlug,
+        "organisation":         organisationSlug,
         "entity_type":      "LOCATION",
         "name":             location_data.get('name'),
         "address":          location_data.get('address'),
@@ -230,7 +230,7 @@ def lambda_handler(event, context):
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
         parsed_event = parse_event(event)
         http_method = event['requestContext']["http"]["method"]
-        organisationSlug = event.get("pathParameters", {}).get("org_slug")
+        organisationSlug = event.get("pathParameters", {}).get("organisation")
         eventId = event.get("pathParameters", {}).get("ksuid",None)
 
 

@@ -34,7 +34,7 @@
           "event_slug": {
             "type": "string"
           },
-          "org_slug": {
+          "organisation": {
             "type": "string"
           },
           "type": {
@@ -177,7 +177,7 @@
               "event_slug": {
                 "type": "string"
               },
-              "org_slug": {
+              "organisation": {
                 "type": "string"
               },
               "type": {
@@ -255,7 +255,7 @@
             "event_slug": {
               "type": "string"
             },
-            "org_slug": {
+            "organisation": {
               "type": "string"
             },
             "type": {
@@ -329,7 +329,7 @@
           }
         }
       },
-      "org_slug": {
+      "organisation": {
         "type": "string"
       },
       "ksuid": {
@@ -363,7 +363,7 @@
         "operationId": "eventbridge",
         "parameters": [
           {
-            "name": "org_slug",
+            "name": "organisation",
             "in": "path",
             "description": "Organisation slug",
             "required": true,
@@ -419,7 +419,7 @@
         "operationId": "events",
         "parameters": [
           {
-            "name": "org_slug",
+            "name": "organisation",
             "in": "path",
             "description": "Organisation slug",
             "required": true,
@@ -452,7 +452,7 @@
         "operationId": "events-cdb2109c-8551-48b2-8897-0ab9b99776fa",
         "parameters": [
           {
-            "name": "org_slug",
+            "name": "organisation",
             "in": "path",
             "description": "Organisation slug",
             "required": true,
@@ -498,7 +498,7 @@
         "operationId": "events-d039dbf5-827c-4baf-94ff-8cd9e2509237",
         "parameters": [
           {
-            "name": "org_slug",
+            "name": "organisation",
             "in": "path",
             "description": "Organisation slug",
             "required": true,
@@ -542,7 +542,7 @@
         "operationId": "events-aebeb310-1687-4883-bf5f-aa883f329367",
         "parameters": [
           {
-            "name": "org_slug",
+            "name": "organisation",
             "in": "path",
             "description": "Organisation slug",
             "required": true,
@@ -590,7 +590,7 @@
         "operationId": "presigned_url",
         "parameters": [
           {
-            "name": "org_slug",
+            "name": "organisation",
             "in": "path",
             "description": "Organisation slug",
             "required": true,

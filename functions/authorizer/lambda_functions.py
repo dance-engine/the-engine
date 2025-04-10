@@ -12,7 +12,7 @@ reserved_values = ["admin", "superuser", "internal","danceengine","dance-engine"
 def auth_handler(event, context):
     logger.info(f"{event},{context}")
 
-    organisation = event.get("pathParameters", {}).get("org_slug")
+    organisation = event.get("pathParameters", {}).get("organisation")
     authorization_header = event.get("headers", {}).get("authorization")
     token = authorization_header.split(' ')[1]
     logger.info(f"ORG: {organisation}\nAUTH HEADER: {authorization_header}\nTOKEN: {token}")

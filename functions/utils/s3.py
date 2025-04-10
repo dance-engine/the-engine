@@ -19,7 +19,7 @@ def generate_presigned_url(event, context):
         data = json.loads(event["body"])
         action = data.get("action", "upload")  # Determines upload or download
         file_key = data.get("fileKey", "")
-        data["org_slug"] = event.get("pathParameters", {}).get("org_slug","unknown")
+        data["organisation"] = event.get("pathParameters", {}).get("organisation","unknown")
 
         if action == "POST":
             return generate_presigned_post(data)
@@ -38,7 +38,7 @@ def generate_presigned_post(data):
     file_type = data.get("fileType", "image/jpeg")
     extension = mimetypes.guess_extension(file_type)
     field_name = data.get("fieldName", "")
-    organisation = data.get("org_slug", "unknown")
+    organisation = data.get("organisation", "unknown")
 
     key = f"uploads/{organisation}/{field_name}/{uuid.uuid4()}{extension}"
 
@@ -82,7 +82,7 @@ def generate_presigned_get(file_key):
 def move_upload(event,context):
     details = event.get("detail",{}).get("Attributes", {})
     logger.info(f"Move Upload Event: {details}")
-    organisationSlug = details.get("org_slug")
+    organisationSlug = details.get("organisation")
 
     # Copyfile & Delete Files
     new_files = move_and_cleanup_uploaded_files(details,organisationSlug)

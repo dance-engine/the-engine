@@ -160,51 +160,11 @@ functions:
 
 #--------------------
 
-  TriggerAnEvent:
-    runtime: python3.11
-    handler: event_bridge/lambda_functions.trigger_handler
-    name: "${sls:stage}-${self:service}-trigger-eventbridge"
-    package:
-      patterns:
-        - '!**/**'
-        - "event_bridge/**"
-        - "shared/**"
-    # environment:
-    #   STAGE_NAME: ${sls:stage}
-    #   PRODUCTS_TABLE_NAME: ${param:stripeProductsTableName}
-    #   CREATE_TICKET_LAMBDA: "${sls:stage}-create_ticket"
-    # layers:
-    #   - !Ref DynamodbLambdaLayer
-    events:
-      - httpApi:
-          path: /{organisation}/trigger
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
-      - httpApi:
-          path: /trigger
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
+  TriggerAnEvent: ${file(functions/event_bridge/sls.event_bridge.function.yml):TriggerAnEvent}
 
 #--------------------
 
-  ReceiveEvent:
-    runtime: python3.11
-    handler: event_bridge/lambda_functions.receive_handler
-    name: "${sls:stage}-${self:service}-receive-eventbridge"
-    package:
-      patterns:
-        - '!**/**'
-        - "event_bridge/**"
-        - "shared/**"
-    events:
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
+  ReceiveEvent: ${file(functions/event_bridge/sls.event_bridge.function.yml):ReceiveEvent}
 
 #--------------------
 

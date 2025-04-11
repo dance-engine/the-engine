@@ -1,0 +1,45 @@
+TriggerAnEvent:
+  runtime: python3.11
+  handler: functions/event_bridge/lambda_event_bridge.trigger_handler
+  name: "${sls:stage}-${self:service}-trigger-eventbridge"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/event_bridge/**"
+      - "shared/**"
+  # environment:
+  #   STAGE_NAME: ${sls:stage}
+  #   PRODUCTS_TABLE_NAME: ${param:stripeProductsTableName}
+  #   CREATE_TICKET_LAMBDA: "${sls:stage}-create_ticket"
+  # layers:
+  #   - !Ref DynamodbLambdaLayer
+  events:
+    - httpApi:
+        path: /{organisation}/trigger
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(sls.event_bridge.doc.yml):TriggerAnEvent.getOrg}
+    - httpApi:
+        path: /trigger
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(sls.event_bridge.doc.yml):TriggerAnEvent.get}
+
+#--------------------
+
+ReceiveEvent:
+  runtime: python3.11
+  handler: functions/event_bridge/lambda_event_bridge.receive_handler
+  name: "${sls:stage}-${self:service}-receive-eventbridge"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/event_bridge/**"
+      - "shared/**"
+  events:
+    - eventBridge:
+        pattern:
+          source:
+            - prefix: "dance-engine."

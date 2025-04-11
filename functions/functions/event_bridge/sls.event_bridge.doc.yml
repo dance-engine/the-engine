@@ -1,0 +1,36 @@
+TriggerAnEvent:
+  getOrg:
+    summary: "Trigger an event (org)"
+    description: "Trigger and event for a given organisation."
+    tags:
+      - Event_Brdige
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Event Triggered.
+      - statusCode: 400
+        responseBody:
+          description: 400 Not implemented.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+  get:
+    summary: "Trigger an event"
+    description: "Trigger and event."
+    tags:
+      - Event_Brdige
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Event Triggered.
+      - statusCode: 400
+        responseBody:
+          description: 400 Not implemented.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.

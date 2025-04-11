@@ -1,0 +1,33 @@
+Customers:
+  runtime: python3.11
+  handler: functions/customers/lambda_customers.private_handler
+  name: "${sls:stage}-${self:service}-customers"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/customers/**"
+      - "_shared/**"
+  environment:
+    CORE_TABLE_NAME: ${self:custom.core_table_name}
+    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  layers:
+    - !Ref UtilsLambdaLayer
+  events:
+    - httpApi:
+        path: /{organisation}/customers
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETall}
+    - httpApi:
+        path: /{organisation}/customers
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.POST}
+    - httpApi:
+        path: /{organisation}/customers/{ksuid}
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETone}

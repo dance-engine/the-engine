@@ -20,23 +20,30 @@ You can generate a starting point using a CLI tool.
 
 ## 🗂 Folder Structure
 
-Scaffolding a lambda (e.g. `events`) creates:
-
 ```
 /functions/
-  ├── serverless.yml    # Serverless config
-  ├── _layers/          # layers for lambdas
-  ├── _shared/          # shared code added to lambdas
-  ├── .scripts/         # scripts like the cli tool described here
-  ├── .serverless/      # file managed by serverless
-  └── functions/            # The actual lambdas
-        └── events/         # A lambda function
-            ├── handler_events.py             # Main router
-            ├── lambda_events_get.py          # handles get requests (could be one type or multiple)
-            ├── lambda_events_post.py         # same as before
-            ├── sls.events.function.yml       # function config
-            ├── sls.events.doc.yml            # Doc definition
-            ├── sls.events.models.yml         # models for the doc
+├── serverless.yml                # Serverless config
+├── _layers/                      # Layers for lambdas
+├── _shared/                      # Shared code added to lambdas
+├── .scripts/                     # Internal tools and scripts
+│   └── scaffold.py               #     CLI tool for scaffolding new Lambda functions
+├── .serverless/                  # Auto-generated directory used by the Serverless Framework
+└── functions/                    # Main directory for all Lambda functions
+    ├── priviledged/              # Privileged Lambdas (e.g. provisioning, elevated IAM permissions)
+    │   └── organisations/        #     Privileged lambda: organisation provisioning
+    │       ├── # see 'events' lambda below
+
+    ├── utils/                    # Utility-related Lambdas
+    │   └── s3/                   #     S3 utilities group
+    │       └── generate_presigned/     # Lambda for generating S3 pre-signed URLs
+    │           ├── # see 'events' lambda below
+
+    └── events/                   # Events lambda example
+        ├── handler_events.py            # Routes by HTTP method
+        ├── lambda_events.py             # Function logic
+        ├── sls.events.function.yml      # Serverless function definition
+        ├── sls.events.doc.yml           # OpenAPI documentation
+
 ```
 
 ---
@@ -84,29 +91,34 @@ def lambda_handler(event, context):
     http_method = event['requestContext']["http"]["method"]
 
     if http_method == "GET":
-        return get(event)
+        # TODO: implement
+        return 
     elif http_method == "POST":
-        return post(event)
+        return 
     else:
-        return {
-            "statusCode": 405,
-            "body": json.dumps({ "message": "Method not allowed." })
-        }
+        return {{
+            "statusCode": 405, 
+            "headers": {{ "Content-Type": "application/json" }}, 
+            "body": json.dumps({{
+                    "message": "Method not allowed."
+                    }}, cls=DecimalEncoder)
+            }}
 ```
 
 ---
 
-### `lambda_{name}_{method}.py`
+### `lambda_{name}.py` or `lambda_{name}_{method}.py`
 
 Handles each route’s logic.
 
 ```python
 def get(data):
-    return {
-        "statusCode": 200,
-        "headers": { "Content-Type": "application/json" },
-        "body": json.dumps({ "message": "GET success" })
-    }
+    # TODO: implement
+    return {{
+        "statusCode": 200, 
+        "headers": {{ "Content-Type": "application/json" }}, 
+        "body": json.dumps(events, cls=DecimalEncoder)
+        }}
 ```
 
 ---
@@ -116,14 +128,14 @@ def get(data):
 Serverless fucntion config created at:
 
 ```text
-.config/functions/sls.{name}.function.yml
+functions/{name}/sls.{name}.function.yml
 ```
 
 and appended to `serverless.yml`:
 
 ```yaml
 functions:
-  {Name}: ${file(.config/functions/sls.{name}.function.yml):{name}}
+  {Name}: ${file(functions/{name}/sls.{name}.function.yml):{Name}}
 ```
 
 ---
@@ -133,23 +145,13 @@ functions:
 OpenAPI (serverless-openapi-documenter) created at:
 
 ```text
-.config/docs/sls.{name}.doc.yml
+functions/{name}/sls.{name}.doc.yml
 ```
 
 Includes:
 - Summary & description
 - Tags
 - 200, 405, and 500 status codes
-
----
-
-### `sls.{name}.models.yml`
-
-Place to put models created as placeholder:
-
-```text
-.config/models/sls.{name}.models.yml
-```
 
 ---
 

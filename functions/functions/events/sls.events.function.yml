@@ -1,0 +1,40 @@
+Events:
+    runtime: python3.11
+    handler: functions/events/lambda_events.lambda_handler
+    name: "${sls:stage}-${self:service}-events"
+    package:
+      patterns:
+        - '!**/**'
+        - "functions/events/**"
+        - "_shared/**"
+    environment:
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    layers:
+      - !Ref UtilsLambdaLayer
+    events:
+      - httpApi:
+          path: /{organisation}/events
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETall} 
+      - httpApi:
+          path: /{organisation}/events/{ksuid}
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETone}
+      - httpApi:
+          path: /{organisation}/events
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.POST}
+      - httpApi:
+          path: /public/{organisation}/events/{ksuid}
+          method: get
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETpub} 
+      - httpApi:
+          path: /public/{organisation}/events
+          method: get
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETallpub} 

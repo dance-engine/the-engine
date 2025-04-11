@@ -329,6 +329,104 @@
           }
         }
       },
+      "CreateCustomerRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "ksuid": {
+            "type": "string",
+            "description": "Unique KSUID identifier for the customer.",
+            "example": "1y1d8h3n0e4z5k8ab1v03q4g7"
+          },
+          "name": {
+            "type": "string",
+            "description": "Full name of the customer.",
+            "example": "Jane Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the customer.",
+            "example": "jane.doe@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number for the customer.",
+            "example": "+447700900123"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Short description or biography for the customer.",
+            "example": "Salsa dancer from Manchester."
+          },
+          "version": {
+            "type": "integer",
+            "description": "Version number for concurrency control.",
+            "example": 1
+          }
+        }
+      },
+      "GeneratePresignedUploadRequest": {
+        "type": "object",
+        "required": [
+          "action",
+          "fieldName",
+          "fileType"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "POST"
+            ],
+            "description": "Action type. Must be `\"POST\"` for file upload.",
+            "example": "POST"
+          },
+          "fieldName": {
+            "type": "string",
+            "description": "(used to generate S3 key path).",
+            "example": " "
+          },
+          "fileType": {
+            "type": "string",
+            "description": "MIME type of the file being uploaded.",
+            "example": "image/jpeg"
+          },
+          "organisation": {
+            "type": "string",
+            "description": "Organisation slug (usually injected from path parameter, but can also be set manually).",
+            "example": "mlf"
+          }
+        }
+      },
+      "GeneratePresignedDownloadRequest": {
+        "type": "object",
+        "required": [
+          "action",
+          "fileKey"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "GET"
+            ],
+            "description": "Action type. Must be `\"GET\"` for file download.",
+            "example": "GET"
+          },
+          "fileKey": {
+            "type": "string",
+            "description": "S3 key for the file to download.",
+            "example": " "
+          },
+          "organisation": {
+            "type": "string",
+            "description": "Organisation slug (optional, not directly used by the GET logic).",
+            "example": "mlf"
+          }
+        }
+      },
       "organisation": {
         "type": "string"
       },
@@ -358,8 +456,8 @@
   "paths": {
     "/{organisation}/trigger": {
       "get": {
-        "summary": "No Docs",
-        "description": "Docs for this endpoint are not yet written. This includes org as a path param.",
+        "summary": "Trigger an event (org)",
+        "description": "Trigger and event for a given organisation.",
         "operationId": "eventbridge",
         "parameters": [
           {
@@ -372,14 +470,16 @@
             }
           }
         ],
-        "tags": [],
+        "tags": [
+          "Event_Brdige"
+        ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Event Triggered.",
             "headers": {}
           },
-          "404": {
-            "description": "Not found.",
+          "400": {
+            "description": "400 Not implemented.",
             "headers": {}
           },
           "500": {
@@ -391,18 +491,20 @@
     },
     "/trigger": {
       "get": {
-        "summary": "No Docs",
-        "description": "Docs for this endpoint are not yet written",
-        "operationId": "eventbridge-984bb3ce-5e08-4975-a56a-8d483b87ec83",
+        "summary": "Trigger an event",
+        "description": "Trigger and event.",
+        "operationId": "eventbridge-099d3271-391e-4b19-a122-8c1610979260",
         "parameters": [],
-        "tags": [],
+        "tags": [
+          "Event_Brdige"
+        ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Event Triggered.",
             "headers": {}
           },
-          "404": {
-            "description": "Not found.",
+          "400": {
+            "description": "400 Not implemented.",
             "headers": {}
           },
           "500": {
@@ -449,7 +551,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-cdb2109c-8551-48b2-8897-0ab9b99776fa",
+        "operationId": "events-d04f9158-9013-42fc-a3d4-235bb158cbca",
         "parameters": [
           {
             "name": "organisation",
@@ -495,7 +597,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-d039dbf5-827c-4baf-94ff-8cd9e2509237",
+        "operationId": "events-98243cba-ec0c-4e28-938b-3fb72fe1a640",
         "parameters": [
           {
             "name": "organisation",
@@ -539,7 +641,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-aebeb310-1687-4883-bf5f-aa883f329367",
+        "operationId": "events-d712b579-e0a2-4601-8df0-6e2db5f39e37",
         "parameters": [
           {
             "name": "organisation",
@@ -583,10 +685,49 @@
         }
       }
     },
+    "/public/{organisation}/events": {
+      "get": {
+        "summary": "Public Get ALL Events",
+        "description": "Public endpoint to get a specific event by its KSUID.",
+        "operationId": "events-c22dda85-32fe-4ff4-a64b-af7f96b183de",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Events"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "The event object.",
+            "headers": {}
+          },
+          "404": {
+            "description": "Event not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
     "/{organisation}/generate-presigned-url": {
       "post": {
-        "summary": "No Docs",
-        "description": "Docs for this endpoint are not yet written. This includes org as a path param.",
+        "summary": "Generate Presigned Upload URL",
+        "description": "Generates a presigned POST URL to allow users to upload a file to S3 securely.",
         "operationId": "presigned_url",
         "parameters": [
           {
@@ -599,14 +740,27 @@
             }
           }
         ],
-        "tags": [],
+        "tags": [
+          "S3"
+        ],
+        "requestBody": {
+          "description": "File upload details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePresignedUploadRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Presigned POST URL and form fields returned.",
             "headers": {}
           },
-          "404": {
-            "description": "Not found.",
+          "400": {
+            "description": "Invalid input or unsupported action.",
             "headers": {}
           },
           "500": {
@@ -618,18 +772,154 @@
     },
     "/generate-presigned-url": {
       "post": {
-        "summary": "No Docs",
-        "description": "Docs for this endpoint are not yet written",
-        "operationId": "presigned_url-443a27e9-9c8d-4d12-a7ce-efb3ac21a160",
+        "summary": "Generate Presigned Download URL",
+        "description": "Generates a presigned GET URL to allow users to download a file from S3.",
+        "operationId": "presigned_url-abb2c558-b8c8-44b0-8dc5-7e35d3d1c0d7",
         "parameters": [],
-        "tags": [],
+        "tags": [
+          "S3"
+        ],
+        "requestBody": {
+          "description": "File download details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePresignedDownloadRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Presigned download URL returned.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input or missing file key.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/customers": {
+      "get": {
+        "summary": "Get All Customers",
+        "description": "Returns a list of all customers for a given organisation.",
+        "operationId": "customers",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of all customers.",
             "headers": {}
           },
           "404": {
-            "description": "Not found.",
+            "description": "No customers found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Customer",
+        "description": "Creates a new customer record under a specific organisation.",
+        "operationId": "customers-b1d0da79-172d-4a4d-b441-ce2cfdef1b0f",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Customers"
+        ],
+        "requestBody": {
+          "description": "Customer details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer created successfully.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input or duplicate entry.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/customers/{ksuid}": {
+      "get": {
+        "summary": "Get Single Customer",
+        "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
+        "operationId": "customers-06b5b2dd-c696-447c-aea7-6546e4dc4a45",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique customer ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Customers"
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer object.",
+            "headers": {}
+          },
+          "404": {
+            "description": "Customer not found",
             "headers": {}
           },
           "500": {
@@ -641,18 +931,21 @@
     },
     "/public/organisations": {
       "get": {
-        "summary": "No Docs",
-        "description": "Docs for this endpoint are not yet written",
+        "summary": "Get Organisations",
+        "description": "Get a list of organisations",
         "operationId": "organisations",
         "parameters": [],
-        "tags": [],
+        "tags": [
+          "Privileged",
+          "Organisations"
+        ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "Success.",
             "headers": {}
           },
-          "404": {
-            "description": "Not found.",
+          "400": {
+            "description": "400 Not implemented.",
             "headers": {}
           },
           "500": {

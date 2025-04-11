@@ -1,0 +1,33 @@
+---
+id: generatepresigneddownloadrequest
+title: "GeneratePresignedDownloadRequest"
+description: ""
+sidebar_label: "GeneratePresignedDownloadRequest"
+hide_title: true
+hide_table_of_contents: true
+schema: true
+sample: {"action":"GET","fileKey":" ","organisation":"mlf"}
+custom_edit_url: null
+---
+
+import Schema from "@theme/Schema";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"GeneratePresignedDownloadRequest"}
+>
+</Heading>
+
+
+
+
+
+<Schema
+  schema={{"type":"object","required":["action","fileKey"],"properties":{"action":{"type":"string","enum":["GET"],"description":"Action type. Must be `\"GET\"` for file download.","example":"GET"},"fileKey":{"type":"string","description":"S3 key for the file to download.","example":" "},"organisation":{"type":"string","description":"Organisation slug (optional, not directly used by the GET logic).","example":"mlf"}},"title":"GeneratePresignedDownloadRequest"}}
+  schemaType={"response"}
+>
+  
+</Schema>
+            

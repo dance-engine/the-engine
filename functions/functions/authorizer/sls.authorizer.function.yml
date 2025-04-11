@@ -1,0 +1,12 @@
+  AuthorizerFunc:
+    runtime: python3.11
+    handler: functions/authorizer/lambda_authorizer.auth_handler
+    name: "${sls:stage}-${self:service}-authoriser"
+    package:
+      patterns:
+        - '!**/**'
+        - "functions/authorizer/**"
+    layers:
+      - !Ref AuthLambdaLayer
+    environment:
+      CLERK_KEY: ${ssm:/danceengine/${sls:stage}/clerk/public_key}

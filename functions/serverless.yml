@@ -156,227 +156,30 @@ layers:
 
 functions:
 
-  AuthorizerFunc:
-    runtime: python3.11
-    handler: authorizer/lambda_functions.auth_handler
-    name: "${sls:stage}-${self:service}-authoriser"
-    layers:
-      - !Ref AuthLambdaLayer
-    environment:
-      CLERK_KEY: ${ssm:/danceengine/${sls:stage}/clerk/public_key}
-    package:
-      patterns:
-        - '!**/**'
-        - "authorizer/**"
+  AuthorizerFunc: ${file(functions/authorizer/sls.authorizer.function.yml):AuthorizerFunc}
 
 #--------------------
 
-  TriggerAnEvent:
-    runtime: python3.11
-    handler: event_bridge/lambda_functions.trigger_handler
-    name: "${sls:stage}-${self:service}-trigger-eventbridge"
-    package:
-      patterns:
-        - '!**/**'
-        - "event_bridge/**"
-        - "shared/**"
-    # environment:
-    #   STAGE_NAME: ${sls:stage}
-    #   PRODUCTS_TABLE_NAME: ${param:stripeProductsTableName}
-    #   CREATE_TICKET_LAMBDA: "${sls:stage}-create_ticket"
-    # layers:
-    #   - !Ref DynamodbLambdaLayer
-    events:
-      - httpApi:
-          path: /{organisation}/trigger
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
-      - httpApi:
-          path: /trigger
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
+  TriggerAnEvent: ${file(functions/event_bridge/sls.event_bridge.function.yml):TriggerAnEvent}
+  ReceiveEvent: ${file(functions/event_bridge/sls.event_bridge.function.yml):ReceiveEvent}
 
 #--------------------
 
-  ReceiveEvent:
-    runtime: python3.11
-    handler: event_bridge/lambda_functions.receive_handler
-    name: "${sls:stage}-${self:service}-receive-eventbridge"
-    package:
-      patterns:
-        - '!**/**'
-        - "event_bridge/**"
-        - "shared/**"
-    events:
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-
-#--------------------
-
-  Events:
-    runtime: python3.11
-    handler: events/lambda_events.lambda_handler
-    name: "${sls:stage}-${self:service}-events"
-    package:
-      patterns:
-        - '!**/**'
-        - "events/**"
-        - "_shared/**"
-    environment:
-      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-    layers:
-      - !Ref UtilsLambdaLayer
-    events:
-      - httpApi:
-          path: /{organisation}/events
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETall} 
-      - httpApi:
-          path: /{organisation}/events/{ksuid}
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETone} 
-      - httpApi:
-          path: /public/{organisation}/events/{ksuid}
-          method: get
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETpub} 
-      - httpApi:
-          path: /public/{organisation}/events
-          method: get
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETallpub} 
-      - httpApi:
-          path: /{organisation}/events
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.POST} 
+  Events: ${file(functions/events/sls.events.function.yml):Events}
 
 #-------------------- AWS s3
 
-  GeneratePresignedURL:
-    runtime: python3.11
-    handler: utils/s3.generate_presigned_url
-    name: "${sls:stage}-${self:service}-presigned_url"
-    package:
-      patterns:
-        - '!**/**'
-        - "utils/**"
-        - "_shared/**"
-    environment:
-      BUCKET_NAME: ${self:custom.upload_bucket}
-    events:
-      - httpApi:
-          path: /{organisation}/generate-presigned-url
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
-      - httpApi:
-          path: /generate-presigned-url
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}  
-
-  UploadProcessor:
-    runtime: python3.11
-    handler: utils/s3.move_upload
-    name: "${sls:stage}-${self:service}-upload-processor"
-    package:
-      patterns:
-        - '!**/**'
-        - "utils/**"
-        - "_shared/**"
-    environment:
-      BUCKET_NAME: ${self:custom.upload_bucket}
-      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-      CDN_URL: ${param:cdn_url}   
-    events:
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-            detail-type:
-              - prefix: "Upsert"
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-            detail-type:
-              - prefix: "Update"
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-            detail-type:
-              - prefix: "Create"
+  GeneratePresignedURL: ${file(functions/utils/s3/generate_presigned/sls.generate_presigned.function.yml):GeneratePresignedURL}
+  UploadProcessor: ${file(functions/utils/s3/upload_processor/sls.upload_processor.function.yml):UploadProcessor}
 
 #---------------------- Customers
 
-  Customers:
-    runtime: python3.11
-    handler: customers/lambda_customers.private_handler
-    name: "${sls:stage}-${self:service}-customers"
-    package:
-      patterns:
-        - '!**/**'
-        - "customers/**"
-        - "_shared/**"
-    environment:
-      CORE_TABLE_NAME: ${self:custom.core_table_name}
-      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-    layers:
-      - !Ref UtilsLambdaLayer
-    events:
-      - httpApi:
-          path: /{organisation}/customers
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}
-      - httpApi:
-          path: /{organisation}/customers
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}
-      - httpApi:
-          path: /{organisation}/customers/{ksuid}
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETone} 
-
+  Customers: ${file(functions/customers/sls.customers.function.yml):Customers}
 
 #---------------------- Org and provisoning
 
-  CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}
-  StackProvisioned: ${file(serverless.privileged.yaml):functions.StackProvisioned}
+  CreateOrgStack: ${file(privileged/organisations/sls.organisations.function.yml):CreateOrgStack}
+  StackProvisioned: ${file(privileged/organisations/sls.organisations.function.yml):StackProvisioned}
 
-  PublicOrganisations:
-    runtime: python3.11
-    handler: organisations/lambda_organisations.public_handler
-    name: "${sls:stage}-${self:service}-public-organisations"
-    package:
-      patterns:
-        - '!**/**'
-        - "organisations/**"
-        - "_shared/**"
-    environment:
-      CORE_TABLE_NAME: ${self:custom.core_table_name}
-    layers:
-      - !Ref UtilsLambdaLayer
-    events:
-      - httpApi:
-          path: /public/organisations
-          method: get
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
+  # I think this should be seperated in code into a public/organisation level function
+  PublicOrganisations: ${file(privileged/organisations/sls.organisations.function.yml):PublicOrganisations} 

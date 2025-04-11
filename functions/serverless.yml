@@ -219,46 +219,7 @@ functions:
 
 #--------------------
 
-  Events:
-    runtime: python3.11
-    handler: events/lambda_events.lambda_handler
-    name: "${sls:stage}-${self:service}-events"
-    package:
-      patterns:
-        - '!**/**'
-        - "events/**"
-        - "_shared/**"
-    environment:
-      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-    layers:
-      - !Ref UtilsLambdaLayer
-    events:
-      - httpApi:
-          path: /{organisation}/events
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETall} 
-      - httpApi:
-          path: /{organisation}/events/{ksuid}
-          method: get
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETone} 
-      - httpApi:
-          path: /public/{organisation}/events/{ksuid}
-          method: get
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETpub} 
-      - httpApi:
-          path: /public/{organisation}/events
-          method: get
-          documentation: ${file(serverless.doc.yml):endpoints.Events.GETallpub} 
-      - httpApi:
-          path: /{organisation}/events
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.Events.POST} 
+  Events: ${file(functions/events/sls.events.function.yml):Events}
 
 #-------------------- AWS s3
 

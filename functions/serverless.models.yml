@@ -130,3 +130,36 @@ models:
               type: string
             error:
               type: string
+  - name: "CreateCustomerRequest"
+    description: "Request model for creating a new customer"
+    content:
+      application/json:
+        schema:
+          $schema: "http://json-schema.org/draft-04/schema#"
+          type: object
+          required: ["name"]
+          properties:
+            ksuid:
+              type: string
+              description: Unique KSUID identifier for the customer.
+              example: "1y1d8h3n0e4z5k8ab1v03q4g7"
+            name:
+              type: string
+              description: Full name of the customer.
+              example: "Jane Doe"
+            email:
+              type: string
+              description: Email address of the customer.
+              example: "jane.doe@example.com"
+            phone:
+              type: string
+              description: Phone number for the customer.
+              example: "+447700900123"
+            bio:
+              type: string
+              description: Short description or biography for the customer.
+              example: "Salsa dancer from Manchester."
+            version:
+              type: integer
+              description: Version number for concurrency control.
+              example: 1

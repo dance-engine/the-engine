@@ -1,0 +1,71 @@
+Customers:
+  GETall:
+    summary: "Get All Customers"
+    description: "Returns a list of all customers for a given organisation."
+    tags:
+      - Customers
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Returns a list of all customers.
+      - statusCode: 404
+        responseBody:
+          description: No customers found.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+
+  GETone:
+    summary: "Get Single Customer"
+    description: "Fetch details of a specific customer by their KSUID in a given organisation."
+    tags:
+      - Customers
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+      - name: ksuid
+        description: Unique customer ID (KSUID)
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: The customer object.
+      - statusCode: 404
+        responseBody:
+          description: Customer not found
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+
+  POST:
+    summary: "Create Customer"
+    description: "Creates a new customer record under a specific organisation."
+    tags:
+      - Customers
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    requestBody:
+      description: "Customer details"
+    requestModels:
+      application/json: "CreateCustomerRequest"
+    methodResponses:
+      - statusCode: 201
+        responseBody:
+          description: Customer created successfully.
+      - statusCode: 400
+        responseBody:
+          description: Invalid input or duplicate entry.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.

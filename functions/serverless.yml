@@ -161,9 +161,6 @@ functions:
 #--------------------
 
   TriggerAnEvent: ${file(functions/event_bridge/sls.event_bridge.function.yml):TriggerAnEvent}
-
-#--------------------
-
   ReceiveEvent: ${file(functions/event_bridge/sls.event_bridge.function.yml):ReceiveEvent}
 
 #--------------------
@@ -172,63 +169,8 @@ functions:
 
 #-------------------- AWS s3
 
-  GeneratePresignedURL:
-    runtime: python3.11
-    handler: utils/s3.generate_presigned_url
-    name: "${sls:stage}-${self:service}-presigned_url"
-    package:
-      patterns:
-        - '!**/**'
-        - "utils/**"
-        - "_shared/**"
-    environment:
-      BUCKET_NAME: ${self:custom.upload_bucket}
-    events:
-      - httpApi:
-          path: /{organisation}/generate-presigned-url
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc-org}   
-      - httpApi:
-          path: /generate-presigned-url
-          method: post
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}  
-
-  UploadProcessor:
-    runtime: python3.11
-    handler: utils/s3.move_upload
-    name: "${sls:stage}-${self:service}-upload-processor"
-    package:
-      patterns:
-        - '!**/**'
-        - "utils/**"
-        - "_shared/**"
-    environment:
-      BUCKET_NAME: ${self:custom.upload_bucket}
-      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-      CDN_URL: ${param:cdn_url}   
-    events:
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-            detail-type:
-              - prefix: "Upsert"
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-            detail-type:
-              - prefix: "Update"
-      - eventBridge:
-          pattern:
-            source:
-              - prefix: "dance-engine."
-            detail-type:
-              - prefix: "Create"
+  GeneratePresignedURL: ${file(functions/utils/s3/generate_presigned/sls.generate_presigned.function.yml):GeneratePresignedURL}
+  UploadProcessor: ${file(functions/utils/s3/upload_processor/sls.upload_processor.function.yml):UploadProcessor}
 
 #---------------------- Customers
 
@@ -237,7 +179,6 @@ functions:
 #---------------------- Org and provisoning
 
   CreateOrgStack: ${file(privileged/organisations/sls.organisations.function.yml):CreateOrgStack}
-  
   StackProvisioned: ${file(privileged/organisations/sls.organisations.function.yml):StackProvisioned}
 
   # I think this should be seperated in code into a public/organisation level function

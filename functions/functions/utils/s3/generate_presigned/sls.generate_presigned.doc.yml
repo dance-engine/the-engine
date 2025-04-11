@@ -1,0 +1,44 @@
+GeneratePresignedURL:
+  POSTupload:
+    summary: "Generate Presigned Upload URL"
+    description: "Generates a presigned POST URL to allow users to upload a file to S3 securely."
+    tags:
+      - S3
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    requestBody:
+      description: "File upload details"
+    requestModels:
+      application/json: "GeneratePresignedUploadRequest"
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Presigned POST URL and form fields returned.
+      - statusCode: 400
+        responseBody:
+          description: Invalid input or unsupported action.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+  POSTdownload:
+    summary: "Generate Presigned Download URL"
+    description: "Generates a presigned GET URL to allow users to download a file from S3."
+    tags:
+      - S3
+    requestBody:
+      description: "File download details"
+    requestModels:
+      application/json: "GeneratePresignedDownloadRequest"
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Presigned download URL returned.
+      - statusCode: 400
+        responseBody:
+          description: Invalid input or missing file key.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.

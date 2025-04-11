@@ -163,3 +163,49 @@ models:
               type: integer
               description: Version number for concurrency control.
               example: 1
+  - name: "GeneratePresignedUploadRequest"
+    description: "Request model for generating a presigned POST url"
+    content:
+      application/json:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["action", "fieldName", "fileType"]
+        properties:
+          action:
+            type: string
+            enum: [POST]
+            description: Action type. Must be `"POST"` for file upload.
+            example: "POST"
+          fieldName:
+            type: string
+            description: (used to generate S3 key path).
+            example: " "
+          fileType:
+            type: string
+            description: MIME type of the file being uploaded.
+            example: "image/jpeg"
+          organisation:
+            type: string
+            description: Organisation slug (usually injected from path parameter, but can also be set manually).
+            example: "mlf"
+  - name: "GeneratePresignedDownloadRequest"
+    description: "Request model for generating a presigned GET url"
+    content:
+      application/json:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["action", "fileKey"]
+        properties:
+          action:
+            type: string
+            enum: [GET]
+            description: Action type. Must be `"GET"` for file download.
+            example: "GET"
+          fileKey:
+            type: string
+            description: S3 key for the file to download.
+            example: " "
+          organisation:
+            type: string
+            description: Organisation slug (optional, not directly used by the GET logic).
+            example: "mlf"

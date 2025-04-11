@@ -156,18 +156,7 @@ layers:
 
 functions:
 
-  AuthorizerFunc:
-    runtime: python3.11
-    handler: authorizer/lambda_functions.auth_handler
-    name: "${sls:stage}-${self:service}-authoriser"
-    layers:
-      - !Ref AuthLambdaLayer
-    environment:
-      CLERK_KEY: ${ssm:/danceengine/${sls:stage}/clerk/public_key}
-    package:
-      patterns:
-        - '!**/**'
-        - "authorizer/**"
+  AuthorizerFunc: ${file(functions/authorizer/sls.authorizer.function.yml):AuthorizerFunc}
 
 #--------------------
 

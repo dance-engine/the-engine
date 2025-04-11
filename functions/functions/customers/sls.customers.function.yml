@@ -18,16 +18,16 @@ Customers:
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.customers.doc.yml):Customers.GETall}
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETall}
     - httpApi:
         path: /{organisation}/customers
         method: post
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.customers.doc.yml):Customers.POST}
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.POST}
     - httpApi:
         path: /{organisation}/customers/{ksuid}
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.customers.doc.yml):Customers.GETone}
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETone}

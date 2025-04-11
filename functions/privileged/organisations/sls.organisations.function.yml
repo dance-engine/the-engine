@@ -65,4 +65,4 @@ PublicOrganisations: ## I think this should go into a seperate lambda for privil
     - httpApi:
         path: /public/organisations
         method: get
-        documentation: ${file(sls.organisations.doc.yml):PublicOrganisations.get}                   
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):PublicOrganisations.get}                   

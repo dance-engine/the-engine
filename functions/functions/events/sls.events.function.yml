@@ -17,24 +17,24 @@ Events:
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${file(sls.events.doc.yml):Events.GETall} 
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETall} 
       - httpApi:
           path: /{organisation}/events/{ksuid}
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${file(sls.events.doc.yml):Events.GETone}
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETone}
       - httpApi:
           path: /{organisation}/events
           method: post
           authorizer:
             adminAuthorizer
-          documentation: ${file(sls.events.doc.yml):Events.POST}
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.POST}
       - httpApi:
           path: /public/{organisation}/events/{ksuid}
           method: get
-          documentation: ${file(sls.events.doc.yml):Events.GETpub} 
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETpub} 
       - httpApi:
           path: /public/{organisation}/events
           method: get
-          documentation: ${file(sls.events.doc.yml):Events.GETallpub} 
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.GETallpub} 

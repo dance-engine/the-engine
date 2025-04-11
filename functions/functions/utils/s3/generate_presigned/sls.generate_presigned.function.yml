@@ -15,10 +15,10 @@ GeneratePresignedURL:
         method: post
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.generate_presigned.doc.yml):GeneratePresignedURL.POSTupload}   
+        documentation: ${file(functions/utils/s3/generate_presigned/sls.generate_presigned.doc.yml):GeneratePresignedURL.POSTupload}   
     - httpApi:
         path: /generate-presigned-url
         method: post
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.generate_presigned.doc.yml):GeneratePresignedURL.POSTdownload}   
+        documentation: ${file(functions/utils/s3/generate_presigned/sls.generate_presigned.doc.yml):GeneratePresignedURL.POSTdownload}   

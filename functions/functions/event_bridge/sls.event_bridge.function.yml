@@ -19,13 +19,13 @@ TriggerAnEvent:
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.event_bridge.doc.yml):TriggerAnEvent.getOrg}
+        documentation: ${file(functions/event_bridge/sls.event_bridge.doc.yml):TriggerAnEvent.getOrg}
     - httpApi:
         path: /trigger
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(sls.event_bridge.doc.yml):TriggerAnEvent.get}
+        documentation: ${file(functions/event_bridge/sls.event_bridge.doc.yml):TriggerAnEvent.get}
 
 #--------------------
 

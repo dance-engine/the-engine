@@ -6,14 +6,15 @@
     "dev": "docusaurus start --port 3002 --no-open",
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "docusaurus build",
+    "build": "docusaurus clean-api-docs all && docusaurus gen-api-docs all && docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build-docusaurus-openapi": "docusaurus clean-api-docs core && docusaurus gen-api-docs all"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",

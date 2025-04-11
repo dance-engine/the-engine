@@ -1,0 +1,17 @@
+PublicOrganisations:
+  get:
+    summary: "Get Organisations"
+    description: "Get a list of organisations"
+    tags:
+      - Privileged
+      - Organisations
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Success.
+      - statusCode: 400
+        responseBody:
+          description: 400 Not implemented.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.

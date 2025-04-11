@@ -236,24 +236,9 @@ functions:
 
 #---------------------- Org and provisoning
 
-  CreateOrgStack: ${file(serverless.privileged.yaml):functions.CreateOrgStack}
-  StackProvisioned: ${file(serverless.privileged.yaml):functions.StackProvisioned}
+  CreateOrgStack: ${file(privileged/organisations/sls.organisations.function.yml):CreateOrgStack}
+  
+  StackProvisioned: ${file(privileged/organisations/sls.organisations.function.yml):StackProvisioned}
 
-  PublicOrganisations:
-    runtime: python3.11
-    handler: organisations/lambda_organisations.public_handler
-    name: "${sls:stage}-${self:service}-public-organisations"
-    package:
-      patterns:
-        - '!**/**'
-        - "organisations/**"
-        - "_shared/**"
-    environment:
-      CORE_TABLE_NAME: ${self:custom.core_table_name}
-    layers:
-      - !Ref UtilsLambdaLayer
-    events:
-      - httpApi:
-          path: /public/organisations
-          method: get
-          documentation: ${file(serverless.doc.yml):endpoints.nodoc}   
+  # I think this should be seperated in code into a public/organisation level function
+  PublicOrganisations: ${file(privileged/organisations/sls.organisations.function.yml):PublicOrganisations} 

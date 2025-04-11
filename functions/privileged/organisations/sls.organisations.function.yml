@@ -1,0 +1,68 @@
+CreateOrgStack:
+  runtime: python3.11
+  handler: privileged/organisations/lambda_organisations.create_handler
+  name: "${sls:stage}-${self:service}-organisations-create"
+  role: DeployOrgRole
+  environment:
+    TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
+    CORE_TABLE_NAME: ${self:custom.core_table_name}
+    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  package:
+    patterns:
+      - '!**/**'
+      - "privileged/organisations/**"
+      - "_shared/**"
+  events:
+    - eventBridge:
+        pattern:
+          source:
+            - "app.organisation"
+          detail-type:
+            - "CreateOrganisation"
+
+StackProvisioned:
+  runtime: python3.11
+  handler: privileged/organisations/lambda_organisations.provisioned_handler
+  name: "${sls:stage}-${self:service}-organisations-provision"
+  role: DeployOrgRole
+  environment:
+    TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
+    CORE_TABLE_NAME: ${self:custom.core_table_name}
+    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  package:
+    patterns:
+      - '!**/**'
+      - "privileged/organisations/**"
+      - "_shared/**"
+  events:
+    - eventBridge:
+        pattern:
+          source:
+            - "aws.cloudformation"
+          detail-type:
+            - "CloudFormation Stack Status Change"
+          detail:
+            # stack-id: 
+            #   - "arn:aws:cloudformation:eu-west-1:*:stack/${sls:stage}-org-*"
+            status-details:
+              status:
+                - "CREATE_COMPLETE"
+
+PublicOrganisations: ## I think this should go into a seperate lambda for privilaged/organisation/public level access
+  runtime: python3.11
+  handler: privileged/organisations/lambda_organisations.public_handler
+  name: "${sls:stage}-${self:service}-public-organisations"
+  package:
+    patterns:
+      - '!**/**'
+      - "privileged/organisations/**"
+      - "_shared/**"
+  environment:
+    CORE_TABLE_NAME: ${self:custom.core_table_name}
+  layers:
+    - !Ref UtilsLambdaLayer
+  events:
+    - httpApi:
+        path: /public/organisations
+        method: get
+        documentation: ${file(sls.organisations.doc.yml):PublicOrganisations.get}                   

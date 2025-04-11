@@ -83,10 +83,6 @@ Events:
           description: Organisation slug
           schema:
             type: string
-        - name: ksuid
-          description: Unique event ID (KSUID)
-          schema:
-            type: string
       methodResponses:
         - statusCode: 200
           responseBody:

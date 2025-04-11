@@ -1,0 +1,71 @@
+---
+id: customers
+title: "Get All Customers"
+description: "Returns a list of all customers for a given organisation."
+sidebar_label: "Get All Customers"
+hide_title: true
+hide_table_of_contents: true
+api: eJylVE1v00AQ/SujOVHJcgMqF99CKVU4QFVacSgR2dgTe+l6150dB4Ll/47GcSs3qZAQJ++u5+Pte2+2w4JizrYRGzxmeE3Sso9gwNkoEDZgnIO8jRJq4gibwGCgtFvyELg03kajqSkmGBriYbMoMMOnHEywMWxqEt1kdx16UxNmOM3HBK32b4xUmByA+jwJhOjaEhNkemgtU4GZcEsJxryi2mDWoewarR6FrddIseKO2vX9MkExpQLC8yeoSy0cm+AjRa31ZjbTzz9xpFRUZIrhtl3fJ3g2Ozuu8ik8o7X1xXHi25faL7wQe+MgEm+JgZgDH+b2CdYkVVAlSpJBA6kww9NuykN/OpUpUt6yld0gUu6I77//+CmY3S2Vrce/X5TpPT2TmEOUH7/egI2xpQLWOzjXwBRuKgIJ9+ShbqPAmsD63LUFFWA9SEWwmrdSBba/B3gr2N8JjLL9jgwT7wukcBuVuMc6jeFBCa0hhkuSZ/YE4wuozJaGgEfvAAdH8IrSMk1gZYra+tUJSACT5xQjNByEctFAiqHlnGL6Ta06WqwSaXC0nu7XA0BMxsWHwLWRPReoili/CYNDR0e+Nz4nuPCl9QTzq8WR8ZWv+dVimLppMCa4JY77oFk6S19jn2ATotTGa4dxwi5JYO4cnE9Eftahwzx4IS//OfojIUK/5LRxxnrF07LTDnvj3WF2MO/5dOqqENVo2HVrE+mWXd/r8UNLrHZcJrg1bM1aebvrsLBR1wVmG+Mi/eVWr65HsU/gpWfkReDjofE7Jdq4VneY4D3tjt6R5XTSLi9U6D+K09mC
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get All Customers"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/customers"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a list of all customers for a given organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list of all customers.","headers":{}},"404":{"description":"No customers found.","headers":{}},"500":{"description":"Internal server error.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

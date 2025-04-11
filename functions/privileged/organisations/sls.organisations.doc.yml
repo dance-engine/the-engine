@@ -2,6 +2,8 @@ PublicOrganisations:
   get:
     summary: "Get Organisations"
     description: "Get a list of organisations"
+    security:
+      - {}    
     tags:
       - Privileged
       - Organisations

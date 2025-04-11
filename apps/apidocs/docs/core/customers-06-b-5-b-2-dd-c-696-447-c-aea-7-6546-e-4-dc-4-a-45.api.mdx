@@ -1,0 +1,71 @@
+---
+id: customers-06-b-5-b-2-dd-c-696-447-c-aea-7-6546-e-4-dc-4-a-45
+title: "Get Single Customer"
+description: "Fetch details of a specific customer by their KSUID in a given organisation."
+sidebar_label: "Get Single Customer"
+hide_title: true
+hide_table_of_contents: true
+api: eJytlMFu20YQhl9lMCcbWMlqICsob26cBEoOCeIYPbhCPVqOyI2pXXp2qFYl+O7FUpSrSIYPRk/kLocz//77zbSYc7TianXBY4YfWG0JOSu5KkJYAUGs2bqVs2CbqGHNAsstaMlO4PPN7fwanAeCwm3YQ5CCvIuUso3RYKhZ+sU8xwz3CeJoMlteLt/k+cjOfp2NptO3dkRMb0ezy+mMp7md0vQSDdYktGZliZjdtehpzZjhYRE06JLumrREc3SYLweBEKumQIPCj40TzjFTadhgtCWvCbMWdVun7FHF+RSpTquTcl1nnnQ8xMblLwq49e6x4f+Mm1/DWe/Z+auU7Ap23cKgUpE8wXd7S3GRMsY6+MgxJXkzmaTHz4K+lwdqwvIHW03XVDLlvclt1xmcTqanf+4LgQ8Kq9D4/OS/y+cqzr2yeKogsmxYgEWCHNfsDK5Zy5AgKVj7m9cSM7xoD93vLp4Iumh7Mzo0GNk24nTbI2Irloc/f/ylmN0tklH7rzfJ3Z0zBzHHaj/9/h1cjA3nCfJ3KXAMyTQND+xh3USFJYPztmpyzhP6WjLcXzVaBnH/9DLvYXc2oAgEvzEJyy7BGG4jS3zKU5NoarKUQ0kK1p86CMjnUNKG+4A9LyChYjjjcTE2cE/52vn7c9AAZC3HCLUEZaspkGNoxHIc/5EaZcCqVK1xwC2tl71ANMPLhyBr0p0XCXd0fhV6KgcKr8lbhve+cJ7h6uv8hPrk19XXOayCwGEwGtywxF3QZDwZ/4KdwTpEXZNPFYa++sgKN84XFcOeuuMaLdrglb3+/yNrcEn5b72oK3I+iWykSkV3VN5hdjSCnrBEg9muSxcGyxAThti2S4p8K1XXpe3HhiXBujC4IXG0TK7etZi7mN5zzFZURX7hxGffBhTO4bkR9+wJhk3y23QNVDVphQYfeHsy48wrxbw47l6haph3i8Px8PF9ovJf3G9M2Q==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Single Customer"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/customers/{ksuid}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fetch details of a specific customer by their KSUID in a given organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"ksuid","in":"path","description":"Unique customer ID (KSUID)","required":true,"schema":{"type":"string","title":"ksuid"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"The customer object.","headers":{}},"404":{"description":"Customer not found","headers":{}},"500":{"description":"Internal server error.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

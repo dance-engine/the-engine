@@ -40,6 +40,8 @@ def create_customer(event_data,organisationSlug):
     customer_item = {
         "ksuid":            f"{clientKsuid}",
         "name":             event_data.get('name'),
+        "email":             event_data.get('email'),
+        "phone":             event_data.get('phone'),
         "bio":              event_data.get("bio"),
         "organisation":     organisationSlug,
         "entity_type":      "CUSTOMER",

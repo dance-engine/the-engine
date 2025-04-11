@@ -4,7 +4,9 @@ import { z } from "zod";
 // Define the event schema
 export const customerSchema = z.object({
   ksuid: z.string().describe("ID of the event").optional(),
-  name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().min(2, "Name must be at least 2 characters"),
   bio: z.string().describe("About this person"),
   meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {

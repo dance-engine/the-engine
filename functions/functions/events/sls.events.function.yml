@@ -5,7 +5,7 @@ Events:
     package:
       patterns:
         - '!**/**'
-        - "events/**"
+        - "functions/events/**"
         - "_shared/**"
     environment:
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}

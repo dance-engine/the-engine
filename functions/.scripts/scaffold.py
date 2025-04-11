@@ -6,7 +6,6 @@ from typing_extensions import Annotated
 app = typer.Typer()
 
 BASE = Path.cwd()
-CONFIG_DIR = BASE / ".config"
 FUNCTIONS_DIR = BASE / "functions"
 SERVERLESS_YML = BASE / "serverless.yml"
 
@@ -20,14 +19,16 @@ def another_command():
 @app.command()
 def create_lambda(
     name: Annotated[str, typer.Option(..., help="Name of the lambda")],
-    routes: Optional[List[str]] = typer.Option(None, help="List of HTTP method + path pairs for this function")
+    routes: Optional[List[str]] = typer.Option(None, help="List of HTTP method + path pairs for this function. (e.g. [\"GET /public/events\", \"POST /\{organisation\}/events\"])")
 ):
     """
     Scaffold a new Lambda
     """
 
+    use_flat_method_name = False
     if routes is None:
-        routes = [f"GET /{name}", f"POST /{name}"]
+        use_flat_method_name = True
+        routes = [f"GET /{name}"]
 
     # Create folder and base files
     lambda_dir = FUNCTIONS_DIR / name
@@ -41,7 +42,8 @@ def create_lambda(
     # Create method files (get_all.py, post.py, etc.)
     for route in routes:
         method, path = route.split()
-        method_file = lambda_dir / f"lambda_{name}_{method.lower()}.py"
+        filename = f"lambda_{name}.py" if use_flat_method_name else f"lambda_{name}_{method.lower()}.py"
+        method_file = lambda_dir / filename
         if not method_file.exists():
             method_file.write_text(method_template(name, method.lower(), path))
 
@@ -137,6 +139,7 @@ def {method}(data):
 """
 
 def function_yaml(name: str, routes: List[str]) -> str:
+    lambda_dir = FUNCTIONS_DIR / name
     name_pascal = snake_to_pascal(name)
     route_events = []
     for route in routes:
@@ -146,18 +149,18 @@ def function_yaml(name: str, routes: List[str]) -> str:
           method: {method.lower()}
           authorizer:
             adminAuthorizer
-          documentation: ${{{{file(.config/docs/sls.{name}.doc.yml):endpoints.{name}.{method.upper()}}}}}        
+          documentation: ${{{{file({lambda_dir}/sls.{name}.doc.yml):endpoints.{name}.{method.upper()}}}}}        
 """)
     events_block = "\n".join(route_events)
 
     return f"""{name_pascal}:
   runtime: python3.11
-  handler: {name}/handler_{name}.lambda_handler
+  handler: {lambda_dir}/{name}/handler_{name}.lambda_handler
   name: "${{sls:stage}}-${{self:service}}-{name}"
   package:
       patterns:
       - '!**/**'
-      - "{name}/**"
+      - "{lambda_dir}/**"
       - "_shared/**"
   environment:
       STAGE_NAME: ${{sls:stage}}
@@ -168,6 +171,7 @@ def function_yaml(name: str, routes: List[str]) -> str:
 """
 
 def doc_yaml(name: str, routes: List[str]) -> str:
+    lambda_dir = FUNCTIONS_DIR / name
     lines = ["endpoints:"]
     for route in routes:
         method, path = route.split()
@@ -177,6 +181,20 @@ def doc_yaml(name: str, routes: List[str]) -> str:
       description: "Handle {method.upper()} requests for {path}"
       tags:
         - {name}
+      ## uncomment this and the next line if this is a public endpoint
+      #security:
+      #  - {}
+      ## uncomment if includes path params  
+      #pathParams:
+      #  - name: organisation
+      #    description: Organisation slug
+      #    schema:
+      #      type: string
+      ## uncomment if this is a POST request and define model
+      #requestBody:
+      #  description: "Event details"
+      #requestModels:
+      #  application/json: "CreateEventRequest" # models defined in serverless.models.yml in top level for now
       methodResponses:
         - statusCode: 200
           responseBody:

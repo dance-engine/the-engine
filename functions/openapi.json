@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "components": {
     "schemas": {
-      "Location": {
+      "LocationObject": {
         "type": "object",
         "properties": {
           "name": {
@@ -20,9 +20,11 @@
           "ksuid": {
             "type": "string"
           }
-        }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
       },
-      "Event": {
+      "EventObject": {
         "type": "object",
         "properties": {
           "ksuid": {
@@ -75,26 +77,11 @@
             "format": "date-time"
           },
           "location": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "address": {
-                "type": "string"
-              },
-              "lat": {
-                "type": "number"
-              },
-              "lng": {
-                "type": "number"
-              },
-              "ksuid": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/components/schemas/LocationObject"
           }
-        }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
       },
       "CreateEventRequest": {
         "type": "object",
@@ -133,31 +120,11 @@
             "type": "string"
           },
           "location": {
-            "type": "object",
-            "required": [
-              "name",
-              "lat",
-              "lng"
-            ],
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "address": {
-                "type": "string"
-              },
-              "lat": {
-                "type": "number"
-              },
-              "lng": {
-                "type": "number"
-              },
-              "ksuid": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/components/schemas/LocationObject"
           }
-        }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
       },
       "EventResponse": {
         "type": "object",
@@ -166,157 +133,19 @@
             "type": "string"
           },
           "event": {
-            "type": "object",
-            "properties": {
-              "ksuid": {
-                "type": "string"
-              },
-              "banner": {
-                "type": "string"
-              },
-              "event_slug": {
-                "type": "string"
-              },
-              "organisation": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "starts_at": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "ends_at": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "category": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "capacity": {
-                "type": "integer"
-              },
-              "number_sold": {
-                "type": "integer"
-              },
-              "description": {
-                "type": "string"
-              },
-              "created_at": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "updated_at": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "location": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "address": {
-                    "type": "string"
-                  },
-                  "lat": {
-                    "type": "number"
-                  },
-                  "lng": {
-                    "type": "number"
-                  },
-                  "ksuid": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/schemas/EventObject"
           }
-        }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
       },
       "EventListResponse": {
         "type": "array",
         "items": {
-          "type": "object",
-          "properties": {
-            "ksuid": {
-              "type": "string"
-            },
-            "banner": {
-              "type": "string"
-            },
-            "event_slug": {
-              "type": "string"
-            },
-            "organisation": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "starts_at": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "ends_at": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "category": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "capacity": {
-              "type": "integer"
-            },
-            "number_sold": {
-              "type": "integer"
-            },
-            "description": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "updated_at": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "location": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "address": {
-                  "type": "string"
-                },
-                "lat": {
-                  "type": "number"
-                },
-                "lng": {
-                  "type": "number"
-                },
-                "ksuid": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
+          "$ref": "#/components/schemas/EventObject"
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
       },
       "ErrorResponse": {
         "type": "object",
@@ -493,7 +322,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-099d3271-391e-4b19-a122-8c1610979260",
+        "operationId": "eventbridge-17376a30-9e93-4755-a383-e10482a07147",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -551,7 +380,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-d04f9158-9013-42fc-a3d4-235bb158cbca",
+        "operationId": "events-3d2ef712-2ae0-4369-bf97-09d9226259a5",
         "parameters": [
           {
             "name": "organisation",
@@ -597,7 +426,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-98243cba-ec0c-4e28-938b-3fb72fe1a640",
+        "operationId": "events-a510b60c-7cda-4bbe-b3af-61ff1f6eff63",
         "parameters": [
           {
             "name": "organisation",
@@ -641,7 +470,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-d712b579-e0a2-4601-8df0-6e2db5f39e37",
+        "operationId": "events-8ca7f17c-a856-42e1-87f8-705005cf47e3",
         "parameters": [
           {
             "name": "organisation",
@@ -689,7 +518,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-c22dda85-32fe-4ff4-a64b-af7f96b183de",
+        "operationId": "events-b802e06a-8f4c-4a2e-8735-d675a51d5f08",
         "parameters": [
           {
             "name": "organisation",
@@ -774,7 +603,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-abb2c558-b8c8-44b0-8dc5-7e35d3d1c0d7",
+        "operationId": "presigned_url-2b070cd0-7bf3-413a-96bf-c60708de9b3e",
         "parameters": [],
         "tags": [
           "S3"
@@ -843,7 +672,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-b1d0da79-172d-4a4d-b441-ce2cfdef1b0f",
+        "operationId": "customers-8b04f390-480d-4a81-8eda-07263b2937d5",
         "parameters": [
           {
             "name": "organisation",
@@ -889,7 +718,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-06b5b2dd-c696-447c-aea7-6546e4dc4a45",
+        "operationId": "customers-bfc1afe3-0b3d-4c03-8186-499f1391be13",
         "parameters": [
           {
             "name": "organisation",
@@ -938,6 +767,9 @@
         "tags": [
           "Privileged",
           "Organisations"
+        ],
+        "security": [
+          {}
         ],
         "responses": {
           "200": {

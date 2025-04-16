@@ -5,9 +5,12 @@ LocationObject:
   x-internal-path: "functions/events"
   content:
     application/json:
-      schema: &locationObj
+      schema: 
         type: object
+        required: ["name"]
         properties:
+          ksuid:
+            type: string
           name:
             type: string
           address:
@@ -25,7 +28,7 @@ EventObject:
   x-internal-path: "functions/events"
   content:
     application/json:
-      schema: &eventObj
+      schema:
         type: object
         properties:
           ksuid:
@@ -74,7 +77,7 @@ CreateEventRequest:
       schema:
         $schema: "http://json-schema.org/draft-04/schema#"
         type: object
-        required: ["name", "starts_at", "ends_at", "location", "capacity"]
+        required: ["name", "starts_at", "ends_at", "location"]
         properties:
           name:
             type: string

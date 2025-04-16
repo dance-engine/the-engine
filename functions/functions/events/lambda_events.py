@@ -1,29 +1,26 @@
+import os
 import json
 import logging
-import os
-from datetime import datetime, timezone
-import re
-import uuid
-import traceback
-from decimal import Decimal
 import boto3
-from boto3.dynamodb.conditions import Key
+import traceback
+from datetime import datetime, timezone
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
+
+from ksuid import KsuidMs
+
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent
 
-# import inflection
-
-from ksuid import KsuidMs
-
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
 db = boto3.resource("dynamodb")
-ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
 eventbridge = boto3.client('events')
+
+ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
 def get_events(organisationSlug):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)

@@ -19,8 +19,6 @@ LocationObject:
             type: number
           lng:
             type: number
-          ksuid:
-            type: string
 EventObject:
   name: "EventObject"
   description: "Event object"
@@ -30,19 +28,28 @@ EventObject:
     application/json:
       schema:
         type: object
+        required: ["name", "starts_at", "ends_at"]
         properties:
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+            default: "draft"
           ksuid:
             type: string
+            description: "ID of the event"
           banner:
             type: string
-          event_slug:
-            type: string
-          organisation:
-            type: string
-          type:
+            description: "Appears at the top of the event page"
+          entity_type:
             type: string
           name:
             type: string
+            minLength: 2
+            description: "The name of the event."
           starts_at:
             type: string
             format: date-time
@@ -53,10 +60,17 @@ EventObject:
             type: array
             items:
               type: string
+              enum:
+                - "congress"
+                - "workshop"
+                - "party"
+                - "class"
+                - "lecture"
           capacity:
             type: integer
           number_sold:
             type: integer
+            default: 0
           description:
             type: string
           created_at:
@@ -65,6 +79,8 @@ EventObject:
           updated_at:
             type: string
             format: date-time
+          version:
+            type: integer
           location: 
             $ref: "#/components/schemas/LocationObject"
 CreateEventRequest:          
@@ -77,28 +93,10 @@ CreateEventRequest:
       schema:
         $schema: "http://json-schema.org/draft-04/schema#"
         type: object
-        required: ["name", "starts_at", "ends_at", "location"]
+        required: ["event"]
         properties:
-          name:
-            type: string
-          starts_at:
-            type: string
-            format: date-time
-          ends_at:
-            type: string
-            format: date-time
-          banner:
-            type: string
-          category:
-            type: array
-            items:
-              type: string
-          capacity:
-            type: integer
-          description:
-            type: string
-          location:
-            $ref: "#/components/schemas/LocationObject"
+          event:
+            $ref: "#/components/schemas/EventObject"
 EventResponse:
   name: "EventResponse"
   description: "Single event response object"

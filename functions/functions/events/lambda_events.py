@@ -13,6 +13,10 @@ from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent
+from _shared.dynamodb import upsert, VersionConflictError
+from _shared.helpers import make_response
+from models_events import CreateEventRequest
+from models_extended import EventModel, LocationModel
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -65,160 +69,80 @@ def get_single_event(organisationSlug,eventId):
         # event = response.get("Items", {})
     return event_item
 
-def create_event(event_data,organisationSlug):
+def create_event(request_data: CreateEventRequest, organisation_slug: str):
     """
-    # TODO implement
-    Checke for KSUID and create if needed
-    Validate Input 
-    Store objects in a tranactionalized dynamoDB call
-    Return if it worked or not"
+    [X] Checke for KSUID and create if needed
+    [X] Validate Input 
+    [ ] Store objects in a tranactionalized dynamoDB call
+    [?] Return if it worked or not
     """
+    logger.info(f"Create Event: {request_data}")
 
-    logger.info(f"Create Event: {event_data}")
-    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Adding event for {organisationSlug} into {TABLE_NAME}")
+    logger.info(f"Adding event for {organisation_slug} into {TABLE_NAME}")
 
-    clientKsuid = KsuidMs.from_base62(event_data.get('ksuid'))
-    location_ksuid = event_data.get("location",{}).get("ksuid",KsuidMs())
-    location_data = event_data.get('location')
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-
     logger.info(f"Current Time: {current_time}")
 
-    event_item = {
-        "ksuid":            f"{clientKsuid}",
-        "banner":           event_data.get("banner"),
-        "event_slug":       f"{generateSlug(event_data.get('name'))}",
-        "organisation":     organisationSlug,
-        "entity_type":      "EVENT",
-        "name":             event_data.get('name'),
-        "starts_at":        event_data.get("starts_at"),
-        "ends_at":          event_data.get("ends_at"),
-        "category":         ", ".join(str(cat) for cat in event_data.get("category")),
-        "capacity":         event_data.get("capacity"),
-        "number_sold":      0,
-        "description":      event_data.get("description"),
-        "created_at":       current_time,
-        "updated_at":       current_time,
-        "version":          event_data.get("version"),
-        "gsi1PK":           f"EVENTLIST#{organisationSlug}",
-        "gsi1SK":           f"EVENT#{clientKsuid}"    
-    }
-    
-    location_item = {
-        "ksuid":            f"{location_ksuid}",
-        "organisation":         organisationSlug,
-        "entity_type":      "LOCATION",
-        "name":             location_data.get('name'),
-        "address":          location_data.get('address'),
-        "lat":              location_data.get('lat'),
-        "lng":              location_data.get('lng'),
-        "created_at":       current_time,
-        "updated_at":       current_time,
-        "gsi1PK":           f"EVENTLIST#{organisationSlug}",
-        "gsi1SK":           f"LOCATION#{location_ksuid}"
-    }
-    
-
-    try:
-        event_response = upsert_event(table,clientKsuid,event_item, ["event_slug","created_at"])
-        location_response = upsert_location(table,location_ksuid, f"EVENT#{clientKsuid}", location_item, ["event_slug","created_at"])
-
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
-            logger.error(f"Item already exists! {event_item}")
-        else:
-            raise
-    return event_item, event_response, location_response
-
-def upsert_event(table, ksuid: str, item: dict, only_set_once: list = []):
-    update_parts = []
-    expression_attr_names = {}
-    expression_attr_values = {}
-
-    incoming_version = item.get("version") if isinstance(item.get("version"), int) else 0
-    item["version"] = incoming_version + 1
-
-    for key, value in item.items():
-        name_placeholder = f"#{key}"
-        value_placeholder = f":{key}"
-        expression_attr_names[name_placeholder] = key
-        expression_attr_values[value_placeholder] = value
-
-        if key in only_set_once:
-            update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
-        else:
-            update_parts.append(f"{name_placeholder} = {value_placeholder}")
-
-    update_expression = "SET " + ", ".join(update_parts)
-
-    # Only update if existing version is less than the one being replaced
-    condition_expression = "attribute_not_exists(#version) OR #version <= :incoming_version"
-    expression_attr_names["#version"] = "version"
-    expression_attr_values[":incoming_version"] = incoming_version
-
-    try:
-        response = table.update_item(
-            Key={"PK": f"EVENT#{ksuid}", "SK": f"EVENT#{ksuid}"},
-            UpdateExpression=update_expression,
-            ConditionExpression=condition_expression,
-            ExpressionAttributeNames=expression_attr_names,
-            ExpressionAttributeValues=expression_attr_values,
-            ReturnValues="ALL_NEW"
-        )
-        triggerEBEvent(eventbridge, "events", "UpsertEvent", response)
-        return response
-    except table.meta.client.exceptions.ConditionalCheckFailedException:
-        # Handle conflict (incoming version is too old)
-        return {
-            "error": "Version conflict",
-            "reason": f"Incoming version ({incoming_version}) is not newer."
-        }
-
-def upsert_location(table, ksuid: str, parent_ksuid: str, item: dict, only_set_once: list = []):
-    update_parts = []
-    expression_attr_names = {}
-    expression_attr_values = {}
-
-    for key, value in item.items():
-        name_placeholder = f"#{key}"
-        value_placeholder = f":{key}"
-        expression_attr_names[name_placeholder] = key
-        expression_attr_values[value_placeholder] = value
-
-        if key in only_set_once:
-            update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
-        else:
-            update_parts.append(f"{name_placeholder} = {value_placeholder}")
-
-    update_expression = "SET " + ", ".join(update_parts)
-
-    response = table.update_item(
-        Key={"PK": f"LOCATION#{ksuid}", "SK": parent_ksuid},
-        UpdateExpression=update_expression,
-        ExpressionAttributeNames=expression_attr_names,
-        ExpressionAttributeValues=expression_attr_values,
-        ReturnValues="ALL_NEW"
+    event_data      = request_data.event
+    event_model = EventModel(
+        **event_data.model_dump_json(),
+        ksuid=KsuidMs.from_base62(event_data.ksuid) if event_data.ksuid else KsuidMs(),
+        organisation=organisation_slug,
+        number_sold=0,
+        created_at=current_time,
+        updated_at=current_time,
+        version=event_data.version or 0
     )
-    return response
+
+    location_data   = event_data.location
+    location_model = LocationModel(
+        **location_data.model_dump_json(),
+        ksuid=KsuidMs.from_base62(location_data.ksuid) if location_data.ksuid else KsuidMs(),
+        organisation=organisation_slug,
+        parent_event_ksuid=event_data.ksuid,
+        created_at=current_time,
+        updated_at=current_time
+    )
+
+    try:
+        event_response = upsert(table, event_model, ["event_slug", "created_at"])
+        location_response = upsert(table, location_model, ["created_at"])
+        #TODO trigger an EventBridge event
+        return make_response(201, {
+            "message": "Event created successfully.",
+            "event": event_model.model_dump_json(),
+        })
+    except VersionConflictError as e:
+        logger.error(f"Version Conflict")
+        return make_response(409, {
+            "message": "Version conflict",
+            "resource": e.model.pk(),
+            "your_version": e.incoming_version
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        return make_response(500, {"message": "Something went wrong."})        
 
 def lambda_handler(event, context):
     try:
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
         parsed_event = parse_event(event)
-        http_method = event['requestContext']["http"]["method"]
+        http_method  = event['requestContext']["http"]["method"]
+
         organisationSlug = event.get("pathParameters", {}).get("organisation")
-        eventId = event.get("pathParameters", {}).get("ksuid",None)
+        eventId          = event.get("pathParameters", {}).get("ksuid",None)
 
-
+        # POST /{organisation}/events
         if http_method == "POST":
-            validated_event = validate_event(parsed_event, ["name", "starts_at", "ends_at", "location", "capacity"])
-            validated_location = validate_event(validated_event["location"], ["name", "lat", "lng"])
+            validated_request = CreateEventRequest(**parsed_event)
 
-            created_event = create_event(validated_event,organisationSlug)
-            if created_event is None:
-                return { "statusCode": 400, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event with this name already exists."})}
+            created_event = create_event(validated_request, organisationSlug)
+
+            # Review
+            # if created_event is None:
+            #     return { "statusCode": 400, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event with this name already exists."})}
 
             return {"statusCode": 201, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event created successfully.", "event": created_event}, cls=DecimalEncoder)}
 

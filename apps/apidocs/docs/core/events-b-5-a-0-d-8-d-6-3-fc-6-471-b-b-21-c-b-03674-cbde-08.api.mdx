@@ -1,0 +1,71 @@
+---
+id: events-b-5-a-0-d-8-d-6-3-fc-6-471-b-b-21-c-b-03674-cbde-08
+title: "Create Event"
+description: "Creates a new event and stores its location."
+sidebar_label: "Create Event"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1V21v2zgM/iuCPm2AkzpZu27+1r0c0GHAhi27AZcLWtpiHK225JPodLnA//1A2Umcl3ZX4K6fYpl8SD0mH7JrqdBnTlekrZGJfOsQCL0AYfBe4BINCTBKeLIOvdDkRWEzYOuhjKSt0IWHayUTGcz9IL2AWL1SLwcv5tnLwfnlKB2k41E2SOMXLy/Ps1Rh/EpGsgIHJRI6L5PpWhooUSbSuhyM9gFURlJzUhXQQkYHmX7qGQpf1LmMpMO/au1QyYRcjZH02QJLkMla0qpidE9OG7YkTcVRuKaZRZIg54Tk+3AZOWtR0dMbq1YMtZ9GMBMKCXTh91KYQ+Exkpk1hIbYE6qq0C15Zz88u6+PU7TpD8xoD2naMsu5VI4pJ42eXdrjX/gGYiPpCRz5G+DXaFT4dQToCaj2pwhDU5eMphzMGaLQS0YFly30EhXXQk0KCBWjKpxDXZBMOvsmkne+1uoU8j6f1++EnQtaYFt87JmCMeh+7XpVVQjOC6DgT7bagxIV5Mh4aEjT6qYFOwRtoq4Sj6OV2nxEk9NCJuPD2JMFCvbbizhktB3vJyDn1pUQaALCAemyS1A9zSEDwty6Vc8DnIMVNxBh+egHzazJHXqu3Xvr7vzCVm1zErtnBYRXBWZUO5SzJoSrINPUD6cNYY4u0FeXKbobbwt1wqBXG3FzwOKJb5EFPVJPYqOu1JN9luj8fg69G20U71912lFPPVD4DxZaE0lQKnySU++KvWu1ZIdzk584byL5c8BXcQaKQe5sXW2FWu69CyKbyHltMr6rP9sabbTyY0fDp/bu/yl2kNH/A7gdaAH+S6vjsmk4gkNfWePbbzSORw9Je1eBwtdZht7P66JY8ehbIKgwu9aMdh7HxwDXZgmFVkKbqqYTLq+PXX5v61Bk1swLndFxpIvTkVpChEe3RCfQOesOfZtIlkgLy6O6sp5Cmwf+ztb9OdjsWPSY1S50+nQtswLd3c2Pe5LJdMajcvP2K8+wlsiezWGOH75PhPa+RiXSlXjLhkMxCUJ9h0aUtSeRotAmK2qFzFpQ0turmhbW6b9DbreivZEA3lHeIDh0LcBQfPPo/BaHFWyjxgQuRxL9S4atZgFLDAabLhbOFiie4TAfRuIWVKnN7XNBVkD4+KJyljDjcnDobe0y9MM/eU/p2m5BxOoZhjo/pyFBGXU/fttoz4fvk1DmvAV82a0X739CWRW4N9o3I3k7eTs92SnaZj72tb034XbH3Yq1fe6NJjmOx+eD+HIwfj0ZXSQXo2T8ahhfjv7obQuPGu1GUG+kzPqzIj4YDfHhDN3m1Rf9x2L2hf4xu624x/tafsTkIUFbHd4dBfmNO7mNQ1NpM7dBejvJeQcmQ/He5NqguPp8fbSocNFffb4Wc+tE37ifqoyH8XDEws6tWkJIuMuv1TQR9OkQfL1bOJ+6zHflQviTzqoCtAnD1BUM2grFVCYH+zlut+QFK0oylet1Ch6/uaJp+PivGkNRzCK5BKchZYqma6m059+7PfnBWzz70jXnc3Fq5z+Z9WYJMrzDLKGo+Yl7B1dHS/+s2chkSKw1eduGH0wYaAdxtMGzDG5F9fOnrxPux+4fhdIq9nFwz3sC3Lcp2HDFIJbhbC0LMHnNu2kiW0z++wenJp7N
+sidebar_class_name: "post api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Create Event"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/{organisation}/events"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Creates a new event and stores its location.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Event details","required":false,"content":{"application/json":{"schema":{"type":"object","required":["event"],"properties":{"event":{"type":"object","required":["name","starts_at","ends_at"],"properties":{"status":{"type":"string","enum":["draft","live","archived","outdated"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the event"},"banner":{"type":"string","description":"Appears at the top of the event page"},"entity_type":{"type":"string"},"name":{"type":"string","minLength":2,"description":"The name of the event."},"starts_at":{"type":"string","format":"date-time"},"ends_at":{"type":"string","format":"date-time"},"category":{"type":"array","items":{"type":"string","enum":["congress","workshop","party","class","lecture"]}},"capacity":{"type":"integer"},"number_sold":{"type":"integer","default":0},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"location":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"address":{"type":"string"},"lat":{"type":"number"},"lng":{"type":"number"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"LocationObject"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"EventObject"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"CreateEventRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"Event created successfully.","headers":{}},"400":{"description":"Invalid input","headers":{}},"409":{"description":"Version conflict.","headers":{}},"500":{"description":"Internal server error.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

@@ -4,7 +4,13 @@
     "schemas": {
       "LocationObject": {
         "type": "object",
+        "required": [
+          "name"
+        ],
         "properties": {
+          "ksuid": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -16,9 +22,6 @@
           },
           "lng": {
             "type": "number"
-          },
-          "ksuid": {
-            "type": "string"
           }
         },
         "x-internal-group": "events",
@@ -26,24 +29,37 @@
       },
       "EventObject": {
         "type": "object",
+        "required": [
+          "name",
+          "starts_at",
+          "ends_at"
+        ],
         "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ],
+            "default": "draft"
+          },
           "ksuid": {
-            "type": "string"
+            "type": "string",
+            "description": "ID of the event"
           },
           "banner": {
-            "type": "string"
+            "type": "string",
+            "description": "Appears at the top of the event page"
           },
-          "event_slug": {
-            "type": "string"
-          },
-          "organisation": {
-            "type": "string"
-          },
-          "type": {
+          "entity_type": {
             "type": "string"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 2,
+            "description": "The name of the event."
           },
           "starts_at": {
             "type": "string",
@@ -56,14 +72,22 @@
           "category": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "congress",
+                "workshop",
+                "party",
+                "class",
+                "lecture"
+              ]
             }
           },
           "capacity": {
             "type": "integer"
           },
           "number_sold": {
-            "type": "integer"
+            "type": "integer",
+            "default": 0
           },
           "description": {
             "type": "string"
@@ -76,6 +100,9 @@
             "type": "string",
             "format": "date-time"
           },
+          "version": {
+            "type": "integer"
+          },
           "location": {
             "$ref": "#/components/schemas/LocationObject"
           }
@@ -86,41 +113,11 @@
       "CreateEventRequest": {
         "type": "object",
         "required": [
-          "name",
-          "starts_at",
-          "ends_at",
-          "location",
-          "capacity"
+          "event"
         ],
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "starts_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "ends_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "banner": {
-            "type": "string"
-          },
-          "category": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "capacity": {
-            "type": "integer"
-          },
-          "description": {
-            "type": "string"
-          },
-          "location": {
-            "$ref": "#/components/schemas/LocationObject"
+          "event": {
+            "$ref": "#/components/schemas/EventObject"
           }
         },
         "x-internal-group": "events",
@@ -322,7 +319,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-8d6c76fd-dd31-4185-ab46-27608c89ea7e",
+        "operationId": "eventbridge-e1cb3401-e686-4f72-a770-5f1cccfeadee",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -380,7 +377,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-8a37dae0-7d30-4a93-9dbe-e89854d7888b",
+        "operationId": "events-b5a0d8d6-3fc6-471b-b21c-b03674cbde08",
         "parameters": [
           {
             "name": "organisation",
@@ -411,8 +408,12 @@
             "description": "Event created successfully.",
             "headers": {}
           },
-          "404": {
+          "400": {
             "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
             "headers": {}
           },
           "500": {
@@ -426,7 +427,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-9df889fe-4c11-4bf2-8cfe-c8724e7c59b6",
+        "operationId": "events-a9493b04-4818-4d0a-85a4-e2a6b94416c3",
         "parameters": [
           {
             "name": "organisation",
@@ -470,7 +471,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-0403e4ba-564f-4186-b99b-d674be097482",
+        "operationId": "events-7e516f49-bc63-4324-b45a-3e3a2779e620",
         "parameters": [
           {
             "name": "organisation",
@@ -518,7 +519,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-f6baca97-651e-4703-9926-ff22deab24d8",
+        "operationId": "events-4748daca-6609-4c3a-ac32-d30ccf485d84",
         "parameters": [
           {
             "name": "organisation",
@@ -603,7 +604,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-06e6b1e2-84fc-43e1-b1d4-24569905b29b",
+        "operationId": "presigned_url-c80761d7-7459-436d-87f7-563d04c50b69",
         "parameters": [],
         "tags": [
           "S3"
@@ -672,7 +673,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-bb6b03a0-9f69-4121-aa7e-39a40a21c1a0",
+        "operationId": "customers-ae8e49df-b3a1-442f-96d7-1494f041bee1",
         "parameters": [
           {
             "name": "organisation",
@@ -718,7 +719,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-18bdcfd5-cc17-4df1-af65-7973edb6d031",
+        "operationId": "customers-149873a5-5b10-49ee-8343-f2fc6b204b41",
         "parameters": [
           {
             "name": "organisation",

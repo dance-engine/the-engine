@@ -1,10 +1,17 @@
 import re
 from typing import Dict, Any
 from botocore.exceptions import ClientError
+from datetime import datetime
 
 from pydantic import BaseModel
+def convert_datetime_to_iso_8601_with_z_suffix(dt: datetime) -> str:
+    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 class DynamoModel(BaseModel):
+    class Config:
+        json_encoders = {
+            datetime: convert_datetime_to_iso_8601_with_z_suffix
+        }
     @property
     def pk(self) -> str:
         raise NotImplementedError()

@@ -1,12 +1,13 @@
 # models_ext.py
 from models_events import EventObject as EventBase, LocationObject as LocationBase
 from _shared.dynamodb import DynamoModel
+from datetime import datetime
 
 class EventModel(EventBase, DynamoModel):
     organisation: str
     number_sold: int
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     entity_type: str = "EVENT"
 
     @property
@@ -30,8 +31,8 @@ class EventModel(EventBase, DynamoModel):
 class LocationModel(LocationBase, DynamoModel):
     organisation: str
     parent_event_ksuid: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
     entity_type: str = "LOCATION"
 
     @property

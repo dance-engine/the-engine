@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
-from models_events import CreateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject
+from models_events import CreateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject
 from models_extended import EventModel, LocationModel
 
 logger = logging.getLogger()
@@ -57,19 +57,41 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting event {eventId} for {organisationSlug} from {TABLE_NAME} / ")
 
-    response = table.query(
-        IndexName='IDXinv',  
-        KeyConditionExpression=Key('SK').eq(f'EVENT#{eventId}')
-    )
-    items = response.get("Items", None)
+    try:
+        response = table.query(
+            IndexName='IDXinv',  
+            KeyConditionExpression=Key('SK').eq(f'EVENT#{eventId}')
+        )
+        items = response.get("Items", None)
+        logger.info(f"Fetched {len(items)} from dynamodb: {items}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed for event {eventId}: {e}")
+        raise Exception
+    
+    event_items = [item for item in items if item.get("entity_type") == "EVENT"]
+    location_items = [item for item in items if item.get("entity_type") == "LOCATION"]
 
-    if not items:
-        logger.info(f"Event not found {items}")
+    if len(event_items) == 0:
+        logger.warning(f"No EVENT entity found for event ID {eventId}")
         return None
     
-    logger.info(f"Event Related Response {items}")
-    event_item = items[0] #! BAd Code! need to think about how much checking is needed
-    location_item = items[1] #! BAd Code! need to think about how much checking is needed
+    if len(event_items) > 1:
+        logger.error(f"Multiple EVENT entities found for {eventId}.")
+        raise Exception
+    
+    event_item = event_items[0] 
+    
+    if location_items:
+        if len(location_items) > 1:
+            logger.warning(f"Multiple LOCATION entities found for event {eventId}. Using the first.")
+
+            location_item = location_items[0]
+            try:
+                location_model = LocationObject.model_validate(location_item)
+                event_item["location"] = location_model.model_dump()
+            except Exception as e:
+                logger.warning(f"Failed to validate location object for event {eventId}: {e}")
+                event_item["location"] = None  # fallback gracefully
 
     event_item["location"] = {
         "name": location_item.get("name"),

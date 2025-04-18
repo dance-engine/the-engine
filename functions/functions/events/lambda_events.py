@@ -1,4 +1,6 @@
+import sys
 import os
+
 import json
 import logging
 import boto3
@@ -9,6 +11,7 @@ from boto3.dynamodb.conditions import Key
 
 from ksuid import KsuidMs
 
+sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
@@ -123,7 +126,8 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str):
         })
     except Exception as e:
         logger.error("Unexpected error: %s", str(e))
-        return make_response(500, {"message": "Something went wrong."})        
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
 
 def lambda_handler(event, context):
     try:

@@ -1,9 +1,12 @@
 import re
 from typing import Dict, Any
 from botocore.exceptions import ClientError
+import logging
 from datetime import datetime
+import traceback
+logger = logging.getLogger()
+logger.setLevel("INFO")
 
-from pydantic import BaseModel
 def convert_datetime_to_iso_8601_with_z_suffix(dt: datetime) -> str:
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -88,5 +91,8 @@ def upsert(table, model: DynamoModel, only_set_once: list = []):
     except ClientError as e:
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException" and model.uses_versioning():
             raise VersionConflictError(model, expression_attr_values.get(":incoming_version"))
+        raise
+    except Exception as e:
+        logger.error(traceback.format_exc())
         raise
     

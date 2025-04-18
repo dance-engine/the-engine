@@ -4,13 +4,26 @@ from botocore.exceptions import ClientError
 import logging
 from datetime import datetime
 import traceback
+from decimal import Decimal
+
 from pydantic import BaseModel, field_validator
 from ksuid import KsuidMs
+
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
 def convert_datetime_to_iso_8601_with_z_suffix(dt: datetime) -> str:
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+def convert_floats_to_decimals(obj: Any) -> Any:
+    if isinstance(obj, float):
+        return Decimal(str(obj))
+    elif isinstance(obj, dict):
+        return {k: convert_floats_to_decimals(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_floats_to_decimals(i) for i in obj]
+    else:
+        return obj
 
 class DynamoModel(BaseModel):
     class Config:
@@ -43,18 +56,30 @@ class DynamoModel(BaseModel):
     @property
     def gsi1SK(self) -> str:
         raise NotImplementedError()
-
-    def to_dynamo(self) -> Dict[str, Any]:
-        return self.model_dump(exclude_none=True)
     
     def _slugify(self, string) -> str:
         return re.sub(r'[^a-zA-Z0-9]+', '-', string.strip().lower()).strip('-')
     
     def uses_versioning(self) -> bool:
         return hasattr(self, "version")
-    
-    def to_dynamo(self) ->dict:
-        return self.model_dump(exclude_none=True)
+
+    def to_dynamo(self) -> dict:
+        base = self.model_dump(mode="json", exclude_none=True)
+
+        exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "pk", "sk"}
+
+        props = {}
+        for name in dir(self.__class__):
+            if name in exclude_props:
+                continue
+            attr = getattr(self.__class__, name)
+            if isinstance(attr, property):
+                try:
+                    props[name] = getattr(self, name)
+                except NotImplementedError:
+                    continue
+
+        return convert_floats_to_decimals({**base, **props})
     
 class VersionConflictError(Exception):
     def __init__(self, model: DynamoModel, incoming_version: int):

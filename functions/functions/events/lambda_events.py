@@ -88,26 +88,27 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str):
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
 
-    event_data      = request_data.event
-    event_model = EventModel(
-        **event_data.model_dump_json(),
-        ksuid=KsuidMs.from_base62(event_data.ksuid) if event_data.ksuid else KsuidMs(),
-        organisation=organisation_slug,
-        number_sold=0,
-        created_at=current_time,
-        updated_at=current_time,
-        version=event_data.version or 0
-    )
 
-    location_data   = event_data.location
-    location_model = LocationModel(
-        **location_data.model_dump_json(),
-        ksuid=KsuidMs.from_base62(location_data.ksuid) if location_data.ksuid else KsuidMs(),
-        organisation=organisation_slug,
-        parent_event_ksuid=event_data.ksuid,
-        created_at=current_time,
-        updated_at=current_time
-    )
+    event_data  = request_data.event
+    event_model = EventModel.model_validate({
+        **event_data.model_dump(mode="json", exclude_unset=True),
+        "ksuid": str(event_data.ksuid) if event_data.ksuid else str(KsuidMs()),
+        "organisation": organisation_slug,
+        "number_sold": 0,
+        "created_at": current_time,
+        "updated_at": current_time,
+        "version": event_data.version or 0
+        })
+
+    location_data  = event_data.location
+    location_model = LocationModel.model_validate({
+        **location_data.model_dump(mode="json", exclude_unset=True),
+        "ksuid": str(location_data.ksuid) if location_data.ksuid else str(KsuidMs()),
+        "organisation": organisation_slug,
+        "parent_event_ksuid": event_model.ksuid,
+        "created_at": current_time,
+        "updated_at": current_time
+        })
 
     try:
         event_response = upsert(table, event_model, ["event_slug", "created_at"])
@@ -141,14 +142,7 @@ def lambda_handler(event, context):
         # POST /{organisation}/events
         if http_method == "POST":
             validated_request = CreateEventRequest(**parsed_event)
-
-            created_event = create_event(validated_request, organisationSlug)
-
-            # Review
-            # if created_event is None:
-            #     return { "statusCode": 400, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event with this name already exists."})}
-
-            return {"statusCode": 201, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event created successfully.", "event": created_event}, cls=DecimalEncoder)}
+            return create_event(validated_request, organisationSlug)
 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{eventId}")

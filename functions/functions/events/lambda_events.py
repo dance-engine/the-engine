@@ -163,30 +163,19 @@ def lambda_handler(event, context):
         # GET 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{eventId}")
+            response_cls = EventResponsePublic if is_public else EventResponse
+            list_response_cls = EventListResponsePublic if is_public else EventListResponse
+
             if eventId:
                 result = get_single_event(organisationSlug, eventId, public=is_public)
                 if result is None:
                     return make_response(404, {"message": "Event not found."})
-                
-                if is_public:
-                    response = EventResponsePublic(event=result)
-                else:
-                    response = EventResponse(event=result)
-                
-                return make_response(200, response.model_dump())
+                response = response_cls(event=result)
             else:
                 result = get_events(organisationSlug, public=is_public)
-
-                if is_public:
-                    response = EventListResponsePublic(events=result)  # List[EventObjectPublic]
-                else:
-                    response = EventListResponse(events=result)  # List[EventObject]
-
-                return make_response(200, response.model_dump())
-
-            # events = [get_single_event(organisationSlug,eventId)] if eventId else get_events(organisationSlug)
-                # return {"statusCode": 404, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "No Events found."})}
-            # return {"statusCode": 200, "headers": { "Content-Type": "application/json" }, "body": json.dumps(events, cls=DecimalEncoder)}
+                response = list_response_cls(events=result)
+            
+            return make_response(200, response.model_dump())                
 
         elif http_method == "PUT":
             #TODO Implement

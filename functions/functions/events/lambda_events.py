@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
-from models_events import CreateEventRequest
+from models_events import CreateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject
 from models_extended import EventModel, LocationModel
 
 logger = logging.getLogger()
@@ -29,7 +29,7 @@ eventbridge = boto3.client('events')
 
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
-def get_events(organisationSlug):
+def get_events(organisationSlug: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
@@ -39,38 +39,53 @@ def get_events(organisationSlug):
                 KeyConditionExpression=Key("gsi1PK").eq(f"EVENTLIST#{organisationSlug}") & Key("gsi1SK").begins_with("EVENT#"),
                 ScanIndexForward=True
             )
-    events = response.get("Items", [])
-    return events
+    
+    events = []
+    for item in response.get("Items", []):
+        try:
+            event_model = EventObject(item)
+            event_model_public = EventObjectPublic(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
+            output = event_model_public if public else event_model
+            events.append(output)
+        except Exception as e:
+            logger.warning(f"Skipping event item: {e}")
+    
+    return events 
 
-def get_single_event(organisationSlug,eventId):
+def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting event {eventId} for {organisationSlug} from {TABLE_NAME} / ")
 
-    # response = table.get_item(
-    #     Key={ 'PK': f'EVENT#{eventId}', 'SK': f'EVENT#{eventId}'}
-    # )
     response = table.query(
-        IndexName='IDXinv',  # Replace with your actual index name
+        IndexName='IDXinv',  
         KeyConditionExpression=Key('SK').eq(f'EVENT#{eventId}')
     )
-    event_related_items = response.get("Items", None)
-    if not event_related_items:
-        logger.info(f"Event not found {event_related_items}")
-        return []
-    else: 
-        logger.info(f"Event Related Response {event_related_items}")
-        event_item = event_related_items[0] #! BAd Code! need to think about how much checking is needed
-        event_item["category"] = [item.strip() for item in event_item["category"].split(',')]
-        event_item["location"] = {
-            "name": event_related_items[1].get("name"),
-            "address": event_related_items[1].get("address"),
-            "lat": event_related_items[1].get("lat"),
-            "lng": event_related_items[1].get("lng"),
-            "ksuid": event_related_items[1].get("ksuid"),
-        }
-        # event = response.get("Items", {})
-    return event_item
+    items = response.get("Items", None)
+
+    if not items:
+        logger.info(f"Event not found {items}")
+        return None
+    
+    logger.info(f"Event Related Response {items}")
+    event_item = items[0] #! BAd Code! need to think about how much checking is needed
+    location_item = items[1] #! BAd Code! need to think about how much checking is needed
+
+    event_item["location"] = {
+        "name": location_item.get("name"),
+        "address": location_item.get("address"),
+        "lat": location_item.get("lat"),
+        "lng": location_item.get("lng"),
+        "ksuid": location_item.get("ksuid"),
+    }
+
+    try:
+        event_model = EventObject(event_item)
+        event_model_public = EventObjectPublic(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
+        return event_model_public if public else event_model
+    except Exception as e:
+        logger.warning("Validation error in get_single_event: %s", str(e))
+        return None
 
 def create_event(request_data: CreateEventRequest, organisation_slug: str):
     """
@@ -138,20 +153,43 @@ def lambda_handler(event, context):
 
         organisationSlug = event.get("pathParameters", {}).get("organisation")
         eventId          = event.get("pathParameters", {}).get("ksuid",None)
+        is_public        = event.get("rawPath", "").startswith("/public")
 
         # POST /{organisation}/events
         if http_method == "POST":
             validated_request = CreateEventRequest(**parsed_event)
             return create_event(validated_request, organisationSlug)
 
+        # GET 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{eventId}")
-            events = [get_single_event(organisationSlug,eventId)] if eventId else get_events(organisationSlug)
-            if events is None:
-                return {"statusCode": 404, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "No Events found."})}
-            return {"statusCode": 200, "headers": { "Content-Type": "application/json" }, "body": json.dumps(events, cls=DecimalEncoder)}
+            if eventId:
+                result = get_single_event(organisationSlug, eventId, public=is_public)
+                if result is None:
+                    return make_response(404, {"message": "Event not found."})
+                
+                if is_public:
+                    response = EventResponsePublic(event=result)
+                else:
+                    response = EventResponse(event=result)
+                
+                return make_response(200, response.model_dump())
+            else:
+                result = get_events(organisationSlug, public=is_public)
+
+                if is_public:
+                    response = EventListResponsePublic(events=result)  # List[EventObjectPublic]
+                else:
+                    response = EventListResponse(events=result)  # List[EventObject]
+
+                return make_response(200, response.model_dump())
+
+            # events = [get_single_event(organisationSlug,eventId)] if eventId else get_events(organisationSlug)
+                # return {"statusCode": 404, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "No Events found."})}
+            # return {"statusCode": 200, "headers": { "Content-Type": "application/json" }, "body": json.dumps(events, cls=DecimalEncoder)}
 
         elif http_method == "PUT":
+            #TODO Implement
             return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}
         
         else:

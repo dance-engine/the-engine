@@ -1,9 +1,12 @@
 models:
   - ${file(functions/events/sls.events.models.yml):LocationObject}
   - ${file(functions/events/sls.events.models.yml):EventObject}
+  - ${file(functions/events/sls.events.models.yml):EventObjectPublic}
   - ${file(functions/events/sls.events.models.yml):CreateEventRequest}
   - ${file(functions/events/sls.events.models.yml):EventResponse}
   - ${file(functions/events/sls.events.models.yml):EventListResponse}
+  - ${file(functions/events/sls.events.models.yml):EventResponsePublic}
+  - ${file(functions/events/sls.events.models.yml):EventListResponsePublic}
 
   - name: "ErrorResponse"
     description: "Error response model"

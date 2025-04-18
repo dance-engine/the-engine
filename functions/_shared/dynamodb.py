@@ -5,16 +5,20 @@ from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
 class DynamoModel(BaseModel):
+    @property
     def pk(self) -> str:
         raise NotImplementedError()
 
+    @property
     def sk(self) -> str:
         raise NotImplementedError()
 
-    def gsi1pk(self) -> str:
+    @property
+    def gsi1PK(self) -> str:
         raise NotImplementedError()
 
-    def gsi1sk(self) -> str:
+    @property
+    def gsi1SK(self) -> str:
         raise NotImplementedError()
 
     def to_dynamo(self) -> Dict[str, Any]:
@@ -31,7 +35,7 @@ class DynamoModel(BaseModel):
     
 class VersionConflictError(Exception):
     def __init__(self, model: DynamoModel, incoming_version: int):
-        super().__init__(f"Version conflict on {model.pk()} / v{incoming_version}")
+        super().__init__(f"Version conflict on {model.pk} / v{incoming_version}")
         self.model = model
         self.incoming_version = incoming_version
     
@@ -60,7 +64,7 @@ def upsert(table, model: DynamoModel, only_set_once: list = []):
     update_expression = "SET " + ", ".join(update_parts)
 
     kwargs = dict(
-        Key={"PK": model.pk(), "SK": model.sk()},
+        Key={"PK": model.pk, "SK": model.sk},
         UpdateExpression=update_expression,
         ExpressionAttributeNames=expression_attr_names,
         ExpressionAttributeValues=expression_attr_values,

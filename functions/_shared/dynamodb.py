@@ -4,6 +4,8 @@ from botocore.exceptions import ClientError
 import logging
 from datetime import datetime
 import traceback
+from pydantic import BaseModel, field_validator
+from ksuid import KsuidMs
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
@@ -15,6 +17,17 @@ class DynamoModel(BaseModel):
         json_encoders = {
             datetime: convert_datetime_to_iso_8601_with_z_suffix
         }
+
+    @field_validator("ksuid", mode="before", check_fields=False)
+    @classmethod
+    def validate_ksuid(cls, v):
+        if v is not None:
+            try:
+                KsuidMs.from_base62(v)
+            except Exception:
+                raise ValueError("Invalid KSUID")
+        return v        
+
     @property
     def pk(self) -> str:
         raise NotImplementedError()

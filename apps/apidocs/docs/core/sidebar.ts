@@ -18,7 +18,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/eventbridge-e-1-cb-3401-e-686-4-f-72-a-770-5-f-1-cccfeadee",
+          id: "core/eventbridge-0-c-82-e-64-d-4878-476-f-b-01-c-f-0-b-0332-c-87-a-0",
           label: "Trigger an event",
           className: "api-method get",
         },
@@ -36,25 +36,25 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/events-b-5-a-0-d-8-d-6-3-fc-6-471-b-b-21-c-b-03674-cbde-08",
+          id: "core/events-fc-0-baaa-2-a-496-4122-a-4-f-8-a-9-a-9220-d-0-c-73",
           label: "Create Event",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "core/events-a-9493-b-04-4818-4-d-0-a-85-a-4-e-2-a-6-b-94416-c-3",
+          id: "core/events-e-9-cb-88-e-6-5930-4-c-08-9-f-38-2985-f-26-ec-050",
           label: "Get Single Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-7-e-516-f-49-bc-63-4324-b-45-a-3-e-3-a-2779-e-620",
+          id: "core/events-3-abd-0-f-24-ea-5-c-4185-a-846-fe-564-a-5-b-2-efb",
           label: "Public Get Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-4748-daca-6609-4-c-3-a-ac-32-d-30-ccf-485-d-84",
+          id: "core/events-af-1-a-26-e-5-af-92-44-d-5-a-0-e-1-156-b-872-a-0238",
           label: "Public Get ALL Events",
           className: "api-method get",
         },
@@ -66,13 +66,13 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "core/events-7-e-516-f-49-bc-63-4324-b-45-a-3-e-3-a-2779-e-620",
+          id: "core/events-3-abd-0-f-24-ea-5-c-4185-a-846-fe-564-a-5-b-2-efb",
           label: "Public Get Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-4748-daca-6609-4-c-3-a-ac-32-d-30-ccf-485-d-84",
+          id: "core/events-af-1-a-26-e-5-af-92-44-d-5-a-0-e-1-156-b-872-a-0238",
           label: "Public Get ALL Events",
           className: "api-method get",
         },
@@ -90,7 +90,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/presigned-url-c-80761-d-7-7459-436-d-87-f-7-563-d-04-c-50-b-69",
+          id: "core/presigned-url-201355-af-8-b-57-49-fe-969-d-69877-a-564-eb-2",
           label: "Generate Presigned Download URL",
           className: "api-method post",
         },
@@ -108,13 +108,13 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/customers-ae-8-e-49-df-b-3-a-1-442-f-96-d-7-1494-f-041-bee-1",
+          id: "core/customers-9-bd-368-df-9-a-1-f-484-c-adaf-b-1-c-1-c-452-e-671",
           label: "Create Customer",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "core/customers-149873-a-5-5-b-10-49-ee-8343-f-2-fc-6-b-204-b-41",
+          id: "core/customers-4-c-9202-d-9-a-2-c-4-425-a-91-de-77-e-5-f-2884271",
           label: "Get Single Customer",
           className: "api-method get",
         },
@@ -162,6 +162,12 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "core/schemas/eventobjectpublic",
+          label: "EventObjectPublic",
+          className: "schema",
+        },
+        {
+          type: "doc",
           id: "core/schemas/createeventrequest",
           label: "CreateEventRequest",
           className: "schema",
@@ -176,6 +182,18 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "core/schemas/eventlistresponse",
           label: "EventListResponse",
+          className: "schema",
+        },
+        {
+          type: "doc",
+          id: "core/schemas/eventresponsepublic",
+          label: "EventResponsePublic",
+          className: "schema",
+        },
+        {
+          type: "doc",
+          id: "core/schemas/eventlistresponsepublic",
+          label: "EventListResponsePublic",
           className: "schema",
         },
         {

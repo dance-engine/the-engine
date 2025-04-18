@@ -2,8 +2,10 @@
 from models_events import EventObject as EventBase, LocationObject as LocationBase
 from _shared.dynamodb import DynamoModel
 from datetime import datetime
+from typing import ClassVar
 
 class EventModel(EventBase, DynamoModel):
+    location: ClassVar[None] = None
     organisation: str
     number_sold: int
     created_at: datetime

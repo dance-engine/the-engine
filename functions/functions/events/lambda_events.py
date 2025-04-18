@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
-from models_events import CreateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject
+from models_events import CreateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from models_extended import EventModel, LocationModel
 
 logger = logging.getLogger()
@@ -28,6 +28,24 @@ db = boto3.resource("dynamodb")
 eventbridge = boto3.client('events')
 
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+
+def _preprocess_event_item(item: dict) -> dict:
+    if 'status' in item and isinstance(item["status"], str):
+        try:
+            item["status"] = Status(item['status'])
+        except ValueError:
+            pass
+    if 'category' in item and isinstance(item["category"], str):
+        try:
+            item["category"] = [CategoryEnum(item["category"])]    
+        except ValueError:
+            pass
+    if 'category' in item and isinstance(item["category"], list):
+        try:
+            item["category"] = [CategoryEnum(c) for c in item["category"]]    
+        except ValueError:
+            pass
+    return item
 
 def get_events(organisationSlug: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -43,11 +61,12 @@ def get_events(organisationSlug: str, public: bool = False):
     events = []
     for item in response.get("Items", []):
         try:
-            event_model = EventObject(item)
-            event_model_public = EventObjectPublic(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
+            event_model = EventObject.model_validate(_preprocess_event_item(item))
+            event_model_public = EventObjectPublic.model_validate(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
             output = event_model_public if public else event_model
             events.append(output)
         except Exception as e:
+            logger.error(traceback.format_exc())
             logger.warning(f"Skipping event item: {e}")
     
     return events 
@@ -85,25 +104,17 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
         if len(location_items) > 1:
             logger.warning(f"Multiple LOCATION entities found for event {eventId}. Using the first.")
 
-            location_item = location_items[0]
-            try:
-                location_model = LocationObject.model_validate(location_item)
-                event_item["location"] = location_model.model_dump()
-            except Exception as e:
-                logger.warning(f"Failed to validate location object for event {eventId}: {e}")
-                event_item["location"] = None  # fallback gracefully
-
-    event_item["location"] = {
-        "name": location_item.get("name"),
-        "address": location_item.get("address"),
-        "lat": location_item.get("lat"),
-        "lng": location_item.get("lng"),
-        "ksuid": location_item.get("ksuid"),
-    }
+        location_item = location_items[0]
+        try:
+            location_model = LocationObject.model_validate(location_item)
+            event_item["location"] = location_model.model_dump()
+        except Exception as e:
+            logger.warning(f"Failed to validate location object for event {eventId}: {e}")
+            event_item["location"] = None  # fallback gracefully
 
     try:
-        event_model = EventObject(event_item)
-        event_model_public = EventObjectPublic(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
+        event_model = EventObject.model_validate(_preprocess_event_item(event_item))
+        event_model_public = EventObjectPublic.model_validate(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
         return event_model_public if public else event_model
     except Exception as e:
         logger.warning("Validation error in get_single_event: %s", str(e))
@@ -197,7 +208,7 @@ def lambda_handler(event, context):
                 result = get_events(organisationSlug, public=is_public)
                 response = list_response_cls(events=result)
             
-            return make_response(200, response.model_dump())                
+            return make_response(200, response.model_dump(mode="json", exclude_none=True))                
 
         elif http_method == "PUT":
             #TODO Implement

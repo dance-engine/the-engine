@@ -11,6 +11,7 @@ Events:
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
     layers:
       - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer
     events:
       - httpApi:
           path: /{organisation}/events

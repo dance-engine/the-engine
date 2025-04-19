@@ -4,7 +4,13 @@
     "schemas": {
       "LocationObject": {
         "type": "object",
+        "required": [
+          "name"
+        ],
         "properties": {
+          "ksuid": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -16,9 +22,6 @@
           },
           "lng": {
             "type": "number"
-          },
-          "ksuid": {
-            "type": "string"
           }
         },
         "x-internal-group": "events",
@@ -26,24 +29,37 @@
       },
       "EventObject": {
         "type": "object",
+        "required": [
+          "name",
+          "starts_at",
+          "ends_at"
+        ],
         "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ],
+            "default": "draft"
+          },
           "ksuid": {
-            "type": "string"
+            "type": "string",
+            "description": "ID of the event"
           },
           "banner": {
-            "type": "string"
+            "type": "string",
+            "description": "Appears at the top of the event page"
           },
-          "event_slug": {
-            "type": "string"
-          },
-          "organisation": {
-            "type": "string"
-          },
-          "type": {
+          "entity_type": {
             "type": "string"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 2,
+            "description": "The name of the event."
           },
           "starts_at": {
             "type": "string",
@@ -56,14 +72,22 @@
           "category": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "congress",
+                "workshop",
+                "party",
+                "class",
+                "lecture"
+              ]
             }
           },
           "capacity": {
             "type": "integer"
           },
           "number_sold": {
-            "type": "integer"
+            "type": "integer",
+            "default": 0
           },
           "description": {
             "type": "string"
@@ -76,6 +100,85 @@
             "type": "string",
             "format": "date-time"
           },
+          "version": {
+            "type": "integer"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationObject"
+          }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
+      },
+      "EventObjectPublic": {
+        "type": "object",
+        "required": [
+          "name",
+          "starts_at",
+          "ends_at"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ],
+            "default": "draft"
+          },
+          "ksuid": {
+            "type": "string",
+            "description": "ID of the event"
+          },
+          "banner": {
+            "type": "string",
+            "description": "Appears at the top of the event page"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "description": "The name of the event."
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "congress",
+                "workshop",
+                "party",
+                "class",
+                "lecture"
+              ]
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          },
           "location": {
             "$ref": "#/components/schemas/LocationObject"
           }
@@ -86,41 +189,11 @@
       "CreateEventRequest": {
         "type": "object",
         "required": [
-          "name",
-          "starts_at",
-          "ends_at",
-          "location",
-          "capacity"
+          "event"
         ],
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "starts_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "ends_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "banner": {
-            "type": "string"
-          },
-          "category": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "capacity": {
-            "type": "integer"
-          },
-          "description": {
-            "type": "string"
-          },
-          "location": {
-            "$ref": "#/components/schemas/LocationObject"
+          "event": {
+            "$ref": "#/components/schemas/EventObject"
           }
         },
         "x-internal-group": "events",
@@ -129,9 +202,6 @@
       "EventResponse": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string"
-          },
           "event": {
             "$ref": "#/components/schemas/EventObject"
           }
@@ -140,9 +210,37 @@
         "x-internal-path": "functions/events"
       },
       "EventListResponse": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/EventObject"
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventObject"
+            }
+          }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
+      },
+      "EventResponsePublic": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/EventObjectPublic"
+          }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
+      },
+      "EventListResponsePublic": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventObjectPublic"
+            }
+          }
         },
         "x-internal-group": "events",
         "x-internal-path": "functions/events"
@@ -322,7 +420,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-17376a30-9e93-4755-a383-e10482a07147",
+        "operationId": "eventbridge-cb9a6f3c-eccb-48d8-8ab3-137c327e5b21",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -365,6 +463,13 @@
         "responses": {
           "200": {
             "description": "Returns a list of all events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListResponse"
+                }
+              }
+            },
             "headers": {}
           },
           "404": {
@@ -373,6 +478,13 @@
           },
           "500": {
             "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }
@@ -380,7 +492,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-3d2ef712-2ae0-4369-bf97-09d9226259a5",
+        "operationId": "events-916b7d2b-ff49-4c30-b30b-640828766eac",
         "parameters": [
           {
             "name": "organisation",
@@ -411,12 +523,23 @@
             "description": "Event created successfully.",
             "headers": {}
           },
-          "404": {
+          "400": {
             "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
             "headers": {}
           },
           "500": {
             "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }
@@ -426,7 +549,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-a510b60c-7cda-4bbe-b3af-61ff1f6eff63",
+        "operationId": "events-68be788f-356b-49e6-9c87-ea52d55e6720",
         "parameters": [
           {
             "name": "organisation",
@@ -453,6 +576,13 @@
         "responses": {
           "200": {
             "description": "The event object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
             "headers": {}
           },
           "404": {
@@ -461,6 +591,13 @@
           },
           "500": {
             "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }
@@ -470,7 +607,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-8ca7f17c-a856-42e1-87f8-705005cf47e3",
+        "operationId": "events-9e0641c8-d5e2-41dd-899d-4974c8ed9d51",
         "parameters": [
           {
             "name": "organisation",
@@ -501,6 +638,13 @@
         "responses": {
           "200": {
             "description": "The event object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponsePublic"
+                }
+              }
+            },
             "headers": {}
           },
           "404": {
@@ -509,6 +653,13 @@
           },
           "500": {
             "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }
@@ -518,7 +669,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-b802e06a-8f4c-4a2e-8735-d675a51d5f08",
+        "operationId": "events-7c6bd6c3-1368-4298-a84a-76fc9cfedf75",
         "parameters": [
           {
             "name": "organisation",
@@ -540,6 +691,13 @@
         "responses": {
           "200": {
             "description": "The event object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListResponsePublic"
+                }
+              }
+            },
             "headers": {}
           },
           "404": {
@@ -548,6 +706,13 @@
           },
           "500": {
             "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }
@@ -603,7 +768,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-2b070cd0-7bf3-413a-96bf-c60708de9b3e",
+        "operationId": "presigned_url-dba5329e-11eb-4e07-86cb-58c1ea5778fc",
         "parameters": [],
         "tags": [
           "S3"
@@ -672,7 +837,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-8b04f390-480d-4a81-8eda-07263b2937d5",
+        "operationId": "customers-7b5864ae-1e4f-4e65-9d2f-fbd14e3e03ea",
         "parameters": [
           {
             "name": "organisation",
@@ -718,7 +883,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-bfc1afe3-0b3d-4c03-8186-499f1391be13",
+        "operationId": "customers-3c0ded3b-f198-4b07-a328-1f89d2652330",
         "parameters": [
           {
             "name": "organisation",

@@ -16,6 +16,7 @@
   },
   "scripts": {
     "create-lambda": "source .venv/bin/activate && python .scripts/scaffold.py create-lambda",
-    "build-openapi": "serverless openapi generate -o openapi.json"
+    "build-openapi-json": "serverless openapi generate -o openapi.json",
+    "build-pydantic-models": "datamodel-codegen --input openapi.json --input-file-type openapi --output ./ --snake-case-field --field-constraints --reuse-model --split-by-group --collapse-root-models --class-name pydantic.RootModel --target-python-version 3.11 --output-model-type=pydantic_v2.BaseModel"
   }
 }

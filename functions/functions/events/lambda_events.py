@@ -161,7 +161,7 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str):
     try:
         event_response = upsert(table, event_model, ["event_slug", "created_at"])
         location_response = upsert(table, location_model, ["created_at"])
-        #TODO trigger an EventBridge event
+        triggerEBEvent(eventbridge, "events", "UpsertEvent", event_response)
         return make_response(201, {
             "message": "Event created successfully.",
             "event": event_model.model_dump_json(),

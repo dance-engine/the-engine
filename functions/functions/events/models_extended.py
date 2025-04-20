@@ -30,6 +30,21 @@ class EventModel(EventBase, DynamoModel):
     @property
     def org_slug(self): return self._slugify(self.organisation)
 
+    @model_validator(mode="after")
+    def validate_live(self) -> 'EventModel':
+        if self.status == Status.live:
+            REQUIRED_FIELDS_FOR_LIVE = ["name", "description", "starts_at", "ends_at"]
+            missing = []
+
+            for field in REQUIRED_FIELDS_FOR_LIVE:
+                value = self.__getattribute__(field) if field in self.model_fields.keys() else None
+                if not value:
+                    missing.append(field)
+
+            if missing:
+                raise ValueError(f"Cannot publish event: missing required field(s): {', '.join(missing)}")
+        return self
+
 class LocationModel(LocationBase, DynamoModel):
     organisation: str
     parent_event_ksuid: str

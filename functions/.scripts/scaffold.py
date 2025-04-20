@@ -183,7 +183,7 @@ def doc_yaml(name: str, routes: List[str]) -> str:
         - {name}
       ## uncomment this and the next line if this is a public endpoint
       #security:
-      #  - {}
+      #  - {{}}
       ## uncomment if includes path params  
       #pathParams:
       #  - name: organisation

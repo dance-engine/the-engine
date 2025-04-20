@@ -1,15 +1,16 @@
 # models_ext.py
-from models_events import EventObject as EventBase, LocationObject as LocationBase
+from models_events import EventObject as EventBase, LocationObject as LocationBase, Status
 from _shared.dynamodb import DynamoModel
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import ClassVar
+from pydantic import model_validator
 
 class EventModel(EventBase, DynamoModel):
     location: ClassVar[None] = None
     organisation: str
-    number_sold: int
-    created_at: datetime
-    updated_at: datetime
+    number_sold: int = 0
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     entity_type: str = "EVENT"
 
     @property
@@ -48,8 +49,8 @@ class EventModel(EventBase, DynamoModel):
 class LocationModel(LocationBase, DynamoModel):
     organisation: str
     parent_event_ksuid: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     entity_type: str = "LOCATION"
 
     @property

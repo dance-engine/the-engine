@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any
+from typing import Dict, Any, Union
 from botocore.exceptions import ClientError
 import logging
 from datetime import datetime
@@ -12,8 +12,14 @@ from ksuid import KsuidMs
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
-def convert_datetime_to_iso_8601_with_z_suffix(dt: datetime) -> str:
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+def convert_datetime_to_iso_8601_with_z_suffix(dt: Union[datetime, str]) -> str:
+    try:
+        if isinstance(dt, str):
+            dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
+        return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    except Exception as e:
+        raise ValueError(f"Invalid input for datetime conversion: {dt!r}. Error: {e}")
+
 
 def convert_floats_to_decimals(obj: Any) -> Any:
     if isinstance(obj, float):
@@ -126,8 +132,8 @@ def upsert(table, model: DynamoModel, only_set_once: list = []):
 
     try:
         return table.update_item(**kwargs)
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "ConditionalCheckFailedException" and model.uses_versioning():
+    except table.meta.client.exceptions.ConditionalCheckFailedException as e:
+        if model.uses_versioning():
             raise VersionConflictError(model, expression_attr_values.get(":incoming_version"))
         raise
     except Exception as e:

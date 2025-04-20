@@ -1,0 +1,71 @@
+---
+id: events-c-6-b-628-f-0-5-a-1-c-40-cf-a-333-b-3-b-9-fcddf-964
+title: "Get Single Event"
+description: "Fetch details of a specific event by its KSUID."
+sidebar_label: "Get Single Event"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vt+P00gM/ldGfgIp7RZ2QUfe9m4BlUMCwa546FW77sRJhk1mwoxTWKr87ydP0tJfy4kV99QmsT/bnz3feAUZBe1Nw8ZZSOEVsS5VRoymCsrlClVoSJvcaEVLsqwWd8pwUH9/vJpejCEB15BH8Z5mkEK0CSP9fPH86R/5ZPQMn+jR2UTnIzw9PR0tThcvcp1l+YvnZ5BAgx5rYvIB0tkKLNYEKThfoDUhgkICRvJqkEtI9pJ9t2WoQtUWkICnL63xlEHKvqUEgi6pRkhXwHeNoAf2xoolG64OwnVdssnjNrQm+2kCV9Z8aWkgZnqhHkVWHj8ojT5a180TYCyEEHgZyYS5wIXG2UBBEJ5OJvKzm8pluc7DLT6TZmmNdpbJshhj01RGxxpPPgfxWB3m1HtKX7x0lU0fL8IeM/tR5KznbL7vGhi5DcfKJtvW4pd5zAWrMkuCBNDr0ixJaHctZ8iUCWpGObYVQzrYd8nA1xHkXV6mFzLFvGZHPBdoLfn/dj1vGkIfFHL0Z9fsQKkGCxI8smz47roH2wftkmGcDqPVxr4lW3AJ6dP92NJO8duJOBa0wOg5XCMfg8ydrzHShEwjNvWQYPZrDhqZCufvtjzQe7yTw8BU/7Sh2tnCUwiQwFfnb0Ppmv6ks7jrCuOnijS3nmDexXANasPb4YxlKshH+tp6Qf46uCo7YrA1G5Nuj8UjvdCeZKZ+iY22yX7ZZ0k+7OawVVHl+pP4sDN1z+DfO2hdAphlsSXHvlU7ZfVkx/e2OPK+S+DbSErxFqtR4V3bbFQfdr5FwUwhb62WWsPJxmiteG8HGt71tf9W7Cid/xvwh0GOoRPskjCLV9hKns4mZ4fqHL2Udaxy11pRt12nZ8ckfTpkpQL5JXlF3jv/G3W9phBEwo5NRYx15Eu3xYSY3M9El0BNXDrZCgqK0XtyT1bbN243UHyyinPdQQKBdOujHMxWoCvyt9efvzKks7lcjuuvH6XKvpAtm30O33y6VCaEljJZXP4Sw7G6jGp+S1bVbWC1IGWsrtqMMmVslNub85ZL5833mOON6gtTGBSqPwk9+R5grK4C+bDBEZlbSzajL4jVdrEKbaZKXFI0WB915V1F6hGNi3GibjCrjb15rNgp1JpCUI13TJrFkIJrvaYw/kc2o6E3JbNIbGy7PC9igpAMf16tBerNp8vYQGNzF1s7NPICrSb10hbGkjp/Pz24CIWv8/dTlTuvto1hS+dgMp6Mn8joNC5wjXESh0XqNbH6aGxRkYoHYT/A6sdEP2ABHVhg+sYnTYXGRs32leD2IzeDdG+n3BzrtFfTeQKlCzJjsFotMNCVr7pOXn9pSe7B2TyBJXqDC6FstoLMBPmfQZpjFegnFT36MPT5sTq2sB5Nf33pWrkzl1i18gQJ3NLdwcaaPDCZ+5fXB6Q0bK/zjQhEkvpv51pTw1teB6Il53ojFq9fypj+C/KYUc0=
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Single Event"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/events/{ksuid}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fetch details of a specific event by its KSUID.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"ksuid","in":"path","description":"Unique event ID (KSUID)","required":true,"schema":{"type":"string","title":"ksuid"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"The event object.","content":{"application/json":{"schema":{"type":"object","properties":{"event":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["draft","live","archived","outdated"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the event"},"banner":{"type":"string","description":"Appears at the top of the event page"},"entity_type":{"type":"string"},"name":{"type":"string","minLength":2,"description":"The name of the event."},"starts_at":{"type":"string","format":"date-time"},"ends_at":{"type":"string","format":"date-time"},"category":{"type":"array","items":{"type":"string","enum":["congress","workshop","party","class","lecture"]}},"capacity":{"type":"integer"},"number_sold":{"type":"integer","default":0},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"location":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"address":{"type":"string"},"lat":{"type":"number"},"lng":{"type":"number"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"LocationObject"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"EventObject"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"EventResponse"}}},"headers":{}},"404":{"description":"Event not found","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

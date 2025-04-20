@@ -18,7 +18,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/eventbridge-0-c-82-e-64-d-4878-476-f-b-01-c-f-0-b-0332-c-87-a-0",
+          id: "core/eventbridge-ccee-625-d-e-771-44-a-8-a-6-ce-56-d-69-a-853-deb",
           label: "Trigger an event",
           className: "api-method get",
         },
@@ -36,25 +36,31 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/events-fc-0-baaa-2-a-496-4122-a-4-f-8-a-9-a-9220-d-0-c-73",
+          id: "core/events-8821-ef-2-a-9-c-6-a-4-c-41-8-d-40-f-3-a-151-f-6-f-63-e",
           label: "Create Event",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "core/events-e-9-cb-88-e-6-5930-4-c-08-9-f-38-2985-f-26-ec-050",
+          id: "core/events-c-6-b-628-f-0-5-a-1-c-40-cf-a-333-b-3-b-9-fcddf-964",
           label: "Get Single Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-3-abd-0-f-24-ea-5-c-4185-a-846-fe-564-a-5-b-2-efb",
+          id: "core/events-42-e-2-ff-5-f-e-70-c-46-f-1-8577-e-4-b-35-f-501794",
+          label: "Update an Event",
+          className: "api-method put",
+        },
+        {
+          type: "doc",
+          id: "core/events-3-c-207854-789-a-4581-99-b-3-b-0020-e-4-a-97-e-4",
           label: "Public Get Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-af-1-a-26-e-5-af-92-44-d-5-a-0-e-1-156-b-872-a-0238",
+          id: "core/events-63-f-30-af-2-dd-92-416-e-9-ce-2-64-dc-508-fbc-16",
           label: "Public Get ALL Events",
           className: "api-method get",
         },
@@ -66,13 +72,13 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "core/events-3-abd-0-f-24-ea-5-c-4185-a-846-fe-564-a-5-b-2-efb",
+          id: "core/events-3-c-207854-789-a-4581-99-b-3-b-0020-e-4-a-97-e-4",
           label: "Public Get Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-af-1-a-26-e-5-af-92-44-d-5-a-0-e-1-156-b-872-a-0238",
+          id: "core/events-63-f-30-af-2-dd-92-416-e-9-ce-2-64-dc-508-fbc-16",
           label: "Public Get ALL Events",
           className: "api-method get",
         },
@@ -90,7 +96,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/presigned-url-201355-af-8-b-57-49-fe-969-d-69877-a-564-eb-2",
+          id: "core/presigned-url-51-e-2-b-1-be-926-b-4-d-25-9-ea-9-6-ae-3-d-392036-e",
           label: "Generate Presigned Download URL",
           className: "api-method post",
         },
@@ -108,13 +114,13 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/customers-9-bd-368-df-9-a-1-f-484-c-adaf-b-1-c-1-c-452-e-671",
+          id: "core/customers-9-fa-98801-5-e-2-b-4-a-4-e-abc-5-1640-f-601-cde-9",
           label: "Create Customer",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "core/customers-4-c-9202-d-9-a-2-c-4-425-a-91-de-77-e-5-f-2884271",
+          id: "core/customers-cd-39-acb-7-21-f-2-46-f-0-838-e-3-ee-7-f-11560-e-1",
           label: "Get Single Customer",
           className: "api-method get",
         },
@@ -170,6 +176,12 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "core/schemas/createeventrequest",
           label: "CreateEventRequest",
+          className: "schema",
+        },
+        {
+          type: "doc",
+          id: "core/schemas/updateeventrequest",
+          label: "UpdateEventRequest",
           className: "schema",
         },
         {

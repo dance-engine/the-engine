@@ -32,6 +32,12 @@ Events:
             adminAuthorizer
           documentation: ${file(functions/events/sls.events.doc.yml):Events.POST}
       - httpApi:
+          path: /{organisation}/events/{ksuid}
+          method: put
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.PUT}
+      - httpApi:
           path: /public/{organisation}/events/{ksuid}
           method: get
           documentation: ${file(functions/events/sls.events.doc.yml):Events.GETpub} 

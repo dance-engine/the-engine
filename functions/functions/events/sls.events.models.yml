@@ -28,7 +28,7 @@ EventObject:
     application/json:
       schema:
         type: object
-        required: ["name", "starts_at", "ends_at"]
+        required: ["name"]
         properties:
           status:
             type: string
@@ -145,6 +145,20 @@ EventObjectPublic:
 CreateEventRequest:          
   name: "CreateEventRequest"
   description: "Request model for creating a new event"
+  x-internal-group: "events"
+  x-internal-path: "functions/events"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["event"]
+        properties:
+          event:
+            $ref: "#/components/schemas/EventObject"
+UpdateEventRequest:          
+  name: "UpdateEventRequest"
+  description: "Request model for updating an event"
   x-internal-group: "events"
   x-internal-path: "functions/events"
   content:

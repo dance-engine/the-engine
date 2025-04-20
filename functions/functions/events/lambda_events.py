@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
-from models_events import CreateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
+from models_events import CreateEventRequest, UpdateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from models_extended import EventModel, LocationModel
 
 logger = logging.getLogger()
@@ -46,6 +46,57 @@ def _preprocess_event_item(item: dict) -> dict:
         except ValueError:
             pass
     return item
+
+def update_event(request_data: UpdateEventRequest, organisation_slug: str):
+    logger.info(f"Updating Event: {request_data.model_dump}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Updating event for {organisation_slug} into {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    event_data = request_data.event
+
+    try:
+        event_model = EventModel.model_validate({
+            **event_data.model_dump(mode="json", exclude_unset=True),
+            "updated_at":current_time,
+            "organisation": organisation_slug,
+        })
+
+        if event_data.location:
+            location_model = LocationModel.model_validate({
+                **event_data.location.model_dump(mode="json", exclude_unset=True),
+                "organisation": organisation_slug,
+                "parent_event_ksuid": event_model.ksuid,
+                "updated_at": current_time
+            })
+
+        event_response = upsert(table, event_model, ["event_slug", "created_at"])
+        location_response = upsert(table, location_model, ["created_at"])
+        # triggerEBEvent(eventbridge, "events", "UpsertEvent", event_response)
+        return make_response(201, {
+            "message": "Event updated successfully.",
+            "event": event_model.model_dump(mode="json"),
+        })
+    except VersionConflictError as e:
+        logger.error(f"Version Conflict")
+        return make_response(409, {
+            "message": "Version conflict",
+            "resource": e.model.pk,
+            "your_version": e.incoming_version
+        })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })    
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})            
 
 def get_events(organisationSlug: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -170,7 +221,7 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str):
         logger.error(f"Version Conflict")
         return make_response(409, {
             "message": "Version conflict",
-            "resource": e.model.pk(),
+            "resource": e.model.pk,
             "your_version": e.incoming_version
         })
     except Exception as e:
@@ -211,9 +262,11 @@ def lambda_handler(event, context):
             return make_response(200, response.model_dump(mode="json", exclude_none=True))                
 
         elif http_method == "PUT":
-            #TODO Implement
-            return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}
-        
+            if not eventId:
+                return make_response(404, {"message": "Missing event ID in request"})
+            validated_request = UpdateEventRequest(**parsed_event)
+            return update_event(validated_request, organisationSlug)
+            
         else:
             return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not allowed."})}
 

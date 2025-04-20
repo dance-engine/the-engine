@@ -30,9 +30,7 @@
       "EventObject": {
         "type": "object",
         "required": [
-          "name",
-          "starts_at",
-          "ends_at"
+          "name"
         ],
         "properties": {
           "status": {
@@ -187,6 +185,19 @@
         "x-internal-path": "functions/events"
       },
       "CreateEventRequest": {
+        "type": "object",
+        "required": [
+          "event"
+        ],
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/EventObject"
+          }
+        },
+        "x-internal-group": "events",
+        "x-internal-path": "functions/events"
+      },
+      "UpdateEventRequest": {
         "type": "object",
         "required": [
           "event"
@@ -420,7 +431,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-cb9a6f3c-eccb-48d8-8ab3-137c327e5b21",
+        "operationId": "eventbridge-ccee625d-e771-44a8-a6ce-56d69a853deb",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -492,7 +503,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-916b7d2b-ff49-4c30-b30b-640828766eac",
+        "operationId": "events-8821ef2a-9c6a-4c41-8d40-f3a151f6f63e",
         "parameters": [
           {
             "name": "organisation",
@@ -549,7 +560,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-68be788f-356b-49e6-9c87-ea52d55e6720",
+        "operationId": "events-c6b628f0-5a1c-40cf-a333-b3b9fcddf964",
         "parameters": [
           {
             "name": "organisation",
@@ -601,13 +612,77 @@
             "headers": {}
           }
         }
+      },
+      "put": {
+        "summary": "Update an Event",
+        "description": "Update an existing event and its location",
+        "operationId": "events-42e2ff5f-e70c-46f1-8577-e4b35f501794",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique event ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Events"
+        ],
+        "requestBody": {
+          "description": "Event details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event updated successfully.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
       }
     },
     "/public/{organisation}/events/{ksuid}": {
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-9e0641c8-d5e2-41dd-899d-4974c8ed9d51",
+        "operationId": "events-3c207854-789a-4581-99b3-b0020e4a97e4",
         "parameters": [
           {
             "name": "organisation",
@@ -669,7 +744,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-7c6bd6c3-1368-4298-a84a-76fc9cfedf75",
+        "operationId": "events-63f30af2-dd92-416e-9ce2-64dc508fbc16",
         "parameters": [
           {
             "name": "organisation",
@@ -768,7 +843,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-dba5329e-11eb-4e07-86cb-58c1ea5778fc",
+        "operationId": "presigned_url-51e2b1be-926b-4d25-9ea9-6ae3d392036e",
         "parameters": [],
         "tags": [
           "S3"
@@ -837,7 +912,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-7b5864ae-1e4f-4e65-9d2f-fbd14e3e03ea",
+        "operationId": "customers-9fa98801-5e2b-4a4e-abc5-1640f601cde9",
         "parameters": [
           {
             "name": "organisation",
@@ -883,7 +958,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-3c0ded3b-f198-4b07-a328-1f89d2652330",
+        "operationId": "customers-cd39acb7-21f2-46f0-838e-3ee7f11560e1",
         "parameters": [
           {
             "name": "organisation",

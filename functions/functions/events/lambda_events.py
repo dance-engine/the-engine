@@ -281,13 +281,13 @@ def lambda_handler(event, context):
             return update_event(validated_request, organisationSlug, actor)
             
         else:
-            return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not allowed."})}
+            return make_response(405, {"message": "Method not allowed."})
 
     except ValueError as e:
         logger.error("Validation error: %s", str(e))
         logger.error(traceback.format_exc())
-        return {"statusCode": 400, "body": json.dumps({"message": "Validation error.", "error": str(e)})}
+        return make_response(400,{"message": "Validation error.", "error": str(e)})
     except Exception as e:
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
-        return {"statusCode": 500, "body": json.dumps({"message": "Internal server error.", "error": str(e)})}
+        return make_response(500, {"message": "Internal server error.", "error": str(e)})

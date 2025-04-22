@@ -107,7 +107,7 @@ def upsert_customer(table, ksuid: str, item: dict, only_set_once: list = []):
 def get_customers(organisationSlug):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
+    logger.info(f"Getting Customers for {organisationSlug} from {TABLE_NAME}")
 
     response = table.query(
                 IndexName="typeIDX",

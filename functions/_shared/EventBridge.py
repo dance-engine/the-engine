@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Optional, Dict, Any
 from botocore.client import BaseClient
 
-from pydantic import BaseModel, Field, EmailStr, model_validator
+from pydantic import BaseModel, Field, EmailStr, model_validator #! This means all eventbridge events need models even if they dont deal with Pydantic Entities, I think it's too tightly coupled, can we pass in Pydantic if needed 
 
 from _shared.DecimalEncoder import DecimalEncoder
 

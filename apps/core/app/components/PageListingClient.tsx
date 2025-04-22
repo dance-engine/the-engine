@@ -16,10 +16,7 @@ const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //T
 const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined] }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[] }) => {
   const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${entity?.toLowerCase()}s`
   const { activeOrg } = useOrgContext() 
-  const { data: remoteEntities = [], error, isLoading } = useClerkSWR(eventsApiUrl.replace('/{org}',activeOrg ? `/${activeOrg}`: ''),{
-    suspense: false, // Make sure this is off for now
-  });
-
+  const { data: remoteEntities = [], error, isLoading } = useClerkSWR(eventsApiUrl.replace('/{org}',activeOrg ? `/${activeOrg}`: ''),{ suspense: false, });
 
   const getEntity = (entityType: EntityNameType) => {
     const cached = window.localStorage.getItem(`local:${entityType}`)
@@ -42,11 +39,13 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
     // return [...remoteEntities,...localEntities]
     const byId = new Map<string, EntityType>() 
     // Step 1: Add remote records
-    remoteEntities.forEach((r: EntityType) => {
-      const id = String(r.ksuid)
-      const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
-      byId.set(id, { ...r, meta: newMeta})
-    })
+    if(remoteEntities && remoteEntities.events){
+      remoteEntities.events.forEach((r: EntityType) => {
+        const id = String(r.ksuid)
+        const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
+        byId.set(id, { ...r, meta: newMeta})
+      })
+    } 
 
     // Step 2: Add local ones that aren't already present or have updates
     localEntities.forEach((r: EntityType) => {

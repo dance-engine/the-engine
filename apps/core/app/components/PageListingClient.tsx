@@ -16,7 +16,7 @@ const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //T
 const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined] }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[] }) => {
   const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${entity?.toLowerCase()}s`
   const { activeOrg } = useOrgContext() 
-  const { data: remoteEntities = [], error, isLoading } = useClerkSWR(eventsApiUrl.replace('/{org}',activeOrg ? `/${activeOrg}`: ''),{ suspense: false, });
+  const { data: remoteEntityData= [], error, isLoading } = useClerkSWR(eventsApiUrl.replace('/{org}',activeOrg ? `/${activeOrg}`: ''),{ suspense: false, });
 
   const getEntity = (entityType: EntityNameType) => {
     const cached = window.localStorage.getItem(`local:${entityType}`)
@@ -38,9 +38,11 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
   const allEntities = useMemo(() => {
     // return [...remoteEntities,...localEntities]
     const byId = new Map<string, EntityType>() 
+    const remoteEntities = entity == "EVENT" ? remoteEntityData.events : remoteEntityData
+    console.log("remoteEntities",remoteEntities)
     // Step 1: Add remote records
-    if(remoteEntities && remoteEntities.events){
-      remoteEntities.events.forEach((r: EntityType) => {
+    if(remoteEntities){ //TODO This is now tied to events
+      remoteEntities.forEach((r: EntityType) => {
         const id = String(r.ksuid)
         const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
         byId.set(id, { ...r, meta: newMeta})
@@ -61,13 +63,13 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
       }
     })
     return Array.from(byId.values())
-  },[remoteEntities,localEntities])
+  },[remoteEntityData,localEntities,entity])
 
   
   return (
   <div className="mt-4 w-full">
     { isLoading || error ? <div className="flex items-center gap-1 px-4 py-1 bg-pear-on-light text-gray-100 dark:text-gray-600 font-bold"> <Spinner className="w-4 h-4"/> Loading </div> : null }
-    { (error instanceof CorsError) ? <div>Looks like a CORS issue (server unreachable or blocked)</div> : null }
+    { (error instanceof CorsError) ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white">Looks like a CORS issue (server unreachable or blocked)</div> : null }
     { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null }
     { allEntities ? <BasicList 
         entity={entity}

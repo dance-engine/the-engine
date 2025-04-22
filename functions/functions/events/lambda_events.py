@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
-from _shared.EventBridge import triggerEBEvent
+from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
 from models_events import CreateEventRequest, UpdateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
@@ -47,7 +47,7 @@ def _preprocess_event_item(item: dict) -> dict:
             pass
     return item
 
-def update_event(request_data: UpdateEventRequest, organisation_slug: str):
+def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Updating Event: {request_data.model_dump}")
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
@@ -76,7 +76,14 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str):
 
         event_response = upsert(table, event_model, ["event_slug", "created_at"])
         location_response = upsert(table, location_model, ["created_at"])
-        # triggerEBEvent(eventbridge, "events", "UpsertEvent", event_response)
+        trigger_eventbridge_event(eventbridge, 
+                                  source="dance-engine.core", 
+                                  resource_type=EventType.event,
+                                  action=Action.updated,
+                                  organisation=organisation_slug,
+                                  resource_id=event_model.PK,
+                                  data=request_data.model_dump(mode="json"),
+                                  meta={"accountId":actor})
         return make_response(201, {
             "message": "Event updated successfully.",
             "event": event_model.model_dump(mode="json"),
@@ -85,7 +92,7 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str):
         logger.error(f"Version Conflict")
         return make_response(409, {
             "message": "Version conflict",
-            "resource": e.model.pk,
+            "resource": e.model.PK,
             "your_version": e.incoming_version
         })
     except ValueError as e:
@@ -118,7 +125,7 @@ def get_events(organisationSlug: str, public: bool = False):
             events.append(output)
         except Exception as e:
             logger.error(traceback.format_exc())
-            logger.warning(f"Skipping event item: {e}")
+            logger.warning(f"SKipping event item: {e}")
     
     return events 
 
@@ -140,6 +147,8 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
     
     event_items = [item for item in items if item.get("entity_type") == "EVENT"]
     location_items = [item for item in items if item.get("entity_type") == "LOCATION"]
+    history_items = [item for item in items if item.get("entity_type") == "HISTORY"]
+    logger.info(history_items)
 
     if len(event_items) == 0:
         logger.warning(f"No EVENT entity found for event ID {eventId}")
@@ -163,6 +172,9 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
             logger.warning(f"Failed to validate location object for event {eventId}: {e}")
             event_item["location"] = None  # fallback gracefully
 
+    if history_items:
+        event_item["history"] = history_items
+
     try:
         event_model = EventObject.model_validate(_preprocess_event_item(event_item))
         event_model_public = EventObjectPublic.model_validate(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
@@ -171,7 +183,7 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
         logger.warning("Validation error in get_single_event: %s", str(e))
         return None
 
-def create_event(request_data: CreateEventRequest, organisation_slug: str):
+def create_event(request_data: CreateEventRequest, organisation_slug: str, actor: str = "unknown"):
     """
     [X] Checke for KSUID and create if needed
     [X] Validate Input 
@@ -221,7 +233,7 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str):
         logger.error(f"Version Conflict")
         return make_response(409, {
             "message": "Version conflict",
-            "resource": e.model.pk,
+            "resource": e.model.PK,
             "your_version": e.incoming_version
         })
     except Exception as e:
@@ -238,11 +250,12 @@ def lambda_handler(event, context):
         organisationSlug = event.get("pathParameters", {}).get("organisation")
         eventId          = event.get("pathParameters", {}).get("ksuid",None)
         is_public        = event.get("rawPath", "").startswith("/public")
+        actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
         # POST /{organisation}/events
         if http_method == "POST":
             validated_request = CreateEventRequest(**parsed_event)
-            return create_event(validated_request, organisationSlug)
+            return create_event(validated_request, organisationSlug, actor)
 
         # GET 
         elif http_method == "GET":
@@ -265,7 +278,7 @@ def lambda_handler(event, context):
             if not eventId:
                 return make_response(404, {"message": "Missing event ID in request"})
             validated_request = UpdateEventRequest(**parsed_event)
-            return update_event(validated_request, organisationSlug)
+            return update_event(validated_request, organisationSlug, actor)
             
         else:
             return {"statusCode": 405, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Method not allowed."})}

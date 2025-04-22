@@ -14,10 +14,10 @@ class EventModel(EventBase, DynamoModel):
     entity_type: str = "EVENT"
 
     @property
-    def pk(self): return f"EVENT#{self.ksuid}"
+    def PK(self): return f"EVENT#{self.ksuid}"
 
     @property
-    def sk(self): return f"EVENT#{self.ksuid}"
+    def SK(self): return f"EVENT#{self.ksuid}"
 
     @property
     def gsi1PK(self): return f"EVENTLIST#{self.org_slug}"
@@ -54,10 +54,10 @@ class LocationModel(LocationBase, DynamoModel):
     entity_type: str = "LOCATION"
 
     @property
-    def pk(self): return f"LOCATION#{self.ksuid}"
+    def PK(self): return f"LOCATION#{self.ksuid}"
 
     @property
-    def sk(self): return f"EVENT#{self.parent_event_ksuid}"
+    def SK(self): return f"EVENT#{self.parent_event_ksuid}"
     
     @property
     def gsi1PK(self): return f"EVENTLIST#{self.org_slug}"

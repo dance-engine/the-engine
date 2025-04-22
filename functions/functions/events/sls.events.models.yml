@@ -83,6 +83,10 @@ EventObject:
             type: integer
           location: 
             $ref: "#/components/schemas/LocationObject"
+          history:
+            type: array
+            items:
+              type: object
 EventObjectPublic:
   name: "EventObjectPublic"
   description: "Event object for the public"

@@ -155,6 +155,7 @@ layers:
 #######################
 
 functions:
+  HistoryTracker: ${file(functions/utils/history_tracker/sls.history_tracker.function.yml):HistoryTracker}
 
   AuthorizerFunc: ${file(functions/authorizer/sls.authorizer.function.yml):AuthorizerFunc}
 

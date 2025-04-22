@@ -1,13 +1,15 @@
 import re
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Literal, Optional
 from botocore.exceptions import ClientError
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 import traceback
 from decimal import Decimal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 from ksuid import KsuidMs
+
+from _shared.EventBridge import Action, EventType
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -48,11 +50,11 @@ class DynamoModel(BaseModel):
         return v        
 
     @property
-    def pk(self) -> str:
+    def PK(self) -> str:
         raise NotImplementedError()
 
     @property
-    def sk(self) -> str:
+    def SK(self) -> str:
         raise NotImplementedError()
 
     @property
@@ -69,10 +71,13 @@ class DynamoModel(BaseModel):
     def uses_versioning(self) -> bool:
         return hasattr(self, "version")
 
-    def to_dynamo(self) -> dict:
+    def to_dynamo(self, exclude_keys=True) -> dict:
         base = self.model_dump(mode="json", exclude_none=True)
 
-        exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "pk", "sk"}
+        if exclude_keys:
+            exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "PK", "SK"}
+        else:
+            exclude_props = {"__fields_set__", "model_fields_set", "model_extra"}
 
         props = {}
         for name in dir(self.__class__):
@@ -81,7 +86,9 @@ class DynamoModel(BaseModel):
             attr = getattr(self.__class__, name)
             if isinstance(attr, property):
                 try:
-                    props[name] = getattr(self, name)
+                    value = getattr(self, name)
+                    if value is not None:
+                        props[name] = value
                 except NotImplementedError:
                     continue
 
@@ -89,9 +96,37 @@ class DynamoModel(BaseModel):
     
 class VersionConflictError(Exception):
     def __init__(self, model: DynamoModel, incoming_version: int):
-        super().__init__(f"Version conflict on {model.pk} / v{incoming_version}")
+        super().__init__(f"Version conflict on {model.PK} / v{incoming_version}")
         self.model = model
         self.incoming_version = incoming_version
+
+class HistoryModel(DynamoModel):
+    ksuid: str = Field(default_factory=lambda: str(KsuidMs()))
+    organisation: str
+    resource_type: EventType
+    resource_id: str
+    action: Action
+    timestamp: datetime #= Field(default_factory=datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z'))
+    actor: Optional[str] = None  # Email or ID
+    data: Optional[Dict[str, Any]] = None  # Snapshot or diff
+    meta: Optional[Dict[str, Any]] = None  # Optional context
+    entity_type: str = "HISTORY"
+
+    @property
+    def PK(self) -> str:
+        return f"HISTORY#{self.ksuid}"
+
+    @property
+    def SK(self) -> str:
+        return f"{self.resource_id}"
+
+    @property
+    def gsi1PK(self) -> str:
+        return None
+    @property
+    def gsi1SK(self) -> str:
+        return None
+
     
 def upsert(table, model: DynamoModel, only_set_once: list = []):
     update_parts = []
@@ -118,7 +153,7 @@ def upsert(table, model: DynamoModel, only_set_once: list = []):
     update_expression = "SET " + ", ".join(update_parts)
 
     kwargs = dict(
-        Key={"PK": model.pk, "SK": model.sk},
+        Key={"PK": model.PK, "SK": model.SK},
         UpdateExpression=update_expression,
         ExpressionAttributeNames=expression_attr_names,
         ExpressionAttributeValues=expression_attr_values,

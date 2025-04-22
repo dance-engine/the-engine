@@ -1,9 +1,7 @@
 import React from "react";
 import { LuCalendarPlus2 } from "react-icons/lu";
 import Link from "next/link";
-// import PageClient from "./pageClient";
 import PageListingClient from "../components/PageListingClient";
-// import CachedEntities from '@dance-engine/ui/utils/CachedEntities'
 
 const EventPage = async () => {  
   return (

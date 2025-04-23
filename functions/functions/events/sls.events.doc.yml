@@ -13,12 +13,16 @@ Events:
         - statusCode: 200
           responseBody:
             description: Returns a list of all events.
+          responseModels:
+            application/json: "EventListResponse"            
         - statusCode: 404
           responseBody:
             description: No events found.
         - statusCode: 500
           responseBody:
             description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"            
     GETone:
       summary: "Get Single Event"
       description: "Fetch details of a specific event by its KSUID."
@@ -37,12 +41,16 @@ Events:
         - statusCode: 200
           responseBody:
             description: The event object.
+          responseModels:
+            application/json: "EventResponse"
         - statusCode: 404
           responseBody:
             description: Event not found
         - statusCode: 500
           responseBody:
             description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"            
     GETpub:
       summary: "Public Get Event"
       description: "Public endpoint to get a specific event by its KSUID."
@@ -64,12 +72,16 @@ Events:
         - statusCode: 200
           responseBody:
             description: The event object.
+          responseModels:
+            application/json: "EventResponsePublic"
         - statusCode: 404
           responseBody:
             description: Event not found
         - statusCode: 500
           responseBody:
             description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"            
     GETallpub:
       summary: "Public Get ALL Events"
       description: "Public endpoint to get a specific event by its KSUID."
@@ -87,12 +99,16 @@ Events:
         - statusCode: 200
           responseBody:
             description: The event object.
+          responseModels:
+            application/json: "EventListResponsePublic"
         - statusCode: 404
           responseBody:
             description: Event not found
         - statusCode: 500
           responseBody:
             description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"            
     POST:
       summary: "Create Event"
       description: "Creates a new event and stores its location."
@@ -111,9 +127,47 @@ Events:
         - statusCode: 201
           responseBody:
             description: Event created successfully.
-        - statusCode: 404
+        - statusCode: 400
           responseBody:
             description: Invalid input
+        - statusCode: 409
+          responseBody:
+            description: Version conflict.
         - statusCode: 500
           responseBody:
             description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    PUT:
+      summary: "Update an Event"
+      description: "Update an existing event and its location"
+      tags:
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique event ID (KSUID)
+          schema:
+            type: string            
+      requestBody:
+        description: "Event details"
+      requestModels:
+        application/json: "UpdateEventRequest"
+      methodResponses:
+        - statusCode: 201
+          responseBody:
+            description: Event updated successfully.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+        - statusCode: 409
+          responseBody:
+            description: Version conflict.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"

@@ -1,0 +1,21 @@
+HistoryTracker:
+  runtime: python3.11
+  handler: functions/utils/history_tracker/lambda_history_tracker.lambda_handler
+  name: "${sls:stage}-${self:service}-history-tracker"
+  package:
+      patterns:
+      - '!**/**'
+      - "functions/utils/history_tracker/**"
+      - "_shared/**"
+  environment:
+    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer
+  events:
+    - eventBridge:
+        pattern:
+          source:
+            - prefix: "dance-engine."
+          detail-type:
+            - prefix: "event.updated"

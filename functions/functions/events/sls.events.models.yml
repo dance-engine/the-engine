@@ -5,9 +5,12 @@ LocationObject:
   x-internal-path: "functions/events"
   content:
     application/json:
-      schema: &locationObj
+      schema: 
         type: object
+        required: ["name"]
         properties:
+          ksuid:
+            type: string
           name:
             type: string
           address:
@@ -16,8 +19,6 @@ LocationObject:
             type: number
           lng:
             type: number
-          ksuid:
-            type: string
 EventObject:
   name: "EventObject"
   description: "Event object"
@@ -25,21 +26,30 @@ EventObject:
   x-internal-path: "functions/events"
   content:
     application/json:
-      schema: &eventObj
+      schema:
         type: object
+        required: ["name"]
         properties:
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+            default: "draft"
           ksuid:
             type: string
+            description: "ID of the event"
           banner:
             type: string
-          event_slug:
-            type: string
-          organisation:
-            type: string
-          type:
+            description: "Appears at the top of the event page"
+          entity_type:
             type: string
           name:
             type: string
+            minLength: 2
+            description: "The name of the event."
           starts_at:
             type: string
             format: date-time
@@ -50,10 +60,17 @@ EventObject:
             type: array
             items:
               type: string
+              enum:
+                - "congress"
+                - "workshop"
+                - "party"
+                - "class"
+                - "lecture"
           capacity:
             type: integer
           number_sold:
             type: integer
+            default: 0
           description:
             type: string
           created_at:
@@ -62,6 +79,71 @@ EventObject:
           updated_at:
             type: string
             format: date-time
+          version:
+            type: integer
+          location: 
+            $ref: "#/components/schemas/LocationObject"
+          history:
+            type: array
+            items:
+              type: object
+EventObjectPublic:
+  name: "EventObjectPublic"
+  description: "Event object for the public"
+  x-internal-group: "events"  
+  x-internal-path: "functions/events"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name", "starts_at", "ends_at"]
+        properties:
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+            default: "draft"
+          ksuid:
+            type: string
+            description: "ID of the event"
+          banner:
+            type: string
+            description: "Appears at the top of the event page"
+          entity_type:
+            type: string
+          name:
+            type: string
+            minLength: 2
+            description: "The name of the event."
+          starts_at:
+            type: string
+            format: date-time
+          ends_at:
+            type: string
+            format: date-time
+          category:
+            type: array
+            items:
+              type: string
+              enum:
+                - "congress"
+                - "workshop"
+                - "party"
+                - "class"
+                - "lecture"
+          description:
+            type: string
+          created_at:
+            type: string
+            format: date-time
+          updated_at:
+            type: string
+            format: date-time
+          version:
+            type: integer
           location: 
             $ref: "#/components/schemas/LocationObject"
 CreateEventRequest:          
@@ -74,28 +156,24 @@ CreateEventRequest:
       schema:
         $schema: "http://json-schema.org/draft-04/schema#"
         type: object
-        required: ["name", "starts_at", "ends_at", "location", "capacity"]
+        required: ["event"]
         properties:
-          name:
-            type: string
-          starts_at:
-            type: string
-            format: date-time
-          ends_at:
-            type: string
-            format: date-time
-          banner:
-            type: string
-          category:
-            type: array
-            items:
-              type: string
-          capacity:
-            type: integer
-          description:
-            type: string
-          location:
-            $ref: "#/components/schemas/LocationObject"
+          event:
+            $ref: "#/components/schemas/EventObject"
+UpdateEventRequest:          
+  name: "UpdateEventRequest"
+  description: "Request model for updating an event"
+  x-internal-group: "events"
+  x-internal-path: "functions/events"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["event"]
+        properties:
+          event:
+            $ref: "#/components/schemas/EventObject"
 EventResponse:
   name: "EventResponse"
   description: "Single event response object"
@@ -106,8 +184,6 @@ EventResponse:
       schema:
         type: object
         properties:
-          message:
-            type: string
           event: 
             $ref: "#/components/schemas/EventObject"
 EventListResponse:
@@ -118,6 +194,35 @@ EventListResponse:
   content:
     application/json:
       schema:
-        type: array
-        items: 
-            $ref: "#/components/schemas/EventObject"          
+        type: object
+        properties:
+          events:
+            type: array 
+            items:
+              $ref: "#/components/schemas/EventObject"          
+EventResponsePublic:
+  name: "EventResponsePublic"
+  description: "Single event response object"
+  x-internal-group: "events"
+  x-internal-path: "functions/events"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          event: 
+            $ref: "#/components/schemas/EventObjectPublic"
+EventListResponsePublic:
+  name: "EventListResponsePublic"
+  description: "Response model for a list of events"
+  x-internal-group: "events"
+  x-internal-path: "functions/events"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          events: 
+            type: array
+            items:
+              $ref: "#/components/schemas/EventObjectPublic"          

@@ -13,6 +13,8 @@ TriggerAnEvent:
   #   CREATE_TICKET_LAMBDA: "${sls:stage}-create_ticket"
   # layers:
   #   - !Ref DynamodbLambdaLayer
+  layers:
+    - !Ref BrevoLambdaLayer
   events:
     - httpApi:
         path: /{organisation}/trigger
@@ -26,6 +28,11 @@ TriggerAnEvent:
         authorizer:
           adminAuthorizer
         documentation: ${file(functions/event_bridge/sls.event_bridge.doc.yml):TriggerAnEvent.get}
+    - httpApi:
+        path: /public/trigger
+        method: get
+        documentation: ${file(functions/event_bridge/sls.event_bridge.doc.yml):TriggerAnEvent.get}
+
 
 #--------------------
 
@@ -38,6 +45,10 @@ ReceiveEvent:
       - '!**/**'
       - "functions/event_bridge/**"
       - "shared/**"
+  environment:
+    BREVO_KEY: ${ssm:/danceengine/${sls:stage}/brevo/api_key}
+  layers:
+    - !Ref BrevoLambdaLayer
   events:
     - eventBridge:
         pattern:

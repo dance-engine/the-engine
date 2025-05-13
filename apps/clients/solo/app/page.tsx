@@ -1,17 +1,19 @@
 import { headers } from 'next/headers';
 import EventList from '../components/EventList'
 import { EventType } from '@dance-engine/schemas/events';
+import Organisation from '@/components/Organisation';
 
 export default async function IndexPage() {
   const h = await headers();
   const org = h.get('x-site-org') || 'default-org';
   const theme = h.get('x-site-theme') || 'default';
-  const API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events`
-  const res = await fetch(API_URL, {
-    next: { revalidate: 60 }  // 60s cache
-  });
-
-  const serverData = await res.json() as EventType[];
+  const EVENTS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events`
+  const events_res = await fetch(EVENTS_API_URL, { next: { revalidate: 60 } });
+  const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisations`
+  const orgs_res = await fetch(ORGS_API_URL, { next: { revalidate: 240 } });
+  const orgs_data = await orgs_res.json()
+  const org_details= orgs_data.filter((org_check: any) => org_check.organisation && org_check.organisation == org)
+  const eventsServerData = await events_res.json() as EventType[];
 
   return <div className=''>
       <header className='w-full bg-gray-900 text-white flex justify-center'>
@@ -20,11 +22,11 @@ export default async function IndexPage() {
         </div>
       </header>
       <main className='w-full flex justify-center'>
-        <div className='max-w-4xl w-4xl px-4 lg:px-0'>
-          <div className='max-w-4xl w-4xl px-4 lg:px-0 py-4'>
-            Some info about the organisation and maybe an image
+        <div className='max-w-4xl w-full  px-4 lg:px-0'>
+          <div className='max-w-4xlw- 4xl px-0 lg:px-0 py-4'>
+            <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre>
           </div>
-          <EventList fallbackData={serverData} org={org} theme={theme} />
+          <EventList fallbackData={eventsServerData} org={org} theme={theme} />
         </div>
       </main>
       

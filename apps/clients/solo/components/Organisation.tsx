@@ -5,7 +5,7 @@ import type {EventType} from '@dance-engine/schemas/events'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 type EventTypeExtended = EventType & {event_slug: string }
-export default function EventList({ fallbackData, org, theme}: { fallbackData: EventType[], org: string, theme: string}) {
+export default function Organisation({ fallbackData, org, theme}: { fallbackData: EventType[], org: string, theme: string}) {
   const { data, isLoading, error} = useSWR(
     `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events`,
     fetcher,

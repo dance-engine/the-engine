@@ -19,7 +19,7 @@ export default function EventList({ fallbackData, org, theme}: { fallbackData: E
     <h2 className='text-2xl '>Events</h2>
     {/* {org}:{theme} */}
     { data.events.map((event: EventTypeExtended) => {
-      return <div key={event.ksuid} className='flex items-center justify-between gap-4 w-96 w-full mb-2'>
+      return <div key={event.ksuid} className='flex items-center justify-between gap-4 w-full mb-2'>
         <h2 className='text-xl'>{event.name}</h2>
         <Link href={`/${event.ksuid}`} className='rounded bg-cerise-logo px-4 py-1 text-white'>
           View

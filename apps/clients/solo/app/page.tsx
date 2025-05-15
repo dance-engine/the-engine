@@ -1,7 +1,8 @@
 import { headers } from 'next/headers';
 import EventList from '../components/EventList'
 import { EventType } from '@dance-engine/schemas/events';
-import format from 'date-fns/format';
+import { format } from 'date-fns/format';
+import { OrganisationType } from '@dance-engine/schemas/organisation';
 // import Organisation from '@/components/Organisation';
 
 export default async function IndexPage() {
@@ -13,7 +14,7 @@ export default async function IndexPage() {
   const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisations`
   const orgs_res = await fetch(ORGS_API_URL, { cache: 'force-cache', next: { revalidate: 240, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
   const orgs_data = await orgs_res.json()
-  const org_details= orgs_data.filter((org_check: any) => org_check.organisation && org_check.organisation == org)
+  const org_details= orgs_data.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == org)
   const eventsServerData = await events_res.json() as EventType[];
 
   return <div className=''>

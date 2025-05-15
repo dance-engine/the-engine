@@ -13,7 +13,7 @@ export default function Organisation({ fallbackData, org, theme}: { fallbackData
   );
 
   if (isLoading && !fallbackData) return <p>Loading...{theme}</p>
-  // if (error) return <p>Error...{theme}</p>
+  if (error) return <p>Error...{theme}</p>
 
   return <div className="max-w-full w-full">
     <h2 className='text-2xl '>Events</h2>

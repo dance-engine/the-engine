@@ -17,6 +17,9 @@
     "./customer": {
       "default": "./dist/customerSchema.js"
     },
+    "./organisation": {
+      "default": "./dist/organisationSchema.js"
+    },
     ".": {
       "default": "./dist/index.js"
     }

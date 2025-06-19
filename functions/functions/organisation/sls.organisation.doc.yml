@@ -1,0 +1,49 @@
+Organisation:
+  GET:
+    summary: "Get Org Settings"
+    description: "Returns a list of all events for a given organisation."
+    tags:
+      - Organisation
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Returns a list of all events.
+        responseModels:
+          application/json: "OrganisationResponse"            
+      - statusCode: 404
+        responseBody:
+          description: No events found.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"            
+  UPDATE:
+    summary: "Update Organisatioon Settings"
+    description: "Fetch details of a specific organisation by its slug."
+    tags:
+      - Organisation
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: The event object.
+        responseModels:
+          application/json: "OrganisationResponse"
+      - statusCode: 404
+        responseBody:
+          description: Organisation not found
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"            

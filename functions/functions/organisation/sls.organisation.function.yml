@@ -1,0 +1,28 @@
+Organisation:
+  runtime: python3.11
+  handler: functions/organisation/lambda_organisation.lambda_handler
+  name: "${sls:stage}-${self:service}-organisation"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/organisation/**"
+      - "_shared/**"
+  environment:
+    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  layers:
+    - !Ref UtilsLambdaLayer
+    - !Ref PydanticLambdaLayer
+  events:
+    - httpApi:
+        path: /{organisation}/settings
+        method: get
+        # authorizer:
+        #   adminAuthorizer
+        documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.GET} 
+    - httpApi:
+        path: /{organisation}/settings
+        method: post
+        # authorizer:
+        #   adminAuthorizer
+        documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.UPDATE}
+      

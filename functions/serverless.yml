@@ -156,7 +156,6 @@ layers:
 
 functions:
   HistoryTracker: ${file(functions/utils/history_tracker/sls.history_tracker.function.yml):HistoryTracker}
-
   AuthorizerFunc: ${file(functions/authorizer/sls.authorizer.function.yml):AuthorizerFunc}
 
 #--------------------
@@ -184,3 +183,4 @@ functions:
 
   # I think this should be seperated in code into a public/organisation level function
   PublicOrganisations: ${file(privileged/organisations/sls.organisations.function.yml):PublicOrganisations} 
+  Organisation: ${file(functions/organisation/sls.organisation.function.yml):Organisation}

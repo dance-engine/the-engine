@@ -1,7 +1,7 @@
 Organisation:
   GET:
     summary: "Get Org Settings"
-    description: "Returns a list of all events for a given organisation."
+    description: "Returns the settings for a given organisation."
     tags:
       - Organisation
     pathParams:
@@ -12,7 +12,7 @@ Organisation:
     methodResponses:
       - statusCode: 200
         responseBody:
-          description: Returns a list of all events.
+          description: Returns organisation details.
         responseModels:
           application/json: "OrganisationResponse"            
       - statusCode: 404

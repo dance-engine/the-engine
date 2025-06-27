@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
-from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest
+from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
 from models_extended import OrganisationModel
 
 logger = logging.getLogger()
@@ -28,6 +28,14 @@ db = boto3.resource("dynamodb")
 eventbridge = boto3.client('events')
 
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+
+def _preprocess_organisation_item(item: dict) -> dict:
+    if 'status' in item and isinstance(item["status"], str):
+        try:
+            item["status"] = Status(item['status'])
+        except ValueError:
+            pass
+    return item
 
 def update_organisation(request_data: UpdateOrganisationRequest, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Updating Organisation: {request_data.model_dump}")
@@ -81,37 +89,35 @@ def update_organisation(request_data: UpdateOrganisationRequest, organisation_sl
 def get_organisation_settings(organisationSlug: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Getting settings {organisationSlug} from {TABLE_NAME} / ")
+    logger.info(f"Getting settings of {organisationSlug} from {TABLE_NAME} / ")
 
     try:
         response = table.query(
-            IndexName='IDXinv',  
             KeyConditionExpression=Key('SK').eq(f'ORG#{organisationSlug}')
         )
         items = response.get("Items", None)
         logger.info(f"Fetched {len(items)} from dynamodb: {items}")
     except Exception as e:
-        logger.error(f"DynamoDB query failed for event {organisationSlug}: {e}")
+        logger.error(f"DynamoDB query failed to get org for {organisationSlug}: {e}")
         raise Exception
     
-    organisation_items = [item for item in items if item.get("entity_type") == "ORGANISATION"]
+    organisation_items = [item for item in items if item.get("entity_type") == "ORG"]
 
     if len(organisation_items) == 0:
-        logger.warning(f"No ORGANISATION entity found for ID {organisationSlug}")
+        logger.warning(f"No ORG entity found for ID {organisationSlug}")
         return None
     
     if len(organisation_items) > 1:
-        logger.error(f"Multiple ORGANISATION entities found for {organisationSlug}.")
+        logger.error(f"Multiple ORG entities found for {organisationSlug}.")
         raise Exception
     
     org_item = organisation_items[0] # Only one else exception raise
-  
 
     try:
-        org_model = OrganisationObject.model_validate(_preprocess_org_item(org_item))
-        return make_response(200, { "organisation": org_model.model_dump(mode="json") })
+        org_model = OrganisationObject.model_validate(_preprocess_organisation_item(org_item))
+        return org_model
     except Exception as e:
-        logger.warning("Validation error in get_single_: %s", str(e))
+        logger.warning("Validation error in get_organisation_settings: %s", str(e))
         return None
 
 
@@ -125,15 +131,20 @@ def lambda_handler(event, context):
         is_public        = event.get("rawPath", "").startswith("/public")
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
-        # POST /{organisation}/events
+        # POST /{organisation}/settings
         if http_method == "POST":
             return make_response(405, {"message": "Method not allowed."})
         # GET 
         elif http_method == "GET":
+            response_cls = OrganisationResponse #! not implemented public/private only private currently exists
+
             if not organisationSlug:
                 return make_response(404, {"message": "Missing organisation in request"})
             
-            return get_organisation_settings(validated_request, organisationSlug, actor)
+            result = get_organisation_settings(validated_request, organisationSlug, actor, public=is_public)
+            response = response_cls(organisation=result)
+            return make_response(200, response.model_dump(mode="json", exclude_none=True))
+        
         # PUT /{organisation}/settings
         elif http_method == "PUT":
             if not organisationSlug:

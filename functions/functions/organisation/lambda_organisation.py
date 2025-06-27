@@ -19,6 +19,7 @@ from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, Event
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
 from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest
+from models_extended import OrganisationModel
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -41,7 +42,7 @@ def update_organisation(request_data: UpdateOrganisationRequest, organisation_sl
     org_data = request_data.organisation
 
     try:
-        org_model = OrganisationObject.model_validate({
+        org_model = OrganisationModel.model_validate({
             **org_data.model_dump(mode="json", exclude_unset=True),
             "updated_at":current_time,
             "organisation": organisation_slug,

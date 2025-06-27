@@ -8,6 +8,8 @@ models:
   - ${file(functions/events/sls.events.models.yml):EventListResponse}
   - ${file(functions/events/sls.events.models.yml):EventResponsePublic}
   - ${file(functions/events/sls.events.models.yml):EventListResponsePublic}
+  - ${file(functions/organisation/sls.organisation.models.yml):OrganisationObject}
+  - ${file(functions/organisation/sls.organisation.models.yml):OrganisationResponse}
 
   - name: "ErrorResponse"
     description: "Error response model"

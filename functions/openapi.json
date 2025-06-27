@@ -262,6 +262,68 @@
         "x-internal-group": "events",
         "x-internal-path": "functions/events"
       },
+      "OrganisationObject": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "setup",
+              "suspended",
+              "archived"
+            ],
+            "default": "draft"
+          },
+          "ksuid": {
+            "type": "string",
+            "description": "ID of the organisation"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "description": "The name of the organisation."
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "functions/organisation"
+      },
+      "OrganisationResponse": {
+        "type": "object",
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObject"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "functions/organisation"
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -437,7 +499,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-676b3211-b8be-4768-b5db-60f84d7179c8",
+        "operationId": "eventbridge-d8829e06-b831-400b-9ea2-3ed868106570",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -509,7 +571,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-864e8457-6347-4a2f-ab0d-ec040a7ddaa2",
+        "operationId": "events-75e008cf-7a50-4088-a05c-89c6c14cd8d1",
         "parameters": [
           {
             "name": "organisation",
@@ -566,7 +628,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-6d1b4482-35ea-4f65-a8f4-4a4c8a0a26aa",
+        "operationId": "events-3f83c35e-a395-4188-a047-34b21e224478",
         "parameters": [
           {
             "name": "organisation",
@@ -622,7 +684,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-4c1caceb-cd7e-45da-8c0c-e3c6d83e80e0",
+        "operationId": "events-4f20c37a-098f-4504-a68c-d0eb1b2307e9",
         "parameters": [
           {
             "name": "organisation",
@@ -688,7 +750,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-8b4ff5b6-e2f8-4b5b-a021-fd47b3515ae4",
+        "operationId": "events-70b8102c-af4b-4a17-90ae-58777ba6ad89",
         "parameters": [
           {
             "name": "organisation",
@@ -750,7 +812,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-573d87b1-9188-415f-bee4-db878d9889e2",
+        "operationId": "events-0c4612c7-ccb8-48ca-b3e7-db8feed649d8",
         "parameters": [
           {
             "name": "organisation",
@@ -849,7 +911,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-3e7ba3e5-fc5f-4b9f-9242-7e584626439f",
+        "operationId": "presigned_url-3b005885-53b1-4959-aabe-3e9bf59a57e6",
         "parameters": [],
         "tags": [
           "S3"
@@ -918,7 +980,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-aee99695-1c71-4bf3-a8d7-bff1bf723231",
+        "operationId": "customers-831c1a9c-0bb3-4503-8993-17ed1f728508",
         "parameters": [
           {
             "name": "organisation",
@@ -964,7 +1026,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-e1de0ac3-c130-4d8a-bb58-0426e392f449",
+        "operationId": "customers-472c0ee2-9930-47fd-ae5d-299bfe3d607a",
         "parameters": [
           {
             "name": "organisation",
@@ -1028,6 +1090,102 @@
           },
           "500": {
             "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/settings": {
+      "get": {
+        "summary": "Get Org Settings",
+        "description": "Returns a list of all events for a given organisation.",
+        "operationId": "organisation",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Organisation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of all events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "No events found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "summary": "Update Organisatioon Settings",
+        "description": "Fetch details of a specific organisation by its slug.",
+        "operationId": "organisation-f19aec2d-b37d-475e-88b3-881d4140d6e9",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Organisation"
+        ],
+        "responses": {
+          "200": {
+            "description": "The event object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Organisation not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }

@@ -52,3 +52,17 @@ OrganisationResponse:
         properties:
           organisation: 
             $ref: "#/components/schemas/OrganisationObject"
+UpdateOrganisationRequest:          
+  name: "UpdateOrganisationRequest"
+  description: "Request model for updating an organisation"
+  x-internal-group: "organisation"
+  x-internal-path: "functions/organisation"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["organisation"]
+        properties:
+          organisation:
+            $ref: "#/components/schemas/OrganisationObject"            

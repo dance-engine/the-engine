@@ -21,7 +21,7 @@ Organisation:
         documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.GET} 
     - httpApi:
         path: /{organisation}/settings
-        method: post
+        method: put
         # authorizer:
         #   adminAuthorizer
         documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.UPDATE}

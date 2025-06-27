@@ -18,38 +18,39 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action
 from _shared.dynamodb import upsert, VersionConflictError
 from _shared.helpers import make_response
-from models_organisation import OrganisationObject, OrganisationResponse, OrganisationListResponse
+from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
 db = boto3.resource("dynamodb")
 eventbridge = boto3.client('events')
+
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
-def update_organisation(request_data: OrganisationObject, organisation_slug: str, actor: str = "unknown"):
-    logger.info(f"Updating Event: {request_data.model_dump}")
+def update_organisation(request_data: UpdateOrganisationRequest, organisation_slug: str, actor: str = "unknown"):
+    logger.info(f"Updating Organisation: {request_data.model_dump}")
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Updating event for {organisation_slug} into {TABLE_NAME}")
+    logger.info(f"Updating organisation: {organisation_slug} in {TABLE_NAME}")
 
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
 
-    event_data = request_data.event
+    org_data = request_data.organisation
 
     try:
         org_model = OrganisationObject.model_validate({
-            **event_data.model_dump(mode="json", exclude_unset=True),
+            **org_data.model_dump(mode="json", exclude_unset=True),
             "updated_at":current_time,
             "organisation": organisation_slug,
         })
 
-        org_response = upsert(table, org_model, ["event_slug", "created_at"])
+        org_response = upsert(table, org_model, ["organisation", "created_at"])
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.core", 
-                                  resource_type=EventType.event,
+                                  resource_type=EventType.organisation,
                                   action=Action.updated,
                                   organisation=organisation_slug,
                                   resource_id=org_model.PK,
@@ -136,7 +137,7 @@ def lambda_handler(event, context):
         elif http_method == "PUT":
             if not organisationSlug:
                 return make_response(404, {"message": "Missing organisation in request"})
-            validated_request = OrganisationResponse(**parsed_event)
+            validated_request = UpdateOrganisationRequest(**parsed_event)
             return update_organisation(validated_request, organisationSlug, actor)
             
         else:

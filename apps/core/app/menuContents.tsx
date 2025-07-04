@@ -81,8 +81,8 @@ export const menuContents:MenuSection[] = [
     position: "bottom",
     contents: [
       { 
-        title: "Settings",
-        link: "/settings", 
+        title: "Org Settings ",
+        link: "/settings/org", 
         icon: SettingsIcon
       },
 

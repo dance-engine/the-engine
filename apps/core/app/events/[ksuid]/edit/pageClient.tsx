@@ -75,7 +75,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     } as DanceEngineEntity
     // const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
     // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
-    const initEntity = {...blankEntity, ...remoteEntity[0]}
+    const initEntity = {...blankEntity, ...remoteEntity.event}
     setEntity(initEntity)
   },[remoteEntity,ksuid])
   

@@ -18,12 +18,12 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
 
-  const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/settings`.replace('/{org}',`/${activeOrg}`)
+  const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/settings`.replace('/{org}',`/${activeOrg || "demo"}`)
   const updateUrlEndpoint = baseUrlEndpoint
   const defaultEntity = useMemo(() => ({ type: "ORGANISATION", activeOrg }), [activeOrg])
   const { data, error, isLoading } = useClerkSWR(updateUrlEndpoint)
   
-  const remoteEntity = data || defaultEntity
+  
   
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
@@ -34,13 +34,13 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     const organisationSlug = `ORGANISATION#${data.ksuid}`
     try {
       const res = await fetch(updateUrlEndpoint, {
-        method: "POST",
+        method: "PUT",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify(cleanedData),
+        body: JSON.stringify({organisation: cleanedData}),
       })
 
       const result = await res.json()
@@ -55,7 +55,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
         localStorage.setItem(organisationSlug,savedCache)
         console.log("Organisation settings saved!", result, organisationSlug,savedCache)
-        router.push("/settings")
+        router.push("/settings/org")
       }
      
       
@@ -72,9 +72,11 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     } as DanceEngineEntity
     // const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
     // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
-    const initEntity = {...blankEntity, ...remoteEntity[0]}
+    const remoteEntity = data || defaultEntity
+    const initEntity = {...blankEntity, ...remoteEntity.organisation}
+    console.log("Data", data, "\nremoteEntity", remoteEntity, "\nactiveOrg", activeOrg, "\nInitial Entity", initEntity,)
     setEntity(initEntity)
-  },[remoteEntity,ksuid])
+  },[activeOrg,data,defaultEntity, ksuid])
   
   if(error) {
     console.error(error)
@@ -88,9 +90,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     return "No Active Org"
   }
 
-  
-
-  return !isLoading && entity
+  return !isLoading && entity && activeOrg && data
     ? <><DynamicForm 
         schema={organisationSchema} 
         {...(activeOrg ? {orgSlug: activeOrg} : {})} 
@@ -99,11 +99,12 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
         persistKey={entity} 
         data={entity}
       />
-        {/* <pre className="max-w-full">{JSON.stringify(entity,null,2)}</pre> */}
+        {/* <pre className="max-w-full">{JSON.stringify(data,null,2)}</pre>
+        <pre className="max-w-full">{JSON.stringify(entity,null,2)}</pre>
+        <pre className="max-w-full">{JSON.stringify(activeOrg,null,2)}</pre> */}
       </> 
     : null
 
-  return <pre>{JSON.stringify(entity,null,2)}</pre>
 }
 
 export default PageClient

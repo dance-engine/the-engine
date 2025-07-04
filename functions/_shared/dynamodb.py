@@ -163,7 +163,7 @@ def upsert(table, model: DynamoModel, only_set_once: list = []):
     if model.uses_versioning():
         expression_attr_names["#version"] = "version"
         expression_attr_values[":incoming_version"] = incoming_version
-        kwargs["ConditionExpression"] = "attribute_not_exists(#version) OR #version <= :incoming_version"
+        kwargs["ConditionExpression"] = "attribute_exists(#version) OR #version <= :incoming_version"
 
     try:
         return table.update_item(**kwargs)

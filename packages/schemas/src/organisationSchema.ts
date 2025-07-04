@@ -5,6 +5,7 @@ import { z } from "zod";
 export const organisationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().min(2, "Name must be at least 2 characters"),
+  status: z.enum(["draft","active","setup","suspended","archived"]).default("active").describe("Status of the organisation"),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
   }).optional().describe("Updated timstamp"),

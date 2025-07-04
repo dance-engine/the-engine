@@ -12,6 +12,8 @@ OrganisationObject:
           status:
             type: string
             enum:
+              - "i-am-teapot"
+              - "draft"
               - "active"
               - "setup"
               - "suspended"

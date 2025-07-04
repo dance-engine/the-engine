@@ -1,0 +1,71 @@
+---
+id: organisation
+title: "Get Org Settings"
+description: "Returns a list of all events for a given organisation."
+sidebar_label: "Get Org Settings"
+hide_title: true
+hide_table_of_contents: true
+api: eJy9Vk1v20YQ/SuLOSUALatBeuHNbdxAQVEHjoMcVMEekSNybXKXmZ1Vowr878UsJVsfbNEWRU/82Jk3s2/nPXILJYWCbSfWO8jhliSyCwZNY4MYvzLYNIbW5CSYlWeDprJrcsZzhc4G1LwJZOA74vQwKyGHw1XIoEPGloQ4QD7fgsOWzoOs1u9QashOmro5CDShiRVkwPQ1WqYScuFIGYSiphYh34JsOkUPwtZppFhpzsr1/SIDwUobOsKHhWKHzrtAQeHeTKd6+fs0KRuFd0JONBG7rrFFwr58DJq9PW/WLx+pEGWKlUixQ+2jlkeiX0iYD6QuThGCoMQwRgu52GoeFmLXBBkEktjpNYaOXEklZIBc1HZNpQKXtMLYCORQMq4E+gyeQrTlGPgxW7N3ypDUZI7PQJsQK5v7If0Ups92k3KO31r3M7lKasjfnFa7q8lo3ljNiYIehY8ULZhQqLxHGSu98txiYgGFLsS2pDmxK/9xzpo4HPdgnVBFrIu1DeJ5c7CIzLhRnQi14Xwa+r7P4NuFQrDD5qJiH7tzlR1EJK3lsIqu0MVweRK6F86hPG72xf6HWrc7GQ5bqwnLZCBbfXo7fXuuyl/8i1NFV6oQj7O+H9PybNejCcRrYkPMnv9DEbcUAlbj851qjaz0L4xca8ifU9Fn0JLUXl23olR9oPpye0hxfxlIxLoqJKUXka1skhkXDfHT/eNvAvl8oa64X/2k+xu2cBBzyt6HL3fGhhCpNMuN+VEDJ0YlKP6JnGljELMkY13RxJJKY10S5cNVlNqz/T1192CGLRlUS/2BkIkHgIn5HIjDM06HLHthC3JFcqRvg640Na4pBezt0bBvyLyiSTXJzAOWrXUPr414g0VBIZiOvVAhGkjBRy4oTH5NUzmcSi2SjDERAjksU4OQ7W5+2qv7w5e7dHTWrXw61N0RvkNXkLl2lXVkrj7OzgxS+br6OEsf2MNgODAJmE6mk+90aDofpMU0g7sv6XsSc8OV+fRyxicm9zzL//4LvyND6Jtcdg3aZOCRG4UfZm4O+Ymsn4dukUHtg84YbLdLDPSZm77X118jqc3NFxmskS0ulbL5Fkob9L6EfIVNoL/Y0avb3Tm/NmN/CqN97z3VqaOusYn6BBk80ebsV2HxLLnU2BByVRTUyUHymUWolp6l+f5aR+MPDbdJUg==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Org Settings"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/settings"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a list of all events for a given organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list of all events.","content":{"application/json":{"schema":{"type":"object","properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"entity_type":{"type":"string"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationResponse"}}},"headers":{}},"404":{"description":"No events found.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

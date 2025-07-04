@@ -16,13 +16,13 @@ Organisation:
     - httpApi:
         path: /{organisation}/settings
         method: get
-        # authorizer:
-        #   adminAuthorizer
+        authorizer:
+          adminAuthorizer
         documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.GET} 
     - httpApi:
         path: /{organisation}/settings
         method: put
-        # authorizer:
-        #   adminAuthorizer
+        authorizer:
+          adminAuthorizer
         documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.UPDATE}
       

@@ -86,14 +86,14 @@ def update_organisation(request_data: UpdateOrganisationRequest, organisation_sl
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})            
 
-def get_organisation_settings(organisationSlug: str, public: bool = False):
+def get_organisation_settings(organisationSlug: str, public: bool = False, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting settings of {organisationSlug} from {TABLE_NAME} / ")
 
     try:
         response = table.query(
-            KeyConditionExpression=Key('SK').eq(f'ORG#{organisationSlug}')
+            KeyConditionExpression=Key('SK').eq(f'ORG#{organisationSlug}') & Key('PK').eq(f'ORG#{organisationSlug}')
         )
         items = response.get("Items", None)
         logger.info(f"Fetched {len(items)} from dynamodb: {items}")
@@ -101,7 +101,7 @@ def get_organisation_settings(organisationSlug: str, public: bool = False):
         logger.error(f"DynamoDB query failed to get org for {organisationSlug}: {e}")
         raise Exception
     
-    organisation_items = [item for item in items if item.get("entity_type") == "ORG"]
+    organisation_items = [item for item in items if item.get("entity_type") == "ORGANISATION"]
 
     if len(organisation_items) == 0:
         logger.warning(f"No ORG entity found for ID {organisationSlug}")
@@ -141,7 +141,7 @@ def lambda_handler(event, context):
             if not organisationSlug:
                 return make_response(404, {"message": "Missing organisation in request"})
             
-            result = get_organisation_settings(validated_request, organisationSlug, actor, public=is_public)
+            result = get_organisation_settings(organisationSlug, actor=actor, public=is_public)
             response = response_cls(organisation=result)
             return make_response(200, response.model_dump(mode="json", exclude_none=True))
         

@@ -18,7 +18,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/eventbridge-ccee-625-d-e-771-44-a-8-a-6-ce-56-d-69-a-853-deb",
+          id: "core/eventbridge-0-e-318933-508-b-410-d-82-a-1-85-ac-0-d-74-c-7-ff",
           label: "Trigger an event",
           className: "api-method get",
         },
@@ -36,31 +36,31 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/events-8821-ef-2-a-9-c-6-a-4-c-41-8-d-40-f-3-a-151-f-6-f-63-e",
+          id: "core/events-90613-e-6-b-0-ba-3-4279-a-115-909-b-9-e-7-e-58-f-3",
           label: "Create Event",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "core/events-c-6-b-628-f-0-5-a-1-c-40-cf-a-333-b-3-b-9-fcddf-964",
+          id: "core/events-b-61-c-7-d-27-e-4-ac-44-e-0-b-562-3-f-1987-fe-10-c-8",
           label: "Get Single Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-42-e-2-ff-5-f-e-70-c-46-f-1-8577-e-4-b-35-f-501794",
+          id: "core/events-9910-d-512-1893-47-e-1-b-356-9098-a-8-a-4-cd-1-e",
           label: "Update an Event",
           className: "api-method put",
         },
         {
           type: "doc",
-          id: "core/events-3-c-207854-789-a-4581-99-b-3-b-0020-e-4-a-97-e-4",
+          id: "core/events-b-8-f-065-aa-7284-4-b-97-aa-88-74-f-84-a-6-ee-889",
           label: "Public Get Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-63-f-30-af-2-dd-92-416-e-9-ce-2-64-dc-508-fbc-16",
+          id: "core/events-afebe-36-c-70-ce-41-b-8-9-cc-5-f-9-b-8-c-4-d-43-b-4-c",
           label: "Public Get ALL Events",
           className: "api-method get",
         },
@@ -72,13 +72,13 @@ const sidebar: SidebarsConfig = {
       items: [
         {
           type: "doc",
-          id: "core/events-3-c-207854-789-a-4581-99-b-3-b-0020-e-4-a-97-e-4",
+          id: "core/events-b-8-f-065-aa-7284-4-b-97-aa-88-74-f-84-a-6-ee-889",
           label: "Public Get Event",
           className: "api-method get",
         },
         {
           type: "doc",
-          id: "core/events-63-f-30-af-2-dd-92-416-e-9-ce-2-64-dc-508-fbc-16",
+          id: "core/events-afebe-36-c-70-ce-41-b-8-9-cc-5-f-9-b-8-c-4-d-43-b-4-c",
           label: "Public Get ALL Events",
           className: "api-method get",
         },
@@ -96,7 +96,7 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/presigned-url-51-e-2-b-1-be-926-b-4-d-25-9-ea-9-6-ae-3-d-392036-e",
+          id: "core/presigned-url-a-32-e-26-d-4-a-9-d-4-4-f-71-bb-0-e-9293-de-035-ed-2",
           label: "Generate Presigned Download URL",
           className: "api-method post",
         },
@@ -114,13 +114,13 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
-          id: "core/customers-9-fa-98801-5-e-2-b-4-a-4-e-abc-5-1640-f-601-cde-9",
+          id: "core/customers-e-7-f-50045-a-04-d-400-c-8-ab-9-0-e-089247-b-637",
           label: "Create Customer",
           className: "api-method post",
         },
         {
           type: "doc",
-          id: "core/customers-cd-39-acb-7-21-f-2-46-f-0-838-e-3-ee-7-f-11560-e-1",
+          id: "core/customers-f-5806903-91-d-1-4-bed-b-198-921404-e-8-fa-39",
           label: "Get Single Customer",
           className: "api-method get",
         },
@@ -147,6 +147,24 @@ const sidebar: SidebarsConfig = {
           id: "core/organisations",
           label: "Get Organisations",
           className: "api-method get",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "Organisation",
+      items: [
+        {
+          type: "doc",
+          id: "core/organisation",
+          label: "Get Org Settings",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "core/organisation-4-c-817867-d-297-4-b-98-91-cf-0-ccecf-2-b-9-bb-6",
+          label: "Update Organisatioon Settings",
+          className: "api-method put",
         },
       ],
     },
@@ -206,6 +224,24 @@ const sidebar: SidebarsConfig = {
           type: "doc",
           id: "core/schemas/eventlistresponsepublic",
           label: "EventListResponsePublic",
+          className: "schema",
+        },
+        {
+          type: "doc",
+          id: "core/schemas/organisationobject",
+          label: "OrganisationObject",
+          className: "schema",
+        },
+        {
+          type: "doc",
+          id: "core/schemas/organisationresponse",
+          label: "OrganisationResponse",
+          className: "schema",
+        },
+        {
+          type: "doc",
+          id: "core/schemas/updateorganisationrequest",
+          label: "UpdateOrganisationRequest",
           className: "schema",
         },
         {

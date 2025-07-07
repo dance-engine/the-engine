@@ -13,7 +13,7 @@ import { useEffect, useState, useMemo } from "react";
 
 
 
-const PageClient = ({ ksuid }: { ksuid?: string }) => {
+const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
   const router = useRouter()
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
@@ -107,4 +107,4 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
 }
 
-export default PageClient
+export default OrgPageClient

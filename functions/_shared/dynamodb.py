@@ -94,6 +94,53 @@ class DynamoModel(BaseModel):
 
         return convert_floats_to_decimals({**base, **props})
     
+    def upsert(self, table, only_set_once: list = []):
+        update_parts = []
+        expression_attr_names = {}
+        expression_attr_values = {}
+        
+        item = self.to_dynamo()
+
+        if self.uses_versioning():
+            incoming_version = item.get('version', 0)
+            item['version'] = incoming_version + 1
+        
+        for key, value in item.items():
+            name_placeholder = f"#{key}"
+            value_placeholder = f":{key}"
+            expression_attr_names[name_placeholder] = key
+            expression_attr_values[value_placeholder] = value        
+
+            if key in only_set_once:
+                update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
+            else:
+                update_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+        update_expression = "SET " + ", ".join(update_parts)
+
+        kwargs = dict(
+            Key={"PK": self.PK, "SK": self.SK},
+            UpdateExpression=update_expression,
+            ExpressionAttributeNames=expression_attr_names,
+            ExpressionAttributeValues=expression_attr_values,
+            ReturnValues="ALL_NEW"
+        )
+        
+        if self.uses_versioning():
+            expression_attr_names["#version"] = "version"
+            expression_attr_values[":incoming_version"] = incoming_version
+            kwargs["ConditionExpression"] = "attribute_exists(#version) OR #version <= :incoming_version"
+
+        try:
+            return table.update_item(**kwargs)
+        except table.meta.client.exceptions.ConditionalCheckFailedException as e:
+            if self.uses_versioning():
+                raise VersionConflictError(self, expression_attr_values.get(":incoming_version"))
+            raise
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            raise
+    
 class VersionConflictError(Exception):
     def __init__(self, model: DynamoModel, incoming_version: int):
         super().__init__(f"Version conflict on {model.PK} / v{incoming_version}")
@@ -126,52 +173,3 @@ class HistoryModel(DynamoModel):
     @property
     def gsi1SK(self) -> str:
         return None
-
-    
-def upsert(table, model: DynamoModel, only_set_once: list = []):
-    update_parts = []
-    expression_attr_names = {}
-    expression_attr_values = {}
-    
-    item = model.to_dynamo()
-
-    if model.uses_versioning():
-        incoming_version = item.get('version', 0)
-        item['version'] = incoming_version + 1
-    
-    for key, value in item.items():
-        name_placeholder = f"#{key}"
-        value_placeholder = f":{key}"
-        expression_attr_names[name_placeholder] = key
-        expression_attr_values[value_placeholder] = value        
-
-        if key in only_set_once:
-            update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
-        else:
-            update_parts.append(f"{name_placeholder} = {value_placeholder}")
-
-    update_expression = "SET " + ", ".join(update_parts)
-
-    kwargs = dict(
-        Key={"PK": model.PK, "SK": model.SK},
-        UpdateExpression=update_expression,
-        ExpressionAttributeNames=expression_attr_names,
-        ExpressionAttributeValues=expression_attr_values,
-        ReturnValues="ALL_NEW"
-    )
-    
-    if model.uses_versioning():
-        expression_attr_names["#version"] = "version"
-        expression_attr_values[":incoming_version"] = incoming_version
-        kwargs["ConditionExpression"] = "attribute_exists(#version) OR #version <= :incoming_version"
-
-    try:
-        return table.update_item(**kwargs)
-    except table.meta.client.exceptions.ConditionalCheckFailedException as e:
-        if model.uses_versioning():
-            raise VersionConflictError(model, expression_attr_values.get(":incoming_version"))
-        raise
-    except Exception as e:
-        logger.error(traceback.format_exc())
-        raise
-    

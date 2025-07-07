@@ -16,7 +16,7 @@ from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action
-from _shared.dynamodb import upsert, VersionConflictError
+from _shared.dynamodb import VersionConflictError
 from _shared.helpers import make_response
 from models_events import CreateEventRequest, UpdateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from models_extended import EventModel, LocationModel
@@ -74,8 +74,8 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                 "updated_at": current_time
             })
 
-        event_response = upsert(table, event_model, ["event_slug", "created_at"])
-        location_response = upsert(table, location_model, ["created_at"])
+        event_response = event_model.upsert(table, ["event_slug", "created_at"])
+        location_response = location_model.upsert(table, ["created_at"])
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.core", 
                                   resource_type=EventType.event,
@@ -222,8 +222,8 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str, actor
         })
 
     try:
-        event_response = upsert(table, event_model, ["event_slug", "created_at"])
-        location_response = upsert(table, location_model, ["created_at"])
+        event_response = event_model.upsert(table,["event_slug", "created_at"])
+        location_response = location_model.upsert(table, ["created_at"])
         triggerEBEvent(eventbridge, "events", "UpsertEvent", event_response)
         return make_response(201, {
             "message": "Event created successfully.",

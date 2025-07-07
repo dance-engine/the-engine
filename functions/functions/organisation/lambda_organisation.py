@@ -16,7 +16,7 @@ from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action
-from _shared.dynamodb import upsert, VersionConflictError
+from _shared.dynamodb import VersionConflictError
 from _shared.helpers import make_response
 from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
 from models_extended import OrganisationModel
@@ -56,7 +56,7 @@ def update_organisation(request_data: UpdateOrganisationRequest, organisation_sl
             "organisation": organisation_slug,
         })
 
-        org_response = upsert(table, org_model, ["organisation", "created_at"])
+        org_response = org_model.upsert(table, ["organisation", "created_at"])
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.core", 
                                   resource_type=EventType.organisation,

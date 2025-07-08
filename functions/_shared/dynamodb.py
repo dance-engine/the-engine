@@ -47,7 +47,11 @@ class DynamoModel(BaseModel):
                 KsuidMs.from_base62(v)
             except Exception:
                 raise ValueError("Invalid KSUID")
-        return v        
+        return v
+
+    @property
+    def related_entities(self) -> dict:
+        return {}
 
     @property
     def PK(self) -> str:
@@ -64,6 +68,29 @@ class DynamoModel(BaseModel):
     @property
     def gsi1SK(self) -> str:
         raise NotImplementedError()
+    
+    def query_gsi(self, table, index_name, key_condition, filter_expression=None, assemble_entites=False) -> list:
+        try:
+            kwargs = {
+                "IndexName": index_name,
+                "KeyConditionExpression":key_condition
+            }
+            if filter_expression:
+                kwargs["FilterExpression"] = filter_expression
+            
+            logger.info(f"query kwargs: {kwargs}")
+            
+            response = table.query(**kwargs)
+            items = response.get("Items", None)
+            
+            logger.info(f"Fetched {len(items)} from dynamodb: {items}")
+            if assemble_entites:
+                return self.assemble_from_items(items)
+            else:
+                return [self.model_validate(item) for item in items]
+        except Exception as e:
+            logger.error("Query failed: %s", str(e), exc_info=True)
+            raise
     
     def _slugify(self, string) -> str:
         return re.sub(r'[^a-zA-Z0-9]+', '-', string.strip().lower()).strip('-')
@@ -140,7 +167,43 @@ class DynamoModel(BaseModel):
         except Exception as e:
             logger.error(traceback.format_exc())
             raise
-    
+
+    def assemble_from_items(self, items: list[dict]) -> "DynamoModel":
+        root_entity_type = self.entity_type
+        root_item = None
+        for item in items:
+            if item.get("entity_type") == root_entity_type:
+                root_item = item
+                break
+        
+        if not root_item:
+            raise ValueError(f"No {root_entity_type} item found in items.")
+        
+        base = self.model_validate(root_item)
+
+        mapping = self.related_entities
+        for item in items:
+            etype = item.get("entity_type")
+            if etype == root_entity_type:
+                continue
+
+            if etype not in mapping:
+                continue
+
+            attr, mode, ModelClass = mapping[etype]
+            parsed = ModelClass.model_validate(item)
+
+            if mode == "single":
+                setattr(base, attr, parsed)
+            elif mode == "list":
+                current = getattr(base, attr) or []
+                current.append(parsed)
+                setattr(base, attr, current)
+            else:
+                raise ValueError(f"Unknown mode {mode} for {etype}")
+            
+        return base
+
 class VersionConflictError(Exception):
     def __init__(self, model: DynamoModel, incoming_version: int):
         super().__init__(f"Version conflict on {model.PK} / v{incoming_version}")

@@ -1,6 +1,6 @@
 # models_ext.py
-from models_events import EventObject as EventBase, LocationObject as LocationBase, Status
-from _shared.dynamodb import DynamoModel
+from models_events import EventObject as EventBase, LocationObject as LocationBase, Status, EventObjectPublic
+from _shared.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from typing import ClassVar
 from pydantic import model_validator
@@ -12,6 +12,13 @@ class EventModel(EventBase, DynamoModel):
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     entity_type: str = "EVENT"
+
+    @property
+    def related_entities(self):
+        return {
+            "LOCATION": ("location", "single", LocationModel),
+            "HISTORY": ("history", "list", HistoryModel) 
+            }
 
     @property
     def PK(self): return f"EVENT#{self.ksuid}"

@@ -165,6 +165,7 @@ def upsert(table, model: DynamoModel, only_set_once: list = []):
         expression_attr_values[":incoming_version"] = incoming_version
         kwargs["ConditionExpression"] = "attribute_exists(#version) OR #version <= :incoming_version"
 
+    logger.info(f"kwargs: {kwargs}")
     try:
         return table.update_item(**kwargs)
     except table.meta.client.exceptions.ConditionalCheckFailedException as e:

@@ -11,10 +11,10 @@ class OrganisationModel(OrganisationBase, DynamoModel):
     def entity_type(self): return "ORGANISATION"
 
     @property
-    def PK(self): return f"ORG#{self.ksuid}"
+    def PK(self): return f"ORG#{self.org_slug}"
 
     @property
-    def SK(self): return f"ORG#{self.ksuid}"
+    def SK(self): return f"ORG#{self.org_slug}"
 
     @property
     def org_slug(self): return self._slugify(self.organisation)

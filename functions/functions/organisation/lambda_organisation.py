@@ -90,36 +90,21 @@ def get_organisation_settings(organisationSlug: str, public: bool = False, actor
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting settings of {organisationSlug} from {TABLE_NAME} / ")
+    blank_model = OrganisationModel(name="blank", organisation=organisationSlug)
 
     try:
-        response = table.query(
-            KeyConditionExpression=Key('SK').eq(f'ORG#{organisationSlug}') & Key('PK').eq(f'ORG#{organisationSlug}')
-        )
-        items = response.get("Items", None)
-        logger.info(f"Fetched {len(items)} from dynamodb: {items}")
+        result = blank_model.query_gsi(
+            table,
+            "IDXinv", 
+            Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
+            assemble_entites=True
+            )
+        logger.info(f"Found settings for {organisationSlug}: {result}")
     except Exception as e:
-        logger.error(f"DynamoDB query failed to get org for {organisationSlug}: {e}")
+        logger.error(f"DynamoDB query failed to get settings for {organisationSlug}: {e}")
         raise Exception
-    
-    organisation_items = [item for item in items if item.get("entity_type") == "ORGANISATION"]
 
-    if len(organisation_items) == 0:
-        logger.warning(f"No ORG entity found for ID {organisationSlug}")
-        return None
-    
-    if len(organisation_items) > 1:
-        logger.error(f"Multiple ORG entities found for {organisationSlug}.")
-        raise Exception
-    
-    org_item = organisation_items[0] # Only one else exception raise
-
-    try:
-        org_model = OrganisationObject.model_validate(_preprocess_organisation_item(org_item))
-        return org_model
-    except Exception as e:
-        logger.warning("Validation error in get_organisation_settings: %s", str(e))
-        return None
-
+    return OrganisationObject.model_validate(result)
 
 def lambda_handler(event, context):
     try:

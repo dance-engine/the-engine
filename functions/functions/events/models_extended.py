@@ -6,7 +6,6 @@ from typing import ClassVar
 from pydantic import model_validator, field_validator
 
 class EventModel(EventBase, DynamoModel):
-    location: ClassVar[None] = None
     organisation: str
     number_sold: int = 0
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
@@ -64,12 +63,15 @@ class EventModel(EventBase, DynamoModel):
                 raise ValueError(f"Cannot publish event: missing required field(s): {', '.join(missing)}")
         return self
 
+    def to_public(self) -> 'EventObjectPublic':
+        return EventObjectPublic.model_validate(self.model_dump(include=EventObjectPublic.model_fields.keys()))
+
 class LocationModel(LocationBase, DynamoModel):
     organisation: str
     parent_event_ksuid: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    entity_type: str = "LOCATION"
+    
     @property
     def entity_type(self): return "LOCATION"
 

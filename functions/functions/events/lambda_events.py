@@ -109,79 +109,40 @@ def get_events(organisationSlug: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
+    blank_model = EventModel(name="blank", organisation=organisationSlug)
 
-    response = table.query(
-                IndexName="gsi1",
-                KeyConditionExpression=Key("gsi1PK").eq(f"EVENTLIST#{organisationSlug}") & Key("gsi1SK").begins_with("EVENT#"),
-                ScanIndexForward=True
-            )
-    
-    events = []
-    for item in response.get("Items", []):
-        try:
-            event_model = EventObject.model_validate(_preprocess_event_item(item))
-            event_model_public = EventObjectPublic.model_validate(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
-            output = event_model_public if public else event_model
-            events.append(output)
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            logger.warning(f"SKipping event item: {e}")
-    
-    return events 
+    try:
+        events = blank_model.query_gsi(
+            table,
+            "gsi1", 
+            Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#")
+        )
+        logger.info(f"Found events for {organisationSlug}: {events}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get events for {organisationSlug}: {e}")
+        raise Exception
+
+    return [e.to_public() if public else e for e in events]
 
 def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Getting event {eventId} for {organisationSlug} from {TABLE_NAME} / ")
+    logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
+    blank_model = EventModel(ksuid=eventId, name="blank", organisation=organisationSlug)
 
     try:
-        response = table.query(
-            IndexName='IDXinv',  
-            KeyConditionExpression=Key('SK').eq(f'EVENT#{eventId}')
+        result = blank_model.query_gsi(
+            table,
+            "IDXinv", 
+            Key('SK').eq(f'{blank_model.PK}'),
+            assemble_entites=True
         )
-        items = response.get("Items", None)
-        logger.info(f"Fetched {len(items)} from dynamodb: {items}")
+        logger.info(f"Found event for {organisationSlug}: {result}")
     except Exception as e:
-        logger.error(f"DynamoDB query failed for event {eventId}: {e}")
+        logger.error(f"DynamoDB query failed to get event for {organisationSlug}: {e}")
         raise Exception
-    
-    event_items = [item for item in items if item.get("entity_type") == "EVENT"]
-    location_items = [item for item in items if item.get("entity_type") == "LOCATION"]
-    history_items = [item for item in items if item.get("entity_type") == "HISTORY"]
-    logger.info(history_items)
 
-    if len(event_items) == 0:
-        logger.warning(f"No EVENT entity found for event ID {eventId}")
-        return None
-    
-    if len(event_items) > 1:
-        logger.error(f"Multiple EVENT entities found for {eventId}.")
-        raise Exception
-    
-    event_item = event_items[0] 
-    
-    if location_items:
-        if len(location_items) > 1:
-            logger.warning(f"Multiple LOCATION entities found for event {eventId}. Using the first.")
-
-        location_item = location_items[0]
-        try:
-            location_model = LocationObject.model_validate(location_item)
-            event_item["location"] = location_model.model_dump()
-        except Exception as e:
-            logger.warning(f"Failed to validate location object for event {eventId}: {e}")
-            event_item["location"] = None  # fallback gracefully
-
-    if history_items:
-        event_item["history"] = history_items
-
-    try:
-        event_model = EventObject.model_validate(_preprocess_event_item(event_item))
-        event_model_public = EventObjectPublic.model_validate(event_model.model_dump(include=EventObjectPublic.model_fields.keys()))
-        return event_model_public if public else event_model
-    except Exception as e:
-        logger.warning("Validation error in get_single_event: %s", str(e))
-        return None
+    return result.to_public() if public else result
 
 def create_event(request_data: CreateEventRequest, organisation_slug: str, actor: str = "unknown"):
     """

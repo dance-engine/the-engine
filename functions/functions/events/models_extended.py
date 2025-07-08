@@ -3,7 +3,7 @@ from models_events import EventObject as EventBase, LocationObject as LocationBa
 from _shared.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from typing import ClassVar
-from pydantic import model_validator
+from pydantic import model_validator, field_validator
 
 class EventModel(EventBase, DynamoModel):
     location: ClassVar[None] = None
@@ -37,6 +37,15 @@ class EventModel(EventBase, DynamoModel):
 
     @property
     def org_slug(self): return self._slugify(self.organisation)
+
+    @field_validator('category', mode='before')
+    @classmethod
+    def ensure_list_of_enums(cls, v):
+        if isinstance(v, str):
+            return [v]
+        if isinstance(v, list):
+            return v
+        raise ValueError('Invalid category format')
 
     @model_validator(mode="after")
     def validate_live(self) -> 'EventModel':

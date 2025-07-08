@@ -6,7 +6,9 @@ class OrganisationModel(OrganisationBase, DynamoModel):
     organisation: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    entity_type: str = "ORG"
+    
+    @property
+    def entity_type(self): return "ORGANISATION"
 
     @property
     def PK(self): return f"ORG#{self.ksuid}"

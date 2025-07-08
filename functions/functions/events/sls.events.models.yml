@@ -44,8 +44,6 @@ EventObject:
           banner:
             type: string
             description: "Appears at the top of the event page"
-          entity_type:
-            type: string
           name:
             type: string
             minLength: 2

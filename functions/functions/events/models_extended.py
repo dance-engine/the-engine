@@ -11,7 +11,6 @@ class EventModel(EventBase, DynamoModel):
     number_sold: int = 0
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    entity_type: str = "EVENT"
 
     @property
     def related_entities(self):
@@ -19,6 +18,9 @@ class EventModel(EventBase, DynamoModel):
             "LOCATION": ("location", "single", LocationModel),
             "HISTORY": ("history", "list", HistoryModel) 
             }
+    
+    @property
+    def entity_type(self): return f"EVENT"
 
     @property
     def PK(self): return f"EVENT#{self.ksuid}"
@@ -68,6 +70,8 @@ class LocationModel(LocationBase, DynamoModel):
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     entity_type: str = "LOCATION"
+    @property
+    def entity_type(self): return "LOCATION"
 
     @property
     def PK(self): return f"LOCATION#{self.ksuid}"

@@ -40,7 +40,6 @@ class EventObject(BaseModel):
     banner: Optional[str] = Field(
         None, description='Appears at the top of the event page'
     )
-    entity_type: Optional[str] = None
     name: str = Field(..., description='The name of the event.', min_length=2)
     starts_at: Optional[datetime] = None
     ends_at: Optional[datetime] = None

@@ -23,7 +23,6 @@ class Status(Enum):
 class OrganisationObject(BaseModel):
     status: Optional[Status] = 'draft'
     ksuid: Optional[str] = Field(None, description='ID of the organisation')
-    entity_type: Optional[str] = None
     name: str = Field(..., description='The name of the organisation.', min_length=2)
     description: Optional[str] = None
     created_at: Optional[datetime] = None

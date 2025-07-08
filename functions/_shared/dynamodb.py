@@ -54,6 +54,10 @@ class DynamoModel(BaseModel):
         return {}
 
     @property
+    def entity_type(self) -> str:
+        raise NotImplementedError()
+    
+    @property
     def PK(self) -> str:
         raise NotImplementedError()
 
@@ -220,7 +224,9 @@ class HistoryModel(DynamoModel):
     actor: Optional[str] = None  # Email or ID
     data: Optional[Dict[str, Any]] = None  # Snapshot or diff
     meta: Optional[Dict[str, Any]] = None  # Optional context
-    entity_type: str = "HISTORY"
+    
+    @property
+    def entity_type(self): return "HISTORY"
 
     @property
     def PK(self) -> str:

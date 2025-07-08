@@ -22,8 +22,6 @@ OrganisationObject:
           ksuid:
             type: string
             description: "ID of the organisation"
-          entity_type:
-            type: string
           name:
             type: string
             minLength: 2

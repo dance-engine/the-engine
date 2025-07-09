@@ -54,7 +54,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
       console.info("Loading cached version", draft, data)
       reset(draft as EntityType)
     } else { 
-      console.info("Loading remote version", draft, data)
+      console.info("Loading remote version", "\nDraft", draft, "\nData", data)
       reset(data as EntityType)
     }  
   }, [loadFromStorage, data, reset]);
@@ -71,6 +71,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
       })} 
       className="space-y-4 w-full relative">
       <Debug debug={{ formState: isDirty ? "Dirty" : "Clean", values: watchedValues, errors: errors}} className="absolute right-0"/>
+      {/* <div>Org: {orgSlug} {JSON.stringify(data,null,2)}</div> */}
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>
       {/* <Debug debug={errors} className="absolute right-10 top-10"/> */}
       {fields.map((field) => {

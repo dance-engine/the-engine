@@ -262,6 +262,83 @@
         "x-internal-group": "events",
         "x-internal-path": "functions/events"
       },
+      "OrganisationObject": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "i-am-teapot",
+              "draft",
+              "active",
+              "setup",
+              "suspended",
+              "archived"
+            ],
+            "default": "draft"
+          },
+          "ksuid": {
+            "type": "string",
+            "description": "ID of the organisation"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "description": "The name of the organisation."
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "functions/organisation"
+      },
+      "OrganisationResponse": {
+        "type": "object",
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObject"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "functions/organisation"
+      },
+      "UpdateOrganisationRequest": {
+        "type": "object",
+        "required": [
+          "organisation"
+        ],
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObject"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "functions/organisation"
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -437,7 +514,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-676b3211-b8be-4768-b5db-60f84d7179c8",
+        "operationId": "eventbridge-90d88a17-5f71-478a-93a9-b5a1837d27c7",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -509,7 +586,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-864e8457-6347-4a2f-ab0d-ec040a7ddaa2",
+        "operationId": "events-dc070a74-9327-45b0-90ca-b33b23f712e8",
         "parameters": [
           {
             "name": "organisation",
@@ -566,7 +643,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-6d1b4482-35ea-4f65-a8f4-4a4c8a0a26aa",
+        "operationId": "events-5e363818-8219-4c43-a0d1-9e04db83222a",
         "parameters": [
           {
             "name": "organisation",
@@ -622,7 +699,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-4c1caceb-cd7e-45da-8c0c-e3c6d83e80e0",
+        "operationId": "events-b3953b23-35d9-480c-a4b7-b6970523b446",
         "parameters": [
           {
             "name": "organisation",
@@ -688,7 +765,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-8b4ff5b6-e2f8-4b5b-a021-fd47b3515ae4",
+        "operationId": "events-44629fcb-f74a-4c4a-ac8b-bf3fa30cd371",
         "parameters": [
           {
             "name": "organisation",
@@ -750,7 +827,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-573d87b1-9188-415f-bee4-db878d9889e2",
+        "operationId": "events-998375a6-4f93-4509-82dc-ca7f971c122e",
         "parameters": [
           {
             "name": "organisation",
@@ -849,7 +926,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-3e7ba3e5-fc5f-4b9f-9242-7e584626439f",
+        "operationId": "presigned_url-1478a2cf-82c2-4a93-9dac-8fe2b7533357",
         "parameters": [],
         "tags": [
           "S3"
@@ -918,7 +995,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-aee99695-1c71-4bf3-a8d7-bff1bf723231",
+        "operationId": "customers-fc126570-2392-4e14-91e1-c04e9f8421bf",
         "parameters": [
           {
             "name": "organisation",
@@ -964,7 +1041,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-e1de0ac3-c130-4d8a-bb58-0426e392f449",
+        "operationId": "customers-ddceb4e2-c7d6-48cf-b283-a1b0f422eeba",
         "parameters": [
           {
             "name": "organisation",
@@ -1028,6 +1105,117 @@
           },
           "500": {
             "description": "Internal server error.",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/settings": {
+      "get": {
+        "summary": "Get Org Settings",
+        "description": "Returns the settings for a given organisation.",
+        "operationId": "organisation",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Organisation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns organisation details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "No events found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Organisatioon Settings",
+        "description": "Fetch details of a specific organisation by its slug.",
+        "operationId": "organisation-78d0f56b-df4d-4eb4-89cd-f2d1bd65235a",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Organisation"
+        ],
+        "requestBody": {
+          "description": "Organisation details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganisationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The organisation object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
             "headers": {}
           }
         }

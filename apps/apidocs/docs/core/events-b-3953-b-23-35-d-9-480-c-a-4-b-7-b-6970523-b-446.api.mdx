@@ -1,0 +1,71 @@
+---
+id: events-b-3953-b-23-35-d-9-480-c-a-4-b-7-b-6970523-b-446
+title: "Update an Event"
+description: "Update an existing event and its location"
+sidebar_label: "Update an Event"
+hide_title: true
+hide_table_of_contents: true
+api: eJytV9tu2zgQ/RWCTw0gO4qTNI3e0qYLpFugRepsgfUayVgay2wkUiVHTryC/n0xlGzLl6SboH6SybnxzHDOsJIJutiqgpTRMpI3RQKEArTAR+VI6VTgHDUJ0IlQ5ERmYvCygTQFWv99lchIejHXmxyfnx5PBse949PkvHfyLox7cDI5603enp+Fp4PjycnJWxnIAizkSGidjEaV1JCjjKSxKWjllg4UR1QAzWSwFeaXjqBwWZnKQFr8WSqLiYzIlhhIF88wBxlVkhYFW3dklWZJUpTtuKvrYBXHvStV8mwAN1r9LLHF5upSvPnz283V5cGrwmi81fU4kAQpAyI/ejDluDGHjt6bZME2NqPwYiJBApW5Dd9TyBwGMjaaUBNrQlFkqsnd4Q/H6tVubGbyA2PasDRqMsuxFJZTTgodqzTLv9D1gO6oOgIq3T5MUJc56yUWpmwrU3OUgQQbz9QcOSemJC7RhK0mOIUyIxm18nXQgrnH8iZyV5fCTAXN2hSy5gS0Rvtr1YuiQLBOAHl9MsWGKVFAimwPNSla3DbGto3WQVtru95ypT+jTmkmo8G27+EMBetteOyzNUdgyd0C7TM5NTYHDxMQ9kjlbYDJyxRiIEyNXXQ0wFpY8E0hzJ9NaGx0atFxlT4Ye+9mpmjaALF6nIHfyjCm0qIc195dAbGirjulCVO0Hr4yn6C9dSZL9gh0aiOst1Dck4vYItfUi9Aofat8mc4crduMoXOiVWt91Z16ovCfLLQ6kJAkPiX79rKNYzVg+3Wd7lmvA/nY46NYDVkvtaYsVpQgN/Z8N43ktNQxn9UdroSW7fBzC8OX5ux1IGfK0f8ruxav+rcG5LvsMprfabghW2/+umnzHHnN2XaF0a5J7CA8eqrztyUoXBnH6Ny0zLJFXwZyhpB4aq3Y2kkY7hq40nPIVCKULkrao3K+q/JXU7wiNnqaqZh2PZ3u99QAIhzaOVqB1hrLuq8mp83Cz9E5brn7qtj72rNTd7LLItct4E3ldA9VBzJHmhkecRqk2rweVt3xoW6ze1j5e1jLQDqMS+vb16iScYb2/vbHA8loNGamX+5+41M2B+nIbGP46ftQKOdKTMRkIT6wYF8MPfvcoxZ56UhMUCgdZ2WCnFVPD3cXJc2MVf/6GO9EczABToB4j2DRNgb64sahdSs73JaXFENgUyTRPawfBmcwRy+wbE3CmgzFG+yn/UDcQZIrfXcgyAjwxSkKawhjLleLzpQ2Rtf/h8e8NjczIqYEn3b+P/EByqD9+GPZUD99H/oEcp1cr6ejj4+QFxluTCbLOWM1TrRNct2ml6TfJawOba+X28lw9b/Dt3IQDk564VlvcD48Oo1Oj6LBu354dvS37HDsc0JrXu3w5LhLgOEW34Xbg8Eqri6TPeezy17Pya0YK9wkqB0ktwFakct6yXNK2HJI2G3so6r2lK/01Pjr2l7OS9Axio86VRrFxdernWGM78DF1ysxNVZ0hbuRy7Af9o+4HRTGUQ4+/jbc9XvHd9Rt+9W6Sb3oadRWD+EjHRYZKO0HBpuxxaZ/jGS09dpZ0UPUYDsO5Mw4bhiyqibg8MZmdc3LP0v0oI0DOQerYMJYjSqZKMff6/H/ybO8uW4v7YHY95TaG/6SejUT7xyykv/xncLFzlsqeGUwTz+rXhFS+64arzq6B6nZ+9B47w3Zwlp3h4f4JI3GRRxjQc/Kjjtc8fVmyO2lfbblJmEVCw88y8FDE6bxYPje79cqmYFOS09msjHJv/8A8AhQAw==
+sidebar_class_name: "put api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Update an Event"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/{organisation}/events/{ksuid}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Update an existing event and its location
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"ksuid","in":"path","description":"Unique event ID (KSUID)","required":true,"schema":{"type":"string","title":"ksuid"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Event details","required":false,"content":{"application/json":{"schema":{"type":"object","required":["event"],"properties":{"event":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["draft","live","archived","outdated"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the event"},"banner":{"type":"string","description":"Appears at the top of the event page"},"entity_type":{"type":"string"},"name":{"type":"string","minLength":2,"description":"The name of the event."},"starts_at":{"type":"string","format":"date-time"},"ends_at":{"type":"string","format":"date-time"},"category":{"type":"array","items":{"type":"string","enum":["congress","workshop","party","class","lecture"]}},"capacity":{"type":"integer"},"number_sold":{"type":"integer","default":0},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"location":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"address":{"type":"string"},"lat":{"type":"number"},"lng":{"type":"number"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"LocationObject"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"events","x-internal-path":"functions/events","title":"EventObject"}},"x-internal-group":"events","x-internal-path":"functions/events","title":"UpdateEventRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"Event updated successfully.","headers":{}},"400":{"description":"Invalid input","headers":{}},"409":{"description":"Version conflict.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

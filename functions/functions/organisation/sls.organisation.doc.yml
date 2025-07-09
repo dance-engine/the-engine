@@ -1,0 +1,56 @@
+Organisation:
+  GET:
+    summary: "Get Org Settings"
+    description: "Returns the settings for a given organisation."
+    tags:
+      - Organisation
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Returns organisation details.
+        responseModels:
+          application/json: "OrganisationResponse"            
+      - statusCode: 404
+        responseBody:
+          description: No events found.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"            
+  UPDATE:
+    summary: "Update Organisatioon Settings"
+    description: "Fetch details of a specific organisation by its slug."
+    tags:
+      - Organisation
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+    requestBody:
+      description: "Organisation details"
+    requestModels:
+      application/json: "UpdateOrganisationRequest"          
+    methodResponses:
+      - statusCode: 201
+        responseBody:
+          description: The organisation object.
+        responseModels:
+          application/json: "OrganisationResponse"
+      - statusCode: 400
+        responseBody:
+          description: Invalid input
+      - statusCode: 409
+        responseBody:
+          description: Version conflict.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"

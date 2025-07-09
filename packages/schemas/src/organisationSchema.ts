@@ -2,10 +2,11 @@
 import { z } from "zod";
 
 // Define the event schema
-export const customerSchema = z.object({
-  organisation: z.string().min(2, "Name must be at least 2 characters"),
+export const organisationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().min(2, "Name must be at least 2 characters"),
-  entity_type: z.enum(["ORGANISATION", ""]).describe("Select the type of entity."),
+  slug: z.string().min(2, "Slug must be at least 2 characters").max(50, "Slug must be less than 50 characters").regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with dashes"),
+  status: z.enum(["draft","active","setup","suspended","archived"]).default("active").describe("Status of the organisation"),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
   }).optional().describe("Updated timstamp"),
@@ -16,12 +17,11 @@ export const customerSchema = z.object({
 });
 
 // Generate TypeScript type from the schema
-export type OrganisationType = z.infer<typeof customerSchema>;
+export type OrganisationType = z.infer<typeof organisationSchema>;
 
 // Additional no validation metadata relating to how we display data in forms
-export const customerMetadata = {
-  ksuid: { hidden: true },
-  bio: { richText: true },
+export const organisationMetadata = {
+  description: { richText: true },
   created_at: { info: true },
   updated_at: { info: true },
   version: { info: true }

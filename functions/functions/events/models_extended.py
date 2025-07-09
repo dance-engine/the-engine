@@ -1,17 +1,25 @@
 # models_ext.py
-from models_events import EventObject as EventBase, LocationObject as LocationBase, Status
-from _shared.dynamodb import DynamoModel
+from models_events import EventObject as EventBase, LocationObject as LocationBase, Status, EventObjectPublic
+from _shared.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from typing import ClassVar
-from pydantic import model_validator
+from pydantic import model_validator, field_validator
 
 class EventModel(EventBase, DynamoModel):
-    location: ClassVar[None] = None
     organisation: str
     number_sold: int = 0
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    entity_type: str = "EVENT"
+
+    @property
+    def related_entities(self):
+        return {
+            "LOCATION": ("location", "single", LocationModel),
+            "HISTORY": ("history", "list", HistoryModel) 
+            }
+    
+    @property
+    def entity_type(self): return f"EVENT"
 
     @property
     def PK(self): return f"EVENT#{self.ksuid}"
@@ -31,6 +39,15 @@ class EventModel(EventBase, DynamoModel):
     @property
     def org_slug(self): return self._slugify(self.organisation)
 
+    @field_validator('category', mode='before')
+    @classmethod
+    def ensure_list_of_enums(cls, v):
+        if isinstance(v, str):
+            return [v]
+        if isinstance(v, list):
+            return v
+        raise ValueError('Invalid category format')
+
     @model_validator(mode="after")
     def validate_live(self) -> 'EventModel':
         if self.status == Status.live:
@@ -46,12 +63,17 @@ class EventModel(EventBase, DynamoModel):
                 raise ValueError(f"Cannot publish event: missing required field(s): {', '.join(missing)}")
         return self
 
+    def to_public(self) -> 'EventObjectPublic':
+        return EventObjectPublic.model_validate(self.model_dump(include=EventObjectPublic.model_fields.keys()))
+
 class LocationModel(LocationBase, DynamoModel):
     organisation: str
     parent_event_ksuid: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    entity_type: str = "LOCATION"
+    
+    @property
+    def entity_type(self): return "LOCATION"
 
     @property
     def PK(self): return f"LOCATION#{self.ksuid}"

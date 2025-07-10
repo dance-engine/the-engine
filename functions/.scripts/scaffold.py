@@ -1,5 +1,6 @@
 import typer
 from pathlib import Path
+import shutil
 from typing import Optional,List
 from typing_extensions import Annotated
 
@@ -66,6 +67,43 @@ def create_lambda(
     append_to_serverless_yaml(name)
 
     typer.echo(f"✅ Lambda '{name}' scaffolded with routes: {routes}")
+
+@app.command()
+def delete_lambda(
+    name: Annotated[str, typer.Option(..., help="Name of the lambda to delete")]
+):
+    """
+    Delete an existing Lambda.
+    """
+    lambda_dir = FUNCTIONS_DIR / name
+    pascal_name = snake_to_pascal(name)
+
+    if not lambda_dir.exists():
+        typer.echo(f"❌ Lambda directory does not exist: {lambda_dir}")
+        raise typer.Exit(code=1)
+
+    typer.echo(f"⚠️  You are about to delete all files for lambda '{name}' in {lambda_dir}")
+    confirm = typer.prompt("Are you absolutely sure you want to proceed? Type 'yes' to continue")
+    if confirm.strip().lower() != "yes":
+        typer.echo("❌ Aborted.")
+        raise typer.Exit()
+
+    confirm_name = typer.prompt(f"Type the EXACT lambda name to confirm deletion")
+    if confirm_name.strip() != name:
+        typer.echo("❌ Name mismatch. Aborting deletion.")
+        raise typer.Exit()
+
+    # Delete the directory
+    try:
+        shutil.rmtree(lambda_dir)
+        typer.echo(f"🗑️  Deleted lambda folder: {lambda_dir}")
+    except Exception as e:
+        typer.echo(f"❌ Error deleting folder: {e}")
+        raise typer.Exit(code=1)
+
+    # Remove include line from serverless.yml
+    remove_from_serverless_yaml(name)
+    typer.echo(f"✅ Lambda '{name}' fully removed.")
 
 def handler_template(name: str) -> str:
     return f"""# python libraries
@@ -239,6 +277,20 @@ def append_to_serverless_yaml(name: str):
 
     typer.echo(f"📎 Added function config to serverless.yml: {include_line}")
 
+def remove_from_serverless_yaml(name: str):
+    pascal = snake_to_pascal(name)
+    lambda_dir = FUNCTIONS_DIR / name
+    include_line = f"  {pascal}: ${{file({lambda_dir}/sls.{name}.function.yml):{name}}}"
+    with open(SERVERLESS_YML, "r") as f:
+        lines = f.readlines()
+
+    new_lines = [line for line in lines if include_line.strip() not in line.strip()]
+    if len(new_lines) == len(lines):
+        typer.echo("ℹ️  No serverless.yml include line found to remove.")
+    else:
+        with open(SERVERLESS_YML, "w") as f:
+            f.writelines(new_lines)
+        typer.echo(f"🧹 Removed function config from serverless.yml.")
 
 if __name__ == "__main__":
     app()

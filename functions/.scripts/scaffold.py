@@ -183,6 +183,7 @@ def {method}(data):
 def function_yaml(name: str, routes: List[str], lambda_dir: Path) -> str:
     name_pascal = snake_to_pascal(name)
     route_events = []
+    doc_path = (lambda_dir / f"sls.{name}.doc.yml").relative_to(BASE)
     for route in routes:
         method, path = route.split()
         route_events.append(f"""      - httpApi:
@@ -190,18 +191,18 @@ def function_yaml(name: str, routes: List[str], lambda_dir: Path) -> str:
           method: {method.lower()}
           authorizer:
             adminAuthorizer
-          documentation: ${{{{file({lambda_dir}/sls.{name}.doc.yml):endpoints.{name}.{method.upper()}}}}}        
+          documentation: ${{{{file({doc_path}):endpoints.{name}.{method.upper()}}}}}
 """)
     events_block = "\n".join(route_events)
 
     return f"""{name_pascal}:
   runtime: python3.11
-  handler: {lambda_dir}/{name}/handler_{name}.lambda_handler
+  handler: {lambda_dir.relative_to(BASE)}/{name}/handler_{name}.lambda_handler
   name: "${{sls:stage}}-${{self:service}}-{name}"
   package:
       patterns:
       - '!**/**'
-      - "{lambda_dir}/**"
+      - "{lambda_dir.relative_to(BASE)}/**"
       - "_shared/**"
   environment:
       STAGE_NAME: ${{sls:stage}}
@@ -250,7 +251,8 @@ def doc_yaml(name: str, routes: List[str]) -> str:
 
 def append_to_serverless_yaml(name: str, lambda_dir: Path):
     pascal = snake_to_pascal(name)
-    include_line = f"  {pascal}: ${{file({lambda_dir}/sls.{name}.function.yml):{name}}}"
+    function_config_path = (lambda_dir / f"sls.{name}.function.yml").relative_to(BASE)
+    include_line = f"  {pascal}: ${{file({function_config_path}):{name}}}"
     with open(SERVERLESS_YML, "r") as f:
         lines = f.readlines()
 
@@ -280,7 +282,8 @@ def append_to_serverless_yaml(name: str, lambda_dir: Path):
 
 def remove_from_serverless_yaml(name: str, lambda_dir: Path):
     pascal = snake_to_pascal(name)
-    include_line = f"  {pascal}: ${{file({lambda_dir}/sls.{name}.function.yml):{name}}}"
+    function_config_path = (lambda_dir / f"sls.{name}.function.yml").relative_to(BASE)
+    include_line = f"  {pascal}: ${{file({function_config_path}):{name}}}"
     with open(SERVERLESS_YML, "r") as f:
         lines = f.readlines()
 

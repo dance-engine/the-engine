@@ -7,7 +7,6 @@ from typing_extensions import Annotated
 app = typer.Typer()
 
 BASE = Path.cwd()
-FUNCTIONS_DIR = BASE / "functions"
 SERVERLESS_YML = BASE / "serverless.yml"
 
 def snake_to_pascal(s: str) -> str:
@@ -20,7 +19,8 @@ def another_command():
 @app.command()
 def create_lambda(
     name: Annotated[str, typer.Option(..., help="Name of the lambda")],
-    routes: Optional[List[str]] = typer.Option(None, help="List of HTTP method + path pairs for this function. (e.g. [\"GET /public/events\", \"POST /\{organisation\}/events\"])")
+    routes: Optional[List[str]] = typer.Option(None, help="List of HTTP method + path pairs for this function. (e.g. [\"GET /public/events\", \"POST /\{organisation\}/events\"])"),
+    directory: Annotated[str, typer.Option("--directory", "-d", help="Target directoryfor this lambda")] = "functions"
 ):
     """
     Scaffold a new Lambda
@@ -32,7 +32,8 @@ def create_lambda(
         routes = [f"GET /{name}"]
 
     # Create folder and base files
-    lambda_dir = FUNCTIONS_DIR / name
+    target_dir = BASE / directory
+    lambda_dir = target_dir / name
     lambda_dir.mkdir(parents=True, exist_ok=True)
 
     # Write handler.py
@@ -51,7 +52,7 @@ def create_lambda(
     # Write function config
     function_config = lambda_dir / f"sls.{name}.function.yml"
     function_config.parent.mkdir(parents=True, exist_ok=True)
-    function_config.write_text(function_yaml(name, routes))
+    function_config.write_text(function_yaml(name, routes, lambda_dir))
 
     # Write doc config
     doc_config = lambda_dir / f"sls.{name}.doc.yml"
@@ -64,18 +65,21 @@ def create_lambda(
     models_config.write_text(" ")
 
     # Append function include to serverless.yml
-    append_to_serverless_yaml(name)
+    append_to_serverless_yaml(name, lambda_dir)
 
-    typer.echo(f"✅ Lambda '{name}' scaffolded with routes: {routes}")
+    typer.echo(f"✅ Lambda '{name}' scaffolded in '{directory}/' with routes: {routes}")
 
 @app.command()
 def delete_lambda(
-    name: Annotated[str, typer.Option(..., help="Name of the lambda to delete")]
+    name: Annotated[str, typer.Option(..., help="Name of the lambda to delete")],
+    directory: Annotated[str, typer.Option("--directory", "-d", help="Dircetory where this lambda is located")] = "functions"
 ):
     """
     Delete an existing Lambda.
     """
-    lambda_dir = FUNCTIONS_DIR / name
+
+    target_dir = BASE / directory
+    lambda_dir = target_dir / name
     pascal_name = snake_to_pascal(name)
 
     if not lambda_dir.exists():
@@ -102,7 +106,7 @@ def delete_lambda(
         raise typer.Exit(code=1)
 
     # Remove include line from serverless.yml
-    remove_from_serverless_yaml(name)
+    remove_from_serverless_yaml(name, lambda_dir)
     typer.echo(f"✅ Lambda '{name}' fully removed.")
 
 def handler_template(name: str) -> str:
@@ -176,8 +180,7 @@ def {method}(data):
 
 """
 
-def function_yaml(name: str, routes: List[str]) -> str:
-    lambda_dir = FUNCTIONS_DIR / name
+def function_yaml(name: str, routes: List[str], lambda_dir: Path) -> str:
     name_pascal = snake_to_pascal(name)
     route_events = []
     for route in routes:
@@ -209,7 +212,6 @@ def function_yaml(name: str, routes: List[str]) -> str:
 """
 
 def doc_yaml(name: str, routes: List[str]) -> str:
-    lambda_dir = FUNCTIONS_DIR / name
     lines = ["endpoints:"]
     for route in routes:
         method, path = route.split()
@@ -246,9 +248,8 @@ def doc_yaml(name: str, routes: List[str]) -> str:
 """)
     return "\n".join(lines)
 
-def append_to_serverless_yaml(name: str):
+def append_to_serverless_yaml(name: str, lambda_dir: Path):
     pascal = snake_to_pascal(name)
-    lambda_dir = FUNCTIONS_DIR / name
     include_line = f"  {pascal}: ${{file({lambda_dir}/sls.{name}.function.yml):{name}}}"
     with open(SERVERLESS_YML, "r") as f:
         lines = f.readlines()
@@ -277,9 +278,8 @@ def append_to_serverless_yaml(name: str):
 
     typer.echo(f"📎 Added function config to serverless.yml: {include_line}")
 
-def remove_from_serverless_yaml(name: str):
+def remove_from_serverless_yaml(name: str, lambda_dir: Path):
     pascal = snake_to_pascal(name)
-    lambda_dir = FUNCTIONS_DIR / name
     include_line = f"  {pascal}: ${{file({lambda_dir}/sls.{name}.function.yml):{name}}}"
     with open(SERVERLESS_YML, "r") as f:
         lines = f.readlines()

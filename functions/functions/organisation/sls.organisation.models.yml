@@ -22,6 +22,11 @@ OrganisationObject:
           ksuid:
             type: string
             description: "ID of the organisation"
+          organisation:
+            type: string
+            description: "Short slug used to represent the org"
+          entity_type:
+            type: string
           name:
             type: string
             minLength: 2

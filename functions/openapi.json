@@ -284,6 +284,10 @@
             "type": "string",
             "description": "ID of the organisation"
           },
+          "organisation": {
+            "type": "string",
+            "description": "Short slug used to represent the org"
+          },
           "entity_type": {
             "type": "string"
           },
@@ -514,7 +518,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-90d88a17-5f71-478a-93a9-b5a1837d27c7",
+        "operationId": "eventbridge-2a56d4b0-e6ad-414e-9361-0630f0143d9c",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -586,7 +590,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-dc070a74-9327-45b0-90ca-b33b23f712e8",
+        "operationId": "events-24e0f4b7-fd50-4809-bcbb-509d0fb4b1f1",
         "parameters": [
           {
             "name": "organisation",
@@ -643,7 +647,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-5e363818-8219-4c43-a0d1-9e04db83222a",
+        "operationId": "events-536bdd5f-0fdc-4126-b3dd-b1c40984ab53",
         "parameters": [
           {
             "name": "organisation",
@@ -699,7 +703,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-b3953b23-35d9-480c-a4b7-b6970523b446",
+        "operationId": "events-1dc3f8e7-b73f-4b9e-982d-1bd9bfe4ad9e",
         "parameters": [
           {
             "name": "organisation",
@@ -765,7 +769,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-44629fcb-f74a-4c4a-ac8b-bf3fa30cd371",
+        "operationId": "events-753d0435-7161-42bc-a28a-4a47fc23d929",
         "parameters": [
           {
             "name": "organisation",
@@ -827,7 +831,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-998375a6-4f93-4509-82dc-ca7f971c122e",
+        "operationId": "events-ef0dfb3b-f02f-453b-8f68-f0061212a0d4",
         "parameters": [
           {
             "name": "organisation",
@@ -926,7 +930,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-1478a2cf-82c2-4a93-9dac-8fe2b7533357",
+        "operationId": "presigned_url-e7cb95fd-b8ab-4701-ac3d-6e11bda5366c",
         "parameters": [],
         "tags": [
           "S3"
@@ -995,7 +999,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-fc126570-2392-4e14-91e1-c04e9f8421bf",
+        "operationId": "customers-20a2fd37-5d5a-4fdd-9124-54458708dd50",
         "parameters": [
           {
             "name": "organisation",
@@ -1041,7 +1045,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-ddceb4e2-c7d6-48cf-b283-a1b0f422eeba",
+        "operationId": "customers-46540836-e9ea-4da5-8b01-23618739e2d5",
         "parameters": [
           {
             "name": "organisation",
@@ -1161,7 +1165,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-78d0f56b-df4d-4eb4-89cd-f2d1bd65235a",
+        "operationId": "organisation-f95ef758-a070-421a-aebe-75d468c21d5c",
         "parameters": [
           {
             "name": "organisation",

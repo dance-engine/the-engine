@@ -106,9 +106,9 @@ class DynamoModel(BaseModel):
         base = self.model_dump(mode="json", exclude_none=True)
 
         if exclude_keys:
-            exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "PK", "SK"}
+            exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "related_entities", "PK", "SK"}
         else:
-            exclude_props = {"__fields_set__", "model_fields_set", "model_extra"}
+            exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "related_entities"}
 
         props = {}
         for name in dir(self.__class__):

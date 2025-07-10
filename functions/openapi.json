@@ -51,9 +51,6 @@
             "type": "string",
             "description": "Appears at the top of the event page"
           },
-          "entity_type": {
-            "type": "string"
-          },
           "name": {
             "type": "string",
             "minLength": 2,
@@ -288,9 +285,6 @@
             "type": "string",
             "description": "Short slug used to represent the org"
           },
-          "entity_type": {
-            "type": "string"
-          },
           "name": {
             "type": "string",
             "minLength": 2,
@@ -518,7 +512,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-2a56d4b0-e6ad-414e-9361-0630f0143d9c",
+        "operationId": "eventbridge-294a0133-d0f0-406f-8882-9a745532cb43",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -590,7 +584,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-24e0f4b7-fd50-4809-bcbb-509d0fb4b1f1",
+        "operationId": "events-bad0fe85-7027-4bc1-8704-91737298ff05",
         "parameters": [
           {
             "name": "organisation",
@@ -647,7 +641,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-536bdd5f-0fdc-4126-b3dd-b1c40984ab53",
+        "operationId": "events-87c0d70e-20fd-44d4-851d-57e7ed24666a",
         "parameters": [
           {
             "name": "organisation",
@@ -703,7 +697,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-1dc3f8e7-b73f-4b9e-982d-1bd9bfe4ad9e",
+        "operationId": "events-16ec8390-0eca-48cb-91c1-d7fbca873ae9",
         "parameters": [
           {
             "name": "organisation",
@@ -769,7 +763,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-753d0435-7161-42bc-a28a-4a47fc23d929",
+        "operationId": "events-24cefac2-e13a-4a87-b6eb-428bce6da24d",
         "parameters": [
           {
             "name": "organisation",
@@ -831,7 +825,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-ef0dfb3b-f02f-453b-8f68-f0061212a0d4",
+        "operationId": "events-afd28c5b-c78a-42e5-b920-ef19111273bc",
         "parameters": [
           {
             "name": "organisation",
@@ -930,7 +924,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-e7cb95fd-b8ab-4701-ac3d-6e11bda5366c",
+        "operationId": "presigned_url-9cd9bc39-0aea-4802-9ac5-0f96c6156bd8",
         "parameters": [],
         "tags": [
           "S3"
@@ -999,7 +993,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-20a2fd37-5d5a-4fdd-9124-54458708dd50",
+        "operationId": "customers-17d837df-7f2a-46b7-8c2f-2f39d601f32a",
         "parameters": [
           {
             "name": "organisation",
@@ -1045,7 +1039,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-46540836-e9ea-4da5-8b01-23618739e2d5",
+        "operationId": "customers-b1a967d6-46e3-4c6f-94a5-8a324081dc8b",
         "parameters": [
           {
             "name": "organisation",
@@ -1165,7 +1159,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-f95ef758-a070-421a-aebe-75d468c21d5c",
+        "operationId": "organisation-103a5fea-aed1-4570-96a8-b04b97979835",
         "parameters": [
           {
             "name": "organisation",

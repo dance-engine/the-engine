@@ -49,12 +49,12 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
 
   useEffect(() => {
     const draft = loadFromStorage();
-    console.log("Comparing versions local:",draft?.version," remote:",data?.version, "[",(draft && draft.version && data && draft.version >= data.version),"]")
+    console.log("Comparing versions \nlocal:",draft?.version,"\nremote:",data?.version, "[",(draft && draft.version && data && draft.version >= data.version),"]")
     if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
-      console.info("Loading cached version", draft, data)
+      console.info("Loading Cached", "\nDraft", draft, "\nData", data)
       reset(draft as EntityType)
     } else { 
-      console.info("Loading remote version", "\nDraft", draft, "\nData", data)
+      console.info("Loading Remote", "\nDraft", draft, "\nData", data)
       reset(data as EntityType)
     }  
   }, [loadFromStorage, data, reset]);
@@ -65,11 +65,11 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   return (
     <form onSubmit={handleSubmit((data) => {
         onSubmit(data)
-        console.log("Submitted",data)
         setValue("meta.saved", "saving") 
         setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full relative">
+      {errors && <div className="text-red-500">{JSON.stringify(errors)}</div>}
       <Debug debug={{ formState: isDirty ? "Dirty" : "Clean", values: watchedValues, errors: errors}} className="absolute right-0"/>
       {/* <div>Org: {orgSlug} {JSON.stringify(data,null,2)}</div> */}
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>

@@ -20,7 +20,7 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
 
   const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/settings`.replace('/{org}',`/${activeOrg || "demo"}`)
   const updateUrlEndpoint = baseUrlEndpoint
-  const defaultEntity = useMemo(() => ({ type: "ORGANISATION", activeOrg }), [activeOrg])
+  const defaultEntity = useMemo(() => ({ entity_type: "ORGANISATION", activeOrg }), [activeOrg])
   const { data, error, isLoading } = useClerkSWR(updateUrlEndpoint)
   
   
@@ -31,7 +31,7 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: updateUrlEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const organisationSlug = `ORGANISATION#${data.ksuid}`
+    const organisationSlug = `ORGANISATION#${activeOrg}`
     try {
       const res = await fetch(updateUrlEndpoint, {
         method: "PUT",
@@ -47,14 +47,15 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
 
       const previousCache = JSON.parse(localStorage.getItem(organisationSlug) || '{}')
       if (!res.ok) {
-        const failedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
+        const failedCache = JSON.stringify({...previousCache, ...cleanedData, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
         localStorage.setItem(organisationSlug,failedCache)
-        console.error("Failed to save",organisationSlug,failedCache)
         throw new Error(result.message || "Something went wrong")
       } else {
-        const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
+        // version increase because we aren't loading remote stuff as we stay on same page
+        const savedData = {...previousCache, ...cleanedData, ...{version: parseInt(result.organisation.version)+1}, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}}
+        const savedCache = JSON.stringify(savedData)
         localStorage.setItem(organisationSlug,savedCache)
-        console.log("Organisation settings saved!", result, organisationSlug,savedCache)
+        setEntity(savedData)
         router.push("/settings/org")
       }
      
@@ -74,7 +75,6 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
     // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
     const remoteEntity = data || defaultEntity
     const initEntity = {...blankEntity, ...remoteEntity.organisation}
-    console.log("Data", data, "\nremoteEntity", remoteEntity, "\nactiveOrg", activeOrg, "\nInitial Entity", initEntity,)
     setEntity(initEntity)
   },[activeOrg,data,defaultEntity, ksuid])
   

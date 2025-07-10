@@ -1,0 +1,71 @@
+---
+id: organisation-103-a-5-fea-aed-1-4570-96-a-8-b-04-b-97979835
+title: "Update Organisatioon Settings"
+description: "Fetch details of a specific organisation by its slug."
+sidebar_label: "Update Organisatioon Settings"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu2zgQ/RWCTy0gObYbb2K9pW0KpFigReJsgfUazVgaW0wkUiVHTryG/n0xlC+S7WSxRfctfrEtzpy5cM4htZIJutiqgpTRMpKfkOJUJEigMifMTIBwBcZqpmJh7By0csCmYroUipxwWTnvyECaAq1fuEpkJJuWYa/7DgYzhBAw6YWng7NuOPwNzsNp93Q6PBueDc/fDWQgC7CQI6F1MhqvpIYc95BkIBXnWAClMthL/EszOc5KBtLij1JZTGREtsRAujjFHGS0krQsGN2RVZotSVF2EK6qJoEkmHNCLXw5qbHR0XuTLBnwhWTWzWzlM4PMYSBjowk1MQAURaZi73Fy7xhldZivmd5jTC2kcTvnSSALy5tBCh17tlb/Bcn3/ADBEVDpjnUNdZmznwohDwmhMIyYWJjxN8SkFigD6ZDKgr9LV6BOMOFFG6dqgQmHS3AGZUYyWrtWgXxwpUqOhWz3+eojjyilKNobFzxX9jM4N6mx5KdGlA4TQUZYLCw61LSBZ9R6KA/RcqV/Rz2nVEb9fexRioL9jmXaYdCW+T52FcjYIhAm34GOhZ4Zm4PvHRCGpHJkn7JI/rPPAq1r56A04RwtL6bKkbHLxiJYC0umJGHuDierqqpAPoUMYTVk4dyasjgkdMPC0zqSs1LHvOhO9kw3HG2S68sm2P8U69b3sRnxuuY911cxe1xhtKuJ0u/2DqVgtLflou4Pa+ZPs/+V4a8Mf2X4r491vWZzXVqKkPjbyIr/nXa7h+S+0gvIVCKULkomxL7L8NDlj3oPRGz0LFO1ELTdBscj1XUJh3aBVqC1xv5CEcnROZgfGf0qkD7WkZVq18VLNnm+fVUgc6TU8N2w7tR6e05WzW2pThwSKT13XlPi0ipa+ttgnKF9+H7/SDIaT/hatlm94frqEho2+937/G0klHMlJnxv/cCGHcG0JfOAWuSlIzFFoXSclQnyfnoi312UlBqr/vbZ3Ym6JAFOgHiPYNHWAB1x69C6LU4BljZiQGDnSO0jAHQiUligN9jIs7AmQ/EGO/NOIO4gyZW+e8s6BXGMzonCGsKY2BCdKW2MrvOXn+R6V1IiL8G+ITKSU5+gDNY/Pm0U4fO3kd86npDr3SX28gnyIsNjB8rmeNjq/lq7d3LT9tg9X1/in9Hk7eOm/sl+t38ads/C/nDUG0SDXtQ/73TPen/Ktua9ZLfVuW5D1sarasJ1Kz0zfpjXo/sRdIziUs+VRnHx9eogTZ6Ti69XYmasaBo3A8lup9vpMVkK4ygH37d19fUdQjSExmhxsxv0vdNhS+iffhdbDwThE50UGSh/XJY2Y/Sad2MZ7cnhlniTQKbGMc/kajUFh7c2qyp+/KNE38dJIBdgFUy5feOVTJTj37u3mmcLenO9nvW34tjr2tG8N2eR5pNoAVnJ/3gGcXnwvjbZyo5PrDb5UIcPRwy0gzgQyyrYeFzEMRb0ou2kIWhfb0fMsvWLYG4SdrHwyFcveKyzNb4bXqb8s5XMQM9Lr7iyhuTPP+eZZS4=
+sidebar_class_name: "put api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Update Organisatioon Settings"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/{organisation}/settings"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fetch details of a specific organisation by its slug.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Organisation details","required":false,"content":{"application/json":{"schema":{"type":"object","required":["organisation"],"properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"UpdateOrganisationRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"The organisation object.","content":{"application/json":{"schema":{"type":"object","properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationResponse"}}},"headers":{}},"400":{"description":"Invalid input","headers":{}},"409":{"description":"Version conflict.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

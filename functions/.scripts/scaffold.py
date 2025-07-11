@@ -20,16 +20,20 @@ def another_command():
 def create_lambda(
     name: Annotated[str, typer.Option(..., help="Name of the lambda")],
     routes: Optional[List[str]] = typer.Option(None, help="List of HTTP method + path pairs for this function. (e.g. [\"GET /public/events\", \"POST /\{organisation\}/events\"])"),
+    trigger: Annotated[str, typer.Option("--trigger", "-t", help="Trigger type: http or eventbridge")] = "http",
     directory: Annotated[str, typer.Option("--directory", "-d", help="Target directoryfor this lambda")] = "functions"
 ):
     """
     Scaffold a new Lambda
     """
 
-    use_flat_method_name = False
-    if routes is None:
-        use_flat_method_name = True
-        routes = [f"GET /{name}"]
+    if trigger == "http":
+        use_flat_method_name = False
+        if routes is None:
+            use_flat_method_name = True
+            routes = [f"GET /{name}"]
+    else:
+        routes = []
 
     # Create folder and base files
     target_dir = BASE / directory
@@ -39,25 +43,29 @@ def create_lambda(
     # Write handler.py
     handler_file = lambda_dir / f"handler_{name}.py"
     if not handler_file.exists():
-        handler_file.write_text(handler_template(name))
+        handler_file.write_text(handler_template(name, trigger))
 
     # Create method files (get_all.py, post.py, etc.)
-    for route in routes:
-        method, path = route.split()
-        filename = f"lambda_{name}.py" if use_flat_method_name else f"lambda_{name}_{method.lower()}.py"
-        method_file = lambda_dir / filename
-        if not method_file.exists():
-            method_file.write_text(method_template(name, method.lower(), path))
+    if trigger == "http":
+        for route in routes:
+            method, path = route.split()
+            filename = f"lambda_{name}.py" if use_flat_method_name else f"lambda_{name}_{method.lower()}.py"
+            method_file = lambda_dir / filename
+            if not method_file.exists():
+                method_file.write_text(method_template(name, method.lower(), path))
 
     # Write function config
     function_config = lambda_dir / f"sls.{name}.function.yml"
     function_config.parent.mkdir(parents=True, exist_ok=True)
-    function_config.write_text(function_yaml(name, routes, lambda_dir))
+    function_config.write_text(function_yaml(name, routes, lambda_dir, trigger))
+
 
     # Write doc config
-    doc_config = lambda_dir / f"sls.{name}.doc.yml"
-    doc_config.parent.mkdir(parents=True, exist_ok=True)
-    doc_config.write_text(doc_yaml(name, routes))
+    if trigger == "http":
+        doc_config = lambda_dir / f"sls.{name}.doc.yml"
+        doc_config.parent.mkdir(parents=True, exist_ok=True)
+        doc_config.write_text(doc_yaml(name, routes))
+
 
     # Write placeholder model config
     models_config = lambda_dir / f"sls.{name}.models.yml"
@@ -109,7 +117,28 @@ def delete_lambda(
     remove_from_serverless_yaml(name, lambda_dir)
     typer.echo(f"✅ Lambda '{name}' fully removed.")
 
-def handler_template(name: str) -> str:
+def handler_template(name: str, trigger: str = "http") -> str:
+    if trigger == "eventbridge":
+        return f"""# python libraries
+import os
+import json
+import logging
+
+## installed packages
+from pydantic import AfterValidator, ValidationError # layer: pydantic
+
+## custom scripts
+from _shared.DecimalEncoder import DecimalEncoder
+
+## logger setup
+logger = logging.getLogger()
+logger.setLevel("INFO")    
+
+## the handler for incoming event
+def lambda_handler(event, context):
+    # TODO: implement
+    return
+"""    
     return f"""# python libraries
 import os
 import json
@@ -180,27 +209,37 @@ def {method}(data):
 
 """
 
-def function_yaml(name: str, routes: List[str], lambda_dir: Path) -> str:
+def function_yaml(name: str, routes: List[str], lambda_dir: Path, trigger: str) -> str:
     name_pascal = snake_to_pascal(name)
-    route_events = []
-    doc_path = (lambda_dir / f"sls.{name}.doc.yml").relative_to(BASE)
-    for route in routes:
-        method, path = route.split()
-        route_events.append(f"""      - httpApi:
+
+    if trigger == "http":
+        route_events = []
+        doc_path = (lambda_dir / f"sls.{name}.doc.yml").relative_to(BASE)
+        for route in routes:
+            method, path = route.split()
+            route_events.append(f"""      - httpApi:
           path: {path}
           method: {method.lower()}
           authorizer:
             adminAuthorizer
           documentation: ${{{{file({doc_path}):endpoints.{name}.{method.upper()}}}}}
 """)
-    events_block = "\n".join(route_events)
+        events_block = "\n".join(route_events)
+    else:
+        events_block = f"""    - eventBridge:
+        pattern:
+          source:
+            - prefix: "dance-engine."
+          detail-type:
+            - prefix: "object.action"
+"""
 
     return f"""{name_pascal}:
   runtime: python3.11
-  handler: {lambda_dir.relative_to(BASE)}/{name}/handler_{name}.lambda_handler
+  handler: {lambda_dir.relative_to(BASE)}/handler_{name}.lambda_handler
   name: "${{sls:stage}}-${{self:service}}-{name}"
   package:
-      patterns:
+    patterns:
       - '!**/**'
       - "{lambda_dir.relative_to(BASE)}/**"
       - "_shared/**"

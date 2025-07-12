@@ -19,7 +19,6 @@ def another_command():
 @app.command()
 def create_lambda(
     name: Annotated[str, typer.Option(..., help="Name of the lambda")],
-    routes: Optional[List[str]] = typer.Option(None, help="List of HTTP method + path pairs for this function. (e.g. [\"GET /public/events\", \"POST /\{organisation\}/events\"])"),
     trigger: Annotated[str, typer.Option("--trigger", "-t", help="Trigger type: http or eventbridge")] = "http",
     directory: Annotated[str, typer.Option("--directory", "-d", help="Target directoryfor this lambda")] = "functions"
 ):
@@ -27,44 +26,27 @@ def create_lambda(
     Scaffold a new Lambda
     """
 
-    if trigger == "http":
-        use_flat_method_name = False
-        if routes is None:
-            use_flat_method_name = True
-            routes = [f"GET /{name}"]
-    else:
-        routes = []
-
     # Create folder and base files
     target_dir = BASE / directory
     lambda_dir = target_dir / name
     lambda_dir.mkdir(parents=True, exist_ok=True)
 
-    # Write handler.py
-    handler_file = lambda_dir / f"handler_{name}.py"
-    if not handler_file.exists():
-        handler_file.write_text(handler_template(name, trigger))
-
     # Create method files (get_all.py, post.py, etc.)
-    if trigger == "http":
-        for route in routes:
-            method, path = route.split()
-            filename = f"lambda_{name}.py" if use_flat_method_name else f"lambda_{name}_{method.lower()}.py"
-            method_file = lambda_dir / filename
-            if not method_file.exists():
-                method_file.write_text(method_template(name, method.lower(), path))
+    lambda_file = lambda_dir / f"lambda_{name}.py"
+    if not lambda_file.exists():
+        lambda_file.write_text(lambda_template(name, trigger))
 
     # Write function config
     function_config = lambda_dir / f"sls.{name}.function.yml"
     function_config.parent.mkdir(parents=True, exist_ok=True)
-    function_config.write_text(function_yaml(name, routes, lambda_dir, trigger))
+    function_config.write_text(function_yaml(name, lambda_dir, trigger))
 
 
     # Write doc config
     if trigger == "http":
         doc_config = lambda_dir / f"sls.{name}.doc.yml"
         doc_config.parent.mkdir(parents=True, exist_ok=True)
-        doc_config.write_text(doc_yaml(name, routes))
+        doc_config.write_text(doc_yaml(name))
 
 
     # Write placeholder model config
@@ -75,7 +57,7 @@ def create_lambda(
     # Append function include to serverless.yml
     append_to_serverless_yaml(name, lambda_dir)
 
-    typer.echo(f"✅ Lambda '{name}' scaffolded in '{directory}/' with routes: {routes}")
+    typer.echo(f"✅ Lambda '{name}' scaffolded in '{directory}/'")
 
 @app.command()
 def delete_lambda(
@@ -117,75 +99,51 @@ def delete_lambda(
     remove_from_serverless_yaml(name, lambda_dir)
     typer.echo(f"✅ Lambda '{name}' fully removed.")
 
-def handler_template(name: str, trigger: str = "http") -> str:
+def lambda_template(name: str, trigger: str) -> str:
     if trigger == "eventbridge":
-        return f"""# python libraries
+        return f"""## python libraries
 import os
 import json
+import boto3 # not a python library but is included in lambda without need to install it
 import logging
+import traceback
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 
 ## custom scripts
 from _shared.DecimalEncoder import DecimalEncoder
+from models_{name} import {name}Object, {name}Response
 
 ## logger setup
 logger = logging.getLogger()
-logger.setLevel("INFO")    
+logger.setLevel("INFO")
 
-## the handler for incoming event
+## aws resources an clients
+#db = boto3.resource("dynamodb")
+
+## ENV variables
+# will throw an error if the env variable does not exist
+STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
+
 def lambda_handler(event, context):
     # TODO: implement
     return
-"""    
-    return f"""# python libraries
-import os
-import json
-import logging
-
-## installed packages
-from pydantic import AfterValidator, ValidationError # layer: pydantic
-
-## custom scripts
-from _shared.DecimalEncoder import DecimalEncoder
-
-## logger setup
-logger = logging.getLogger()
-logger.setLevel("INFO")    
-
-## the handler for incoming request
-def lambda_handler(event, context):
-    http_method = event['requestContext']["http"]["method"]
-
-    if http_method == "GET":
-        # TODO: implement
-        return 
-    elif http_method == "POST":
-        return
-    else:
-        return {{
-            "statusCode": 405, 
-            "headers": {{ "Content-Type": "application/json" }}, 
-            "body": json.dumps({{
-                    "message": "Method not allowed."
-                    }}, cls=DecimalEncoder)
-            }}
-
-"""
-
-def method_template(name: str, method: str, path: str) -> str:
+    """
     return f"""## python libraries
 import os
 import json
 import boto3 # not a python library but is included in lambda without need to install it
 import logging
+import traceback
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 
 ## custom scripts
 from _shared.DecimalEncoder import DecimalEncoder
+from _shared.helpers import make_response
+from models_{name} import {name}Object, {name}Response
 
 ## logger setup
 logger = logging.getLogger()
@@ -199,30 +157,66 @@ logger.setLevel("INFO")
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 
 ## write here the code which is called from the handler
-def {method}(data):
+def get(organisationSlug: str, public: bool = False, actor: str = "unknown") -> {name}Object:
+    '''
+    You expect me to return an instance of {name}Object.
+    '''
     # TODO: implement
-    return {{
-        "statusCode": 200, 
-        "headers": {{ "Content-Type": "application/json" }}, 
-        "body": json.dumps(events, cls=DecimalEncoder)
-        }}
+    return make_response(201, {{
+            "message": "It's a work in progress...",
+        }})
 
-"""
+def lambda_handler(event, context):
+    try:
+        logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+        parsed_event = parse_event(event)
+        http_method  = event['requestContext']["http"]["method"]
 
-def function_yaml(name: str, routes: List[str], lambda_dir: Path, trigger: str) -> str:
+        organisationSlug = event.get("pathParameters", {{}}).get("organisation")
+        is_public        = event.get("rawPath", "").startswith("/public")
+        actor            = event.get("requestContext", {{}}).get("accountId", "unknown")
+
+        # POST
+        if http_method == "POST":
+            return make_response(405, {{"message": "Method not implemented."}})
+        # PUT 
+        if http_method == "PUT":
+            return make_response(405, {{"message": "Method not implemented."}})
+        # GET 
+        elif http_method == "GET":
+            response_cls = {name}Response # The model response class defined in pydantic
+
+            if not organisationSlug:
+                return make_response(404, {{"message": "Missing organisation in request"}})            
+            
+            result = get(organisationSlug)
+            response = response_cls({name}=result)
+            return make_response(200, response.model_dump(mode="json", exclude_none=True))     
+
+    except ValueError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400,{{"message": "Validation error.", "error": str(e)}})
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {{"message": "Internal server error.", "error": str(e)}})
+    """
+
+def function_yaml(name: str, lambda_dir: Path, trigger: str) -> str:
     name_pascal = snake_to_pascal(name)
 
     if trigger == "http":
         route_events = []
         doc_path = (lambda_dir / f"sls.{name}.doc.yml").relative_to(BASE)
+        routes = ["GET", "POST", "PUT"]
         for route in routes:
-            method, path = route.split()
             route_events.append(f"""      - httpApi:
-          path: {path}
-          method: {method.lower()}
+          path: /{{organisation}}/{name}
+          method: {route.lower()}
           authorizer:
             adminAuthorizer
-          documentation: ${{{{file({doc_path}):endpoints.{name}.{method.upper()}}}}}
+          documentation: ${{{{file({doc_path}):endpoints.{name}.{route.upper()}}}}}
 """)
         events_block = "\n".join(route_events)
     else:
@@ -251,30 +245,30 @@ def function_yaml(name: str, routes: List[str], lambda_dir: Path, trigger: str) 
 {events_block}
 """
 
-def doc_yaml(name: str, routes: List[str]) -> str:
+def doc_yaml(name: str) -> str:
     lines = ["endpoints:"]
+    routes = ["GET", "POST", "PUT"]
     for route in routes:
-        method, path = route.split()
         lines.append(f"""  {name}:
-    {method.upper()}:
-      summary: "{method.upper()} {name}"
-      description: "Handle {method.upper()} requests for {path}"
+    {route.upper()}:
+      summary: "{route.upper()} {name}"
+      description: "Handle {route.upper()} requests for /{{organisation}}/{name}"
       tags:
         - {name}
       ## uncomment this and the next line if this is a public endpoint
       #security:
       #  - {{}}
-      ## uncomment if includes path params  
-      #pathParams:
-      #  - name: organisation
-      #    description: Organisation slug
-      #    schema:
-      #      type: string
+      ## comment if does not includes path params
+      pathParams:
+       - name: organisation
+         description: Organisation slug
+         schema:
+           type: string
       ## uncomment if this is a POST request and define model
       #requestBody:
-      #  description: "Event details"
+      #  description: "Description of the request body"
       #requestModels:
-      #  application/json: "CreateEventRequest" # models defined in serverless.models.yml in top level for now
+      #  application/json: "Create{name}Request" # models defined in serverless.models.yml in top level for now
       methodResponses:
         - statusCode: 200
           responseBody:

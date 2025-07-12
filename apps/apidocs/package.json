@@ -14,7 +14,8 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
-    "build-docusaurus-openapi": "docusaurus clean-api-docs core && docusaurus gen-api-docs all"
+    "build-docusaurus-openapi": "docusaurus clean-api-docs core && docusaurus gen-api-docs all",
+    "generate-docusaurus": "pnpm build-docusaurus-openapi"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",

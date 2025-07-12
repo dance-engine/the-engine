@@ -11,7 +11,8 @@
     "build-models": "cd functions && pnpm build-models",
     "build-docs": "cd apps/apidocs && pnpm build-docusaurus-openapi",
     "update-schema": "pnpm build-json && pnpm build-models && pnpm build-docs",
-    "build-openapi-docs": "cd functions && pnpm build-json && cd ../apps/apidocs && pnpm build-docusaurus-openapi"
+    "build-openapi-docs": "cd functions && pnpm build-json && cd ../apps/apidocs && pnpm build-docusaurus-openapi",
+    "generate": "pnpm --filter functions generate-openapi && pnpm --filter apps/apidocs generate-docusaurus"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

@@ -41,3 +41,7 @@ yarn-error.log*
 .serverless
 _venv
 .venv
+
+# Docs
+functions/openapi.json
+apps/apidocs/docs/core/**

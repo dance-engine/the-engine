@@ -14,7 +14,7 @@ def auth_handler(event, context):
 
     organisation = event.get("pathParameters", {}).get("organisation")
     authorization_header = event.get("headers", {}).get("authorization")
-    token = authorization_header.split(' ')[1]
+    token = authorization_header.split(' ')[1] if authorization_header else 'null'
     logger.info(f"ORG: {organisation}\nAUTH HEADER: {authorization_header}\nTOKEN: {token}")
     if not authorization_header or token == 'null':
       logger.error("No authorization Header")

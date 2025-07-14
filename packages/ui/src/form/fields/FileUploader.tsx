@@ -165,7 +165,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
       {/* {filePreview}<br/>:{JSON.stringify(storedFileKey)} */}
       <div
         {...getRootProps()}
-        className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"
+        className="border border-dashed rounded-lg p-6 text-center cursor-pointer bg-gray-200/20 hover:bg-gray-500/20 transition relative"
         style={{
           backgroundImage: filePreview ? `url(${filePreview})` : "none",
           backgroundSize: "cover",

@@ -10,7 +10,10 @@ UploadProcessor:
   environment:
     BUCKET_NAME: ${self:custom.upload_bucket}
     ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+    CORE_TABLE_NAME: ${self:custom.core_table_name}
     CDN_URL: ${param:cdn_url}   
+  layers:
+    - !Ref PydanticLambdaLayer
   events:
     - eventBridge:
         pattern:
@@ -30,3 +33,9 @@ UploadProcessor:
             - prefix: "dance-engine."
           detail-type:
             - prefix: "Create"
+    - eventBridge:
+        pattern:
+          source:
+            - prefix: "dance-engine."
+          detail-type:
+            - prefix: "organisation.updated" 

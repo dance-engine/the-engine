@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import EventList from '../components/EventList'
+// import EventList from '../components/EventList'
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -77,7 +77,9 @@ export default async function IndexPage() {
           
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
             {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
-          
+                <div className='hidden'>
+                  {domain}/{orgSlug}/{theme}
+                </div>
         </div>
 
         <div>

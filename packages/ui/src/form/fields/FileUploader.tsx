@@ -193,7 +193,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
         {/* Progress Bar */}
         {uploading && (
           <div className="absolute bottom-0 left-0 w-full p-2">
-            <span className="text-white text-xs block mb-1 flex">{uploadProgress}% Uploaded</span>
+            <span className="text-white text-xs mb-1 flex">{uploadProgress}% Uploaded</span>
             <div className="w-full h-2 bg-gray-300 rounded-full">
               <div
                 className="h-2 bg-blue-500 rounded-full transition-all"

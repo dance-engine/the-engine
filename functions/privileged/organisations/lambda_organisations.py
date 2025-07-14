@@ -172,6 +172,6 @@ def getDbItem(table, pk, sk):
 def getOrgItems():
     response = table.query(
         IndexName= 'typeIDX',
-        KeyConditionExpression=Key('entity_type').eq('ORGANISATION') & Key('PK').begins_with('ORGANISATION#')
+        KeyConditionExpression=Key('entity_type').eq('ORGANISATION') & Key('PK').begins_with('ORG#')
     )
     return response.get("Items")

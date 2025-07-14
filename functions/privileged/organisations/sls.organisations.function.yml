@@ -48,7 +48,7 @@ StackProvisioned:
               status:
                 - "CREATE_COMPLETE"
 
-PublicOrganisations: ## I think this should go into a seperate lambda for privilaged/organisation/public level access
+PublicOrganisations: #! I think this should go into a seperate lambda for privilaged/organisation/public level access
   runtime: python3.11
   handler: privileged/organisations/lambda_organisations.public_handler
   name: "${sls:stage}-${self:service}-public-organisations"

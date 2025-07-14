@@ -93,6 +93,12 @@ const config: Config = {
           position: 'left',
           label: 'Reference',
         },
+        {
+          type: 'docSidebar',
+          sidebarId: 'processSidebar',
+          position: 'left',
+          label: 'Processes maps',
+        },
         {href: 'http://danceengine.awsapps.com/start/#/', label: 'AWS', position: 'right'},
         // {to: '/blog', label: 'Blog', position: 'left'},
         {

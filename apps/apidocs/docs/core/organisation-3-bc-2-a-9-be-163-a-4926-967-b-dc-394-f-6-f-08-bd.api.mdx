@@ -1,0 +1,71 @@
+---
+id: organisation-3-bc-2-a-9-be-163-a-4926-967-b-dc-394-f-6-f-08-bd
+title: "Update Organisatioon Settings"
+description: "Fetch details of a specific organisation by its slug."
+sidebar_label: "Update Organisatioon Settings"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWNtu2zgQ/RWCTy0gOY6bpo3f0huQokCKxNkCmzWaMTWW2EqkSo6ceg39+2IoXyRbadFi+xa/yBJnzhwOh2dErWSCXjldkrZGjuU7JJWJBAl07oWdCxC+RKXnWgnrUjDaA5uK2VJo8sLnVTqQkbQlujBwkcixbFvGz2ZqBGczjI9Pn0F8cjY6jc9OX8ziRD07O5mfzocvZ4mMZAkOCiR0Xo5vV9JAgXtIMpKaOZZAmYz2iF+2yTErGUmH3yrtMJFjchVG0qsMC5DjlaRlyeienDZsSZryg3B1PY0kQcqEOvhy2mCjp1c2WTLgD8isk9nhM4fcYySVNYSGGADKMtcqeBx98YyyOuRrZ19QUQfptst5GsnS8WKQRs+endGfIIWcHyB4Aqp8X9bQVAX76RiKmBBKy4iJgzlfQZFeoIykR6pKvla+RJMgrzY4lekFJhwuwTlUOcnx2rWO5Fdf6aQvZDfPF2+4RClD0V246KFpP4BznVlHoWpE5TERZIXD0qFHQxt4Rm2K8hCt0OYDmpQyOR7tY08yFOzXx3TAoDMwBt3PSd5cfWBijNG4CF1AimJuXW8KcpvaX0Jlh59gKu8/L8D1VkMX9/X1tViA0zDL0ffibVOtKk+20B7F9eWHS0FYlDkQeg7YAd2PyYQcAmHyGaiP0ty6AkJhAWFMukD2qcrkl30W6HyXgzaEKToezLQn65atQXAOlqxXhIU/3HZ1XUfye8wQzkAep85W5aHatSyC5o3lvDKKB/3RnulGwNrKc7kJ9odi3YQ8tiNeNaLI86tZWnxpjW9UZDQ8PtTJyX5JNPnhhvLb0vgof4/y9yh/j/L3x+WvK3yN1DVTyxCS8B674ruT4fBQ+S7MAnKdCG3KitVi3+Xs0OWvZg2Esmae60Ylu27P+yM18xIe3QKdQOes+x8VtkDvIe3RhTqSIVbPSL3L4ls2eTh9dSQLpMzyqaLJ1Hp5jlbtZamPPBJpk/oguKpympbhHKFydF8/f7knOb6d8gv9ZvSa59dMoWWzn733nyZCe19hwiee12w4EKxpZL+iEUXlScxQaKPyKkFez7DR784ryqzT/wZ2d6KZkgAvQLxCcOgagIG48ej8FqcERxulJHApUlczwCQigwUGg03vEs7mKJ7gIB1E4g6SQpu7p6wsoBR6L0pnCRWxIXpbOYV+8E+o5GZVMqLQn0JC5FjOAkEZrf+82yjC+0+TsHRcIVe748/b71CUOfZ1203v3DbFdWPbyU3XY/d8ffzb3m+6xO5Jo++7+502P6TJO9OWasrRcHQSD1/Eo7PJ8fPx8+Px6OVg+OL4b9lVyh/ZbdVx2BLD21U95WxpM2/60Lrg34BRKN6aVBsU5x8vDmhydZ1/vAhNo23cDiSHg+HgmLdYaT0VELK9zlnzWiZa8mSNuN5tj72espWB3z77r8uI8DsdlTno0CorlzN6s1tv5XhPRLfbdRrJzHrenXK1moHHG5fXNT/+VmHI4zSSm04adnSiPf/fnaIfnNCTq/UOeSr6Pg/08t50MMP9awF5xXdcubg8+D4w3YpVINaYvG7CxxMG2kEcSGwdbTzOlcKSfmg7bcngx5sJb4j1h4fCJuzi4J7fZuG+YWtDNoK4hWcrmYNJq6DTsoHk33/v2EEN
+sidebar_class_name: "put api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Update Organisatioon Settings"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/{organisation}/settings"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fetch details of a specific organisation by its slug.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Organisation details","required":false,"content":{"application/json":{"schema":{"type":"object","required":["organisation"],"properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"banner":{"type":"string","description":"URL to the banner image for the organisation"},"logo":{"type":"string","description":"URL to the logo image for the organisation"},"css_vars":{"type":"string","description":"CSS variables for the organisation used to customise SOLO templates"},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"UpdateOrganisationRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"The organisation object.","content":{"application/json":{"schema":{"type":"object","properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"banner":{"type":"string","description":"URL to the banner image for the organisation"},"logo":{"type":"string","description":"URL to the logo image for the organisation"},"css_vars":{"type":"string","description":"CSS variables for the organisation used to customise SOLO templates"},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationResponse"}}},"headers":{}},"400":{"description":"Invalid input","headers":{}},"409":{"description":"Version conflict.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

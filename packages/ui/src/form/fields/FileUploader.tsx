@@ -97,7 +97,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
         body: JSON.stringify({ 
           fileType: file.type,
           action: 'POST',
-          fieldName: [(entity ? `${entity.entity_type.toLowerCase()}/${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
+          fieldName: [(entity && entity.entity_type ? entity.entity_type.toLowerCase() : null), (entity && entity.entity_type && entity.ksuid ? entity.ksuid : null),fieldName].filter(element => element).flat().join('/') // Pass react-hook-form field name
+          // fieldName: [(entity ? `${entity.entity_type.toLowerCase()}/${entity.ksuid}` : null),fieldName].flat().join('/') // Pass react-hook-form field name
         }),
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +165,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
       {/* {filePreview}<br/>:{JSON.stringify(storedFileKey)} */}
       <div
         {...getRootProps()}
-        className="border border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-200/20 transition relative"
+        className="border border-dashed rounded-lg p-6 text-center cursor-pointer bg-gray-200/20 hover:bg-gray-500/20 transition relative"
         style={{
           backgroundImage: filePreview ? `url(${filePreview})` : "none",
           backgroundSize: "cover",
@@ -192,7 +193,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
         {/* Progress Bar */}
         {uploading && (
           <div className="absolute bottom-0 left-0 w-full p-2">
-            <span className="text-white text-xs block mb-1 flex">{uploadProgress}% Uploaded</span>
+            <span className="text-white text-xs mb-1 flex">{uploadProgress}% Uploaded</span>
             <div className="w-full h-2 bg-gray-300 rounded-full">
               <div
                 className="h-2 bg-blue-500 rounded-full transition-all"

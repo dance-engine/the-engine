@@ -6,7 +6,7 @@ sidebar_label: "OrganisationResponse"
 hide_title: true
 hide_table_of_contents: true
 schema: true
-sample: {"organisation":{"status":"draft","ksuid":"string","organisation":"string","name":"string","description":"string","created_at":"2024-07-29T15:51:28.071Z","updated_at":"2024-07-29T15:51:28.071Z","version":0,"history":[{}]}}
+sample: {"organisation":{"status":"draft","ksuid":"string","organisation":"string","name":"string","banner":"string","logo":"string","css_vars":"string","description":"string","created_at":"2024-07-29T15:51:28.071Z","updated_at":"2024-07-29T15:51:28.071Z","version":0,"history":[{}]}}
 custom_edit_url: null
 ---
 
@@ -25,7 +25,7 @@ import Heading from "@theme/Heading";
 
 
 <Schema
-  schema={{"type":"object","properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationResponse"}}
+  schema={{"type":"object","properties":{"organisation":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"banner":{"type":"string","description":"URL to the banner image for the organisation"},"logo":{"type":"string","description":"URL to the logo image for the organisation"},"css_vars":{"type":"string","description":"CSS variables for the organisation used to customise SOLO templates"},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationObject"}},"x-internal-group":"organisation","x-internal-path":"functions/organisation","title":"OrganisationResponse"}}
   schemaType={"response"}
 >
   

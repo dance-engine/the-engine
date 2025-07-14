@@ -29,8 +29,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onC
   });
 
   useEffect(() => {
+    
     const newValue = value ? JSON.parse(value) : {}
-    if (editor && editor.getJSON() !== newValue) {
+    if (editor && JSON.stringify(editor.getJSON()) != JSON.stringify(newValue)) {
       editor.commands.setContent(newValue);
     }
   }, [value, editor]);

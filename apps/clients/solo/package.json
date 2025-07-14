@@ -23,6 +23,7 @@
     "@tiptap/extension-paragraph": "^2.11.7",
     "@tiptap/extension-strike": "^2.11.7",
     "@tiptap/extension-text": "^2.11.7",
+    "@tiptap/html": "^2.11.7",
     "@tiptap/pm": "^2.11.7",
     "date-fns": "^4.1.0",
     "next": "15.2.0",

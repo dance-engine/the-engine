@@ -6,7 +6,7 @@
     "dev": "docusaurus start --port 3002 --no-open",
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "pnpm --filter @dance-engine/api-deployment-scripts build-json && docusaurus clean-api-docs all && docusaurus gen-api-docs all && docusaurus build",
+    "build": "docusaurus clean-api-docs all && docusaurus gen-api-docs all && docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",

@@ -1,6 +1,6 @@
 # Base serverless.yml
-# org: danceenginesystems
-# app: dance-engine
+org: danceenginesystems
+app: dance-engine
 service: core
 
 plugins:

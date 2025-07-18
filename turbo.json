@@ -3,7 +3,7 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "^generate"],
+      "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env.development.local",
@@ -12,10 +12,7 @@
         ".env"
       ],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**","build/**"],
-      "passThroughEnv": ["HERE_MAPS_APPID", "HERE_MAPS_API_KEY", "CLERK_SECRET_KEY", "SERVERLESS_LICENSE_KEY"]
-    },
-    "generate": {
-      "outputs": []
+      "passThroughEnv": ["HERE_MAPS_APPID", "HERE_MAPS_API_KEY", "CLERK_SECRET_KEY"]
     },
     "lint": {
       "dependsOn": ["^lint"]

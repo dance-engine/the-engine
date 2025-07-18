@@ -43,5 +43,4 @@ _venv
 .venv
 
 # Docs
-functions/openapi.json
 apps/apidocs/docs/core/**

@@ -20,6 +20,9 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "apps/apidocs#build": {
+      "inputs": ["../../functions/openapi.json"]
+    },    
     "dev": {
       "cache": false,
       "persistent": true,

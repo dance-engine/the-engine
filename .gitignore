@@ -41,3 +41,6 @@ yarn-error.log*
 .serverless
 _venv
 .venv
+
+# Docs
+apps/apidocs/docs/core/**

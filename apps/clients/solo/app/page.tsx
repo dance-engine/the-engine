@@ -55,10 +55,11 @@ export default async function IndexPage() {
       <main className='w-full justify-center' >
 
         <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
-        text-white flex items-stretch justify-center bg-no-repeat bg-center md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
+        text-white flex items-stretch justify-center bg-no-repeat bg-center sm:bg-center md:bg-auto bg-size-[1024px_auto] sm:bg-size-[1400px_auto]' 
+        style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              {org.name} Strapline
+              {org.name}, an event exclusively for women
             </div>
             
           </div>
@@ -68,7 +69,7 @@ export default async function IndexPage() {
           
             <div className={
               `max-w-4xl w-4xl px-4 lg:px-0 py-12 \
-              prose prose-base prose-p:mb-2 prose-p:mt-0  prose-p:leading-tight prose-headings:font-semibold \
+              prose prose-base prose-p:mb-2 prose-p:mt-0 prose-p:font-extralight prose-p:leading-relaxed prose-headings:font-semibold \
               prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
               prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0 \
                text-white prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]

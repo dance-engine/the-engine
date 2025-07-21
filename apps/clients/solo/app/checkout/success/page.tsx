@@ -47,7 +47,7 @@ export default async function IndexPage() {
           <div className='max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ justify-center'>
             <h1 className='text-5xl mb-6 text-center'>Purchase Complete!</h1>
             <p className='text-xl mb-6'>We&apos;ll be sending out tickets closer to the time to the email given at checkout (so make sure you check)</p>
-            <p className='text-xl mb-6'>In the meantime, feel free to tell people you&apos; coming on social media and everywhere you dance!</p>
+            <p className='text-xl mb-6'>In the meantime, feel free to tell people you&apos;re coming on social media and everywhere you dance!</p>
 
           </div>
             
@@ -56,7 +56,7 @@ export default async function IndexPage() {
         <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] text-white flex items-stretch justify-center bg-no-repeat bg-bottom md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              {org.name} Strapline
+              {org.name}, an event exclusively for women
             </div>
             
           </div>

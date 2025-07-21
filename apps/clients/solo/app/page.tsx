@@ -54,7 +54,8 @@ export default async function IndexPage() {
 
       <main className='w-full justify-center' >
 
-        <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] text-white flex items-stretch justify-center bg-no-repeat bg-bottom md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
+        <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
+        text-white flex items-stretch justify-center bg-no-repeat bg-center md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
               {org.name} Strapline

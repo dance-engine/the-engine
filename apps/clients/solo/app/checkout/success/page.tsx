@@ -1,20 +1,9 @@
 import { headers } from 'next/headers';
 // import EventList from '../components/EventList'
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
-import Bold from '@tiptap/extension-bold'
-import Strike from '@tiptap/extension-strike'
-import Italic from '@tiptap/extension-italic'
-import Heading  from '@tiptap/extension-heading'
-import BulletedList  from '@tiptap/extension-bullet-list'
-import OrderedList  from '@tiptap/extension-ordered-list'
-import ListItem  from '@tiptap/extension-list-item'
-import { generateHTML } from '@tiptap/html'
+
 import { EventType } from '@dance-engine/schemas/events';
 import { format } from 'date-fns/format';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
-import StripePurchaseButton from '@/components/StripePurchaseButton';
 import Link from 'next/link';
 // import Organisation from '@/components/Organisation';
 
@@ -53,7 +42,17 @@ export default async function IndexPage() {
       </header>
 
       <main className='w-full justify-center' >
+        <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
+          
+          <div className='max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ justify-center'>
+            <h1 className='text-5xl mb-6 text-center'>Purchase Complete!</h1>
+            <p className='text-xl mb-6'>We&apos;ll be sending out tickets closer to the time to the email given at checkout (so make sure you check)</p>
+            <p className='text-xl mb-6'>In the meantime, feel free to tell people you&apos; coming on social media and everywhere you dance!</p>
 
+          </div>
+            
+
+        </div>    
         <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] text-white flex items-stretch justify-center bg-no-repeat bg-bottom md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
@@ -63,39 +62,11 @@ export default async function IndexPage() {
           </div>
         </div>
 
-        <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
-          
-            <div className={
-              `max-w-4xl w-4xl px-4 lg:px-0 py-12 \
-              prose prose-base prose-p:mb-2 prose-p:mt-0  prose-p:leading-tight prose-headings:font-semibold \
-              prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
-              prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0 \
-               text-white prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]
-              `} 
-                dangerouslySetInnerHTML={{ __html: generateHTML(
-                  JSON.parse(org.description), 
-                  [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList],) }} 
-              />
-          
-            {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
-            {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
-                <div className='hidden'>
+        <div className='hidden'>
                   {domain}/{orgSlug}/{theme}
                 </div>
-        </div>
 
-        <div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
-           <div className={`max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ `}>
-            <h2 className='text-4xl font-bold mb-4'>Early Bird Ticket</h2>
-            <p className='mb-6 text-xl'>We have a limited amount of early bird discounted tickets at only £40</p>
-            <StripePurchaseButton 
-              accountId='acct_1Rkp1ODIMY9TzhzF'
-              couponCode="fVKhBZim" 
-              priceId="price_1RkrE1DIMY9TzhzF2AFDc6q3"
-              style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
-            />
-           </div>
-        </div>
+        
 
         {/* { eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } */}
       </main>

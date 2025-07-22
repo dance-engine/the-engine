@@ -26,6 +26,12 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
+      payment_intent_data: {
+        application_fee_amount: 50, //! This should be based on whats being charged!
+        // transfer_data: {
+        //   destination: accountId ,
+        // },
+      },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/`,
     },

@@ -92,8 +92,10 @@ export default async function IndexPage() {
             <p className='mb-6 text-xl'>We have a limited amount of early bird discounted tickets at only £40</p>
             <StripePurchaseButton 
               accountId='acct_1Rkp1ODIMY9TzhzF'
-              couponCode="fVKhBZim" 
-              priceId="price_1RkrE1DIMY9TzhzF2AFDc6q3"
+              couponCode="fVKhBZim" // 🔥 Live coupon code
+              priceId="price_1RkrE1DIMY9TzhzF2AFDc6q3" // 🔥 Live price ID
+              // couponCode='u0trAdPd' // 🔨 Test coupon code
+              // priceId='price_1RnirUDIMY9TzhzFCSo3uo6K' // 🔨 Test price ID
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
             />
            </div>

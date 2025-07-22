@@ -19,7 +19,7 @@ from _shared.helpers import make_response
 from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.organisation_models import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
-from models_extended import OrganisationModel
+from _pydantic.models.models_extended import OrganisationModel
 
 logger = logging.getLogger()
 logger.setLevel("INFO")

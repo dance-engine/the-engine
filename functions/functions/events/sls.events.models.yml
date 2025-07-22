@@ -2,7 +2,7 @@ LocationObject:
   name: "LocationObject"
   description: "Location object"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema: 
@@ -23,7 +23,7 @@ EventObject:
   name: "EventObject"
   description: "Event object"
   x-internal-group: "events"  
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -89,7 +89,7 @@ EventObjectPublic:
   name: "EventObjectPublic"
   description: "Event object for the public"
   x-internal-group: "events"  
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -148,7 +148,7 @@ CreateEventRequest:
   name: "CreateEventRequest"
   description: "Request model for creating a new event"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -162,7 +162,7 @@ UpdateEventRequest:
   name: "UpdateEventRequest"
   description: "Request model for updating an event"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -176,7 +176,7 @@ EventResponse:
   name: "EventResponse"
   description: "Single event response object"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -188,7 +188,7 @@ EventListResponse:
   name: "EventListResponse"
   description: "Response model for a list of events"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -202,7 +202,7 @@ EventResponsePublic:
   name: "EventResponsePublic"
   description: "Single event response object"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:
@@ -214,7 +214,7 @@ EventListResponsePublic:
   name: "EventListResponsePublic"
   description: "Response model for a list of events"
   x-internal-group: "events"
-  x-internal-path: "functions/events"
+  x-internal-path: "_pydantic/models"
   content:
     application/json:
       schema:

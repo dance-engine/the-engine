@@ -5,8 +5,7 @@ import uuid
 import mimetypes
 import logging
 from _shared.naming import getOrganisationTableName
-from _shared.EventBridge import trigger_eventbridge_event, EventType, Action
-
+# from pydanticde.EventBridge import trigger_eventbridge_event, EventType, Action
 
 logger = logging.getLogger()
 logger.setLevel("INFO")

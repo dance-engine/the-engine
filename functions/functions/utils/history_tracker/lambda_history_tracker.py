@@ -3,9 +3,10 @@ import json
 import boto3 
 import logging
 
+from _pydantic.dynamodb import HistoryModel, convert_floats_to_decimals # pydantic layer
+from _pydantic.EventBridge import EventBridgeEvent, Action, EventType, EventBridgeEventDetail # pydantic layer
+
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.dynamodb import HistoryModel, convert_floats_to_decimals
-from _shared.EventBridge import EventBridgeEvent, Action, EventType, EventBridgeEventDetail
 
 logger = logging.getLogger()
 logger.setLevel("INFO")

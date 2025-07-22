@@ -9,15 +9,15 @@ from datetime import datetime, timezone
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
 
-from ksuid import KsuidMs
+from ksuid import KsuidMs # utils layer
 
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
-from _shared.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action
-from _shared.dynamodb import VersionConflictError
 from _shared.helpers import make_response
+from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
+from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
 from models_extended import OrganisationModel
 

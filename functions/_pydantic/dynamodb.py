@@ -9,7 +9,7 @@ from decimal import Decimal
 from pydantic import BaseModel, field_validator, Field
 from ksuid import KsuidMs
 
-from _shared.EventBridge import Action, EventType
+from _pydantic.EventBridge import Action, EventType
 
 logger = logging.getLogger()
 logger.setLevel("INFO")

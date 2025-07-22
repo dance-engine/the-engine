@@ -7,6 +7,7 @@ Organisation:
       - '!**/**'
       - "functions/organisation/**"
       - "_shared/**"
+      - "_pydantic/**" 
   environment:
     ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
   layers:
@@ -35,6 +36,7 @@ EventbridgeOrganisation:
       - '!**/**'
       - "functions/organisation/**"
       - "_shared/**"
+      - "_pydantic/**"
   environment:
     CORE_TABLE_NAME: ${self:custom.core_table_name}
     ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}

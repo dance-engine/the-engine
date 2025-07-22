@@ -1,6 +1,6 @@
 # models_ext.py
+from _pydantic.dynamodb import DynamoModel, HistoryModel # pydantic layer
 from models_events import EventObject as EventBase, LocationObject as LocationBase, Status, EventObjectPublic
-from _shared.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from typing import ClassVar
 from pydantic import model_validator, field_validator

@@ -1,5 +1,5 @@
 from models_organisation import OrganisationObject as OrganisationBase, Status
-from _shared.dynamodb import DynamoModel
+from _pydantic.dynamodb import DynamoModel
 from datetime import datetime, timezone
 
 class OrganisationModel(OrganisationBase, DynamoModel):

@@ -8,7 +8,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from ksuid import KsuidMs # utils layer
-from pydanticde.EventBridge import triggerEBEvent # pydantic layer
+from _pydantic.EventBridge import triggerEBEvent # pydantic layer
 
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder

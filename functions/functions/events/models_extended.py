@@ -1,5 +1,5 @@
 # models_ext.py
-from pydanticde.dynamodb import DynamoModel, HistoryModel # pydantic layer
+from _pydantic.dynamodb import DynamoModel, HistoryModel # pydantic layer
 from models_events import EventObject as EventBase, LocationObject as LocationBase, Status, EventObjectPublic
 from datetime import datetime, timezone
 from typing import ClassVar

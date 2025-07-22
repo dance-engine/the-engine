@@ -1,5 +1,5 @@
-from organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus
-from events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
+from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus
+from _pydantic.models.events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
 from _pydantic.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from pydantic import model_validator, field_validator

@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
-from models_organisation import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
+from _pydantic.models.organisation_models import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
 from models_extended import OrganisationModel
 
 logger = logging.getLogger()

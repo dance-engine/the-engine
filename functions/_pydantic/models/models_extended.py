@@ -1,4 +1,4 @@
-from models_organisation import OrganisationObject as OrganisationBase, Status
+from organisation_models import OrganisationObject as OrganisationBase, Status
 from _pydantic.dynamodb import DynamoModel
 from datetime import datetime, timezone
 

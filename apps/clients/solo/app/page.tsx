@@ -33,7 +33,7 @@ export default async function IndexPage() {
   const eventsServerData = await events_res.json() as EventType[];
 
   console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
-
+  const inProd = process.env.NODE_ENV == 'development' ? false : true;
   const css = `
       :root {
         --main-bg-color: black;
@@ -82,8 +82,10 @@ export default async function IndexPage() {
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
             {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
                 <div className='hidden'>
-                  {domain}/{orgSlug}/{theme}
+                  {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
+
                 </div>
+                
         </div>
 
         <div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
@@ -91,11 +93,9 @@ export default async function IndexPage() {
             <h2 className='text-4xl font-bold mb-4'>Early Bird Ticket</h2>
             <p className='mb-6 text-xl'>We have a limited amount of early bird discounted tickets at only £40</p>
             <StripePurchaseButton 
-              accountId='acct_1Rkp1ODIMY9TzhzF'
-              couponCode="fVKhBZim" // 🔥 Live coupon code
-              priceId="price_1RkrE1DIMY9TzhzF2AFDc6q3" // 🔥 Live price ID
-              // couponCode='u0trAdPd' // 🔨 Test coupon code
-              // priceId='price_1RnirUDIMY9TzhzFCSo3uo6K' // 🔨 Test price ID
+              accountId={org.account_id || 'no_account_id'}
+              couponCode={ inProd ? "fVKhBZim" : 'u0trAdPd' } // 🔥 Live : 🔨 Test coupon code
+              priceId={ inProd ? "price_1RkrE1DIMY9TzhzF2AFDc6q3" : 'price_1RnirUDIMY9TzhzFCSo3uo6K' } // 🔥 Live : 🔨 Test price ID
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
             />
            </div>

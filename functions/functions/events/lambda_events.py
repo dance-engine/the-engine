@@ -139,6 +139,10 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
             assemble_entites=True
         )
         logger.info(f"Found event for {organisationSlug}: {result}")
+
+    except db.exceptions.ResourceNotFoundException as e:
+        logger.error(f"Event not found for {organisationSlug}: {e}")
+        return None
     except Exception as e:
         logger.error(f"DynamoDB query failed to get event for {organisationSlug}: {e}")
         raise Exception

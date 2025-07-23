@@ -25,7 +25,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "EventObject": {
         "type": "object",
@@ -109,7 +109,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "EventObjectPublic": {
         "type": "object",
@@ -185,7 +185,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "CreateEventRequest": {
         "type": "object",
@@ -198,7 +198,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "UpdateEventRequest": {
         "type": "object",
@@ -211,7 +211,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "EventResponse": {
         "type": "object",
@@ -221,7 +221,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "EventListResponse": {
         "type": "object",
@@ -234,7 +234,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "EventResponsePublic": {
         "type": "object",
@@ -244,7 +244,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "EventListResponsePublic": {
         "type": "object",
@@ -257,7 +257,7 @@
           }
         },
         "x-internal-group": "events",
-        "x-internal-path": "functions/events"
+        "x-internal-path": "_pydantic/models"
       },
       "OrganisationObject": {
         "type": "object",
@@ -324,7 +324,7 @@
           }
         },
         "x-internal-group": "organisation",
-        "x-internal-path": "functions/organisation"
+        "x-internal-path": "_pydantic/models"
       },
       "OrganisationResponse": {
         "type": "object",
@@ -334,7 +334,7 @@
           }
         },
         "x-internal-group": "organisation",
-        "x-internal-path": "functions/organisation"
+        "x-internal-path": "_pydantic/models"
       },
       "UpdateOrganisationRequest": {
         "type": "object",
@@ -347,7 +347,7 @@
           }
         },
         "x-internal-group": "organisation",
-        "x-internal-path": "functions/organisation"
+        "x-internal-path": "_pydantic/models"
       },
       "ErrorResponse": {
         "type": "object",
@@ -524,7 +524,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-bec0794a-7130-45e8-8703-b96b3847ea8a",
+        "operationId": "eventbridge-04b0e752-74ca-42ae-a4ca-17e769d6d1ad",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -596,7 +596,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-b7ac014e-139a-4db0-85a0-2ac8b52e07ae",
+        "operationId": "events-399b9794-ff44-4c19-8714-fa942f93c77f",
         "parameters": [
           {
             "name": "organisation",
@@ -653,7 +653,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-153a5b22-56a1-4da0-b5b2-8e72a67e33ce",
+        "operationId": "events-36f07e95-df90-424c-a929-86ea0fc99e2a",
         "parameters": [
           {
             "name": "organisation",
@@ -709,7 +709,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-e6788ca7-aac7-477a-850d-bec31a752286",
+        "operationId": "events-cffedcfe-f909-453a-83c2-959a2c0f31e1",
         "parameters": [
           {
             "name": "organisation",
@@ -775,7 +775,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-73c71ad3-00ba-4a23-b736-a1370f4545a3",
+        "operationId": "events-df05da30-ede1-40f9-822e-0f82d3068bad",
         "parameters": [
           {
             "name": "organisation",
@@ -837,7 +837,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-71ef4fe6-b938-494e-8ced-f28446e04264",
+        "operationId": "events-c16f81f9-dee2-46f0-bfc0-df272e290d49",
         "parameters": [
           {
             "name": "organisation",
@@ -936,7 +936,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-477c0dbd-bc2a-499c-b94a-deb8ae2f6722",
+        "operationId": "presigned_url-61c25f85-c9fd-41e9-a073-5210c73bcc06",
         "parameters": [],
         "tags": [
           "S3"
@@ -1005,7 +1005,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-aaab9460-faf3-4898-aa8b-ed05b377e61b",
+        "operationId": "customers-df09d37e-1a60-4481-9003-7fe52644172a",
         "parameters": [
           {
             "name": "organisation",
@@ -1051,7 +1051,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-5e4ad352-728e-4f12-b490-3314f17e2e5a",
+        "operationId": "customers-042f11cf-e972-4560-a81a-770477f982d9",
         "parameters": [
           {
             "name": "organisation",
@@ -1171,7 +1171,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-3bc2a9be-163a-4926-967b-dc394f6f08bd",
+        "operationId": "organisation-35041ae1-8d17-4eda-9505-723412cc3152",
         "parameters": [
           {
             "name": "organisation",

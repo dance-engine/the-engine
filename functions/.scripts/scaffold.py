@@ -113,7 +113,11 @@ from pydantic import AfterValidator, ValidationError # layer: pydantic
 
 ## custom scripts
 from _shared.DecimalEncoder import DecimalEncoder
-from models_{name} import {name}Object, {name}Response
+from _shared.helpers import make_response
+from _pydantic.models.{name}_models import {name}Object, {name}Response
+#from _pydantic.models.models_extended import {name}Model
+#from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
+#from _pydantic.dynamodb import VersionConflictError # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -143,7 +147,10 @@ from pydantic import AfterValidator, ValidationError # layer: pydantic
 ## custom scripts
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from models_{name} import {name}Object, {name}Response
+from _pydantic.models.{name}_models import {name}Object, {name}Response
+#from _pydantic.models.models_extended import {name}Model
+#from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
+#from _pydantic.dynamodb import VersionConflictError # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -236,11 +243,12 @@ def function_yaml(name: str, lambda_dir: Path, trigger: str) -> str:
     patterns:
       - '!**/**'
       - "{lambda_dir.relative_to(BASE)}/**"
-      - "_shared/**"
+    #   - "_pydantic/**" # this requires the pydantic layer also
   environment:
       STAGE_NAME: ${{sls:stage}}
   layers:
       - !Ref UtilsLambdaLayer
+    #   - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
   events:
 {events_block}
 """

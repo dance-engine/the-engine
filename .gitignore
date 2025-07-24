@@ -43,4 +43,5 @@ _venv
 .venv
 
 # Docs
+apps/apidocs/docs/core/
 apps/apidocs/docs/core/**

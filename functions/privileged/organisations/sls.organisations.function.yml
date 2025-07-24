@@ -1,6 +1,6 @@
 Organisations:
   runtime: python3.11
-  handler: privileged/organisations/handler_organisations.lambda_handler
+  handler: privileged/organisations/lambda_organisations.lambda_handler
   name: "${sls:stage}-${self:service}-organisations"
   package:
     patterns:

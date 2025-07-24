@@ -13,6 +13,9 @@ models:
   - ${file(functions/organisation/sls.organisation.models.yml):OrganisationResponse}
   - ${file(functions/organisation/sls.organisation.models.yml):UpdateOrganisationRequest}
 
+  - ${file(privileged/organisations/sls.organisations.models.yml):CreateOrganisationRequest}
+  - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponse}
+
   - name: "ErrorResponse"
     description: "Error response model"
     content:

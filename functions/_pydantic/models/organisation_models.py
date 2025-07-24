@@ -53,3 +53,11 @@ class OrganisationResponse(BaseModel):
 
 class UpdateOrganisationRequest(BaseModel):
     organisation: OrganisationObject
+
+
+class CreateOrganisationRequest(UpdateOrganisationRequest):
+    pass
+
+
+class OrganisationsListResponse(BaseModel):
+    organisations: Optional[List[OrganisationObject]] = None

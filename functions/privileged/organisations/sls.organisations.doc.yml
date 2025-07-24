@@ -1,0 +1,37 @@
+Organisations:
+  GET:
+    summary: "GET organisations"
+    description: "Handle GET requests for /organisations"
+    tags:
+      - Organisations
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Success
+        responseModels:
+          application/json: "OrganisationsListResponse"
+      - statusCode: 405
+        responseBody:
+          description: Method Not Allowed
+      - statusCode: 500
+        responseBody:
+          description: Internal Server Error
+  POST:
+    summary: "POST organisations"
+    description: "Handle POST requests for /organisations"
+    tags:
+      - Organisations
+    requestBody:
+      description: "Description of the request body"
+    requestModels:
+      application/json: "CreateOrganisationRequest"
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Success
+      - statusCode: 405
+        responseBody:
+          description: Method Not Allowed
+      - statusCode: 500
+        responseBody:
+          description: Internal Server Error

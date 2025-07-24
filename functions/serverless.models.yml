@@ -18,6 +18,17 @@ models:
   - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponse}
   - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponsePublic}
 
+  - ${file(functions/items/sls.items.models.yml):PriceScheduleObject}
+  - ${file(functions/items/sls.items.models.yml):ItemObject}
+  - ${file(functions/items/sls.items.models.yml):ItemObjectPublic}
+  - ${file(functions/items/sls.items.models.yml):CreateItemRequest}
+  - ${file(functions/items/sls.items.models.yml):UpdateItemRequest}
+  - ${file(functions/items/sls.items.models.yml):ItemResponse}
+  - ${file(functions/items/sls.items.models.yml):ItemListResponse}
+  - ${file(functions/items/sls.items.models.yml):ItemResponsePublic}
+  - ${file(functions/items/sls.items.models.yml):ItemListResponsePublic}
+    
+
   - name: "ErrorResponse"
     description: "Error response model"
     content:

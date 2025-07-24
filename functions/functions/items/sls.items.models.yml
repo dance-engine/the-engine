@@ -9,6 +9,8 @@ PriceScheduleObject:
         type: object
         required: []
         properties:
+          something:
+            type: string
 ItemObject:
   name: "ItemObject"
   description: "Item object"

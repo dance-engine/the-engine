@@ -18,31 +18,31 @@ Items:
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${functions/items/sls.items.doc.yml):endpoints.items.GETall} 
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.GETall} 
       - httpApi:
           path: /{organisation}/{event}/items/{ksuid}
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${functions/items/sls.items.doc.yml):endpoints.items.GETone}
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.GETone}
       - httpApi:
           path: /{organisation}/{event}/items
           method: post
           authorizer:
             adminAuthorizer
-          documentation: ${functions/items/sls.items.doc.yml):endpoints.items.POST}
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.POST}
       - httpApi:
           path: /{organisation}/{event}/items/{ksuid}
           method: put
           authorizer:
             adminAuthorizer
-          documentation: ${functions/items/sls.items.doc.yml):endpoints.items.PUT}
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.PUT}
       - httpApi:
           path: /public/{organisation}/{event}/items/{ksuid}
           method: get
-          documentation: ${functions/items/sls.items.doc.yml):endpoints.items.GETpub} 
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.GETpub} 
       - httpApi:
           path: /public/{organisation}/{event}/items
           method: get
-          documentation: ${functions/items/sls.items.doc.yml):endpoints.items.GETallpub} 
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.GETallpub} 
 

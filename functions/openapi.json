@@ -441,6 +441,214 @@
         "x-internal-group": "organisation",
         "x-internal-path": "_pydantic/models"
       },
+      "PriceScheduleObject": {
+        "type": "object",
+        "properties": {
+          "something": {
+            "type": "string"
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "ItemObject": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "ksuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ]
+          },
+          "column": {
+            "description": "??",
+            "type": "number"
+          },
+          "row": {
+            "description": "??",
+            "type": "number"
+          },
+          "primary_price": {
+            "description": "Primary price of the item in pennies",
+            "type": "number"
+          },
+          "secondary_price": {
+            "description": "Secondary price of the item in pennies",
+            "type": "number"
+          },
+          "tertiary_price": {
+            "description": "Tertiary price of the item in pennies",
+            "type": "number"
+          },
+          "primary_price_name": {
+            "description": "Name of primary price",
+            "type": "string"
+          },
+          "secondary_price_name": {
+            "description": "Name of secondary price",
+            "type": "string"
+          },
+          "tertiary_price_name": {
+            "description": "Name of tertiary price",
+            "type": "string"
+          },
+          "pricing_schedule": {
+            "$ref": "#/components/schemas/PriceScheduleObject"
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "ItemObjectPublic": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "ksuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ]
+          },
+          "column": {
+            "description": "??",
+            "type": "number"
+          },
+          "row": {
+            "description": "??",
+            "type": "number"
+          },
+          "primary_price": {
+            "description": "Primary price of the item in pennies",
+            "type": "number"
+          },
+          "secondary_price": {
+            "description": "Secondary price of the item in pennies",
+            "type": "number"
+          },
+          "tertiary_price": {
+            "description": "Tertiary price of the item in pennies",
+            "type": "number"
+          },
+          "primary_price_name": {
+            "description": "Name of primary price",
+            "type": "string"
+          },
+          "secondary_price_name": {
+            "description": "Name of secondary price",
+            "type": "string"
+          },
+          "tertiary_price_name": {
+            "description": "Name of tertiary price",
+            "type": "string"
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "CreateItemRequest": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemObject"
+            }
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "UpdateItemRequest": {
+        "type": "object",
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemObject"
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "ItemResponse": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemObject"
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "ItemListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemObject"
+            }
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "ItemResponsePublic": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemObjectPublic"
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "ItemListResponsePublic": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemObjectPublic"
+            }
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -551,6 +759,9 @@
         }
       },
       "organisation": {
+        "type": "string"
+      },
+      "event": {
         "type": "string"
       },
       "ksuid": {
@@ -686,6 +897,401 @@
         }
       }
     },
+    "/{organisation}/{event}/items": {
+      "get": {
+        "summary": "Get All Items",
+        "description": "Returns a list of all items for a given organisation and event.",
+        "operationId": "items",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Items"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of all items.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "No items found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Item",
+        "description": "Creates a new item and stores it for the given event.",
+        "operationId": "items-ff0957d2-fa7b-42f7-85f3-aaafbccd8048",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Items"
+        ],
+        "requestBody": {
+          "description": "Item details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item created successfully.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/{event}/items/{ksuid}": {
+      "get": {
+        "summary": "Get Single Item",
+        "description": "Fetch details of a specific item by its KSUID.",
+        "operationId": "items-29495248-ee0b-467a-8dd7-1edc4aa13717",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique item ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Items"
+        ],
+        "responses": {
+          "200": {
+            "description": "The item object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Item not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an Item",
+        "description": "Update an existing item for a given event.",
+        "operationId": "items-fbc315c0-c8db-4d41-900e-3b23c19ecf7d",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique item ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Items"
+        ],
+        "requestBody": {
+          "description": "Item details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item updated successfully.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/{organisation}/{event}/items/{ksuid}": {
+      "get": {
+        "summary": "Public Get Item",
+        "description": "Public endpoint to get a specific item by its KSUID.",
+        "operationId": "items-853dbe7f-b77f-4c9e-889c-bdaa5a8ae200",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique item ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Items"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "The item object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemResponsePublic"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Item not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/{organisation}/{event}/items": {
+      "get": {
+        "summary": "Public Get All Items",
+        "description": "Public endpoint to get all items for a given organisation and event.",
+        "operationId": "items-2f81e2d5-2583-4be6-84d6-67e412c806ce",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Items"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of items.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemListResponsePublic"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Items not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
     "/{organisation}/trigger": {
       "get": {
         "summary": "Trigger an event (org)",
@@ -726,6 +1332,7 @@
         "summary": "Trigger an event",
         "description": "Trigger and event.",
         "operationId": "eventbridge-66bfec5b-0123-4052-b81f-c9a8ab17cd88",
+        "operationId": "eventbridge-6f3e5036-74e7-4265-a811-14e9e86afabe",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -798,6 +1405,7 @@
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
         "operationId": "events-dfdb2635-ed63-4d78-9359-65241be7f34c",
+        "operationId": "events-d04d77b1-cc83-43f6-9138-65ac0667d08f",
         "parameters": [
           {
             "name": "organisation",
@@ -855,6 +1463,7 @@
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
         "operationId": "events-ce94855d-9514-42b9-8bf2-090dcba46a65",
+        "operationId": "events-82e39d29-7743-4897-a859-a07d7dd4a4b2",
         "parameters": [
           {
             "name": "organisation",
@@ -911,6 +1520,7 @@
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
         "operationId": "events-f60415f0-ce84-4ac9-9835-f6e3eb2a7963",
+        "operationId": "events-b5cfa1a0-5aa4-4a31-b89c-ab69976b6112",
         "parameters": [
           {
             "name": "organisation",
@@ -977,6 +1587,7 @@
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
         "operationId": "events-49565ba6-cbea-4f94-a517-7dbe922a7f80",
+        "operationId": "events-4b788706-79b0-4b57-8cf6-15ad6a38586b",
         "parameters": [
           {
             "name": "organisation",
@@ -1039,6 +1650,7 @@
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
         "operationId": "events-807325a7-ae44-43c1-a8b5-3b52c865b278",
+        "operationId": "events-a4f5dc4f-071d-4d18-aeab-865188f8374c",
         "parameters": [
           {
             "name": "organisation",
@@ -1138,6 +1750,7 @@
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
         "operationId": "presigned_url-35fcc592-2ead-4149-b872-e5b00730d3b0",
+        "operationId": "presigned_url-de1ed7f9-22be-4a2d-8399-7c09e0554929",
         "parameters": [],
         "tags": [
           "S3"
@@ -1207,6 +1820,7 @@
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
         "operationId": "customers-125e9c61-0dc3-4adb-8a3a-d975eab0afed",
+        "operationId": "customers-f684878e-bdda-4924-819d-3530bf8a8294",
         "parameters": [
           {
             "name": "organisation",
@@ -1253,6 +1867,7 @@
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
         "operationId": "customers-86419dc4-9529-4495-af5a-399a8a3edf8a",
+        "operationId": "customers-f80c1e48-b19c-4d7b-808e-3fbe9ea47ea2",
         "parameters": [
           {
             "name": "organisation",
@@ -1344,6 +1959,7 @@
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
         "operationId": "organisation-3e5c1bf5-3d9a-44d9-b1d8-456fb9e332b2",
+        "operationId": "organisation-43c378f4-6799-4a12-9866-a334ac7b98f2",
         "parameters": [
           {
             "name": "organisation",

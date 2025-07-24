@@ -41,7 +41,7 @@ stages:
       deletionPolicy: Delete 
       skipTables: true
       githubBranchDestination: "develop"
-      cdn_url: 'https://d232d73chhwq10.cloudfront.net'
+      cdn_url: 'https://d43ttk7zo7n9p.cloudfront.net'
   prod:
     params:
       isProd: true

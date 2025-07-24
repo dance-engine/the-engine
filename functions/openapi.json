@@ -368,6 +368,10 @@
             "minLength": 2,
             "description": "The name of the organisation."
           },
+          "account_id": {
+            "type": "string",
+            "description": "The Stripe account ID associated with the organisation"
+          },
           "banner": {
             "type": "string",
             "description": "URL to the banner image for the organisation"
@@ -607,7 +611,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-0e088ed3-d257-4258-bb47-3cfa1700f64f",
+        "operationId": "organisations-d0ddbb2a-233d-4e91-87ef-09dda9fd9ec7",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -643,7 +647,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-6790e25f-eb3f-4ada-9120-ea3cbe8f6969",
+        "operationId": "organisations-de02fb13-2351-4b97-a49e-46cc492b10a3",
         "parameters": [],
         "tags": [
           "Public",
@@ -721,7 +725,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-c495ea62-54c6-4404-b3ec-5e1444c07bac",
+        "operationId": "eventbridge-66bfec5b-0123-4052-b81f-c9a8ab17cd88",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -793,7 +797,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-2737dc1b-23a7-4b90-93a5-68357973e8cd",
+        "operationId": "events-dfdb2635-ed63-4d78-9359-65241be7f34c",
         "parameters": [
           {
             "name": "organisation",
@@ -850,7 +854,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-3d8936ce-fba3-4815-9709-75229d7d017c",
+        "operationId": "events-ce94855d-9514-42b9-8bf2-090dcba46a65",
         "parameters": [
           {
             "name": "organisation",
@@ -906,7 +910,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-f9a9b8f7-0d4a-45a7-9e74-b86184b88cde",
+        "operationId": "events-f60415f0-ce84-4ac9-9835-f6e3eb2a7963",
         "parameters": [
           {
             "name": "organisation",
@@ -972,7 +976,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-7c151946-f705-4bde-924c-8c8c90be70b6",
+        "operationId": "events-49565ba6-cbea-4f94-a517-7dbe922a7f80",
         "parameters": [
           {
             "name": "organisation",
@@ -1034,7 +1038,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-33283d1b-9545-4f3b-893c-39625cd110a2",
+        "operationId": "events-807325a7-ae44-43c1-a8b5-3b52c865b278",
         "parameters": [
           {
             "name": "organisation",
@@ -1133,7 +1137,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-2e648a05-632c-48fe-a6e6-c38bbe16a191",
+        "operationId": "presigned_url-35fcc592-2ead-4149-b872-e5b00730d3b0",
         "parameters": [],
         "tags": [
           "S3"
@@ -1202,7 +1206,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-ee9804da-61d9-4294-9a87-fb5284e47795",
+        "operationId": "customers-125e9c61-0dc3-4adb-8a3a-d975eab0afed",
         "parameters": [
           {
             "name": "organisation",
@@ -1248,7 +1252,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-762571bb-b605-4831-bd42-42a9d1e82a78",
+        "operationId": "customers-86419dc4-9529-4495-af5a-399a8a3edf8a",
         "parameters": [
           {
             "name": "organisation",
@@ -1339,7 +1343,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-a8b71388-879f-4208-8978-c672de219e9b",
+        "operationId": "organisation-3e5c1bf5-3d9a-44d9-b1d8-456fb9e332b2",
         "parameters": [
           {
             "name": "organisation",

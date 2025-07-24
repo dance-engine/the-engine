@@ -13,7 +13,6 @@ Organisations:
     STAGE_NAME: ${sls:stage}
     TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
     CORE_TABLE_NAME: ${self:custom.core_table_name}
-    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
   layers:
     - !Ref UtilsLambdaLayer
     - !Ref PydanticLambdaLayer

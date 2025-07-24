@@ -11,7 +11,6 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 ## custom scripts
-from _shared.helpers import make_response
 from _pydantic.models.organisation_models import OrganisationObject
 from _pydantic.models.models_extended import OrganisationModel
 

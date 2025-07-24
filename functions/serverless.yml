@@ -180,7 +180,5 @@ functions:
 
 #---------------------- Org and provisoning
 
-  # I think this should be seperated in code into a public/organisation level function
-  # PublicOrganisations: ${file(privileged/organisations/sls.organisations.function.yml):PublicOrganisations} 
   Organisation: ${file(functions/organisation/sls.organisation.function.yml):Organisation}
   EventbridgeOrganisation: ${file(functions/organisation/sls.organisation.function.yml):EventbridgeOrganisation}

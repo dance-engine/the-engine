@@ -7,7 +7,7 @@ import traceback
 from urllib.parse import urlparse
 
 ## installed packages
-from pydantic import AfterValidator, ValidationError # layer: pydantic
+from pydantic import ValidationError # layer: pydantic
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
 
@@ -16,7 +16,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _shared.parser import parse_event
 from _shared.naming import generateSlug
-from _pydantic.models.organisation_models import CreateOrganisationRequest, OrganisationsListResponsePublic, OrganisationObject, OrganisationsListResponse
+from _pydantic.models.organisation_models import CreateOrganisationRequest, OrganisationsListResponsePublic, OrganisationsListResponse
 from _pydantic.models.models_extended import OrganisationModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 
@@ -29,7 +29,6 @@ logger.setLevel("INFO")
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 TEMPLATE_URL    = os.environ.get('TEMPLATE_URL') or (_ for _ in ()).throw(KeyError("Environment variable 'TEMPLATE_URL' not found"))
 CORE_TABLE_NAME = os.environ.get('CORE_TABLE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'CORE_TABLE_NAME' not found"))
-ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
 ## aws resources an clients
 db = boto3.resource("dynamodb")

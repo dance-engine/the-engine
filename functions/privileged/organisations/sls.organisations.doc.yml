@@ -1,19 +1,59 @@
-PublicOrganisations:
-  get:
-    summary: "Get Organisations"
-    description: "Get a list of organisations"
-    security:
-      - {}    
+Organisations:
+  GET:
+    summary: "GET organisations"
+    description: "Handle GET requests for /organisations"
     tags:
-      - Privileged
       - Organisations
     methodResponses:
       - statusCode: 200
         responseBody:
-          description: Success.
-      - statusCode: 400
+          description: Success
+        responseModels:
+          application/json: "OrganisationsListResponse"
+      - statusCode: 405
         responseBody:
-          description: 400 Not implemented.
+          description: Method Not Allowed
+      - statusCode: 500
+        responseBody:
+          description: Internal Server Error
+  POST:
+    summary: "POST organisations"
+    description: "Handle POST requests for /organisations"
+    tags:
+      - Organisations
+    requestBody:
+      description: "Description of the request body"
+    requestModels:
+      application/json: "CreateOrganisationRequest"
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Success
+      - statusCode: 405
+        responseBody:
+          description: Method Not Allowed
+      - statusCode: 500
+        responseBody:
+          description: Internal Server Error
+  GETpub:
+    summary: "Public Get Organisations"
+    description: "Public endpoint to get all organisations."
+    security:
+      - {}
+    tags:
+      - Public
+      - Organisations
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: The organisation response object.
+        responseModels:
+          application/json: "OrganisationsListResponsePublic"
+      - statusCode: 404
+        responseBody:
+          description: Event not found
       - statusCode: 500
         responseBody:
           description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"

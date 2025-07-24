@@ -1,0 +1,31 @@
+ProvisionedOrganisation:
+  runtime: python3.11
+  handler: privileged/eventbridge/provisioned_organisation/lambda_provisioned_organisation.lambda_handler
+  name: "${sls:stage}-${self:service}-provisioned_organisation"
+  package:
+    patterns:
+      - '!**/**'
+      - "privileged/eventbridge/provisioned_organisation/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
+  environment:
+    STAGE_NAME: ${sls:stage}
+    CORE_TABLE_NAME: ${self:custom.core_table_name}
+    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}      
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+  events:
+    - eventBridge:
+        pattern:
+          source:
+            - "aws.cloudformation"
+          detail-type:
+            - "CloudFormation Stack Status Change"
+          detail:
+            # stack-id: 
+            #   - "arn:aws:cloudformation:eu-west-1:*:stack/${sls:stage}-org-"
+            status-details:
+              status:
+                - "CREATE_COMPLETE"
+

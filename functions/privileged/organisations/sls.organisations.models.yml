@@ -1,0 +1,42 @@
+CreateOrganisationRequest:          
+  name: "CreateOrganisationRequest"
+  description: "Request model for creating a new organisation"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["organisation"]
+        properties:
+          organisation:
+            $ref: "#/components/schemas/OrganisationObject"
+OrganisationsListResponse:
+  name: "OrganisationsListResponse"
+  description: "Response model for a list of organisations"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          organisations:
+            type: array 
+            items:
+              $ref: "#/components/schemas/OrganisationObject"              
+OrganisationsListResponsePublic:
+  name: "OrganisationsListResponsePublic"
+  description: "Response model for a list of organisations (public)"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          organisations: 
+            type: array
+            items:
+              $ref: "#/components/schemas/OrganisationObjectPublic"                   

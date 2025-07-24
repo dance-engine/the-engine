@@ -125,7 +125,7 @@ class DynamoModel(BaseModel):
 
         return convert_floats_to_decimals({**base, **props})
     
-    def upsert(self, table, only_set_once: list = []):
+    def upsert(self, table, only_set_once: list = [], condition_expression: str = None):
         update_parts = []
         expression_attr_names = {}
         expression_attr_values = {}
@@ -156,11 +156,18 @@ class DynamoModel(BaseModel):
             ExpressionAttributeValues=expression_attr_values,
             ReturnValues="ALL_NEW"
         )
+
+        conditions = []
         
         if self.uses_versioning():
             expression_attr_names["#version"] = "version"
             expression_attr_values[":incoming_version"] = incoming_version
-            kwargs["ConditionExpression"] = "attribute_exists(#version) OR #version <= :incoming_version"
+            conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
+        if condition_expression:
+            conditions.append(f"{condition_expression}")
+        
+        if conditions:
+            kwargs["ConditionExpression"] = " AND ".join(conditions)
 
         try:
             return table.update_item(**kwargs)

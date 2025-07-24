@@ -353,6 +353,94 @@
         "x-internal-group": "organisation",
         "x-internal-path": "_pydantic/models"
       },
+      "OrganisationObjectPublic": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "organisation": {
+            "type": "string",
+            "description": "Short slug used to represent the org"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "description": "The name of the organisation."
+          },
+          "account_id": {
+            "type": "string",
+            "description": "The Stripe account ID associated with the organisation"
+          },
+          "banner": {
+            "type": "string",
+            "description": "URL to the banner image for the organisation"
+          },
+          "logo": {
+            "type": "string",
+            "description": "URL to the logo image for the organisation"
+          },
+          "css_vars": {
+            "type": "string",
+            "description": "CSS variables for the organisation used to customise SOLO templates"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "CreateOrganisationRequest": {
+        "type": "object",
+        "required": [
+          "organisation"
+        ],
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObject"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "OrganisationsListResponse": {
+        "type": "object",
+        "properties": {
+          "organisations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganisationObject"
+            }
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "OrganisationsListResponsePublic": {
+        "type": "object",
+        "properties": {
+          "organisations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganisationObjectPublic"
+            }
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -489,6 +577,115 @@
     }
   ],
   "paths": {
+    "/organisations": {
+      "get": {
+        "summary": "GET organisations",
+        "description": "Handle GET requests for /organisations",
+        "operationId": "organisations",
+        "parameters": [],
+        "tags": [
+          "Organisations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationsListResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "summary": "POST organisations",
+        "description": "Handle POST requests for /organisations",
+        "operationId": "organisations-d0ddbb2a-233d-4e91-87ef-09dda9fd9ec7",
+        "parameters": [],
+        "tags": [
+          "Organisations"
+        ],
+        "requestBody": {
+          "description": "Description of the request body",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganisationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {}
+          },
+          "405": {
+            "description": "Method Not Allowed",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/organisations": {
+      "get": {
+        "summary": "Public Get Organisations",
+        "description": "Public endpoint to get all organisations.",
+        "operationId": "organisations-de02fb13-2351-4b97-a49e-46cc492b10a3",
+        "parameters": [],
+        "tags": [
+          "Public",
+          "Organisations"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "The organisation response object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationsListResponsePublic"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Event not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
     "/{organisation}/trigger": {
       "get": {
         "summary": "Trigger an event (org)",
@@ -528,7 +725,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-8b372e0f-f799-41db-9924-cdffd6df207c",
+        "operationId": "eventbridge-66bfec5b-0123-4052-b81f-c9a8ab17cd88",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -600,7 +797,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-4470a728-c80e-4d8c-921b-92e546009293",
+        "operationId": "events-dfdb2635-ed63-4d78-9359-65241be7f34c",
         "parameters": [
           {
             "name": "organisation",
@@ -657,7 +854,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-d18e5489-25ea-4005-8ce7-681bef54281a",
+        "operationId": "events-ce94855d-9514-42b9-8bf2-090dcba46a65",
         "parameters": [
           {
             "name": "organisation",
@@ -713,7 +910,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-ec83d96c-79f1-4118-a708-1d9476b11fdf",
+        "operationId": "events-f60415f0-ce84-4ac9-9835-f6e3eb2a7963",
         "parameters": [
           {
             "name": "organisation",
@@ -779,7 +976,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-c9edeb53-0255-49a4-b3f2-930d06516d40",
+        "operationId": "events-49565ba6-cbea-4f94-a517-7dbe922a7f80",
         "parameters": [
           {
             "name": "organisation",
@@ -841,7 +1038,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-f1cd2e7d-ce10-4845-b736-6351b9d5e743",
+        "operationId": "events-807325a7-ae44-43c1-a8b5-3b52c865b278",
         "parameters": [
           {
             "name": "organisation",
@@ -940,7 +1137,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-56c7d76b-4339-447d-b4fb-9b026f313a88",
+        "operationId": "presigned_url-35fcc592-2ead-4149-b872-e5b00730d3b0",
         "parameters": [],
         "tags": [
           "S3"
@@ -1009,7 +1206,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-d2c87e35-bd51-4172-ad17-6d043418e4b5",
+        "operationId": "customers-125e9c61-0dc3-4adb-8a3a-d975eab0afed",
         "parameters": [
           {
             "name": "organisation",
@@ -1055,7 +1252,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-226d62c8-da50-41f7-b9c4-e77d6bbb68db",
+        "operationId": "customers-86419dc4-9529-4495-af5a-399a8a3edf8a",
         "parameters": [
           {
             "name": "organisation",
@@ -1086,35 +1283,6 @@
           },
           "404": {
             "description": "Customer not found",
-            "headers": {}
-          },
-          "500": {
-            "description": "Internal server error.",
-            "headers": {}
-          }
-        }
-      }
-    },
-    "/public/organisations": {
-      "get": {
-        "summary": "Get Organisations",
-        "description": "Get a list of organisations",
-        "operationId": "organisations",
-        "parameters": [],
-        "tags": [
-          "Privileged",
-          "Organisations"
-        ],
-        "security": [
-          {}
-        ],
-        "responses": {
-          "200": {
-            "description": "Success.",
-            "headers": {}
-          },
-          "400": {
-            "description": "400 Not implemented.",
             "headers": {}
           },
           "500": {
@@ -1175,7 +1343,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-28e9d7b9-2b1f-42cc-9c3a-77f3b1ee9765",
+        "operationId": "organisation-3e5c1bf5-3d9a-44d9-b1d8-456fb9e332b2",
         "parameters": [
           {
             "name": "organisation",

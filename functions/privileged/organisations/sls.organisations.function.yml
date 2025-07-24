@@ -1,68 +1,35 @@
-CreateOrgStack:
+Organisations:
   runtime: python3.11
-  handler: privileged/organisations/lambda_organisations.create_handler
-  name: "${sls:stage}-${self:service}-organisations-create"
+  handler: privileged/organisations/lambda_organisations.lambda_handler
+  name: "${sls:stage}-${self:service}-organisations"
   role: DeployOrgRole
+  package:
+    patterns:
+      - '!**/**'
+      - "privileged/organisations/**"
+      - "_shared/**"
+      - "_pydantic/**"
   environment:
+    STAGE_NAME: ${sls:stage}
     TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
-    CORE_TABLE_NAME: ${self:custom.core_table_name}
-    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-  package:
-    patterns:
-      - '!**/**'
-      - "privileged/organisations/**"
-      - "_shared/**"
-  events:
-    - eventBridge:
-        pattern:
-          source:
-            - "app.organisation"
-          detail-type:
-            - "CreateOrganisation"
-
-StackProvisioned:
-  runtime: python3.11
-  handler: privileged/organisations/lambda_organisations.provisioned_handler
-  name: "${sls:stage}-${self:service}-organisations-provision"
-  role: DeployOrgRole
-  environment:
-    TEMPLATE_URL: https://${self:custom.config_bucket}.s3.amazonaws.com/cloudformation/organisation.yaml
-    CORE_TABLE_NAME: ${self:custom.core_table_name}
-    ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-  package:
-    patterns:
-      - '!**/**'
-      - "privileged/organisations/**"
-      - "_shared/**"
-  events:
-    - eventBridge:
-        pattern:
-          source:
-            - "aws.cloudformation"
-          detail-type:
-            - "CloudFormation Stack Status Change"
-          detail:
-            # stack-id: 
-            #   - "arn:aws:cloudformation:eu-west-1:*:stack/${sls:stage}-org-*"
-            status-details:
-              status:
-                - "CREATE_COMPLETE"
-
-PublicOrganisations: #! I think this should go into a seperate lambda for privilaged/organisation/public level access
-  runtime: python3.11
-  handler: privileged/organisations/lambda_organisations.public_handler
-  name: "${sls:stage}-${self:service}-public-organisations"
-  package:
-    patterns:
-      - '!**/**'
-      - "privileged/organisations/**"
-      - "_shared/**"
-  environment:
     CORE_TABLE_NAME: ${self:custom.core_table_name}
   layers:
     - !Ref UtilsLambdaLayer
+    - !Ref PydanticLambdaLayer
   events:
+    - httpApi:
+        path: /organisations
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.GET}
+    - httpApi:
+        path: /organisations
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.POST}
     - httpApi:
         path: /public/organisations
         method: get
-        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):PublicOrganisations.get}                   
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.GETpub}

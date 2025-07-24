@@ -29,7 +29,7 @@ export default async function IndexPage() {
   const orgs_res = await fetch(ORGS_API_URL, { cache: 'force-cache', next: { revalidate: 240, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
   const orgs_data = await orgs_res.json()
   const org_details= orgs_data.organisations.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == orgSlug)
-  const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: 'No organisation found for this domain.'};
+  const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
   const eventsServerData = await events_res.json() as EventType[];
 
   console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);

@@ -155,6 +155,7 @@ layers:
 #######################
 
 functions:
+  ProvisionedOrganisation: ${file(privileged/eventbridge/provisioned_organisation/sls.provisioned_organisation.function.yml):ProvisionedOrganisation}
   Organisations: ${file(privileged/organisations/sls.organisations.function.yml):Organisations}
   HistoryTracker: ${file(functions/utils/history_tracker/sls.history_tracker.function.yml):HistoryTracker}
   AuthorizerFunc: ${file(functions/authorizer/sls.authorizer.function.yml):AuthorizerFunc}

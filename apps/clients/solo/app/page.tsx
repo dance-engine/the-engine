@@ -93,7 +93,7 @@ export default async function IndexPage() {
             <h2 className='text-4xl font-bold mb-4'>Early Bird Ticket</h2>
             <p className='mb-6 text-xl'>We have a limited amount of early bird discounted tickets at only £40</p>
             <StripePurchaseButton 
-              accountId={org.account_id || 'no_account_id'}
+              accountId={org.account_id || 'acct_1Rkp1ODIMY9TzhzF'} //! Work out why accountID is missing
               couponCode={ inProd ? "fVKhBZim" : 'u0trAdPd' } // 🔥 Live : 🔨 Test coupon code
               priceId={ inProd ? "price_1RkrE1DIMY9TzhzF2AFDc6q3" : 'price_1RnirUDIMY9TzhzFCSo3uo6K' } // 🔥 Live : 🔨 Test price ID
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  

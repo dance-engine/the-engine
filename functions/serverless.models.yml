@@ -12,9 +12,11 @@ models:
   - ${file(functions/organisation/sls.organisation.models.yml):OrganisationObject}
   - ${file(functions/organisation/sls.organisation.models.yml):OrganisationResponse}
   - ${file(functions/organisation/sls.organisation.models.yml):UpdateOrganisationRequest}
+  - ${file(functions/organisation/sls.organisation.models.yml):OrganisationObjectPublic}
 
   - ${file(privileged/organisations/sls.organisations.models.yml):CreateOrganisationRequest}
   - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponse}
+  - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponsePublic}
 
   - name: "ErrorResponse"
     description: "Error response model"

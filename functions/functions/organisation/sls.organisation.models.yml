@@ -81,3 +81,40 @@ UpdateOrganisationRequest:
         properties:
           organisation:
             $ref: "#/components/schemas/OrganisationObject"            
+OrganisationObjectPublic:
+  name: "OrganisationObjectPublic"
+  description: "Organisation object for public use"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          organisation:
+            type: string
+            description: "Short slug used to represent the org"
+          name:
+            type: string
+            minLength: 2
+            description: "The name of the organisation."
+          banner: 
+            type: string
+            description: "URL to the banner image for the organisation"
+          logo:
+            type: string
+            description: "URL to the logo image for the organisation"
+          css_vars:
+            type: string
+            description: "CSS variables for the organisation used to customise SOLO templates"
+          description:
+            type: string
+          created_at:
+            type: string
+            format: date-time
+          updated_at:
+            type: string
+            format: date-time
+          version:
+            type: integer

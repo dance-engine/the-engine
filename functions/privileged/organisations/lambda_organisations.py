@@ -16,7 +16,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _shared.parser import parse_event
 from _shared.naming import generateSlug
-from _pydantic.models.organisation_models import CreateOrganisationRequest, OrganisationObject, OrganisationsListResponse
+from _pydantic.models.organisation_models import CreateOrganisationRequest, OrganisationsListResponsePublic, OrganisationObject, OrganisationsListResponse
 from _pydantic.models.models_extended import OrganisationModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 
@@ -53,6 +53,9 @@ def get(public: bool = False):
     except Exception as e:
         logger.error(f"DynamoDB query failed to get organisations: {e}")
         raise Exception
+    
+    if public:
+        logger.info(f"Returning public organisation objects: {[o.to_public() if public else o for o in orgs]}")
 
     return [o.to_public() if public else o for o in orgs]
 
@@ -159,10 +162,10 @@ def lambda_handler(event, context):
             return create_organisation(validated_request, actor)
         # GET 
         elif http_method == "GET":
-            response_cls = OrganisationsListResponse # The model response class defined in pydantic
+            list_response_cls = OrganisationsListResponsePublic if is_public else OrganisationsListResponse
 
             result = get(public=is_public)
-            response = response_cls(organisations=result)
+            response = list_response_cls(organisations=result)
             return make_response(200, response.model_dump(mode="json", exclude_none=True))     
 
     except ValueError as e:

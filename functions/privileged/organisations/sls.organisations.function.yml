@@ -30,3 +30,7 @@ Organisations:
         authorizer:
           adminAuthorizer
         documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.POST}
+    - httpApi:
+        path: /public/organisations
+        method: get
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.GETpub}

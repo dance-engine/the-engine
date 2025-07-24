@@ -25,4 +25,18 @@ OrganisationsListResponse:
           organisations:
             type: array 
             items:
-              $ref: "#/components/schemas/OrganisationObject"
+              $ref: "#/components/schemas/OrganisationObject"              
+OrganisationsListResponsePublic:
+  name: "OrganisationsListResponsePublic"
+  description: "Response model for a list of organisations (public)"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          organisations: 
+            type: array
+            items:
+              $ref: "#/components/schemas/OrganisationObjectPublic"                   

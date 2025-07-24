@@ -1,4 +1,4 @@
-from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus
+from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus, OrganisationObjectPublic
 from _pydantic.models.events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
 from _pydantic.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
@@ -21,6 +21,9 @@ class OrganisationModel(OrganisationBase, DynamoModel):
 
     @property
     def org_slug(self): return self._slugify(self.organisation)
+    
+    def to_public(self) -> 'OrganisationObjectPublic':
+        return OrganisationObjectPublic.model_validate(self.model_dump(include=OrganisationObjectPublic.model_fields.keys()))    
 
 class EventModel(EventBase, DynamoModel):
     organisation: str

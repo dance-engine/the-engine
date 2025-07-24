@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 
 ## custom scripts
 from _shared.DecimalEncoder import DecimalEncoder
@@ -37,15 +38,22 @@ cloudformation = boto3.client("cloudformation")
 
 table = db.Table(CORE_TABLE_NAME)
 
-## write here the code which is called from the handler
-def get(organisationSlug: str, public: bool = False, actor: str = "unknown") -> OrganisationObject:
-    '''
-    You expect me to return an instance of organisationsObject.
-    '''
-    # TODO: implement
-    return make_response(201, {
-            "message": "It's a work in progress...",
-        })
+def get(public: bool = False):
+    logger.info(f"Getting organisations from {CORE_TABLE_NAME}")
+    blank_model = OrganisationModel(name="blank", organisation="blank")
+
+    try:
+        orgs = blank_model.query_gsi(
+            table,
+            "typeIDX", 
+            Key('entity_type').eq(blank_model.entity_type) & Key('PK').begins_with(f"{blank_model.PK.split('#')[0]}#"),
+        )
+        logger.info(f"Found organisation: {orgs}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get organisations: {e}")
+        raise Exception
+
+    return [o.to_public() if public else o for o in orgs]
 
 def create_organisation(request_data: CreateOrganisationRequest, organisation_slug: str, actor: str):
     logger.info(f"Create organisation: {request_data}")
@@ -152,10 +160,7 @@ def lambda_handler(event, context):
         elif http_method == "GET":
             response_cls = OrganisationsListResponse # The model response class defined in pydantic
 
-            if not organisationSlug:
-                return make_response(404, {"message": "Missing organisation in request"})            
-            
-            result = get(organisationSlug)
+            result = get(public=is_public)
             response = response_cls(organisations=result)
             return make_response(200, response.model_dump(mode="json", exclude_none=True))     
 

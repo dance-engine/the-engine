@@ -162,7 +162,7 @@ class DynamoModel(BaseModel):
         if self.uses_versioning():
             expression_attr_names["#version"] = "version"
             expression_attr_values[":incoming_version"] = incoming_version
-            conditions.append("attribute_exists(#version) OR #version <= :incoming_version")
+            conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
         if condition_expression:
             conditions.append(f"{condition_expression}")
         

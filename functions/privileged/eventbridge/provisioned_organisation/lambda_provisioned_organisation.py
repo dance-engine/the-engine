@@ -46,13 +46,14 @@ def splitArn(arn):
         return {}
     
 def getOrgIdFromStackResource(resource):
-    resource_regex = re.compile(r"^stack\/(?P<stage>preview|prod|dev)-org-(?P<orgId>demo)\/(?:[\d\w\-]*)$")
+    resource_regex = re.compile(r"^stack\/(?P<stage>preview|prod|dev)-org-(?P<orgId>[\w\-]+)\/[\w\-]+$")
     match = resource_regex.match(resource)
     if match:
         return match.groupdict()
     else:
         logger.error(f"Invalid Resource: {resource}")
-        return [None,None]    
+        return {}
+
     
 def get_organisation_settings(organisationSlug: str):
     logger.info(f"Getting settings of {organisationSlug} from {CORE_TABLE_NAME} / ")
@@ -62,19 +63,21 @@ def get_organisation_settings(organisationSlug: str):
         result = blank_model.query_gsi(
             table,
             "IDXinv", 
-            Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}')
+            Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
+            assemble_entites=True,
             )
         logger.info(f"Found settings for {organisationSlug}: {result}")
     except Exception as e:
         logger.error(f"DynamoDB query failed to get settings for {organisationSlug}: {e}")
         raise Exception
 
-    return OrganisationModel.model_validate(result),OrganisationObject.model_validate(result)
+    return result, OrganisationObject.model_validate(result)
 
 def lambda_handler(event, context):
     logger.info(f"event: {event}")
     logger.info(f"context: {context}")
     stack_id = event.get("detail", {}).get("stack-id")
+
     if not stack_id:
         logger.error("No stack-id found in event")
         return

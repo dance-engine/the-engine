@@ -29,6 +29,8 @@ resources:
                     - dynamodb:DescribeTable
                     - dynamodb:TagResource 
                     - dynamodb:UpdateContinuousBackups
+                    - dynamodb:UpdateItem
+                    - dynamodb:Query
                   Resource:
                     - arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-*
                 - Effect: Allow
@@ -54,11 +56,18 @@ resources:
                     - dynamodb:PutItem
                     - dynamodb:GetItem
                     - dynamodb:DescribeContinuousBackups
+                    - dynamodb:UpdateItem
+                    - dynamodb:Query                    
                   Resource: 
                     - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}"
                     - "arn:aws:dynamodb:eu-west-1:*:table/${self:custom.core_table_name}/*"
                     - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*"
                     - "arn:aws:dynamodb:eu-west-1:*:table/${sls:stage}-org-*/*"
+                - Effect: Allow
+                  Action:
+                    - events:PutEvents
+                  Resource:
+                    - arn:aws:events:eu-west-1:717279731911:event-bus/default                    
         Tags:
           - Key: DanceEngineVersion
             Value: v2

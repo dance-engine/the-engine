@@ -2,6 +2,7 @@ Organisations:
   runtime: python3.11
   handler: privileged/organisations/lambda_organisations.lambda_handler
   name: "${sls:stage}-${self:service}-organisations"
+  role: DeployOrgRole
   package:
     patterns:
       - '!**/**'

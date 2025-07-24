@@ -15,6 +15,7 @@ from boto3.dynamodb.conditions import Key
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _shared.parser import parse_event
+from _shared.naming import generateSlug
 from _pydantic.models.organisation_models import CreateOrganisationRequest, OrganisationObject, OrganisationsListResponse
 from _pydantic.models.models_extended import OrganisationModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
@@ -55,8 +56,9 @@ def get(public: bool = False):
 
     return [o.to_public() if public else o for o in orgs]
 
-def create_organisation(request_data: CreateOrganisationRequest, organisation_slug: str, actor: str):
+def create_organisation(request_data: CreateOrganisationRequest, actor: str):
     logger.info(f"Create organisation: {request_data}")
+    organisation_slug = generateSlug(request_data.organisation.name)
 
     logger.info(f"Initialising the creation of an organisation for {organisation_slug}")
 
@@ -148,14 +150,13 @@ def lambda_handler(event, context):
         parsed_event = parse_event(event)
         http_method  = event['requestContext']["http"]["method"]
 
-        organisationSlug = event.get("pathParameters", {}).get("organisation")
         is_public        = event.get("rawPath", "").startswith("/public")
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
         # POST
         if http_method == "POST":
             validated_request = CreateOrganisationRequest(**parsed_event)
-            return create_organisation(validated_request, organisationSlug, actor)
+            return create_organisation(validated_request, actor)
         # GET 
         elif http_method == "GET":
             response_cls = OrganisationsListResponse # The model response class defined in pydantic

@@ -549,7 +549,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-f520e6bc-8706-4f55-a3c6-3aa608be7fc6",
+        "operationId": "organisations-bfc17cbe-6a40-4359-9bc8-2682edf5390f",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -620,7 +620,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-bcb1fbc0-1f18-4fd0-b140-4b273b22bbe8",
+        "operationId": "eventbridge-5ca04bfc-c037-4f14-be38-779a6864601a",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -692,7 +692,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-54f874bc-ebef-4735-a1d9-51cd1c7fab17",
+        "operationId": "events-9c0e05af-7f1d-425d-8de4-3fc56126cfb2",
         "parameters": [
           {
             "name": "organisation",
@@ -749,7 +749,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-b282ef2f-42b4-4a1a-97b4-294d8b875a95",
+        "operationId": "events-1c005724-2eb2-4080-a0a0-0053b34c8e70",
         "parameters": [
           {
             "name": "organisation",
@@ -805,7 +805,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-7ee2a3c4-c48f-4d14-931a-f8d62278d282",
+        "operationId": "events-55792711-012c-4049-a80f-2d3282436fae",
         "parameters": [
           {
             "name": "organisation",
@@ -871,7 +871,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-4c3fc6cb-2f11-48d0-b4a2-577c95bdd13f",
+        "operationId": "events-2b22981c-076f-4033-82dc-0939dee57e08",
         "parameters": [
           {
             "name": "organisation",
@@ -933,7 +933,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-db6aff25-7b21-411e-be1e-bc6f4fd9d563",
+        "operationId": "events-3684aa91-46e6-41a7-bd42-92993fdc936b",
         "parameters": [
           {
             "name": "organisation",
@@ -1032,7 +1032,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-c937e262-d57f-4e13-99f1-a6a200ec16c3",
+        "operationId": "presigned_url-6222bd03-deda-4751-be36-1603e6df9027",
         "parameters": [],
         "tags": [
           "S3"
@@ -1101,7 +1101,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-176b4958-0bed-4f5b-8b99-64c9faeb34c9",
+        "operationId": "customers-18ef4817-222e-4125-91d3-65ca709244f3",
         "parameters": [
           {
             "name": "organisation",
@@ -1147,7 +1147,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-bc496eeb-0ccd-421c-8526-768c60aa9324",
+        "operationId": "customers-0f24de79-204d-4c2c-adfb-a15c3fd388e4",
         "parameters": [
           {
             "name": "organisation",
@@ -1238,7 +1238,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-88485a48-b8a4-4571-a02f-93d2b570c340",
+        "operationId": "organisation-cc36edfe-925d-4c8d-9a9f-f953e3099f0c",
         "parameters": [
           {
             "name": "organisation",

@@ -137,8 +137,10 @@ UpdateItemRequest:
         type: object
         required: ["item"]
         properties:
-          item:
-            $ref: "#/components/schemas/ItemObject"
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ItemObject"
 ItemResponse:
   name: "ItemResponse"
   description: "Single item response object"

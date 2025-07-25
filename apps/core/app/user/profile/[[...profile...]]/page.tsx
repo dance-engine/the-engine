@@ -61,7 +61,7 @@ const CustomPage = () => {
       { sitesAdmind.includes("*") ? (
         <div>
           
-          {summaryData && summaryData.map((site: Record<string, string>)=>{
+          {summaryData && summaryData.organisations && summaryData.organisations.map((site: Record<string, string>)=>{
 
             const orgSlug = site["org-slug"] || ""
             const active = orgSlug == activeOrg

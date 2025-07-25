@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 const domainConfig: Record<string, { title: string; favicon: string }> = {
-  'pow': {
+  'power-of-woman': {
     title: 'Power of Woman',
     favicon: '/favicons/pow/favicon.ico',
   }

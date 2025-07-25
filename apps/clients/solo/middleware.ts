@@ -7,7 +7,8 @@ const orgDomains: Record<string, string[]> = {
   'rebel-sbk': ['www.rbelsbk.com', 'rbelsbk.com'],
   'other-org': ['otherdomain.com', 'app.otherdomain.com'],
   'demo': ['localhost', '127.0.0.1','dance.likenobodyswatching.co.uk'],
-  'pow': ['powerofwomansbk.co.uk', 'pow.dance-engine.com','www.pow.localhost'],
+  'pow': ['pow.dance-engine.com','www.pow.localhost'],
+  'power-of-woman': ['powerofwomansbk.co.uk'],
 };
 
 const orgThemes: Record<string, string[]> = {

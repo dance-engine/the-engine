@@ -16,7 +16,8 @@ const orgApiCall = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisat
 
 const CustomPage = () => {
   const { isSignedIn, user, isLoaded } = useUser()
-  const { activeOrg, switchOrg } = useOrgContext()
+  const { activeOrg, switchOrg, availableOrgs
+   } = useOrgContext()
   const { data: summaryData, isLoading } = useClerkSWR(orgApiCall);
   
   if (!isLoaded) {
@@ -42,7 +43,7 @@ const CustomPage = () => {
         const siteName = site == "*" ? "All Sites" : site
         const roles = permissions?.organisations?.[site]  ? permissions?.organisations?.[site] : []
         const active = site == activeOrg
-        return <div key={`site-${site}`} className='pt-3'>
+        return <div key={`site-${site}-clerk`} className='pt-3'>
           
             <div className='flex justify-between items-start'>
               <div>
@@ -63,22 +64,25 @@ const CustomPage = () => {
           
           {summaryData && summaryData.organisations && summaryData.organisations.map((site: Record<string, string>)=>{
 
-            const orgSlug = site["org-slug"] || ""
+            const orgSlug = site["organisation"] || ""
             const active = orgSlug == activeOrg
             const siteName = site.name || "Unknown"
             
             // return <div key={orgSlug}>{site.name}</div>
-            return <div key={`site-${site}`} className='pt-3'>
+            return <div key={`site-${orgSlug}-api`} className='pt-3'>
           
             <div className='flex justify-between items-start'>
               <div>
-                <h2 className='text-lg'>{nameFromHypenated(site.name || "Unknown")}  {active ? <Badge>active</Badge> : null}</h2>
+                <h2 className='text-lg'>{nameFromHypenated(site.name || "Unknown")}  {active ? <Badge>active</Badge> : null} </h2>
               </div>
               {active ? null : <button className="bg-cerise-on-light text-white text-sm rounded-md font-bold px-3 py-1" onClick={()=>{switchOrg(orgSlug)}}>Switch to {siteName}</button>}
             </div>
         </div>
 
+        
+
           })}
+          ({JSON.stringify(availableOrgs,null,2)})
         </div>
         
         ) : ""}

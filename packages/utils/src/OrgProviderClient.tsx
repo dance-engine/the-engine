@@ -22,14 +22,14 @@ export const OrgProviderClient: FC<PropsWithChildren> = ({ children }) => {
     setAvailableOrgs(orgs)
 
     const lastOrg = (user.publicMetadata.lastOrg || null) as string | null
-    const isValid = lastOrg && orgs.includes(lastOrg)
+    const isValid = orgs.includes('*') || (lastOrg && orgs.includes(lastOrg))
     const resolvedOrg = isValid ? lastOrg : orgs.length === 1 ? orgs[0] : null
     setActiveOrg(resolvedOrg as string | null)
     setIsLoaded(true)
   }, [user, isUserLoaded])
 
   const switchOrg = async (slug: OrgSlug) => {
-    if (!availableOrgs.includes(slug)) return
+    if (!availableOrgs.includes(slug) && !availableOrgs.includes('*')) return
     setActiveOrg(slug)
     if(user) {
       await updateLastOrg(slug)

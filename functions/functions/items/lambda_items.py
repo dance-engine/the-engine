@@ -96,8 +96,9 @@ def lambda_handler(event, context):
                 response = response_cls(event=result)
             else:
                 result = get_all(organisationSlug, eventId, public=is_public)
-                response = list_response_cls(events=result)
+                response = list_response_cls(items=result)
             
+            return result
             return make_response(200, response.model_dump(mode="json", exclude_none=True))
 
         elif http_method == "PUT":

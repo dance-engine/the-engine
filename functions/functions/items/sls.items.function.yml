@@ -6,7 +6,8 @@ Items:
     patterns:
       - '!**/**'
       - "functions/items/**"
-      - "_pydantic/**"
+      - "_shared/**"
+      - "_pydantic/**"   
   environment:
       STAGE_NAME: ${sls:stage}
   layers:

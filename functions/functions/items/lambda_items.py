@@ -90,15 +90,16 @@ def lambda_handler(event, context):
             list_response_cls = ItemListResponsePublic if is_public else ItemListResponse
 
             if itemId:
+                return get_one(organisationSlug, eventId, itemId, public=is_public)
                 result = get_one(organisationSlug, eventId, itemId, public=is_public)
                 if result is None:
                     return make_response(404, {"message": "Item not found."})
                 response = response_cls(event=result)
             else:
+                return get_all(organisationSlug, eventId, public=is_public)
                 result = get_all(organisationSlug, eventId, public=is_public)
                 response = list_response_cls(items=result)
             
-            return result
             return make_response(200, response.model_dump(mode="json", exclude_none=True))
 
         elif http_method == "PUT":

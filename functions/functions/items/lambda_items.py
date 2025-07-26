@@ -5,9 +5,12 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import traceback
 import sys
+from datetime import datetime, timezone
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
+from boto3.dynamodb.conditions import Key
+from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
 sys.path.append(os.path.dirname(__file__))
@@ -16,40 +19,64 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest
+from _pydantic.models.models_extended import ItemModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
-#from _pydantic.dynamodb import VersionConflictError # pydantic layer
+from _pydantic.dynamodb import batch_write # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
-## aws resources an clients
-#db = boto3.resource("dynamodb")
+db = boto3.resource("dynamodb")
+eventbridge = boto3.client('events')
 
 ## ENV variables
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
+ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
 ## write here the code which is called from the handler
 def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = False, actor: str = "unknown"):
-    '''
-    You expect me to return an instance of itemsObject.
-    '''
-    # TODO: implement
-    return make_response(201, {
-            "message": "It's a work in progress...",
-            "item": {"message": "You expect me to return an instance of itemsObject."}
-        })
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting items for {eventId} of {organisationSlug} from {TABLE_NAME}")
+    blank_model = ItemModel(ksuid=itemId, parent_event_ksuid=eventId, name="blank", organisation=organisationSlug)
+
+    try:
+        result = blank_model.query_gsi(
+            table=table,
+            key_condition=Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
+            assemble_entites=False
+        )
+        logger.info(f"Found item for {eventId} of {organisationSlug}: {result}")
+
+    except db.exceptions.ResourceNotFoundException as e:
+        logger.error(f"Item ({itemId}) not found for {eventId} of {organisationSlug}: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get item ({itemId}) for {eventId} of {organisationSlug}: {e}")
+        raise Exception
+
+    return result.to_public() if public else result
 
 def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: str = "unknown"):
-    '''
-    You expect me to return a list of instances of itemsObject.
-    '''
-    # TODO: implement
-    return make_response(201, {
-            "message": "It's a work in progress... You expect me to return a list of instances of itemsObject.",
-            "items": [{"message": "You expect me to return a list of instances of itemsObject."}]
-        })
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
+    blank_model = ItemModel(parent_event_ksuid=eventId, name="blank", organisation=organisationSlug)
+
+    try:
+        items = blank_model.query_gsi(
+            table=table,
+            index_name="IDXinv", 
+            key_condition=Key("SK").eq(blank_model.SK) & Key("PK").begins_with(f"{blank_model.PK.split('#')[0]}#")
+        )
+        logger.info(f"Found items for {eventId} of {organisationSlug}: {items}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get items for {eventId} of {organisationSlug}: {e}")
+        raise Exception
+
+    return [i.to_public() if public else i for i in items]
 
 def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
     return make_response(201, {
@@ -58,10 +85,47 @@ def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, acto
         })
 
 def create(request: CreateItemRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
-    return make_response(201, {
-            "message": "It's a work in progress...",
-            "items": [{"message": "You expect me to return a list of instances of itemsObject I just created."}]
-        })
+    logger.info(f"Create Event: {request}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Adding items for {eventId} of {organisationSlug} into {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+
+    items_data  = request.items
+    item_models = []
+    for item_data in items_data:
+        item_models.append(ItemModel.model_validate({
+            **item_data.model_dump(mode="json", exclude_unset=True),
+            "ksuid": str(item_data.ksuid) if item_data.ksuid else str(KsuidMs()),
+            "organisation": organisationSlug,
+            "parent_event_ksuid": eventId,
+            "created_at": current_time,
+            "updated_at": current_time
+        }))
+    
+    try:
+        successful_items, unprocessed_items = batch_write(table, item_models)
+
+        if len(unprocessed_items) > 0:
+            logger.warning(f"Unprocessed items: {unprocessed_items}")
+            return make_response(207, {
+                "message": "Items created with some unprocessed items.",
+                "items": [item.model_dump_json() for item in successful_items],
+                "unprocessed": [item.model_dump_json() for item in unprocessed_items]
+            })
+        else:
+            return make_response(201, {
+                "message": "Items created successfully.",
+                "items": [item.model_dump_json() for item in successful_items],
+            })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
 
 def lambda_handler(event, context):
     try:

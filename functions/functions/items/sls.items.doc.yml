@@ -148,6 +148,9 @@ endpoints:
         - statusCode: 201
           responseBody:
             description: Item created successfully.
+        - statusCode: 207
+          responseBody:
+            description: Item created successfully with some unprocessed items.
         - statusCode: 400
           responseBody:
             description: Invalid input

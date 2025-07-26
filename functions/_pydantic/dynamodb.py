@@ -92,7 +92,7 @@ class DynamoModel(BaseModel):
             if assemble_entites:
                 return self.assemble_from_items(items)
             else:
-                return [self.model_validate(item) for item in items]
+                return [self.model_validate(item) for item in items] if len(items) > 1 else self.model_validate(items[0])
         except Exception as e:
             logger.error("Query failed: %s", str(e), exc_info=True)
             raise
@@ -250,3 +250,41 @@ class HistoryModel(DynamoModel):
     @property
     def gsi1SK(self) -> str:
         return None
+
+def batch_write(table, items: list, overwrite: bool = True):
+    """
+    
+    """
+    MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
+    client = table.meta.client
+    table_name = table.name
+
+    batches = [items[i:i+MAX_BATCH_SIZE] for i in range(0, len(items), MAX_BATCH_SIZE)]
+    successful_items = []
+    unprocessed_items = []
+
+    for batch in batches:
+        request_items = {
+            table_name: [
+                {"PutRequest": {"Item": item.to_dynamo()}} for item in batch
+            ]
+        } 
+
+        try:
+            response = client.batch_write_item(RequestItems=request_items)
+            unprocessed = response.get('UnprocessedItems', {}).get(table_name, [])
+
+            unprocessed_dynamo = {frozenset(entry["PutRequest"]["Item"].items()): entry for entry in unprocessed}
+            unprocessed_set = set(unprocessed_dynamo.keys())
+
+            for item in batch:
+                dynamo_item = item.to_dynamo()
+                if frozenset(dynamo_item) in unprocessed_set:
+                    unprocessed_items.append(item)
+                else:
+                    successful_items.append(item)
+        except ClientError as e:
+            logger.error(f"Batch write failed: {e}")
+            raise Exception(e)
+        
+    return successful_items, unprocessed_items

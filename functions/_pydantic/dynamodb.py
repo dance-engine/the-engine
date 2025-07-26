@@ -73,12 +73,13 @@ class DynamoModel(BaseModel):
     def gsi1SK(self) -> str:
         raise NotImplementedError()
     
-    def query_gsi(self, table, index_name, key_condition, filter_expression=None, assemble_entites=False) -> list:
+    def query_gsi(self, table, key_condition, index_name=None, filter_expression=None, assemble_entites=False) -> list:
         try:
             kwargs = {
-                "IndexName": index_name,
                 "KeyConditionExpression":key_condition
             }
+            if index_name:
+                kwargs["IndexName"] = index_name
             if filter_expression:
                 kwargs["FilterExpression"] = filter_expression
             

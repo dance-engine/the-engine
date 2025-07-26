@@ -44,9 +44,9 @@ def get(public: bool = False):
 
     try:
         orgs = blank_model.query_gsi(
-            table,
-            "typeIDX", 
-            Key('entity_type').eq(blank_model.entity_type) & Key('PK').begins_with(f"{blank_model.PK.split('#')[0]}#"),
+            table=table,
+            index_name="typeIDX", 
+            key_condition=Key('entity_type').eq(blank_model.entity_type) & Key('PK').begins_with(f"{blank_model.PK.split('#')[0]}#"),
         )
         logger.info(f"Found organisation: {orgs}")
     except Exception as e:

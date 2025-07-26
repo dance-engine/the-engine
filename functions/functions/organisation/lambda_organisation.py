@@ -96,9 +96,9 @@ def get_organisation_settings(organisationSlug: str, public: bool = False, actor
 
     try:
         result = blank_model.query_gsi(
-            table,
-            "IDXinv", 
-            Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
+            table=table,
+            index_name="IDXinv", 
+            key_condition=Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
             assemble_entites=True
             )
         logger.info(f"Found settings for {organisationSlug}: {result}")

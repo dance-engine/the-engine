@@ -16,12 +16,11 @@ from ksuid import KsuidMs # layer: utils
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest
 from _pydantic.models.models_extended import ItemModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
-from _pydantic.dynamodb import batch_write # pydantic layer
+from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -79,13 +78,64 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
     return [i.to_public() if public else i for i in items]
 
 def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
-    return make_response(201, {
-            "message": "It's a work in progress...",
-            "items": [{"message": "You expect me to return a list of instances of itemsObject I just updated."}]
+    logger.info(f"Update Items: {request}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Updating item(s) for {eventId} of {organisationSlug} into {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    try:
+        item_models = [
+            ItemModel.model_validate({
+                **item_data.model_dump(mode="json", exclude_unset=True),
+                "organisation": organisationSlug,
+                "parent_event_ksuid": eventId,
+                "updated_at": current_time
+            }) for item_data in request.items
+        ]
+
+        successful_items, failed_items = transact_upsert(table, item_models)
+
+        if failed_items:
+            return make_response(207, {
+                "message": "Some items updated successfully, others failed.",
+                "items": [item.model_dump(mode="json") for item in successful_items],
+                "unprocessed": [item.model_dump(mode="json") for item in failed_items]
+            })
+
+        return make_response(201, {
+            "message": "Items updated successfully.",
+            "items": [item.model_dump(mode="json") for item in successful_items],
         })
+    except VersionConflictError as e:
+        logger.error(f"Version Conflict")
+        return make_response(409, {
+            "message": "Version conflict",
+            "resource": [m.PK for m in e.models],
+            "your_version": e.incoming_version
+        })
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
 
 def create(request: CreateItemRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
-    logger.info(f"Create Event: {request}")
+    logger.info(f"Create Items: {request}")
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
@@ -93,7 +143,6 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
 
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
-
 
     items_data  = request.items
     item_models = []

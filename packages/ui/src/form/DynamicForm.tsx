@@ -14,6 +14,7 @@ import Select from "@dance-engine/ui/form/fields/Select";
 import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
+import OnceOnly from "@dance-engine/ui/form/fields/OnceOnly";
 import { DynamicFormProps } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
@@ -87,7 +88,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         const isHidden = metadata && metadata[field]?.hidden
         const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
         const isDisplayInfo = metadata && metadata[field]?.info
-
+        const isOnceOnly = metadata && metadata[field]?.onceOnly; // Get metadata for the field
 
         return (
           <div key={field} className={`flex flex-col ${isDisplayInfo ? "mb-1" : null}`}>
@@ -127,6 +128,13 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
                 <span className="text-gray-400 capitalize text-sm mr-2">{labelFromSnake(field)}: </span>
                 <span className="font-medium text-gray-500">{watch(field)}</span>
               </div>
+            ) : isOnceOnly ? (
+              <OnceOnly label={field} name={field} 
+                currentValue={watch(field)}
+                isDirty={isDirty}
+                register={register} validate={() => {trigger(field)}} 
+                error={errors[field]?.message as string} fieldSchema={fieldSchema} 
+                />
             ) : fieldType === "ZodObject" ? ( //TODO Don't assume all object are LocationPickers
               <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}

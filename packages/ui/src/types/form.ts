@@ -104,6 +104,17 @@ export interface TextInputProps {
   fieldSchema: ZodTypeAny;
 }
 
+export interface OnceOnlyInputProps {
+  label: string;
+  name: string;
+  currentValue: string;
+  isDirty?: boolean; // Optional, used to determine if the field has been modified
+  register: UseFormRegister<FieldValues>;
+  validate: () => void;
+  error?: string;
+  fieldSchema: ZodTypeAny;
+}
+
 export interface HiddenInputProps {
   name: string;
   register: UseFormRegister<FieldValues>;
@@ -135,6 +146,7 @@ export interface DynamicFieldOptions {
   hidden?: boolean,
   fileUploadField?: string;
   info?: boolean;
+  onceOnly?: boolean; // This field can only be set once and is not editable after that
 }
 
 export type MetaData = {

@@ -32,6 +32,7 @@ export const organisationMetadata = {
   css_vars: { info: true },
   description: { richText: true },
   organisation: { info: true }, 
+  account_id: { onceOnly: true }, 
   created_at: { info: true },
   updated_at: { info: true },
   version: { info: true }

@@ -70,7 +70,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         setValue("meta.updated_at", new Date().toISOString())
       })} 
       className="space-y-4 w-full relative">
-      {errors && <div className="text-red-500">{JSON.stringify(errors)}</div>}
+      {/* {errors && <div className="text-red-500">{JSON.stringify(errors)}</div>} */}
       <Debug debug={{ formState: isDirty ? "Dirty" : "Clean", values: watchedValues, errors: errors}} className="absolute right-0"/>
       {/* <div>Org: {orgSlug} {JSON.stringify(data,null,2)}</div> */}
       <div className={`fixed bg-gray-500 top-24 right-10 rounded-md transition-opacity duration-750 text-gray-50 px-3 py-1 ${isAutosaveStatusVisible ? "opacity-100" : "opacity-0"}`}>{autosaveStatus}</div>

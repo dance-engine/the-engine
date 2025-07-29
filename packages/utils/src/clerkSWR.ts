@@ -25,8 +25,12 @@ export default function useClerkSWR(url: string, swrConfig = {}) {
     try {
       const response = await fetch(url, {headers})
       if (!response.ok) {
-        console.log("Non-OK response:", response.status)
-        throw new Error(`Bad status: ${response.status}`);
+        if(response.status == 404 ) {
+          console.log("Not Found response:", response.status)
+        } else {
+          console.log("Non-OK response:", response.status)
+          throw new Error(`Bad status: ${response.status}`);
+        }
       }
       return await response.json()
     } catch (err: any) {

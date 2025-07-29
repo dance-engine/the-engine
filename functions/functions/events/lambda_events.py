@@ -114,10 +114,10 @@ def get_events(organisationSlug: str, public: bool = False):
 
     try:
         events = blank_model.query_gsi(
-            table,
-            "gsi1", 
-            Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#")
-        )
+            table=table,
+            index_name="gsi1", 
+            key_condition=Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#")
+            )
         logger.info(f"Found events for {organisationSlug}: {events}")
     except Exception as e:
         logger.error(f"DynamoDB query failed to get events for {organisationSlug}: {e}")
@@ -133,16 +133,24 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
 
     try:
         result = blank_model.query_gsi(
-            table,
-            "IDXinv", 
-            Key('SK').eq(f'{blank_model.PK}'),
+            table=table,
+            index_name="IDXinv", 
+            key_condition=Key('SK').eq(f'{blank_model.PK}'),
             assemble_entites=True
         )
         logger.info(f"Found event for {organisationSlug}: {result}")
 
-    except db.exceptions.ResourceNotFoundException as e:
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error(f"Event not found for {organisationSlug}: {e}")
+            return None
+        else:
+            raise
+        
+    except ValueError as e:
         logger.error(f"Event not found for {organisationSlug}: {e}")
         return None
+    
     except Exception as e:
         logger.error(f"DynamoDB query failed to get event for {organisationSlug}: {e}")
         raise Exception

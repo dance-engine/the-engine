@@ -1,0 +1,195 @@
+PriceScheduleObject:
+  name: "PriceScheduleObject"
+  description: "Pricing schedule object"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: []
+        properties:
+          something:
+            type: string
+ItemObject:
+  name: "ItemObject"
+  description: "Item object"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          ksuid:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+          column:
+            description: "??"
+            type: number
+          row:
+            description: "??"
+            type: number
+          primary_price:
+            description: "Primary price of the item in pennies"
+            type: number
+          secondary_price:
+            description: "Secondary price of the item in pennies"
+            type: number
+          tertiary_price:
+            description: "Tertiary price of the item in pennies"
+            type: number
+          primary_price_name:
+            description: "Name of primary price"
+            type: string
+          secondary_price_name:
+            description: "Name of secondary price"
+            type: string
+          tertiary_price_name:
+            description: "Name of tertiary price"
+            type: string
+          pricing_schedule:
+            $ref: "#/components/schemas/PriceScheduleObject"
+ItemObjectPublic:
+  name: "ItemObjectPublic"
+  description: "Item object for the public"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          ksuid:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+          column:
+            description: "??"
+            type: number
+          row:
+            description: "??"
+            type: number
+          primary_price:
+            description: "Primary price of the item in pennies"
+            type: number
+          secondary_price:
+            description: "Secondary price of the item in pennies"
+            type: number
+          tertiary_price:
+            description: "Tertiary price of the item in pennies"
+            type: number
+          primary_price_name:
+            description: "Name of primary price"
+            type: string
+          secondary_price_name:
+            description: "Name of secondary price"
+            type: string
+          tertiary_price_name:
+            description: "Name of tertiary price"
+            type: string
+CreateItemRequest:          
+  name: "CreateItemRequest"
+  description: "Request model for creating a new item"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["items"]
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ItemObject"
+UpdateItemRequest:
+  name: "UpdateItemRequest"
+  description: "Request model for updating an item"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["items"]
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ItemObject"
+ItemResponse:
+  name: "ItemResponse"
+  description: "Single item response object"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          item:
+            $ref: "#/components/schemas/ItemObject"
+ItemListResponse:
+  name: "ItemListResponse"
+  description: "Response model for a list of items"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ItemObject"
+ItemResponsePublic:
+  name: "ItemResponsePublic"
+  description: "Single public item response object"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          item:
+            $ref: "#/components/schemas/ItemObjectPublic"
+ItemListResponsePublic:
+  name: "ItemListResponsePublic"
+  description: "Response model for a list of items (public)"
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ItemObjectPublic"

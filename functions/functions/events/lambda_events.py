@@ -117,7 +117,7 @@ def get_events(organisationSlug: str, public: bool = False):
             table=table,
             index_name="gsi1", 
             key_condition=Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#")
-            )
+        )
         logger.info(f"Found events for {organisationSlug}: {events}")
     except Exception as e:
         logger.error(f"DynamoDB query failed to get events for {organisationSlug}: {e}")

@@ -1,8 +1,30 @@
+from _pydantic.models.items_models import ItemObject as ItemBase, ItemObjectPublic
 from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus, OrganisationObjectPublic
 from _pydantic.models.events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
 from _pydantic.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from pydantic import model_validator, field_validator
+
+class ItemModel(ItemBase, DynamoModel):
+    organisation: str
+    parent_event_ksuid: str
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    
+    @property
+    def entity_type(self): return "ITEM"
+
+    @property
+    def PK(self): return f"ITEM#{self.ksuid}"
+
+    @property
+    def SK(self): return f"EVENT#{self.parent_event_ksuid}"
+
+    @property
+    def org_slug(self): return self._slugify(self.organisation)
+
+    def to_public(self) -> 'ItemObjectPublic':
+        return ItemObjectPublic.model_validate(self.model_dump(include=ItemObjectPublic.model_fields.keys()))
 
 class OrganisationModel(OrganisationBase, DynamoModel):
     organisation: str
@@ -35,7 +57,8 @@ class EventModel(EventBase, DynamoModel):
     def related_entities(self):
         return {
             "LOCATION": ("location", "single", LocationModel),
-            "HISTORY": ("history", "list", HistoryModel) 
+            "HISTORY": ("history", "list", HistoryModel),
+            "ITEM": ("items", "list", ItemModel),
             }
     
     @property

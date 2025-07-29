@@ -98,5 +98,9 @@ class Organisation(RootModel[str]):
     root: str
 
 
+class Event(Organisation):
+    pass
+
+
 class Ksuid(Organisation):
     pass

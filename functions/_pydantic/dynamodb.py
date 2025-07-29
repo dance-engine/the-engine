@@ -73,12 +73,13 @@ class DynamoModel(BaseModel):
     def gsi1SK(self) -> str:
         raise NotImplementedError()
     
-    def query_gsi(self, table, index_name, key_condition, filter_expression=None, assemble_entites=False) -> list:
+    def query_gsi(self, table, key_condition, index_name=None, filter_expression=None, assemble_entites=False) -> list:
         try:
             kwargs = {
-                "IndexName": index_name,
                 "KeyConditionExpression":key_condition
             }
+            if index_name:
+                kwargs["IndexName"] = index_name
             if filter_expression:
                 kwargs["FilterExpression"] = filter_expression
             
@@ -91,7 +92,7 @@ class DynamoModel(BaseModel):
             if assemble_entites:
                 return self.assemble_from_items(items)
             else:
-                return [self.model_validate(item) for item in items]
+                return [self.model_validate(item) for item in items] if len(items) > 1 else self.model_validate(items[0])
         except Exception as e:
             logger.error("Query failed: %s", str(e), exc_info=True)
             raise
@@ -216,10 +217,26 @@ class DynamoModel(BaseModel):
         return base
 
 class VersionConflictError(Exception):
-    def __init__(self, model: DynamoModel, incoming_version: int):
-        super().__init__(f"Version conflict on {model.PK} / v{incoming_version}")
-        self.model = model
-        self.incoming_version = incoming_version
+    def __init__(self, model: DynamoModel | list[DynamoModel], incoming_version: int | list[int] = None):
+        if isinstance(model, list):
+            self.models = model
+        else:
+            self.models = [model]
+
+        if isinstance(incoming_version, list):
+            self.incoming_versions = incoming_version
+        else:
+            self.incoming_versions = [incoming_version] * len(self.models)
+
+        self.model = self.models[0]
+        self.incoming_version = self.incoming_versions[0]
+        
+        messages = [
+            f"{m.PK} / v{v}" if v is not None else f"{m.PK} / unknown version"
+            for m, v in zip(self.models, self.incoming_versions)
+        ]
+        
+        super().__init__(f"Version conflict on: {', '.join(messages)}")
 
 class HistoryModel(DynamoModel):
     ksuid: str = Field(default_factory=lambda: str(KsuidMs()))
@@ -249,3 +266,123 @@ class HistoryModel(DynamoModel):
     @property
     def gsi1SK(self) -> str:
         return None
+
+def batch_write(table, items: list, overwrite: bool = True):
+    """
+    
+    """
+    MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
+    client = table.meta.client
+    table_name = table.name
+
+    batches = [items[i:i+MAX_BATCH_SIZE] for i in range(0, len(items), MAX_BATCH_SIZE)]
+    successful_items = []
+    unprocessed_items = []
+
+    for batch in batches:
+        request_items = {
+            table_name: [
+                {"PutRequest": {"Item": item.to_dynamo(exclude_keys=False)}} for item in batch
+            ]
+        } 
+        logger.info(f"Batch write request for {len(batch)} items to {table_name} with request items: {request_items}")
+
+        try:
+            response = client.batch_write_item(RequestItems=request_items)
+            unprocessed = response.get('UnprocessedItems', {}).get(table_name, [])
+
+            unprocessed_dynamo = {frozenset(entry["PutRequest"]["Item"].items()): entry for entry in unprocessed}
+            unprocessed_set = set(unprocessed_dynamo.keys())
+
+            for item in batch:
+                dynamo_item = item.to_dynamo()
+                if frozenset(dynamo_item) in unprocessed_set:
+                    unprocessed_items.append(item)
+                else:
+                    successful_items.append(item)
+        except ClientError as e:
+            logger.error(f"Batch write failed: {e}")
+            raise Exception(e)
+        
+    return successful_items, unprocessed_items
+
+def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], condition_expression: str = None):
+    MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
+    client = table.meta.client
+
+    batches = [items[i:i+MAX_BATCH_SIZE] for i in range(0, len(items), MAX_BATCH_SIZE)]
+    successful_items = []
+    failed_items = []
+
+    for batch in batches:
+        transact_items = []
+
+        for item in batch:
+            conditions = []
+            update_parts = []
+            expression_attr_names = {}
+            expression_attr_values = {}
+
+            item_dict = item.to_dynamo(exclude_keys=False)
+
+            if item.uses_versioning():
+                incoming_version = item_dict.get('version', 0)
+                item_dict['version'] = incoming_version + 1
+
+                expression_attr_names["#version"] = "version"
+                expression_attr_values[":incoming_version"] = incoming_version
+                conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
+            if condition_expression:
+                conditions.append(f"{condition_expression}")
+
+            for key, value in item_dict.items():
+                name_placeholder = f"#{key}"
+                value_placeholder = f":{key}"
+                expression_attr_names[name_placeholder] = key
+                expression_attr_values[value_placeholder] = value
+
+                if key in only_set_once:
+                    update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
+                else:
+                    update_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+            update_expression = "SET " + ", ".join(update_parts)
+
+            transact_items.append({
+                "Update": {
+                    "TableName": table.name,
+                    "Key": {"PK": item.PK, "SK": item.SK},
+                    "UpdateExpression": update_expression,
+                    "ExpressionAttributeNames": expression_attr_names,
+                    "ExpressionAttributeValues": expression_attr_values,
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD",
+                    **({"ConditionExpression": " AND ".join(conditions)} if conditions else {})
+                }
+            })
+
+        try:
+            client.transact_write_items(TransactItems=transact_items, ReturnCancellationReasons=True)
+            successful_items.extend(batch)
+        except client.exceptions.TransactionCanceledException as e:
+            logger.warning("Transaction cancelled")
+            reasons = e.response.get("CancellationReasons", [])
+            conflict_idxs = [
+                idx for idx, reason in enumerate(reasons)
+                if reason.get("Code") == "ConditionalCheckFailed"
+            ]
+            if conflict_idxs:
+                conflict_models = [batch[i] for i in conflict_idxs]
+                conflict_versions = [
+                    batch[i].version for i in conflict_idxs if batch[i].uses_versioning()
+                ]
+
+                raise VersionConflictError(conflict_models, conflict_versions)
+
+            logger.warning("Transaction cancelled for unknown reasons: %s", reasons)
+            failed_items.extend(batch)
+        except Exception as e:
+            logger.error(f"Unexpected transaction error: {e}")
+            logger.error(traceback.format_exc())
+            failed_items.extend(batch)
+
+    return successful_items, failed_items

@@ -1,0 +1,37 @@
+Bundles:
+  runtime: python3.11
+  handler: functions/bundles/lambda_bundles.lambda_handler
+  name: "${sls:stage}-${self:service}-bundles"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/bundles/**"
+    #   - "_pydantic/**" # this requires the pydantic layer also
+    #   - "_shared/**"
+  environment:
+      STAGE_NAME: ${sls:stage}
+  layers:
+      - !Ref UtilsLambdaLayer
+    #   - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+  events:
+      - httpApi:
+          path: /{organisation}/bundles
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.bundles.GET}
+
+      - httpApi:
+          path: /{organisation}/bundles
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.bundles.POST}
+
+      - httpApi:
+          path: /{organisation}/bundles
+          method: put
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.bundles.PUT}
+

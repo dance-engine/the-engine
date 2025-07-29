@@ -282,9 +282,10 @@ def batch_write(table, items: list, overwrite: bool = True):
     for batch in batches:
         request_items = {
             table_name: [
-                {"PutRequest": {"Item": item.to_dynamo()}} for item in batch
+                {"PutRequest": {"Item": item.to_dynamo(exclude_keys=False)}} for item in batch
             ]
         } 
+        logger.info(f"Batch write request for {len(batch)} items to {table_name} with request items: {request_items}")
 
         try:
             response = client.batch_write_item(RequestItems=request_items)
@@ -322,7 +323,7 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             expression_attr_names = {}
             expression_attr_values = {}
 
-            item_dict = item.to_dynamo()
+            item_dict = item.to_dynamo(exclude_keys=False)
 
             if item.uses_versioning():
                 incoming_version = item_dict.get('version', 0)

@@ -23,8 +23,8 @@ class ItemModel(ItemBase, DynamoModel):
     @property
     def org_slug(self): return self._slugify(self.organisation)
 
-    def to_public(self) -> 'ItemBase':
-        return ItemBase.model_validate(self.model_dump(include=ItemObjectPublic.model_fields.keys()))
+    def to_public(self) -> 'ItemObjectPublic':
+        return ItemObjectPublic.model_validate(self.model_dump(include=ItemObjectPublic.model_fields.keys()))
 
 class OrganisationModel(OrganisationBase, DynamoModel):
     organisation: str

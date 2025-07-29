@@ -114,9 +114,9 @@ def get_events(organisationSlug: str, public: bool = False):
 
     try:
         events = blank_model.query_gsi(
-            table,
-            "gsi1", 
-            Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#")
+            table=table,
+            index_name="gsi1", 
+            key_condition=Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#")
         )
         logger.info(f"Found events for {organisationSlug}: {events}")
     except Exception as e:
@@ -133,9 +133,9 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
 
     try:
         result = blank_model.query_gsi(
-            table,
-            "IDXinv", 
-            Key('SK').eq(f'{blank_model.PK}'),
+            table=table,
+            index_name="IDXinv", 
+            key_condition=Key('SK').eq(f'{blank_model.PK}'),
             assemble_entites=True
         )
         logger.info(f"Found event for {organisationSlug}: {result}")

@@ -1,0 +1,197 @@
+endpoints: 
+  items:
+    GETall:
+      summary: "Get All Items"
+      description: "Returns a list of all items for a given organisation and event."
+      tags:
+        - Items
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Returns a list of all items.
+          responseModels:
+            application/json: "ItemListResponse"            
+        - statusCode: 404
+          responseBody:
+            description: No items found.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETone:
+      summary: "Get Single Item"
+      description: "Fetch details of a specific item by its KSUID."
+      tags:
+        - Items
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique item ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The item object.
+          responseModels:
+            application/json: "ItemResponse"
+        - statusCode: 404
+          responseBody:
+            description: Item not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETpub:
+      summary: "Public Get Item"
+      description: "Public endpoint to get a specific item by its KSUID."
+      security:
+        - {}
+      tags:
+        - Public
+        - Items
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique item ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The item object.
+          responseModels:
+            application/json: "ItemResponsePublic"
+        - statusCode: 404
+          responseBody:
+            description: Item not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETallpub:
+      summary: "Public Get All Items"
+      description: "Public endpoint to get all items for a given organisation and event."
+      security:
+        - {}
+      tags:
+        - Public
+        - Items
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: A list of items.
+          responseModels:
+            application/json: "ItemListResponsePublic"
+        - statusCode: 404
+          responseBody:
+            description: Items not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    POST:
+      summary: "Create Item"
+      description: "Creates a new item and stores it for the given event."
+      tags:
+        - Items
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      requestBody:
+        description: "List of Item details"
+      requestModels:
+        application/json: "CreateItemRequest"
+      methodResponses:
+        - statusCode: 201
+          responseBody:
+            description: Item created successfully.
+        - statusCode: 207
+          responseBody:
+            description: Item created successfully with some unprocessed items.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+        - statusCode: 409
+          responseBody:
+            description: Version conflict.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    PUT:
+      summary: "Update Items"
+      description: "Update existing items for a given event."
+      tags:
+        - Items
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string         
+      requestBody:
+        description: "List of Item details"
+      requestModels:
+        application/json: "UpdateItemRequest"
+      methodResponses:
+        - statusCode: 201
+          responseBody:
+            description: Item updated successfully.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+        - statusCode: 409
+          responseBody:
+            description: Version conflict.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"

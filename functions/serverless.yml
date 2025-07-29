@@ -78,6 +78,8 @@ provider:
             - dynamodb:GetShardIterator
             - dynamodb:ListStreams
             - dynamodb:BatchGetItem
+            - dynamodb:BatchWriteItem
+            - dynamodb:TransactWriteItems
           Resource:
             - Fn::GetAtt: [CoreDanceEngineTable, Arn]
             - { "Fn::Join": [ "/", [ 
@@ -155,6 +157,7 @@ layers:
 #######################
 
 functions:
+  Items: ${file(functions/items/sls.items.function.yml):Items}
   ProvisionedOrganisation: ${file(privileged/eventbridge/provisioned_organisation/sls.provisioned_organisation.function.yml):ProvisionedOrganisation}
   Organisations: ${file(privileged/organisations/sls.organisations.function.yml):Organisations}
   HistoryTracker: ${file(functions/utils/history_tracker/sls.history_tracker.function.yml):HistoryTracker}

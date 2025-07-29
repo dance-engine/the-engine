@@ -78,6 +78,8 @@ provider:
             - dynamodb:GetShardIterator
             - dynamodb:ListStreams
             - dynamodb:BatchGetItem
+            - dynamodb:BatchWriteItem
+            - dynamodb:TransactWriteItems
           Resource:
             - Fn::GetAtt: [CoreDanceEngineTable, Arn]
             - { "Fn::Join": [ "/", [ 

@@ -141,7 +141,7 @@ endpoints:
           schema:
             type: string
       requestBody:
-        description: "Item details"
+        description: "List of Item details"
       requestModels:
         application/json: "CreateItemRequest"
       methodResponses:
@@ -163,8 +163,8 @@ endpoints:
           responseModels:
             application/json: "ErrorResponse"
     PUT:
-      summary: "Update an Item"
-      description: "Update an existing item for a given event."
+      summary: "Update Items"
+      description: "Update existing items for a given event."
       tags:
         - Items
       pathParams:
@@ -175,13 +175,9 @@ endpoints:
         - name: event
           description: Event slug or ID
           schema:
-            type: string
-        - name: ksuid
-          description: Unique item ID (KSUID)
-          schema:
-            type: string            
+            type: string         
       requestBody:
-        description: "Item details"
+        description: "List of Item details"
       requestModels:
         application/json: "UpdateItemRequest"
       methodResponses:

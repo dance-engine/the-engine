@@ -31,9 +31,18 @@ export default async function IndexPage() {
         --highlight-color: hsl(324, 98%, 62%)
       }
     `;
+  const andreasCss = `
+      :root {
+        --main-bg-color: black;
+        --main-text-color: white;
+        --alternate-bg-color: #871d24;
+        --highlight-color: hsla(350, 100%, 23%, 1.00);
+      }
+    `;
+
 
   return <div className='w-full' style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
-      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} />
       
       <header className='w-full bg-black text-white flex justify-center'>
         <div className='max-w-4xl w-4xl px-4 uppercase font-black lg:px-0 py-3 flex items-center justify-center'>
@@ -53,10 +62,10 @@ export default async function IndexPage() {
             
 
         </div>    
-        <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] text-white flex items-stretch justify-center bg-no-repeat bg-bottom md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
+        <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] text-white flex items-stretch justify-center bg-no-repeat bg-top md:bg-auto bg-size-[1400px_auto]' style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              {org.name}, an event exclusively for women
+              {/* {org.name}, an event exclusively for women */}
             </div>
             
           </div>

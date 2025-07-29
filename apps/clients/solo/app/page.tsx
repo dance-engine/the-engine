@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-// import EventList from '../components/EventList'
+import EventList from '../components/EventList'
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -42,9 +42,17 @@ export default async function IndexPage() {
         --highlight-color: hsl(324, 98%, 62%)
       }
     `;
+  const andreasCss = `
+      :root {
+        --main-bg-color: black;
+        --main-text-color: white;
+        --alternate-bg-color: #871d24;
+        --highlight-color: hsla(350, 100%, 23%, 1.00);
+      }
+    `;
 
   return <div className='w-full' style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
-      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} />
       
       <header className='w-full bg-black text-white flex justify-center'>
         <div className='max-w-4xl w-4xl px-4 uppercase font-black lg:px-0 py-3 flex items-center justify-center'>
@@ -59,7 +67,7 @@ export default async function IndexPage() {
         style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              {org.name}, an event exclusively for women
+              { orgSlug == 'rebel-sbk' ? "" : `${org.name}, an event exclusively for women` }
             </div>
             
           </div>
@@ -87,8 +95,31 @@ export default async function IndexPage() {
                 </div>
                 
         </div>
-
-        <div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
+        { orgSlug == 'rebel-sbk' ? 
+          <div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
+           <div className={`max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ `}>
+            <h2 className='text-4xl font-bold mb-4'>Early Bird Tickets</h2>
+            <div className='flex gap-6'>
+            <StripePurchaseButton 
+              label="Full Pass"
+              accountId={org.account_id || 'acct_1Rkp1ODIMY9TzhzF'} //! Work out why accountID is missing
+              priceId={ inProd ? "price_1RqCdDD1ZofqWwLaVBaPDg7a" : 'price_1RqCh1D1ZofqWwLa6AnG7NFD' } // 🔥 Live : 🔨 Test price ID
+              couponCode={ inProd ? "d2JMEhDA" : 'uKXafk5e' } // 🔥 Live : 🔨 Test coupon code
+              style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
+            />
+            <StripePurchaseButton 
+              label="Party Ticket"
+              accountId={org.account_id || 'acct_1Rkp1ODIMY9TzhzF'} //! Work out why accountID is missing
+              priceId={ inProd ? "price_1RqCdeD1ZofqWwLanvCgSHEc" : 'price_1RqCgfD1ZofqWwLaTgffMKTU' } // 🔥 Live : 🔨 Test price ID
+              couponCode={ inProd ? "NtYacUmF" : 'm8WbVzP7' } // 🔥 Live : 🔨 Test coupon code
+              style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
+            />
+            </div>
+            
+          </div>
+          </div>
+        :
+        (<div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
            <div className={`max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ `}>
             <h2 className='text-4xl font-bold mb-4'>Early Bird Ticket</h2>
             <p className='mb-6 text-xl'>We have a limited amount of early bird discounted tickets at only £40</p>
@@ -99,9 +130,9 @@ export default async function IndexPage() {
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
             />
            </div>
-        </div>
+        </div>)}
 
-        {/* { eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } */}
+        <div className='hidden'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> }</div>
       </main>
       
     </div>

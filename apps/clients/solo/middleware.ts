@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 
 // Org-to-Domain mapping for better clarity and scalability
 const orgDomains: Record<string, string[]> = {
-  'rebel-sbk': ['www.rbelsbk.com', 'rbelsbk.com'],
+  'rebel-sbk': ['www.rbelsbk.com', 'rbelsbk.com','www.iamrebel.co.uk','iamrebel.co.uk','www.rebel.localhost'],
   'other-org': ['otherdomain.com', 'app.otherdomain.com'],
   'demo': ['localhost', '127.0.0.1','dance.likenobodyswatching.co.uk'],
   'pow': ['pow.dance-engine.com','www.pow.localhost'],

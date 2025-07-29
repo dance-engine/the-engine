@@ -18,7 +18,7 @@ import { EventType } from '@dance-engine/schemas/events';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function EventList({ fallbackData, org, theme, eventKsuid}: { fallbackData: EventType[], org: string, theme: string, eventKsuid: string}) {
-  const { data: events, isLoading, error } = useSWR(
+  const { data: eventData, isLoading, error } = useSWR(
     `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events/${eventKsuid}`,
     fetcher,
     { fallbackData }
@@ -26,14 +26,18 @@ export default function EventList({ fallbackData, org, theme, eventKsuid}: { fal
 
   if (isLoading || !eventKsuid || error) return <p>Loading...{theme} </p>
   let event = {} as Record<string, string> 
-  if(events.length > 1) { return <p>Multiple events</p> } else { 
-    event = events[0]
+  if(eventData?.events &&  eventData.events.length > 1) { 
+    return <p>Multiple events</p> 
+  } else if (eventData.event) { 
+    event = eventData.event
   }
   
   // className='bg-[image:var(--image-url)]'>
   return <>
     
-    <div style={{'--image-url': `url(${event.banner})`} as React.CSSProperties }  className="w-full min-h-[400px] bg-center bg-cover bg-[image:var(--image-url)] flex flex-col justify-end items-center text-white p-6">
+    <div style={{'--image-url': `url(${event.banner})`} as React.CSSProperties }  
+      className={"w-full min-h-[400px] bg-center bg-cover bg-[image:var(--image-url)] \
+      flex flex-col justify-end items-center text-white p-6"}>
       <div className='max-w-4xl w-4xl px-4 lg:px-0 py-4 text-shadow-lg text-shadow-black/80'>
         <h1 className='text-6xl '>{event.name}</h1>
         <p>{format(event.starts_at,'h:mm aaa PPP')}</p>

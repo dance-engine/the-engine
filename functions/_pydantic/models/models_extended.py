@@ -57,7 +57,8 @@ class EventModel(EventBase, DynamoModel):
     def related_entities(self):
         return {
             "LOCATION": ("location", "single", LocationModel),
-            "HISTORY": ("history", "list", HistoryModel) 
+            "HISTORY": ("history", "list", HistoryModel),
+            "ITEM": ("items", "list", ItemModel),
             }
     
     @property

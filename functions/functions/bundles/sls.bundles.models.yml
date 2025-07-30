@@ -1,1 +1,191 @@
- 
+BundlePriceScheduleObject:
+  name: "BundlePriceScheduleObject"
+  description: "Pricing schedule object"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: []
+        properties:
+          something:
+            type: string
+BundleObject:
+  name: "BundleObject"
+  description: "Bundle object"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          ksuid:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+          primary_price:
+            description: "Primary price of the bundle in pennies"
+            type: number
+          secondary_price:
+            description: "Secondary price of the bundle in pennies"
+            type: number
+          tertiary_price:
+            description: "Tertiary price of the bundle in pennies"
+            type: number
+          primary_price_name:
+            description: "Name of primary price"
+            type: string
+          secondary_price_name:
+            description: "Name of secondary price"
+            type: string
+          tertiary_price_name:
+            description: "Name of tertiary price"
+            type: string
+          pricing_schedule:
+            $ref: "#/components/schemas/BundlePriceScheduleObject"
+          includes:
+            type: array
+            items:
+              type: string
+BundleObjectPublic:
+  name: "BundleObjectPublic"
+  description: "Bundle public object"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          ksuid:
+            type: string
+          name:
+            type: string
+          description:
+            type: string
+          status:
+            type: string
+            enum:
+              - "draft"
+              - "live"
+              - "archived"
+              - "outdated"
+          primary_price:
+            description: "Primary price of the bundle in pennies"
+            type: number
+          secondary_price:
+            description: "Secondary price of the bundle in pennies"
+            type: number
+          tertiary_price:
+            description: "Tertiary price of the bundle in pennies"
+            type: number
+          primary_price_name:
+            description: "Name of primary price"
+            type: string
+          secondary_price_name:
+            description: "Name of secondary price"
+            type: string
+          tertiary_price_name:
+            description: "Name of tertiary price"
+            type: string
+          includes:
+            type: array
+            items:
+              type: string
+CreateBundleRequest:          
+  name: "CreateBundleRequest"
+  description: "Request model for creating a new bundle"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["bundles"]
+        properties:
+          bundles:
+            type: array
+            items:
+              $ref: "#/components/schemas/BundleObject"
+UpdateBundleRequest:
+  name: "UpdateBundleRequest"
+  description: "Request model for updating a bundle"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["bundles"]
+        properties:
+          bundles:
+            type: array
+            items:
+              $ref: "#/components/schemas/BundleObject"
+BundleResponse:
+  name: "BundleResponse"
+  description: "Single bundle response object"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          bundle:
+            $ref: "#/components/schemas/BundleObject"
+BundleListResponse:
+  name: "BundleListResponse"
+  description: "Response model for a list of bundles"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          bundles:
+            type: array
+            items:
+              $ref: "#/components/schemas/BundleObject"
+BundleResponsePublic:
+  name: "BundleResponsePublic"
+  description: "Single public bundle response object"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          bundle:
+            $ref: "#/components/schemas/BundleObjectPublic"
+BundleListResponsePublic:
+  name: "BundleListResponsePublic"
+  description: "Response model for a list of bundles (public)"
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          bundles:
+            type: array
+            items:
+              $ref: "#/components/schemas/BundleObjectPublic"

@@ -1,89 +1,197 @@
-endpoints:
+endpoints: 
   Bundles:
-    GET:
-      summary: "GET Bundles"
-      description: "Handle GET requests for /{organisation}/bundles"
+    GETall:
+      summary: "Get All Bundles"
+      description: "Returns a list of all bundles for a given organisation and event."
       tags:
         - Bundles
-      ## uncomment this and the next line if this is a public endpoint
-      #security:
-      #  - {}
-      ## comment if does not includes path params
       pathParams:
-       - name: organisation
-         description: Organisation slug
-         schema:
-           type: string
-      ## uncomment if this is a POST request and define model
-      #requestBody:
-      #  description: "Description of the request body"
-      #requestModels:
-      #  application/json: "CreateBundlesRequest" # models defined in serverless.models.yml in top level for now
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
       methodResponses:
         - statusCode: 200
           responseBody:
-            description: Success
-        - statusCode: 405
+            description: Returns a list of all bundles.
+          responseModels:
+            application/json: "BundleListResponse"            
+        - statusCode: 404
           responseBody:
-            description: Method Not Allowed
+            description: No bundles found.
         - statusCode: 500
           responseBody:
-            description: Internal Server Error
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETone:
+      summary: "Get Single Bundle"
+      description: "Fetch details of a specific bundle by its KSUID."
+      tags:
+        - Bundles
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique bundle ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The bundles object.
+          responseModels:
+            application/json: "BundleResponse"
+        - statusCode: 404
+          responseBody:
+            description: Bundle not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETpub:
+      summary: "Public Get Bundles"
+      description: "Public endpoint to get a specific bundle by its KSUID."
+      security:
+        - {}
+      tags:
+        - Public
+        - Bundles
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique bundle ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: The bundle object.
+          responseModels:
+            application/json: "BundleResponsePublic"
+        - statusCode: 404
+          responseBody:
+            description: Bundle not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETallpub:
+      summary: "Public Get All Bundles"
+      description: "Public endpoint to get all bundles for a given organisation and event."
+      security:
+        - {}
+      tags:
+        - Public
+        - Bundles
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: A list of bundles.
+          responseModels:
+            application/json: "BundleListResponsePublic"
+        - statusCode: 404
+          responseBody:
+            description: Bundles not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
     POST:
-      summary: "POST Bundles"
-      description: "Handle POST requests for /{organisation}/bundles"
+      summary: "Create Bundles"
+      description: "Creates a new bundle and stores it for the given event."
       tags:
         - Bundles
-      ## uncomment this and the next line if this is a public endpoint
-      #security:
-      #  - {}
-      ## comment if does not includes path params
       pathParams:
-       - name: organisation
-         description: Organisation slug
-         schema:
-           type: string
-      ## uncomment if this is a POST request and define model
-      #requestBody:
-      #  description: "Description of the request body"
-      #requestModels:
-      #  application/json: "CreateBundlesRequest" # models defined in serverless.models.yml in top level for now
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      requestBody:
+        description: "List of Bundle details"
+      requestModels:
+        application/json: "CreateBundleRequest"
       methodResponses:
-        - statusCode: 200
+        - statusCode: 201
           responseBody:
-            description: Success
-        - statusCode: 405
+            description: Bundle created successfully.
+        - statusCode: 207
           responseBody:
-            description: Method Not Allowed
+            description: Bundle created successfully with some unprocessed bundles.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+        - statusCode: 409
+          responseBody:
+            description: Version conflict.
         - statusCode: 500
           responseBody:
-            description: Internal Server Error
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
     PUT:
-      summary: "PUT Bundles"
-      description: "Handle PUT requests for /{organisation}/bundles"
+      summary: "Update Bundles"
+      description: "Update existing bundles for a given event."
       tags:
         - Bundles
-      ## uncomment this and the next line if this is a public endpoint
-      #security:
-      #  - {}
-      ## comment if does not includes path params
       pathParams:
-       - name: organisation
-         description: Organisation slug
-         schema:
-           type: string
-      ## uncomment if this is a POST request and define model
-      #requestBody:
-      #  description: "Description of the request body"
-      #requestModels:
-      #  application/json: "CreateBundlesRequest" # models defined in serverless.models.yml in top level for now
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string         
+      requestBody:
+        description: "List of Bundle details"
+      requestModels:
+        application/json: "UpdateBundleRequest"
       methodResponses:
-        - statusCode: 200
+        - statusCode: 201
           responseBody:
-            description: Success
-        - statusCode: 405
+            description: Bundle updated successfully.
+        - statusCode: 400
           responseBody:
-            description: Method Not Allowed
+            description: Invalid input
+        - statusCode: 409
+          responseBody:
+            description: Version conflict.
         - statusCode: 500
           responseBody:
-            description: Internal Server Error
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"

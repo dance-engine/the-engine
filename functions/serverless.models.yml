@@ -27,6 +27,16 @@ models:
   - ${file(functions/items/sls.items.models.yml):ItemListResponse}
   - ${file(functions/items/sls.items.models.yml):ItemResponsePublic}
   - ${file(functions/items/sls.items.models.yml):ItemListResponsePublic}
+
+  - ${file(functions/bundles/sls.bundles.models.yml):BundlePriceScheduleObject}
+  - ${file(functions/bundles/sls.bundles.models.yml):BundleObject}
+  - ${file(functions/bundles/sls.bundles.models.yml):BundleObjectPublic}
+  - ${file(functions/bundles/sls.bundles.models.yml):CreateBundleRequest}
+  - ${file(functions/bundles/sls.bundles.models.yml):UpdateBundleRequest}
+  - ${file(functions/bundles/sls.bundles.models.yml):BundleResponse}
+  - ${file(functions/bundles/sls.bundles.models.yml):BundleListResponse}
+  - ${file(functions/bundles/sls.bundles.models.yml):BundleResponsePublic}
+  - ${file(functions/bundles/sls.bundles.models.yml):BundleListResponsePublic}
     
 
   - name: "ErrorResponse"

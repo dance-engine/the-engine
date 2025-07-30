@@ -6,32 +6,44 @@ Bundles:
     patterns:
       - '!**/**'
       - "functions/bundles/**"
-    #   - "_pydantic/**" # this requires the pydantic layer also
-    #   - "_shared/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
   environment:
       STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
   layers:
       - !Ref UtilsLambdaLayer
-    #   - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
   events:
       - httpApi:
-          path: /{organisation}/bundles
+          path: /{organisation}/{event}/bundles
           method: get
           authorizer:
             adminAuthorizer
-          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.bundles.GET}
-
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.GETall}
       - httpApi:
-          path: /{organisation}/bundles
+          path: /{organisation}/{event}/bundles/{ksuid}
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.GETone}
+      - httpApi:
+          path: /{organisation}/{event}/bundles
           method: post
           authorizer:
             adminAuthorizer
-          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.bundles.POST}
-
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.POST}
       - httpApi:
-          path: /{organisation}/bundles
+          path: /{organisation}/{event}/bundles
           method: put
           authorizer:
             adminAuthorizer
-          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.bundles.PUT}
-
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.PUT}
+      - httpApi:
+          path: /public/{organisation}/{event}/bundles/{ksuid}
+          method: get
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.GETpub} 
+      - httpApi:
+          path: /public/{organisation}/{event}/bundles
+          method: get
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.GETallpub} 

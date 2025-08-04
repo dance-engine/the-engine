@@ -47,7 +47,7 @@ stages:
       isProd: true
       deletionPolicy: Retain
       githubBranchDestination: "main"
-      cdn_url: 'https://d3khkjlsqdjkui.cloudfront.net'
+      cdn_url: 'https://content.danceengine.co.uk'
 
 #######################
 # Provider Information

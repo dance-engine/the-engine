@@ -78,10 +78,61 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
     return [b.to_public() if public else b for b in bundles]
 
 def update(request: UpdateBundleRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
-    return make_response(201, {
-            "message": "It's a work in progress...",
-            "bundles": [{"message": "You expect me to return a list of instances of BundleObject I just updated."}]
+    logger.info(f"Update Bundles: {request}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Updating bundle(s) for {eventId} of {organisationSlug} into {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    try:
+        bundle_models = [
+            BundleModel.model_validate({
+                **bd.model_dump(mode="json", exclude_unset=True),
+                "organisation": organisationSlug,
+                "parent_event_ksuid": eventId,
+                "updated_at": current_time
+            }) for bd in request.bundles
+        ]
+
+        successful_bundles, failed_bundles = transact_upsert(table, bundle_models)
+
+        if failed_bundles:
+            return make_response(207, {
+                "message": "Some bundles updated successfully, others failed.",
+                "bundles": [b.model_dump(mode="json") for b in successful_bundles],
+                "unprocessed": [b.model_dump(mode="json") for b in failed_bundles]
+            })
+
+        return make_response(201, {
+            "message": "Bundles updated successfully.",
+            "bundles": [b.model_dump(mode="json") for b in successful_bundles],
         })
+    except VersionConflictError as e:
+        logger.error("Version Conflict")
+        return make_response(409, {
+            "message": "Version conflict",
+            "resource": [m.PK for m in e.models],
+            "your_version": e.incoming_version
+        })
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
 
 def create(request: CreateBundleRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
     logger.info(f"Create Bundle(s): {request}")

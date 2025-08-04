@@ -39,12 +39,7 @@ def get_one(organisationSlug: str,  eventId: str,  bundleId: str, public: bool =
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting bundle for {eventId} of {organisationSlug} from {TABLE_NAME}")
-    blank_model = BundleModel(
-        ksuid=bundleId,
-        parent_event_ksuid=eventId,
-        name="blank",
-        organisation=organisationSlug
-    )
+    blank_model = BundleModel(ksuid=bundleId, parent_event_ksuid=eventId, name="blank", organisation=organisationSlug)
 
     try:
         result = blank_model.query_gsi(
@@ -64,14 +59,23 @@ def get_one(organisationSlug: str,  eventId: str,  bundleId: str, public: bool =
     return result.to_public() if public else result
 
 def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: str = "unknown"):
-    '''
-    You expect me to return a list of instances of BundleObject.
-    '''
-    # TODO: implement
-    return make_response(201, {
-            "message": "It's a work in progress... You expect me to return a list of instances of BundleObject.",
-            "bundles": [{"message": "You expect me to return a list of instances of BundleObject."}]
-        })
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting bundles for {eventId} of {organisationSlug} from {TABLE_NAME}")
+    blank_model = BundleModel(parent_event_ksuid=eventId, name="blank", organisation=organisationSlug)
+
+    try:
+        bundles = blank_model.query_gsi(
+            table=table,
+            index_name="IDXinv",
+            key_condition=Key("SK").eq(blank_model.SK) & Key("PK").begins_with(f"{blank_model.PK.split('#')[0]}#")
+        )
+        logger.info(f"Found bundles for {eventId} of {organisationSlug}: {bundles}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get bundles for {eventId} of {organisationSlug}: {e}")
+        raise Exception
+
+    return [b.to_public() if public else b for b in bundles]
 
 def update(request: UpdateBundleRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
     return make_response(201, {

@@ -18,7 +18,7 @@ from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.models.bundles_models import BundleObject, BundleResponse, CreateBundleRequest, BundleListResponse, BundleResponsePublic, BundleListResponsePublic, UpdateBundleRequest
-#from _pydantic.models.models_extended import BundlesModel
+from _pydantic.models.models_extended import BundleModel
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
 #from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer

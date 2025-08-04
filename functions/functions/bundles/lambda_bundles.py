@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
-#from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key
 from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
@@ -36,14 +36,32 @@ STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Env
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
 def get_one(organisationSlug: str,  eventId: str,  bundleId: str, public: bool = False, actor: str = "unknown"):
-    '''
-    You expect me to return an instance of BundleObject.
-    '''
-    # TODO: implement
-    return make_response(201, {
-            "message": "It's a work in progress...",
-            "item": {"message": "You expect me to return an instance of BundleObject."}
-        })
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting bundle for {eventId} of {organisationSlug} from {TABLE_NAME}")
+    blank_model = BundleModel(
+        ksuid=bundleId,
+        parent_event_ksuid=eventId,
+        name="blank",
+        organisation=organisationSlug
+    )
+
+    try:
+        result = blank_model.query_gsi(
+            table=table,
+            key_condition=Key("PK").eq(f"{blank_model.PK}") & Key("SK").eq(f"{blank_model.SK}"),
+            assemble_entites=False
+        )
+        logger.info(f"Found bundle for {eventId} of {organisationSlug}: {result}")
+
+    except db.exceptions.ResourceNotFoundException as e:
+        logger.error(f"Bundle ({bundleId}) not found for {eventId} of {organisationSlug}: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get bundle ({bundleId}) for {eventId} of {organisationSlug}: {e}")
+        raise Exception
+
+    return result.to_public() if public else result
 
 def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: str = "unknown"):
     '''
@@ -145,20 +163,18 @@ def lambda_handler(event, context):
         # GET 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{eventId}")
-            response_cls = BundleListResponsePublic if is_public else BundleResponse
+            response_cls = BundleResponsePublic if is_public else BundleResponse
             list_response_cls = BundleListResponsePublic if is_public else BundleListResponse
 
             if bundleId:
-                return get_one(organisationSlug, eventId, bundleId, public=is_public)
-                result = get_one(organisationSlug, eventId, itemId, public=is_public)
+                result = get_one(organisationSlug, eventId, bundleId, public=is_public)
                 if result is None:
                     return make_response(404, {"message": "Bundle not found."})
-                response = response_cls(event=result)
+                response = response_cls(bundle=result)
             else:
-                return get_all(organisationSlug, eventId, public=is_public)
                 result = get_all(organisationSlug, eventId, public=is_public)
                 response = list_response_cls(bundles=result)
-            
+
             return make_response(200, response.model_dump(mode="json", exclude_none=True))
 
         elif http_method == "PUT":

@@ -4,14 +4,33 @@ import { Fragment } from 'react/jsx-runtime'
 import { BasicListProps } from '@dance-engine/ui/types' 
 import { labelFromSnake, formatField, nameFromHypenated } from '@dance-engine/utils/textHelpers'
 import { deDupKeys,groupByToArray, getNestedValue } from '@dance-engine/utils/arrayHelpers'
+import DeleteButton from '../general/DeleteButton'
+import { MdModeEdit, MdDeleteOutline } from "react-icons/md";
 
-
-const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ entity, columns, formats, records, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
+const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ entity, columns, formats, records, activeOrg, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
+  const entityTypeSlug = `${entity?.toLowerCase()}s`
+  const entityApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${entityTypeSlug}`
   const firstHeaderClasses = "pr-3 pl-4 sm:pl-4 lg:pl-8"
   const restHeaderClasses = "px-3"
   const allHeaderClasses = "py-3.5 text-left text-sm font-semibold text-gray-900"
   const columnKeys = deDupKeys(columns)
-  const enitytUrl = `${entity.toLocaleLowerCase()}s`
+  const handleDelete = (ksuid: string) => {
+    
+      fetch(`${entityApiUrl}/${ksuid}`, {
+        method: 'DELETE',
+      }).then(res => {
+        if (res.ok) {
+          alert(`${entity} deleted successfully!`);
+          window.location.reload();
+        } else {
+          alert(`Failed to delete ${entity}. Please try again.`);
+        }
+      }).catch(err => {
+        console.error("Error deleting entity:", err);
+        alert(`An error occurred while deleting the ${entity}.`);
+      });
+
+  }
   return (
   <div className='w-full'>
     {/* {columns} */}
@@ -48,11 +67,12 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                             </td>
                           })
                         }
-                        <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 ">
-                        <Link href={`/${enitytUrl}/${record.ksuid}/edit`} className=" bg-cerise-logo text-white px-3 py-1 rounded z-0">
-                          Edit
+                        <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2">
+                        <Link href={`/${entityTypeSlug}/${record.ksuid}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-3 py-1 rounded z-0">
+                          <MdModeEdit></MdModeEdit> Edit
                           <span className="sr-only">, {String(record.name)}</span>
                         </Link>
+                        { record.ksuid ? <DeleteButton className='text-white flex items-center justify-center gap-1 bg-keppel-on-light px-3 py-1 rounded z-0' ksuid={record.ksuid as string} onClick={handleDelete}><MdDeleteOutline></MdDeleteOutline> Delete</DeleteButton> : null }
                       </td>
                       </tr>
                     })}   

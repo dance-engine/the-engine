@@ -89,6 +89,10 @@ EventObject:
             type: array
             items:
               type: object
+          bundles:
+            type: array
+            items:
+              type: object
 EventObjectPublic:
   name: "EventObjectPublic"
   description: "Event object for the public"
@@ -152,6 +156,10 @@ EventObjectPublic:
             type: array
             items:
               type: object
+          bundles:
+            type: array
+            items:
+              type: object              
 CreateEventRequest:          
   name: "CreateEventRequest"
   description: "Request model for creating a new event"

@@ -81,6 +81,7 @@ class EventModel(EventBase, DynamoModel):
             "LOCATION": ("location", "single", LocationModel),
             "HISTORY": ("history", "list", HistoryModel),
             "ITEM": ("items", "list", ItemModel),
+            "BUNDLE": ("bundles", "list", BundleModel),
             }
     
     @property

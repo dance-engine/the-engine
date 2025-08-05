@@ -75,6 +75,10 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
         logger.error(f"DynamoDB query failed to get items for {eventId} of {organisationSlug}: {e}")
         raise Exception
 
+    #! temporary fix this needs review
+    if len(items) == 1:
+        items = [items]
+
     return [i.to_public() if public else i for i in items]
 
 def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):

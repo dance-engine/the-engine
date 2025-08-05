@@ -100,6 +100,7 @@ def delete_lambda(
     typer.echo(f"✅ Lambda '{name}' fully removed.")
 
 def lambda_template(name: str, trigger: str) -> str:
+    name_pascal = snake_to_pascal(name)
     if trigger == "eventbridge":
         return f"""## python libraries
 import os
@@ -107,17 +108,24 @@ import json
 import boto3 # not a python library but is included in lambda without need to install it
 import logging
 import traceback
+import sys
+from datetime import datetime, timezone
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
+#from boto3.dynamodb.conditions import Key
+#from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
+sys.path.append(os.path.dirname(__file__))
+from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.{name}_models import {name}Object, {name}Response
-#from _pydantic.models.models_extended import {name}Model
+from _pydantic.models.{name}_models import {name_pascal}Object, {name_pascal}Response
+#from _pydantic.models.models_extended import {name_pascal}Model
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
+#from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -140,17 +148,24 @@ import json
 import boto3 # not a python library but is included in lambda without need to install it
 import logging
 import traceback
+import sys
+from datetime import datetime, timezone
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
+#from boto3.dynamodb.conditions import Key
+#from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
+sys.path.append(os.path.dirname(__file__))
+from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.{name}_models import {name}Object, {name}Response
-#from _pydantic.models.models_extended import {name}Model
+from _pydantic.models.{name}_models import {name_pascal}Object, {name_pascal}Response
+#from _pydantic.models.models_extended import {name_pascal}Model
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
+#from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -164,9 +179,9 @@ logger.setLevel("INFO")
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 
 ## write here the code which is called from the handler
-def get(organisationSlug: str, public: bool = False, actor: str = "unknown") -> {name}Object:
+def get(organisationSlug: str, public: bool = False, actor: str = "unknown") -> {name_pascal}Object:
     '''
-    You expect me to return an instance of {name}Object.
+    You expect me to return an instance of {name_pascal}Object.
     '''
     # TODO: implement
     return make_response(201, {{
@@ -191,7 +206,7 @@ def lambda_handler(event, context):
             return make_response(405, {{"message": "Method not implemented."}})
         # GET 
         elif http_method == "GET":
-            response_cls = {name}Response # The model response class defined in pydantic
+            response_cls = {name_pascal}Response # The model response class defined in pydantic
 
             if not organisationSlug:
                 return make_response(404, {{"message": "Missing organisation in request"}})            
@@ -223,7 +238,7 @@ def function_yaml(name: str, lambda_dir: Path, trigger: str) -> str:
           method: {route.lower()}
           authorizer:
             adminAuthorizer
-          documentation: ${{{{file({doc_path}):endpoints.{name}.{route.upper()}}}}}
+          documentation: ${{file({doc_path}):endpoints.{name}.{route.upper()}}}
 """)
         events_block = "\n".join(route_events)
     else:
@@ -237,13 +252,14 @@ def function_yaml(name: str, lambda_dir: Path, trigger: str) -> str:
 
     return f"""{name_pascal}:
   runtime: python3.11
-  handler: {lambda_dir.relative_to(BASE)}/handler_{name}.lambda_handler
+  handler: {lambda_dir.relative_to(BASE)}/lambda_{name}.lambda_handler
   name: "${{sls:stage}}-${{self:service}}-{name}"
   package:
     patterns:
       - '!**/**'
       - "{lambda_dir.relative_to(BASE)}/**"
     #   - "_pydantic/**" # this requires the pydantic layer also
+    #   - "_shared/**"
   environment:
       STAGE_NAME: ${{sls:stage}}
   layers:
@@ -254,15 +270,15 @@ def function_yaml(name: str, lambda_dir: Path, trigger: str) -> str:
 """
 
 def doc_yaml(name: str) -> str:
-    lines = ["endpoints:"]
+    pascal = snake_to_pascal(name)
+    lines = ["endpoints:",f"  {pascal}:"]
     routes = ["GET", "POST", "PUT"]
     for route in routes:
-        lines.append(f"""  {name}:
-    {route.upper()}:
-      summary: "{route.upper()} {name}"
+        lines.append(f"""    {route.upper()}:
+      summary: "{route.upper()} {pascal}"
       description: "Handle {route.upper()} requests for /{{organisation}}/{name}"
       tags:
-        - {name}
+        - {pascal}
       ## uncomment this and the next line if this is a public endpoint
       #security:
       #  - {{}}
@@ -276,7 +292,7 @@ def doc_yaml(name: str) -> str:
       #requestBody:
       #  description: "Description of the request body"
       #requestModels:
-      #  application/json: "Create{name}Request" # models defined in serverless.models.yml in top level for now
+      #  application/json: "Create{pascal}Request" # models defined in serverless.models.yml in top level for now
       methodResponses:
         - statusCode: 200
           responseBody:
@@ -286,14 +302,13 @@ def doc_yaml(name: str) -> str:
             description: Method Not Allowed
         - statusCode: 500
           responseBody:
-            description: Internal Server Error
-""")
+            description: Internal Server Error""")
     return "\n".join(lines)
 
 def append_to_serverless_yaml(name: str, lambda_dir: Path):
     pascal = snake_to_pascal(name)
     function_config_path = (lambda_dir / f"sls.{name}.function.yml").relative_to(BASE)
-    include_line = f"  {pascal}: ${{file({function_config_path}):{name}}}"
+    include_line = f"  {pascal}: ${{file({function_config_path}):{pascal}}}"
     with open(SERVERLESS_YML, "r") as f:
         lines = f.readlines()
 
@@ -324,7 +339,7 @@ def append_to_serverless_yaml(name: str, lambda_dir: Path):
 def remove_from_serverless_yaml(name: str, lambda_dir: Path):
     pascal = snake_to_pascal(name)
     function_config_path = (lambda_dir / f"sls.{name}.function.yml").relative_to(BASE)
-    include_line = f"  {pascal}: ${{file({function_config_path}):{name}}}"
+    include_line = f"  {pascal}: ${{file({function_config_path}):{pascal}}}"
     with open(SERVERLESS_YML, "r") as f:
         lines = f.readlines()
 

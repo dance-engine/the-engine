@@ -112,6 +112,12 @@
             "items": {
               "type": "object"
             }
+          },
+          "bundles": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
           }
         },
         "x-internal-group": "events",
@@ -190,6 +196,12 @@
             "$ref": "#/components/schemas/LocationObject"
           },
           "items": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "bundles": {
             "type": "array",
             "items": {
               "type": "object"
@@ -664,6 +676,213 @@
         "x-internal-group": "items",
         "x-internal-path": "_pydantic/models"
       },
+      "BundlePriceScheduleObject": {
+        "type": "object",
+        "properties": {
+          "something": {
+            "type": "string"
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "BundleObject": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "ksuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ]
+          },
+          "primary_price": {
+            "description": "Primary price of the bundle in pennies",
+            "type": "number"
+          },
+          "secondary_price": {
+            "description": "Secondary price of the bundle in pennies",
+            "type": "number"
+          },
+          "tertiary_price": {
+            "description": "Tertiary price of the bundle in pennies",
+            "type": "number"
+          },
+          "primary_price_name": {
+            "description": "Name of primary price",
+            "type": "string"
+          },
+          "secondary_price_name": {
+            "description": "Name of secondary price",
+            "type": "string"
+          },
+          "tertiary_price_name": {
+            "description": "Name of tertiary price",
+            "type": "string"
+          },
+          "pricing_schedule": {
+            "$ref": "#/components/schemas/BundlePriceScheduleObject"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "BundleObjectPublic": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "ksuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "live",
+              "archived",
+              "outdated"
+            ]
+          },
+          "primary_price": {
+            "description": "Primary price of the bundle in pennies",
+            "type": "number"
+          },
+          "secondary_price": {
+            "description": "Secondary price of the bundle in pennies",
+            "type": "number"
+          },
+          "tertiary_price": {
+            "description": "Tertiary price of the bundle in pennies",
+            "type": "number"
+          },
+          "primary_price_name": {
+            "description": "Name of primary price",
+            "type": "string"
+          },
+          "secondary_price_name": {
+            "description": "Name of secondary price",
+            "type": "string"
+          },
+          "tertiary_price_name": {
+            "description": "Name of tertiary price",
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "CreateBundleRequest": {
+        "type": "object",
+        "required": [
+          "bundles"
+        ],
+        "properties": {
+          "bundles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleObject"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "UpdateBundleRequest": {
+        "type": "object",
+        "required": [
+          "bundles"
+        ],
+        "properties": {
+          "bundles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleObject"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "BundleResponse": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "$ref": "#/components/schemas/BundleObject"
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "BundleListResponse": {
+        "type": "object",
+        "properties": {
+          "bundles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleObject"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "BundleResponsePublic": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "$ref": "#/components/schemas/BundleObjectPublic"
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "BundleListResponsePublic": {
+        "type": "object",
+        "properties": {
+          "bundles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BundleObjectPublic"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -803,6 +1022,396 @@
     }
   ],
   "paths": {
+    "/{organisation}/{event}/bundles": {
+      "get": {
+        "summary": "Get All Bundles",
+        "description": "Returns a list of all bundles for a given organisation and event.",
+        "operationId": "bundles",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Bundles"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of all bundles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleListResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "No bundles found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Bundles",
+        "description": "Creates a new bundle and stores it for the given event.",
+        "operationId": "bundles-567d3806-861f-4c27-9cab-ed70004f7bb7",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Bundles"
+        ],
+        "requestBody": {
+          "description": "List of Bundle details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBundleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bundle created successfully.",
+            "headers": {}
+          },
+          "207": {
+            "description": "Bundle created successfully with some unprocessed bundles.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Bundles",
+        "description": "Update existing bundles for a given event.",
+        "operationId": "bundles-c92e2c50-3917-4765-b60e-af5a13eb099a",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Bundles"
+        ],
+        "requestBody": {
+          "description": "List of Bundle details",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBundleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bundle updated successfully.",
+            "headers": {}
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {}
+          },
+          "409": {
+            "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/{event}/bundles/{ksuid}": {
+      "get": {
+        "summary": "Get Single Bundle",
+        "description": "Fetch details of a specific bundle by its KSUID.",
+        "operationId": "bundles-9cec274b-3d2f-4a39-b3e3-caadd417ddd5",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique bundle ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Bundles"
+        ],
+        "responses": {
+          "200": {
+            "description": "The bundles object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Bundle not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/{organisation}/{event}/bundles/{ksuid}": {
+      "get": {
+        "summary": "Public Get Bundles",
+        "description": "Public endpoint to get a specific bundle by its KSUID.",
+        "operationId": "bundles-32a42399-e60d-4d76-98b3-cacd3885356d",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique bundle ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Bundles"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "The bundle object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleResponsePublic"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Bundle not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/{organisation}/{event}/bundles": {
+      "get": {
+        "summary": "Public Get All Bundles",
+        "description": "Public endpoint to get all bundles for a given organisation and event.",
+        "operationId": "bundles-6e55cc5e-ec64-4f32-bb12-c466aec04109",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Bundles"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of bundles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleListResponsePublic"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Bundles not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
     "/{organisation}/{event}/items": {
       "get": {
         "summary": "Get All Items",
@@ -863,7 +1472,7 @@
       "post": {
         "summary": "Create Item",
         "description": "Creates a new item and stores it for the given event.",
-        "operationId": "items-24ff57b5-f832-4ed5-a774-cb13daa78e1e",
+        "operationId": "items-f58e7bd5-cb6a-4a40-9e39-07ee39b3fc68",
         "parameters": [
           {
             "name": "organisation",
@@ -931,7 +1540,7 @@
       "put": {
         "summary": "Update Items",
         "description": "Update existing items for a given event.",
-        "operationId": "items-19b51477-06ae-411d-9633-79b8c128bd72",
+        "operationId": "items-d43d3ff3-a300-448e-9363-24ecf76db91f",
         "parameters": [
           {
             "name": "organisation",
@@ -997,7 +1606,7 @@
       "get": {
         "summary": "Get Single Item",
         "description": "Fetch details of a specific item by its KSUID.",
-        "operationId": "items-f8fd9b03-f13d-4cde-a6c5-80446a5f1897",
+        "operationId": "items-89fbee16-fb9a-42dd-bc8a-20534b072d5c",
         "parameters": [
           {
             "name": "organisation",
@@ -1064,7 +1673,7 @@
       "get": {
         "summary": "Public Get Item",
         "description": "Public endpoint to get a specific item by its KSUID.",
-        "operationId": "items-489e69c6-37c4-4973-ba5a-2814fb853f1b",
+        "operationId": "items-ec02c51e-c7c4-4fa6-a72f-de35e7dd1d81",
         "parameters": [
           {
             "name": "organisation",
@@ -1135,7 +1744,7 @@
       "get": {
         "summary": "Public Get All Items",
         "description": "Public endpoint to get all items for a given organisation and event.",
-        "operationId": "items-d4f98cb9-963d-45dd-9f99-62a719c4e98c",
+        "operationId": "items-3840e2fe-e452-47b0-8b1d-e282b0f38c51",
         "parameters": [
           {
             "name": "organisation",
@@ -1227,7 +1836,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-312564a5-15b4-4a9f-98c4-1ffc0c39a766",
+        "operationId": "organisations-a932f0bc-8d06-49d1-8510-c019f7c590ab",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -1263,7 +1872,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-491172a4-bc71-4ece-8314-db7a796bb46f",
+        "operationId": "organisations-b81fabda-d839-49b9-b884-c5133f8dd499",
         "parameters": [],
         "tags": [
           "Public",
@@ -1341,7 +1950,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-41011c31-1b7b-40a2-9fb2-140fed14a13a",
+        "operationId": "eventbridge-c9d90972-027d-4087-bbf5-3f7187a1afc6",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -1413,7 +2022,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-4036eaa3-6e9f-4b35-a6b5-7b335535f103",
+        "operationId": "events-3ae1a116-b5f9-471a-9284-9831a724ca44",
         "parameters": [
           {
             "name": "organisation",
@@ -1470,7 +2079,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-63b13ef2-0a15-4cfa-b54c-d86ee32d618c",
+        "operationId": "events-17829b67-5560-4e96-b976-0094f3cdd93b",
         "parameters": [
           {
             "name": "organisation",
@@ -1526,7 +2135,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-6ef5be42-cb6e-445f-8a9a-f2dcaa8b1fd0",
+        "operationId": "events-165e5673-10d7-4e09-ba4b-ef29fac7c5a1",
         "parameters": [
           {
             "name": "organisation",
@@ -1592,7 +2201,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-26497183-ef0a-47c5-a112-b44323e72318",
+        "operationId": "events-6a25cc33-9de0-459d-b3ea-31939620eefc",
         "parameters": [
           {
             "name": "organisation",
@@ -1654,7 +2263,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-a0fdb091-dd07-4c4a-ba9a-098dad310eb0",
+        "operationId": "events-08ecaf88-9442-4163-b713-e6e31b3f6f18",
         "parameters": [
           {
             "name": "organisation",
@@ -1753,7 +2362,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-e97cb10e-733e-470a-a0e4-e03097b17856",
+        "operationId": "presigned_url-378c58de-ea99-4db5-b222-06d951cec057",
         "parameters": [],
         "tags": [
           "S3"
@@ -1822,7 +2431,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-47a84070-2688-4c7c-929f-4232c09828cd",
+        "operationId": "customers-15f42350-a57c-465b-bbc1-874c12203175",
         "parameters": [
           {
             "name": "organisation",
@@ -1868,7 +2477,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their KSUID in a given organisation.",
-        "operationId": "customers-28e02ab4-1270-4cc5-9efc-9548e2d654b0",
+        "operationId": "customers-0ad39c75-2da9-4fa5-854f-89a24204f755",
         "parameters": [
           {
             "name": "organisation",
@@ -1959,7 +2568,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-883027ee-2633-45d2-a4cb-54335968da3b",
+        "operationId": "organisation-2abb42a1-e95b-4d90-8717-d8d3a4f0b2dd",
         "parameters": [
           {
             "name": "organisation",

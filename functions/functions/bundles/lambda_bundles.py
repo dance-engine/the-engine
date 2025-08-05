@@ -35,6 +35,27 @@ eventbridge = boto3.client('events')
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
+def _validate_includes(table, models, eventId: str):
+    item_ids = {item_id for m in models if m.includes for item_id in m.includes}
+    if item_ids:
+        client = table.meta.client
+        request_keys = [
+            {'PK': f'ITEM#{item_id}', 'SK': f'EVENT#{eventId}'}
+            for item_id in item_ids
+        ]
+        resp = client.batch_get_item(RequestItems={table.name: {'Keys': request_keys}})
+        found = resp.get('Responses', {}).get(table.name, [])
+        found_ids = {it['PK'].split('#', 1)[1] for it in found}
+        missing = list(item_ids - found_ids)
+        if missing:
+            logger.error(f"Missing referenced item(s) on update/create: {missing}")
+            return make_response(400, {
+                'message': 'Referenced item(s) not found',
+                'missing_items': missing
+            })
+
+    return None
+
 def get_one(organisationSlug: str,  eventId: str,  bundleId: str, public: bool = False, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
     table = db.Table(TABLE_NAME)
@@ -97,6 +118,10 @@ def update(request: UpdateBundleRequest, organisationSlug: str, eventId: str, ac
             }) for bd in request.bundles
         ]
 
+        # validate that referenced items in includes exist
+        resp = _validate_includes(table, bundle_models, eventId)
+        if resp: return resp
+
         successful_bundles, failed_bundles = transact_upsert(table, bundle_models)
 
         if failed_bundles:
@@ -157,23 +182,8 @@ def create(request: CreateBundleRequest, organisationSlug: str, eventId: str, ac
         }))
 
     # validate that referenced items in includes exist
-    item_ids = {item_id for bm in bundles_models if bm.includes for item_id in bm.includes}
-    if item_ids:
-        client = table.meta.client
-        request_keys = [
-            {'PK': f'ITEM#{item_id}', 'SK': f'EVENT#{eventId}'}
-            for item_id in item_ids
-        ]
-        resp = client.batch_get_item(RequestItems={TABLE_NAME: {'Keys': request_keys}})
-        found_items = resp.get('Responses', {}).get(TABLE_NAME, [])
-        found_ids = {item['PK'].split('#', 1)[1] for item in found_items}
-        missing = list(item_ids - found_ids)
-        if missing:
-            logger.error(f"Cannot create bundle(s): missing item(s): {missing}")
-            return make_response(400, {
-                'message': 'Cannot create bundle(s): referenced item(s) not found',
-                'missing_items': missing
-            })
+    resp = _validate_includes(table, bundles_models, eventId)
+    if resp: return resp
 
     try:
         successful_bundles, unprocessed_bundles = batch_write(table, bundles_models)

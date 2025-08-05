@@ -51,7 +51,10 @@ def _validate_includes(table, models, eventId: str):
             logger.error(f"Missing referenced item(s) on update/create: {missing}")
             return make_response(400, {
                 'message': 'Referenced item(s) not found',
-                'missing_items': missing
+                'missing_items': missing,
+                'bundles': [BundleObject.model_validate(m.model_dump(include=BundleObject.model_fields.keys())).model_dump(mode='json')
+                            for m in models
+                    ]
             })
 
     return None

@@ -43,7 +43,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify(cleanedData),
+        body: JSON.stringify({event: cleanedData }),
       })
 
       const result = await res.json()

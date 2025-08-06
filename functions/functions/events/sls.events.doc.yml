@@ -171,29 +171,3 @@ Events:
             description: Internal server error.
           responseModels:
             application/json: "ErrorResponse"
-    DELETE:
-      summary: "Delete Event"
-      description: "Deletes an existing event."
-      tags:
-        - Events
-      pathParams:
-        - name: organisation
-          description: Organisation slug
-          schema:
-            type: string
-      requestBody:
-        description: "Event details"
-      requestModels:
-        application/json: "DeleteeEventRequest"
-      methodResponses:
-        - statusCode: 201
-          responseBody:
-            description: Event deleted successfully.
-        - statusCode: 400
-          responseBody:
-            description: Invalid input
-        - statusCode: 500
-          responseBody:
-            description: Internal server error.
-          responseModels:
-            application/json: "ErrorResponse"

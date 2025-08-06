@@ -39,12 +39,6 @@ Events:
             adminAuthorizer
           documentation: ${file(functions/events/sls.events.doc.yml):Events.PUT}
       - httpApi:
-          path: /{organisation}/events/{ksuid}
-          method: delete
-          authorizer:
-            adminAuthorizer
-          documentation: ${file(functions/events/sls.events.doc.yml):Events.DELETE}
-      - httpApi:
           path: /public/{organisation}/events/{ksuid}
           method: get
           documentation: ${file(functions/events/sls.events.doc.yml):Events.GETpub} 

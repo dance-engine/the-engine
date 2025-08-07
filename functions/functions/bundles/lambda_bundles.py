@@ -100,7 +100,7 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
         raise Exception
     
     #! temporary fix this needs review
-    if len(bundles) == 1:
+    if isinstance(bundles, BundleModel):
         bundles = [bundles]
 
     return [b.to_public() if public else b for b in bundles]

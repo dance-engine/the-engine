@@ -260,6 +260,9 @@ def lambda_handler(event, context):
     except ValueError as e:
         logger.error("Validation error: %s", str(e))
         logger.error(traceback.format_exc())
+        error_summary = ""
+        for error in e.errors():
+            error_summary += f"Field: { error['loc']} Message: {error['msg']}, Type: {error['type']}"
         return make_response(400,{"message": "Validation error.", "error": str(e)})
     except Exception as e:
         logger.error("Unexpected error: %s", str(e))

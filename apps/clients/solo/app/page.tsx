@@ -52,7 +52,7 @@ export default async function IndexPage() {
     `;
 
   return <div className='w-full' style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
-      <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} />
+      { org.css_vars ? <style dangerouslySetInnerHTML={{ __html: org.css_vars }} /> : <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} /> }
       
       <header className='w-full bg-black text-white flex justify-center'>
         <div className='max-w-4xl w-4xl px-4 uppercase font-black lg:px-0 py-3 flex items-center justify-center'>

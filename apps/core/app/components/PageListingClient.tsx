@@ -76,6 +76,7 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
         columns={columns}
         formats={formats}
         records={allEntities}
+        activeOrg={activeOrg || ''}
       /> : null
     }
     

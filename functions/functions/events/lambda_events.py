@@ -28,6 +28,7 @@ logger.setLevel("INFO")
 db = boto3.resource("dynamodb")
 eventbridge = boto3.client('events')
 
+STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
 def _preprocess_event_item(item: dict) -> dict:
@@ -105,6 +106,40 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})            
+
+def delete_event(organisation_slug: str, event_id: str, actor: str = "unknown"):
+    """
+    This function isn't perfect. It may fail in unexpected ways.
+    """
+    logger.info(f"Deleting Event: {event_id} for org {organisation_slug}")
+    if STAGE_NAME.lower() == "prod":
+        logger.info("!! Deleting an event in Production!")
+
+    table_name = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisation_slug)
+    table = db.Table(table_name)
+
+    #! Temporary fix doesnt use actual event models
+    try:
+        response = table.query(
+            IndexName="IDXinv",
+            KeyConditionExpression=Key("SK").eq(f"EVENT#{event_id}")
+        )
+        event_items = response.get("Items", [])
+    except Exception as e:
+        logger.error(f"Failed to fetch items for deletion: {e}", exc_info=True)
+        return make_response(500, {"message": "Failed to fetch event items for deletion.",
+                                   "warning": "This is experimental and may not work as expected."})
+
+    try:
+        with table.batch_writer() as batch:
+            for item in event_items:
+                batch.delete_item(Key={"PK": item["PK"], "SK": item["SK"]})
+        return make_response(200, {"message": "Event and related entities deleted successfully.",
+                                   "warning": "This is experimental and may not work as expected."})
+    except Exception as e:
+        logger.error(f"Deletion failed: {e}", exc_info=True)
+        return make_response(500, {"message": "Failed to delete event.",
+                                   "warning": "This is experimental and may not work as expected."})
 
 def get_events(organisationSlug: str, public: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -254,6 +289,15 @@ def lambda_handler(event, context):
             validated_request = UpdateEventRequest(**parsed_event)
             return update_event(validated_request, organisationSlug, actor)
             
+        elif http_method == "DELETE":
+            if not eventId:
+                return make_response(404, {"message": "Missing event ID in request",
+                                           "warning": "This is experimental and may not work as expected."})
+            if "*" not in event.get("requestContext", {}).get("authorizer", {}).get("lambda", {}).get("organisations", {}):
+                return make_response(403, {"message": "Forbidden. You do not have permission to delete this event."})
+            validated_request = DeleteEventRequest(**parsed_event)
+            return delete_event(organisationSlug, eventId, actor)
+
         else:
             return make_response(405, {"message": "Method not allowed."})
 

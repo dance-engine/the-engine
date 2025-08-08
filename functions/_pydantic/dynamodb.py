@@ -541,7 +541,7 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             })
 
         try:
-            client.transact_write_items(TransactItems=transact_items, ReturnCancellationReasons=True)
+            client.transact_write_items(TransactItems=transact_items)
             successful_items.extend(batch)
         except client.exceptions.TransactionCanceledException as e:
             logger.warning("Transaction cancelled")

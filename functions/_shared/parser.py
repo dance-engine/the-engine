@@ -20,7 +20,7 @@ def parse_event(event):
             try:
                 # Attempt to parse the body as JSON
                 event_body = json.loads(event['body'], parse_float=Decimal)
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, TypeError) as e:
                 logger.warning("Failed to parse event['body'] as JSON. Checking if it is already a dictionary.")
                 # Check if the body is already a dictionary
                 if isinstance(event['body'], dict):

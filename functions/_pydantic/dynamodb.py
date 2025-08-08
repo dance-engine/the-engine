@@ -408,9 +408,6 @@ class VersionConflictError(Exception):
             self.incoming_versions = incoming_version
         else:
             self.incoming_versions = [incoming_version] * len(self.models)
-
-        self.model = self.models[0]
-        self.incoming_version = self.incoming_versions[0]
         
         messages = [
             f"{m.PK} / v{v}" if v is not None else f"{m.PK} / unknown version"

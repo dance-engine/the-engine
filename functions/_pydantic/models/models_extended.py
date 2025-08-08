@@ -28,6 +28,7 @@ class BundleModel(BundleBase, DynamoModel):
         return BundleObjectPublic.model_validate(self.model_dump(include=BundleObjectPublic.model_fields.keys()))
 
 class ItemModel(ItemBase, DynamoModel):
+    ksuid: str
     organisation: str
     parent_event_ksuid: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')

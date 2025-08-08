@@ -52,7 +52,7 @@ class EventBridgeEventDetail(BaseModel):
     resource_id: str
     action: Action
     data: dict
-    meta: Optional[Dict] = Field(default_factory=dict())
+    meta: Optional[Dict] = Field(default_factory=dict)
 
 class EventBridgeEvent(BaseModel):
     source: str = Field(..., description="Source service, e.g., dance-engine.core")

@@ -469,12 +469,14 @@ def batch_write(table, items: list, overwrite: bool = True):
             response = client.batch_write_item(RequestItems=request_items)
             unprocessed = response.get('UnprocessedItems', {}).get(table_name, [])
 
-            unprocessed_dynamo = {frozenset(entry["PutRequest"]["Item"].items()): entry for entry in unprocessed}
-            unprocessed_set = set(unprocessed_dynamo.keys())
+            unprocessed_set = {
+                frozenset(entry['PutRequest']['Item'].items()) 
+                for entry in unprocessed
+            }
 
             for item in batch:
-                dynamo_item = item.to_dynamo()
-                if frozenset(dynamo_item) in unprocessed_set:
+                dynamo_item = item.to_dynamo(exclude_keys=False)
+                if frozenset(dynamo_item.items()) in unprocessed_set:
                     unprocessed_items.append(item)
                 else:
                     successful_items.append(item)

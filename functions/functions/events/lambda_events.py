@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
-from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
+from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, DeleteEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from _pydantic.models.models_extended import EventModel, LocationModel
 
 

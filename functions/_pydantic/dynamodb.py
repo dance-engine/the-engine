@@ -182,6 +182,8 @@ class DynamoModel(BaseModel):
             items = response.get("Items", None)
             
             logger.info(f"Fetched {len(items)} from dynamodb: {items}")
+            if not items:
+                return None
             if assemble_entites:
                 return self.assemble_from_items(items)
             else:

@@ -155,6 +155,8 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
         logger.error(f"DynamoDB query failed to get event for {organisationSlug}: {e}")
         raise Exception
 
+    if not result:
+        return None
     return result.to_public() if public else result
 
 def create_event(request_data: CreateEventRequest, organisation_slug: str, actor: str = "unknown"):

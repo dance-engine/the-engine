@@ -1,11 +1,11 @@
 import os
 import re
 
-
-ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
-
 def getOrganisationTableName(organisationSlug):
-  return ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug) 
+  """Generate the organisation table name based on the provided slug.
+  """
+  ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
+  return ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
 
 def generateSlug(name):
     """

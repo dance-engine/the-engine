@@ -91,6 +91,9 @@ def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, acto
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
 
+    if not request.items or request.items == None:
+        return make_response(400, {"message": "No items provided for update."})
+
     try:
         item_models = [
             ItemModel.model_validate({

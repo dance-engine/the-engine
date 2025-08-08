@@ -1,6 +1,7 @@
 import json
 import logging
 from decimal import Decimal
+from _shared.helpers import deprecated
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -8,6 +9,32 @@ logger.setLevel("INFO")
 def parse_event(event):
     '''
     Parses the input event and ensures it is returned as a dictionary.
+
+    This function handles different formats of the input event, including:
+    - A dictionary containing a 'body' key (typically from an HTTP POST request).
+    - A JSON string.
+
+    It attempts to parse the 'body' as JSON if it is present and validates that the 
+    final output is a dictionary. If the input event is not in a valid format, 
+    appropriate exceptions are raised.
+
+    Parameters
+    ----------
+    event : dict or str
+        The input event to be parsed. It can be a dictionary (with an optional 'body' key) 
+        or a JSON string.
+
+    Returns
+    -------
+    dict
+        The parsed event as a dictionary.
+
+    Raises
+    ------
+    ValueError
+        If the event format is invalid or if the 'body' cannot be parsed as JSON.
+    TypeError
+        If the event is not a dictionary after parsing.
     '''
     try:
         # Check if event is a dictionary with a 'body' (HTTP request case)

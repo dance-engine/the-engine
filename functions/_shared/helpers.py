@@ -2,6 +2,22 @@ import json
 from _shared.DecimalEncoder import DecimalEncoder
 
 def make_response(status_code, body):
+    """
+    Creates a standardised HTTP response.
+
+    Parameters
+    ----------
+    status_code : int
+        The HTTP status code for the response.
+    body : dict
+        The body of the response, which will be serialised to JSON.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the HTTP response, including status code,
+        headers, and a JSON-encoded body.
+    """
     return {
         "statusCode": status_code,
         "headers": {"Content-Type": "application/json", "Allow-Origin": "*"},

@@ -188,6 +188,15 @@ UpdateEventRequest:
         properties:
           event:
             $ref: "#/components/schemas/EventObject"
+DeleteEventRequest:          
+  name: "DeleteEventRequest"
+  description: "Privaleged request for deleting an event"
+  x-internal-group: "events"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
 EventResponse:
   name: "EventResponse"
   description: "Single event response object"

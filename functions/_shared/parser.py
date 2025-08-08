@@ -52,9 +52,11 @@ def parse_event(event):
 
     return event
 
-
+@deprecated()
 def validate_event(event, required_fields):
     '''
+    DEPRECATED
+
     Validates that the necessary fields are present in the event.
     '''
     missing_fields = [field for field in required_fields if field not in event]
@@ -65,8 +67,11 @@ def validate_event(event, required_fields):
 
     return event
 
+@deprecated
 def validate_line_item(line_item):
     '''
+    DEPRECATED
+
     Validates the line_item structure to ensure it includes at least amount_total and description
     '''
     if not isinstance(line_item, dict):
@@ -74,8 +79,11 @@ def validate_line_item(line_item):
     if 'amount_total' not in line_item or 'description' not in line_item:
         raise ValueError("Line item must include 'amount_total' and 'description'.")
 
+@deprecated
 def validate_line_items(line_items):
     '''
+    DEPRECATED
+
     Validates each line item in the line_items list
     '''
     if not isinstance(line_items, list):

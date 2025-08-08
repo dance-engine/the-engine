@@ -503,7 +503,7 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             expression_attr_names = {}
             expression_attr_values = {}
 
-            item_dict = item.to_dynamo(exclude_keys=False)
+            item_dict = item.to_dynamo(exclude_keys=True)
 
             if item.uses_versioning():
                 incoming_version = item_dict.get('version', 0)

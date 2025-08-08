@@ -612,6 +612,9 @@ def test_transact_upsert_success(dt):
     assert isinstance(payload, list) and len(payload) == 2
     assert payload[0]['Update']['TableName'] == "org-demo"
     assert payload[0]['Update']['Key'] == {"PK": m1.PK, "SK": m1.SK}
+    # make sure not trying to set pk or sk which is not possible in a transaction
+    assert '#PK' not in payload[0]['Update']['ExpressionAttributeNames']
+    assert '#SK' not in payload[0]['Update']['ExpressionAttributeNames']
 
 def test_transact_upsert_with_versioning(valid_ksuid, dt):
     class VersionedModel(SimpleModel):

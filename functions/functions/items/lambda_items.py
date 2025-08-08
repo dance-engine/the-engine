@@ -62,7 +62,7 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
-    blank_model = ItemModel(parent_event_ksuid=eventId, name="blank", organisation=organisationSlug)
+    blank_model = ItemModel(parent_event_ksuid=eventId, ksuid="blank", name="blank", organisation=organisationSlug)
 
     try:
         items = blank_model.query_gsi(

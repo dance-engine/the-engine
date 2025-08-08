@@ -171,3 +171,39 @@ Events:
             description: Internal server error.
           responseModels:
             application/json: "ErrorResponse"
+    DELETE:
+      summary: "Delete an Event"
+      description: "Permanently delete an event and its related entities. Requires super admin privileges."
+      tags:
+        - Events
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique event ID (KSUID)
+          schema:
+            type: string
+      requestModels:
+        application/json: "DeleteEventRequest"
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Event deleted successfully.
+        - statusCode: 400
+          responseBody:
+            description: Bad request.
+        - statusCode: 403
+          responseBody:
+            description: Forbidden.
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 404
+          responseBody:
+            description: Event not found.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"

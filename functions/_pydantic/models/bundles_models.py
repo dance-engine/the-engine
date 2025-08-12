@@ -43,6 +43,7 @@ class BundleObject(BaseModel):
         None, description='Name of tertiary price'
     )
     pricing_schedule: Optional[BundlePriceScheduleObject] = None
+    stripe_price_id: Optional[str] = Field(None, description="Whats the related stripe price_id")
     includes: Optional[List[str]] = None
 
 
@@ -67,6 +68,7 @@ class BundleObjectPublic(BaseModel):
     tertiary_price_name: Optional[str] = Field(
         None, description='Name of tertiary price'
     )
+    stripe_price_id: Optional[str] = Field(None, description="Whats the related stripe price_id")
     includes: Optional[List[str]] = None
 
 

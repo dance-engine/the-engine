@@ -3,7 +3,7 @@ import { EventType } from "@dance-engine/schemas/events"
 import { ItemType, BundleType, BundleTypeExtended } from "@dance-engine/schemas/bundle"
 import { EventTypeExtended } from "@dance-engine/schemas/events"
 
-export default function Bundle({bundleData, eventData}: {bundleData: BundleTypeExtended, eventData: EventTypeExtended}) {
+export default function BundleCard({bundleData, eventData}: {bundleData: BundleTypeExtended, eventData: EventTypeExtended}) {
   const bundle = bundleData
   const items = eventData.items
 
@@ -20,7 +20,7 @@ export default function Bundle({bundleData, eventData}: {bundleData: BundleTypeE
       return new Set(bundle.includes).has(itm.ksuid) && itm.status == 'live'
     });
   }
-  
+
   return (
     <div /*key={bundleData.ksuid}*/ className='border rounded-lg flex flex-col items-center justify-between gap-4 mb-2 p-3'>
         <h2 className='text-2xl uppercase'>{bundle.name}</h2>

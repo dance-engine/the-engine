@@ -2,7 +2,8 @@
 import Link from 'next/link';
 import useSWR from 'swr';
 
-import Bundle from "../components/Bundle"
+import BundleCard from "../components/BundleCard"
+import ItemCard from "../components/ItemCard"
 
 import type { BundleType, BundleTypeExtended} from '@dance-engine/schemas/bundle';
 
@@ -23,7 +24,11 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
   return <div className="max-w-full w-full p-3">
     <h2 className='text-2xl '>Purchase Options</h2>
     <div className='flex gap-2'>
-     { bundles && bundles.map((bundle: BundleTypeExtended) => <Bundle key={bundle.ksuid} eventData={event} bundleData={bundle} />)}
+     { bundles && bundles.map((bundle: BundleTypeExtended) => <BundleCard key={bundle.ksuid} eventData={event} bundleData={bundle} />)}
+    </div>
+
+    <div className='flex gap-2'>
+     { items && items.map((itm: BundleTypeExtended) => <ItemCard key={itm.ksuid} itemData={itm} eventData={event}/>)}
     </div>
     {/* {org}:{theme} */}
     <pre>{JSON.stringify(data, null, 2)}</pre>

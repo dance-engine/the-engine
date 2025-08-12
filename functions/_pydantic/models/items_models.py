@@ -45,8 +45,12 @@ class ItemObject(BaseModel):
         None, description='Name of tertiary price'
     )
     pricing_schedule: Optional[PriceScheduleObject] = None
+    individually_purchaseable: Optional[bool] = Field(False, description="Would you like people to purchase this on it's own")
+    stripe_price_id: Optional[str] = Field(None, description="Whats the related stripe price_id")
 
 
+#TODO Should Public have different prices or just current price?
+#TODO Should or public and private objects have inehritance between them?
 class ItemObjectPublic(BaseModel):
     ksuid: Optional[str] = None
     name: str
@@ -70,6 +74,8 @@ class ItemObjectPublic(BaseModel):
     tertiary_price_name: Optional[str] = Field(
         None, description='Name of tertiary price'
     )
+    individually_purchaseable: Optional[bool] = Field(False, description="Would you like people to purchase this on it's own")
+    stripe_price_id: Optional[str] = Field(None, description="Whats the related stripe price_id")
 
 
 class CreateItemRequest(BaseModel):

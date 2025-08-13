@@ -11,6 +11,47 @@ BundlePriceScheduleObject:
         properties:
           something:
             type: string
+_BundleCommon: &BundleCommon
+  ksuid:
+    type: string
+  name:
+    type: string
+  description:
+    type: string
+  status:
+    type: string
+    enum:
+      - "draft"
+      - "live"
+      - "archived"
+      - "outdated"
+  primary_price:
+    description: "Primary price of the bundle in pennies"
+    type: number
+  secondary_price:
+    description: "Secondary price of the bundle in pennies"
+    type: number
+  tertiary_price:
+    description: "Tertiary price of the bundle in pennies"
+    type: number
+  primary_price_name:
+    description: "Name of primary price"
+    type: string
+  secondary_price_name:
+    description: "Name of secondary price"
+    type: string
+  tertiary_price_name:
+    description: "Name of tertiary price"
+    type: string
+  pricing_schedule:
+    $ref: "#/components/schemas/BundlePriceScheduleObject"
+  stripe_price_id: 
+    description: "Whats the related stripe price_id"
+    type: string
+  includes:
+    type: array
+    items:
+      type: string
 BundleObject:
   name: "BundleObject"
   description: "Bundle object"
@@ -22,43 +63,8 @@ BundleObject:
         type: object
         required: ["name"]
         properties:
-          ksuid:
-            type: string
-          name:
-            type: string
-          description:
-            type: string
-          status:
-            type: string
-            enum:
-              - "draft"
-              - "live"
-              - "archived"
-              - "outdated"
-          primary_price:
-            description: "Primary price of the bundle in pennies"
-            type: number
-          secondary_price:
-            description: "Secondary price of the bundle in pennies"
-            type: number
-          tertiary_price:
-            description: "Tertiary price of the bundle in pennies"
-            type: number
-          primary_price_name:
-            description: "Name of primary price"
-            type: string
-          secondary_price_name:
-            description: "Name of secondary price"
-            type: string
-          tertiary_price_name:
-            description: "Name of tertiary price"
-            type: string
-          pricing_schedule:
-            $ref: "#/components/schemas/BundlePriceScheduleObject"
-          includes:
-            type: array
-            items:
-              type: string
+          <<: *BundleCommon
+          
 BundleObjectPublic:
   name: "BundleObjectPublic"
   description: "Bundle public object"
@@ -70,41 +76,8 @@ BundleObjectPublic:
         type: object
         required: ["name"]
         properties:
-          ksuid:
-            type: string
-          name:
-            type: string
-          description:
-            type: string
-          status:
-            type: string
-            enum:
-              - "draft"
-              - "live"
-              - "archived"
-              - "outdated"
-          primary_price:
-            description: "Primary price of the bundle in pennies"
-            type: number
-          secondary_price:
-            description: "Secondary price of the bundle in pennies"
-            type: number
-          tertiary_price:
-            description: "Tertiary price of the bundle in pennies"
-            type: number
-          primary_price_name:
-            description: "Name of primary price"
-            type: string
-          secondary_price_name:
-            description: "Name of secondary price"
-            type: string
-          tertiary_price_name:
-            description: "Name of tertiary price"
-            type: string
-          includes:
-            type: array
-            items:
-              type: string
+          <<: *BundleCommon
+          
 CreateBundleRequest:          
   name: "CreateBundleRequest"
   description: "Request model for creating a new bundle"

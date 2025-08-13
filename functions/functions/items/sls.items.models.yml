@@ -11,6 +11,52 @@ PriceScheduleObject:
         properties:
           something:
             type: string
+            
+_ItemCommon: &_ItemCommon
+  ksuid:
+    type: string
+  name:
+    type: string
+  description:
+    type: string
+  status:
+    type: string
+    enum:
+      - "draft"
+      - "live"
+      - "archived"
+      - "outdated"
+  column:
+    description: "??"
+    type: number
+  row:
+    description: "??"
+    type: number
+  primary_price:
+    description: "Primary price of the item in pennies"
+    type: number
+  secondary_price:
+    description: "Secondary price of the item in pennies"
+    type: number
+  tertiary_price:
+    description: "Tertiary price of the item in pennies"
+    type: number
+  primary_price_name:
+    description: "Name of primary price"
+    type: string
+  secondary_price_name:
+    description: "Name of secondary price"
+    type: string
+  tertiary_price_name:
+    description: "Name of tertiary price"
+    type: string
+  individually_purchaseable: 
+    description: "Would you like people to purchase this on it's own"
+    type: boolean
+  stripe_price_id: 
+    description: "Whats the related stripe price_id"
+    type: string
+
 ItemObject:
   name: "ItemObject"
   description: "Item object"
@@ -22,45 +68,11 @@ ItemObject:
         type: object
         required: ["name"]
         properties:
-          ksuid:
-            type: string
-          name:
-            type: string
-          description:
-            type: string
-          status:
-            type: string
-            enum:
-              - "draft"
-              - "live"
-              - "archived"
-              - "outdated"
-          column:
-            description: "??"
-            type: number
-          row:
-            description: "??"
-            type: number
-          primary_price:
-            description: "Primary price of the item in pennies"
-            type: number
-          secondary_price:
-            description: "Secondary price of the item in pennies"
-            type: number
-          tertiary_price:
-            description: "Tertiary price of the item in pennies"
-            type: number
-          primary_price_name:
-            description: "Name of primary price"
-            type: string
-          secondary_price_name:
-            description: "Name of secondary price"
-            type: string
-          tertiary_price_name:
-            description: "Name of tertiary price"
-            type: string
+          <<: *_ItemCommon
           pricing_schedule:
             $ref: "#/components/schemas/PriceScheduleObject"
+         
+
 ItemObjectPublic:
   name: "ItemObjectPublic"
   description: "Item object for the public"
@@ -72,43 +84,8 @@ ItemObjectPublic:
         type: object
         required: ["name"]
         properties:
-          ksuid:
-            type: string
-          name:
-            type: string
-          description:
-            type: string
-          status:
-            type: string
-            enum:
-              - "draft"
-              - "live"
-              - "archived"
-              - "outdated"
-          column:
-            description: "??"
-            type: number
-          row:
-            description: "??"
-            type: number
-          primary_price:
-            description: "Primary price of the item in pennies"
-            type: number
-          secondary_price:
-            description: "Secondary price of the item in pennies"
-            type: number
-          tertiary_price:
-            description: "Tertiary price of the item in pennies"
-            type: number
-          primary_price_name:
-            description: "Name of primary price"
-            type: string
-          secondary_price_name:
-            description: "Name of secondary price"
-            type: string
-          tertiary_price_name:
-            description: "Name of tertiary price"
-            type: string
+          <<: *_ItemCommon
+
 CreateItemRequest:          
   name: "CreateItemRequest"
   description: "Request model for creating a new item"

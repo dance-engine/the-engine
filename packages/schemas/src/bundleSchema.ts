@@ -14,7 +14,7 @@ export const bundleSchema = z.object({
 // Generate TypeScript type from the schema
 export type ItemType = {name: string, status: string, ksuid: string, description: string}
 export type BundleType = z.infer<typeof bundleSchema>;
-export type BundleTypeExtended = BundleType & {ksuid: string, event_slug?: string, current_price?: () => string, current_price_name?: () => string, items?: () => ItemType[], includes?: string[]};
+export type BundleTypeExtended = BundleType & {ksuid: string, event_slug?: string, status: string, current_price?: () => string, current_price_name?: () => string, items?: () => ItemType[], includes?: string[]};
 
 // Additional no validation metadata relating to how we display data in forms
 export const bundleMetadata = {

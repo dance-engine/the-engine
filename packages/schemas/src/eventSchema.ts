@@ -1,7 +1,7 @@
 'use client'
 import { z } from "zod";
 import { locationSchema } from "./locationSchema.js";
-import { ItemType } from "./bundleSchema.js";
+import { ItemType, BundleTypeExtended } from "./bundleSchema.js";
 
 // Define the event schema
 export const eventSchema = z.object({
@@ -31,7 +31,7 @@ export const eventSchema = z.object({
 
 // Generate TypeScript type from the schema
 export type EventType = z.infer<typeof eventSchema>;
-export type EventTypeExtended = EventType & { items: ItemType[]}
+export type EventTypeExtended = EventType & { items?: ItemType[], bundles?: BundleTypeExtended[] }
 
 // Additional no validation metadata relating to how we display data in forms
 export const eventMetadata = {

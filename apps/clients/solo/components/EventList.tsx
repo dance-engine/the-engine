@@ -1,14 +1,14 @@
 'use client';
-import Link from 'next/link';
 import useSWR from 'swr';
 
 import BundleCard from "../components/BundleCard"
 import ItemCard from "../components/ItemCard"
 
-import type { BundleType, BundleTypeExtended} from '@dance-engine/schemas/bundle';
+import type { BundleTypeExtended, ItemType} from '@dance-engine/schemas/bundle';
+import { EventTypeExtended } from '@dance-engine/schemas/events';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
-export default function EventList({ fallbackData, org, event_ksuid, theme}: { fallbackData: BundleType[], org: string, event_ksuid: string, theme: string}) {
+export default function EventList({ fallbackData, org, event_ksuid, theme}: { fallbackData: EventTypeExtended[], org: string, event_ksuid: string, theme: string}) {
   const { data, isLoading, error} = useSWR(
     event_ksuid ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events/${event_ksuid}` : `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events`,
     fetcher,
@@ -28,7 +28,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
     </div>
 
     <div className='flex gap-2'>
-     { items && items.map((itm: BundleTypeExtended) => <ItemCard key={itm.ksuid} itemData={itm} eventData={event}/>)}
+     { items && items.map((itm: ItemType) => <ItemCard key={itm.ksuid} itemData={itm} eventData={event}/>)}
     </div>
     {/* {org}:{theme} */}
     <pre>{JSON.stringify(data, null, 2)}</pre>

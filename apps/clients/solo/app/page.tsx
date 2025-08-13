@@ -11,7 +11,7 @@ import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
 import { generateHTML } from '@tiptap/html'
-import { EventType } from '@dance-engine/schemas/events';
+import { EventTypeExtended } from '@dance-engine/schemas/events';
 import { format } from 'date-fns/format';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 import StripePurchaseButton from '@/components/StripePurchaseButton';
@@ -33,7 +33,7 @@ export default async function IndexPage() {
   const orgs_data = await orgs_res.json()
   const org_details= orgs_data.organisations.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == orgSlug)
   const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
-  const eventsServerData = await events_res.json() as EventType[];
+  const eventsServerData = await events_res.json() as EventTypeExtended[];
 
   console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
   const inProd = process.env.NODE_ENV == 'development' ? false : true;
@@ -137,7 +137,7 @@ export default async function IndexPage() {
         </div>)}
 
         {/* {coreEvent} : {EVENTS_API_URL} */}
-
+          {/* { eventsServerData} */}
         <div className=''>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div>
       </main>
       

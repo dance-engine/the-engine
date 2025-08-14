@@ -1,11 +1,14 @@
 import Link from "next/link"
+import { useContext } from "react"
 import { ItemType, BundleTypeExtended } from "@dance-engine/schemas/bundle"
-import { EventTypeExtended } from "@dance-engine/schemas/events"
+import { EventModelType, EventResponseType } from "@dance-engine/schemas/events"
 import { Fragment } from "react"
+import { PassSelectorContext, PassSelectorDispatchContext } from '../contexts/PassSelectorContext';
 
-export default function BundleCard({bundleData, eventData}: {bundleData: BundleTypeExtended, eventData: EventTypeExtended}) {
+export default function BundleCard({bundleData, event }: { bundleData: BundleTypeExtended, event: EventModelType }) {
+  const { selected, included } = useContext(PassSelectorContext);
+  const dispatch = useContext(PassSelectorDispatchContext);
   const bundle = bundleData
-  const items = eventData.items
 
   bundle.current_price = () => {
     return `£${(bundle.primary_price / 100).toFixed(2)}`;
@@ -15,15 +18,15 @@ export default function BundleCard({bundleData, eventData}: {bundleData: BundleT
     return bundle.primary_price_name;
   }
 
-  bundle.items = () => {
-    return items ? items.filter((itm: ItemType) => {
-      return new Set(bundle.includes).has(itm.ksuid) && itm.status == 'live'
-    }) : [];
-  }
+  // bundle.items = () => {
+  //   return items ? items.filter((itm: ItemType) => {
+  //     return new Set(bundle.includes).has(itm.ksuid) && itm.status == 'live'
+  //   }) : [];
+  // }
 
   return (
     <Fragment>
-      <Link href={`/${eventData.ksuid}`} className="overflow-hidden rounded-lg bg-white shadow-sm dark:divide-white/10 dark:bg-gray-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10">
+      <div onClick={() => {dispatch(bundleData); navigator.clipboard.writeText(bundleData.ksuid || "none")} } className="relative overflow-hidden rounded-lg bg-white shadow-sm dark:divide-white/10 dark:bg-gray-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10">
         <header className="px-4 py-5 sm:p-6 bg-keppel-on-light/90 ">
       
           <h1 className='text-2xl uppercase'>{bundle.name}</h1>
@@ -33,10 +36,10 @@ export default function BundleCard({bundleData, eventData}: {bundleData: BundleT
           {bundle.includes && (
             <div>Includes:
               <ul className='flex gap-1'>
-                {bundle.items().map((item, index) => {
+                {bundle.includes.filter((item_id) => event?.items?.[item_id] ).map((item_id) => {
                   
                   return (
-                  <li key={index} >{item.name}, </li>
+                  <li key={item_id} >{event?.items?.[item_id]?.name}, </li>
                   )
                 }
               )}
@@ -49,7 +52,9 @@ export default function BundleCard({bundleData, eventData}: {bundleData: BundleT
           Add to Cart
         </button>
       </div>
-    </Link>
+      
+      { selected && selected.length > 0 && selected.includes(bundle.ksuid) && <div className="overflow-hidden absolute top-0 h-full w-full bg-black/70 text-white flex items-center justify-center">Selected {JSON.stringify(selected)}</div>}
+    </div>
     </Fragment>
   )
 }

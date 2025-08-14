@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { ItemType } from "@dance-engine/schemas/bundle"
-import { EventTypeExtended } from "@dance-engine/schemas/events"
+import { EventResponseType } from "@dance-engine/schemas/events"
 
-export default function ItemCard({itemData, eventData}: {itemData: ItemType, eventData: EventTypeExtended}) {
+export default function ItemCard({itemData, eventData}: {itemData: ItemType, eventData: EventResponseType}) {
 
   return (
         

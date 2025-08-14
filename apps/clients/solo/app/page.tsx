@@ -1,5 +1,7 @@
 import { headers } from 'next/headers';
+import Link from 'next/link';
 import EventList from '../components/EventList'
+
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -11,16 +13,14 @@ import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
 import { generateHTML } from '@tiptap/html'
-import { EventTypeExtended } from '@dance-engine/schemas/events';
 import { format } from 'date-fns/format';
+
 import { OrganisationType } from '@dance-engine/schemas/organisation';
-import Link from 'next/link';
-// import Organisation from '@/components/Organisation';
+import { EventResponseType } from '@dance-engine/schemas/events';
 
 // Legacy Code from site launches
 import RebelPayment from "../components/legacy/RebelPayment";
 import POWPayment from "../components/legacy/POWPayment";
-
 
 export default async function IndexPage() {
   const h = await headers();
@@ -37,10 +37,9 @@ export default async function IndexPage() {
   const orgs_data = await orgs_res.json()
   const org_details= orgs_data.organisations.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == orgSlug)
   const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
-  const eventsServerData = await events_res.json() as EventTypeExtended[];
+  const eventsServerData = await events_res.json() as EventResponseType[];
 
   console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
-  const inProd = process.env.NODE_ENV == 'development' ? false : true;
   const css = `
     :root {
       --main-bg-color: black;

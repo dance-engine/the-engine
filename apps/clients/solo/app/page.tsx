@@ -14,9 +14,13 @@ import { generateHTML } from '@tiptap/html'
 import { EventTypeExtended } from '@dance-engine/schemas/events';
 import { format } from 'date-fns/format';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
-import StripePurchaseButton from '@/components/StripePurchaseButton';
 import Link from 'next/link';
 // import Organisation from '@/components/Organisation';
+
+// Legacy Code from site launches
+import RebelPayment from "../components/legacy/RebelPayment";
+import POWPayment from "../components/legacy/POWPayment";
+
 
 export default async function IndexPage() {
   const h = await headers();
@@ -99,46 +103,14 @@ export default async function IndexPage() {
                 </div>
                 
         </div>
-        { orgSlug == 'rebel-sbk' ? 
-          <div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
-           <div className={`max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ `}>
-            <h2 className='text-4xl font-bold mb-4'>Early Bird Tickets</h2>
-            <div className='flex gap-6'>
-            <StripePurchaseButton 
-              label="Full Pass"
-              accountId={org.account_id || 'acct_1Rkp1ODIMY9TzhzF'} //! Work out why accountID is missing
-              priceId={ inProd ? "price_1RqCdDD1ZofqWwLaVBaPDg7a" : 'price_1RqCh1D1ZofqWwLa6AnG7NFD' } // 🔥 Live : 🔨 Test price ID
-              couponCode={ inProd ? "d2JMEhDA" : 'uKXafk5e' } // 🔥 Live : 🔨 Test coupon code
-              style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
-            />
-            <StripePurchaseButton 
-              label="Party Ticket"
-              accountId={org.account_id || 'acct_1Rkp1ODIMY9TzhzF'} //! Work out why accountID is missing
-              priceId={ inProd ? "price_1RqCdeD1ZofqWwLanvCgSHEc" : 'price_1RqCgfD1ZofqWwLaTgffMKTU' } // 🔥 Live : 🔨 Test price ID
-              couponCode={ inProd ? "NtYacUmF" : 'm8WbVzP7' } // 🔥 Live : 🔨 Test coupon code
-              style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
-            />
-            </div>
-            
-          </div>
-          </div>
+        {orgSlug == 'demo' ? 
+          <div className=''>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
+        : orgSlug == 'rebel-sbk' ? 
+          <RebelPayment org={org} />
         :
-        (<div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
-           <div className={`max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ `}>
-            <h2 className='text-4xl font-bold mb-4'>Early Bird Ticket</h2>
-            <p className='mb-6 text-xl'>We have a limited amount of early bird discounted tickets at only £40</p>
-            <StripePurchaseButton 
-              accountId={org.account_id || 'acct_1Rkp1ODIMY9TzhzF'} //! Work out why accountID is missing
-              couponCode={ inProd ? "fVKhBZim" : 'u0trAdPd' } // 🔥 Live : 🔨 Test coupon code
-              priceId={ inProd ? "price_1RkrE1DIMY9TzhzF2AFDc6q3" : 'price_1RnirUDIMY9TzhzFCSo3uo6K' } // 🔥 Live : 🔨 Test price ID
-              style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
-            />
-           </div>
-        </div>)}
-
-        {/* {coreEvent} : {EVENTS_API_URL} */}
-          {/* { eventsServerData} */}
-        <div className=''>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div>
+        (<POWPayment org={org} />)
+}
+        
       </main>
       
     </div>

@@ -17,3 +17,15 @@ params:path {
 auth:bearer {
   token: {{bearerToken}}
 }
+
+tests {
+  test("should list all events for an organisation", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+   
+  test("should return an object with events array", () => {
+    const events = res.getBody()?.events;
+    expect(events).to.be.a('array');
+      bru.setEnvVar("number_of_events",events.length)
+  });
+}

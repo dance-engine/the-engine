@@ -1,0 +1,9 @@
+meta {
+  name: Events
+  seq: 2
+}
+
+script:pre-request {
+  const event_name = bru.interpolate('{{$randomCatchPhrase}} for Dancers');
+  bru.setEnvVar("event_name",event_name)
+}

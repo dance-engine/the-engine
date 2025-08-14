@@ -1,0 +1,5 @@
+script:pre-request {
+  const KSUID = require('ksuid');
+  const ksuid = KSUID.randomSync().string;
+  bru.setVar("ksuid",ksuid);
+}

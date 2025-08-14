@@ -1,0 +1,22 @@
+meta {
+  name: Get All Bundles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/{{currentEvent}}/bundles
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+tests {
+  test("should be able to login", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+   
+}

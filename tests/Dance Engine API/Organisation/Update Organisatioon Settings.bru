@@ -1,0 +1,41 @@
+meta {
+  name: Update Organisatioon Settings
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/{{currentOrg}}/settings
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "organisation": {
+      "status": "",
+      "ksuid": "",
+      "organisation": "",
+      "name": "",
+      "account_id": "",
+      "banner": "",
+      "logo": "",
+      "css_vars": "",
+      "description": "",
+      "created_at": "",
+      "updated_at": "",
+      "version": 0,
+      "history": [
+        {}
+      ]
+    }
+  }
+}

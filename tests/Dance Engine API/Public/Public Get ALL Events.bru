@@ -1,0 +1,15 @@
+meta {
+  name: Public Get ALL Events
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/public/{{currentOrg}}/events
+  body: none
+  auth: none
+}
+
+params:path {
+  organisation: 
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Get All Items
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/{{currentEvent}}/items
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  event: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

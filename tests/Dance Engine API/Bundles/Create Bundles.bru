@@ -1,0 +1,40 @@
+meta {
+  name: Create Bundles
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/{{currentOrg}}/{{currentEvent}}/bundles
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  event: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "bundles": [
+      {
+        "ksuid": "{{ksuid}}",
+        "name": "",
+        "description": "",
+        "status": "draft",
+        "primary_price": 0,
+        "primary_price_name": "Default",
+        "pricing_schedule": {
+          "something": ""
+        },
+        "stripe_price_id": "",
+        "includes": []
+      }
+    ]
+  }
+}

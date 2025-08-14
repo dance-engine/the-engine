@@ -503,6 +503,15 @@ importers:
         specifier: latest
         version: 5.8.3
 
+  tests/Dance Engine API:
+    dependencies:
+      base-convert-int-array:
+        specifier: ^1.0.1
+        version: 1.0.1
+      ksuid:
+        specifier: ^3.0.0
+        version: 3.0.0
+
 packages:
 
   '@algolia/autocomplete-core@1.17.9':

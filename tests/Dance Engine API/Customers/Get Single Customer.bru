@@ -1,0 +1,20 @@
+meta {
+  name: Get Single Customer
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/customers/:ksuid
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  ksuid: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

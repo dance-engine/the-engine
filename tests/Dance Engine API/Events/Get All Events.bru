@@ -1,0 +1,19 @@
+meta {
+  name: Get All Events
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/events
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

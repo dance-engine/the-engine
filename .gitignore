@@ -45,3 +45,4 @@ _venv
 # Docs
 apps/apidocs/docs/core/
 apps/apidocs/docs/core/**
+tests/Dance Engine API/environments/

@@ -1,0 +1,17 @@
+meta {
+  name: Public Get Bundles
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/public/{{currentOrg}}/{{currentEvent}}/bundles/:ksuid
+  body: none
+  auth: none
+}
+
+params:path {
+  organisation: 
+  event: 
+  ksuid: 
+}

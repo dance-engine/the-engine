@@ -9,6 +9,7 @@ Events:
         - "_shared/**"
         - "_pydantic/**"      
     environment:
+      STAGE_NAME: ${sls:stage}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
     layers:
       - !Ref UtilsLambdaLayer
@@ -46,3 +47,9 @@ Events:
           path: /public/{organisation}/events
           method: get
           documentation: ${file(functions/events/sls.events.doc.yml):Events.GETallpub} 
+      - httpApi:
+          path: /{organisation}/events/{ksuid}
+          method: delete
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/events/sls.events.doc.yml):Events.DELETE}

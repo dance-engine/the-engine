@@ -1,0 +1,55 @@
+meta {
+  name: Create Event
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/{{currentOrg}}/events
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "event": {
+      "status": "",
+      "ksuid": "",
+      "banner": "",
+      "name": "",
+      "starts_at": "",
+      "ends_at": "",
+      "category": [],
+      "capacity": 0,
+      "number_sold": 0,
+      "description": "",
+      "created_at": "",
+      "updated_at": "",
+      "version": 0,
+      "location": {
+        "ksuid": "",
+        "name": "",
+        "address": "",
+        "lat": "",
+        "lng": ""
+      },
+      "history": [
+        {}
+      ],
+      "items": [
+        {}
+      ],
+      "bundles": [
+        {}
+      ]
+    }
+  }
+}

@@ -4,6 +4,7 @@ models:
   - ${file(functions/events/sls.events.models.yml):EventObjectPublic}
   - ${file(functions/events/sls.events.models.yml):CreateEventRequest}
   - ${file(functions/events/sls.events.models.yml):UpdateEventRequest}
+  - ${file(functions/events/sls.events.models.yml):DeleteEventRequest}
   - ${file(functions/events/sls.events.models.yml):EventResponse}
   - ${file(functions/events/sls.events.models.yml):EventListResponse}
   - ${file(functions/events/sls.events.models.yml):EventResponsePublic}

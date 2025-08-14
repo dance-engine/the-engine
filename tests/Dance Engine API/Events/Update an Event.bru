@@ -1,0 +1,56 @@
+meta {
+  name: Update an Event
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/{{currentOrg}}/events/:ksuid
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  ksuid: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "event": {
+      "status": "",
+      "ksuid": "",
+      "banner": "",
+      "name": "",
+      "starts_at": "",
+      "ends_at": "",
+      "category": [],
+      "capacity": 0,
+      "number_sold": 0,
+      "description": "",
+      "created_at": "",
+      "updated_at": "",
+      "version": 0,
+      "location": {
+        "ksuid": "",
+        "name": "",
+        "address": "",
+        "lat": "",
+        "lng": ""
+      },
+      "history": [
+        {}
+      ],
+      "items": [
+        {}
+      ],
+      "bundles": [
+        {}
+      ]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Generate Presigned Upload URL
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/{{currentOrg}}/generate-presigned-url
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "action": "",
+    "fieldName": "",
+    "fileType": "",
+    "organisation": ""
+  }
+}

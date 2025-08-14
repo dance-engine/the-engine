@@ -1,0 +1,19 @@
+meta {
+  name: Get Org Settings
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/settings
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "name": "Dance Engine API",
+  "type": "collection",
+  "moduleWhitelist": ["crypto", "buffer", "form-data","ksuid"],
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

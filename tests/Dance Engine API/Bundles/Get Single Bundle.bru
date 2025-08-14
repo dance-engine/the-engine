@@ -1,0 +1,21 @@
+meta {
+  name: Get Single Bundle
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/{{currentEvent}}/bundles/:ksuid
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  event: 
+  ksuid: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

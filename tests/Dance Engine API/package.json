@@ -1,0 +1,17 @@
+{
+  "name": "dance-engine-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "base-convert-int-array": "^1.0.1",
+    "ksuid": "^3.0.0"
+  }
+}

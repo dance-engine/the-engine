@@ -1,0 +1,16 @@
+meta {
+  name: Public Get All Bundles
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/public/{{currentOrg}}/{{currentEvent}}/bundles
+  body: none
+  auth: none
+}
+
+params:path {
+  organisation: 
+  event: 
+}

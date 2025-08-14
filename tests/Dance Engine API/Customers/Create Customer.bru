@@ -1,0 +1,30 @@
+meta {
+  name: Create Customer
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/{{currentOrg}}/customers
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "ksuid": "",
+    "name": "",
+    "email": "",
+    "phone": "",
+    "bio": "",
+    "version": 0
+  }
+}

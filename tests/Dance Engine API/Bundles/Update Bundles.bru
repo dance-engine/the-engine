@@ -1,0 +1,44 @@
+meta {
+  name: Update Bundles
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/{{currentOrg}}/{{currentEvent}}/bundles
+  body: json
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  event: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "bundles": [
+      {
+        "ksuid": "",
+        "name": "",
+        "description": "",
+        "status": "",
+        "primary_price": "",
+        "secondary_price": "",
+        "tertiary_price": "",
+        "primary_price_name": "",
+        "secondary_price_name": "",
+        "tertiary_price_name": "",
+        "pricing_schedule": {
+          "something": ""
+        },
+        "stripe_price_id": "",
+        "includes": []
+      }
+    ]
+  }
+}

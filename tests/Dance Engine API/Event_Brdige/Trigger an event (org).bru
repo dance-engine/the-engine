@@ -1,0 +1,19 @@
+meta {
+  name: Trigger an event (org)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/{{currentOrg}}/trigger
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

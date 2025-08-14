@@ -1,0 +1,23 @@
+meta {
+  name: Generate Presigned Download URL
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/generate-presigned-url
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+body:json {
+  {
+    "action": "",
+    "fileKey": "",
+    "organisation": ""
+  }
+}

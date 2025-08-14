@@ -1,0 +1,20 @@
+meta {
+  name: Delete an Event
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/{{currentOrg}}/events/:ksuid
+  body: none
+  auth: bearer
+}
+
+params:path {
+  organisation: 
+  ksuid: 
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}

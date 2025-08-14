@@ -1,0 +1,16 @@
+meta {
+  name: Public Get Event
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/public/{{currentOrg}}/events/:ksuid
+  body: none
+  auth: none
+}
+
+params:path {
+  organisation: 
+  ksuid: 
+}

@@ -15,6 +15,26 @@ logger = logging.getLogger()
 logger.setLevel("INFO")
 
 def convert_datetime_to_iso_8601_with_z_suffix(dt: Union[datetime, str]) -> str:
+    """
+    Convert a datetime object or an ISO 8601 formatted string to an ISO 8601 string 
+    with a 'Z' suffix indicating UTC time.
+
+    Parameters
+    ----------
+    dt : Union[datetime, str]
+        A datetime object or an ISO 8601 formatted string. If a string is provided, 
+        it should be in a format that can be parsed by `datetime.fromisoformat`.
+
+    Returns
+    -------
+    str
+        An ISO 8601 formatted string representing the input datetime in UTC with a 'Z' suffix.
+
+    Raises
+    ------
+    ValueError
+        If the input is not a valid datetime or string representation of a datetime.
+    """
     try:
         if isinstance(dt, str):
             dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
@@ -24,6 +44,24 @@ def convert_datetime_to_iso_8601_with_z_suffix(dt: Union[datetime, str]) -> str:
 
 
 def convert_floats_to_decimals(obj: Any) -> Any:
+    """
+    Convert all float values in a given object to Decimal.
+
+    This function recursively traverses the input object, which can be a 
+    float, dictionary, list, or any other type, and converts any float 
+    values it encounters to Decimal. If the input is a dictionary or 
+    list, it processes each element accordingly.
+
+    Parameters
+    ----------
+    obj : Any
+        The input object that may contain float values.
+
+    Returns
+    -------
+    Any
+        The input object with all float values converted to Decimal.
+    """
     if isinstance(obj, float):
         return Decimal(str(obj))
     elif isinstance(obj, dict):
@@ -34,6 +72,39 @@ def convert_floats_to_decimals(obj: Any) -> Any:
         return obj
 
 class DynamoModel(BaseModel):
+    """
+    A base model for DynamoDB interactions using Pydantic.
+
+    This class provides methods for validation, querying, and 
+    serialization of DynamoDB items. It includes support for 
+    versioning and entity relationships.
+
+    Attributes
+    ----------
+    related_entities : dict
+        A dictionary mapping related entity types to their attributes and modes.
+    entity_type : str
+        The type of the entity represented by the model.
+    PK : str
+        The primary key for the DynamoDB item.
+    SK : str
+        The sort key for the DynamoDB item.
+    gsi1PK : str
+        The global secondary index primary key.
+    gsi1SK : str
+        The global secondary index sort key.
+
+    Methods
+    -------
+    query_gsi(table, key_condition, index_name=None, filter_expression=None, assemble_entites=False)
+        Queries the DynamoDB table using the specified key condition and optional filters.
+    to_dynamo(exclude_keys=True)
+        Serializes the model instance to a dictionary suitable for DynamoDB.
+    upsert(table, only_set_once=[], condition_expression=None)
+        Inserts or updates the item in the DynamoDB table.
+    assemble_from_items(items)
+        Assembles a model instance from a list of DynamoDB items.
+    """
     class Config:
         json_encoders = {
             datetime: convert_datetime_to_iso_8601_with_z_suffix
@@ -73,22 +144,46 @@ class DynamoModel(BaseModel):
     def gsi1SK(self) -> str:
         raise NotImplementedError()
     
-    def query_gsi(self, table, key_condition, index_name=None, filter_expression=None, assemble_entites=False) -> list:
+    def query_gsi(self, table, key_condition, index_name=None, assemble_entites=False) -> list:
+        """
+        Query a DynamoDB table using a Global Secondary Index (GSI).
+
+        Parameters
+        ----------
+        table : boto3.dynamodb.table.Table
+            The DynamoDB table resource to query.
+        key_condition : str
+            The condition that specifies the key values for items to be retrieved.
+        index_name : str, optional
+            The name of the Global Secondary Index to query (default is None).
+        assemble_entites : bool, optional
+            Whether to assemble entities from the items (default is False).
+
+        Returns
+        -------
+        list
+            A list of validated items retrieved from the DynamoDB table.
+
+        Raises
+        ------
+        Exception
+            If the query fails, an exception is raised and logged.
+        """
         try:
             kwargs = {
                 "KeyConditionExpression":key_condition
             }
             if index_name:
                 kwargs["IndexName"] = index_name
-            if filter_expression:
-                kwargs["FilterExpression"] = filter_expression
-            
+
             logger.info(f"query kwargs: {kwargs}")
             
             response = table.query(**kwargs)
             items = response.get("Items", None)
             
             logger.info(f"Fetched {len(items)} from dynamodb: {items}")
+            if not items:
+                return None
             if assemble_entites:
                 return self.assemble_from_items(items)
             else:
@@ -98,12 +193,50 @@ class DynamoModel(BaseModel):
             raise
     
     def _slugify(self, string) -> str:
+        """
+        Convert a string into a URL-friendly slug.
+
+        Parameters
+        ----------
+        string : str
+            The input string to be slugified.
+
+        Returns
+        -------
+        str
+            A slugified version of the input string, where non-alphanumeric 
+            characters are replaced with hyphens and the string is 
+            converted to lowercase.
+        """
         return re.sub(r'[^a-zA-Z0-9]+', '-', string.strip().lower()).strip('-')
     
     def uses_versioning(self) -> bool:
+        """
+        Check if the instance uses versioning.
+
+        Returns
+        -------
+        bool
+            True if the instance has a 'version' attribute, False otherwise.
+        """
         return hasattr(self, "version")
 
     def to_dynamo(self, exclude_keys=True) -> dict:
+        """
+        Convert the instance to a DynamoDB-compatible dictionary.
+
+        Parameters
+        ----------
+        exclude_keys : bool, optional
+            Whether to exclude certain keys from the output dictionary. 
+            Default is True.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the instance, formatted for 
+            DynamoDB, with optional exclusion of specified keys.
+        """
         base = self.model_dump(mode="json", exclude_none=True)
 
         if exclude_keys:
@@ -127,6 +260,32 @@ class DynamoModel(BaseModel):
         return convert_floats_to_decimals({**base, **props})
     
     def upsert(self, table, only_set_once: list = [], condition_expression: str = None):
+        """
+        Upserts an item into the DynamoDB table.
+
+        Parameters
+        ----------
+        table : boto3.dynamodb.table.Table
+            The DynamoDB table where the item will be upserted.
+        only_set_once : list, optional
+            A list of attribute names that should only be set if they do not already exist in the item.
+            Default is an empty list.
+        condition_expression : str, optional
+            An additional condition expression to apply during the upsert operation.
+            Default is None.
+
+        Raises
+        ------
+        VersionConflictError
+            If a version conflict occurs during the upsert operation.
+        Exception
+            If any other error occurs during the upsert operation.
+
+        Returns
+        -------
+        dict
+            The updated item after the upsert operation.
+        """
         update_parts = []
         expression_attr_names = {}
         expression_attr_values = {}
@@ -181,6 +340,28 @@ class DynamoModel(BaseModel):
             raise
 
     def assemble_from_items(self, items: list[dict]) -> "DynamoModel":
+        """
+        Assemble a DynamoModel instance from a list of item dictionaries.
+
+        Parameters
+        ----------
+        items : list[dict]
+            A list of dictionaries representing items, each containing an 
+            'entity_type' key and other relevant data for model validation.
+
+        Returns
+        -------
+        DynamoModel
+            An instance of the DynamoModel populated with the data from 
+            the provided items.
+
+        Raises
+        ------
+        ValueError
+            If no item with the root entity type is found in the provided 
+            items, or if an unknown mode is encountered during processing 
+            of related entities.
+        """
         root_entity_type = self.entity_type
         root_item = None
         for item in items:
@@ -227,9 +408,6 @@ class VersionConflictError(Exception):
             self.incoming_versions = incoming_version
         else:
             self.incoming_versions = [incoming_version] * len(self.models)
-
-        self.model = self.models[0]
-        self.incoming_version = self.incoming_versions[0]
         
         messages = [
             f"{m.PK} / v{v}" if v is not None else f"{m.PK} / unknown version"
@@ -291,12 +469,14 @@ def batch_write(table, items: list, overwrite: bool = True):
             response = client.batch_write_item(RequestItems=request_items)
             unprocessed = response.get('UnprocessedItems', {}).get(table_name, [])
 
-            unprocessed_dynamo = {frozenset(entry["PutRequest"]["Item"].items()): entry for entry in unprocessed}
-            unprocessed_set = set(unprocessed_dynamo.keys())
+            unprocessed_set = {
+                frozenset(entry['PutRequest']['Item'].items()) 
+                for entry in unprocessed
+            }
 
             for item in batch:
-                dynamo_item = item.to_dynamo()
-                if frozenset(dynamo_item) in unprocessed_set:
+                dynamo_item = item.to_dynamo(exclude_keys=False)
+                if frozenset(dynamo_item.items()) in unprocessed_set:
                     unprocessed_items.append(item)
                 else:
                     successful_items.append(item)
@@ -323,7 +503,7 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             expression_attr_names = {}
             expression_attr_values = {}
 
-            item_dict = item.to_dynamo(exclude_keys=False)
+            item_dict = item.to_dynamo(exclude_keys=True)
 
             if item.uses_versioning():
                 incoming_version = item_dict.get('version', 0)
@@ -361,7 +541,7 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             })
 
         try:
-            client.transact_write_items(TransactItems=transact_items, ReturnCancellationReasons=True)
+            client.transact_write_items(TransactItems=transact_items)
             successful_items.extend(batch)
         except client.exceptions.TransactionCanceledException as e:
             logger.warning("Transaction cancelled")

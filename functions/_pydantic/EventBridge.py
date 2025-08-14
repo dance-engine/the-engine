@@ -8,8 +8,13 @@ from botocore.client import BaseClient
 from pydantic import BaseModel, Field, EmailStr, model_validator #! This means all eventbridge events need models even if they dont deal with Pydantic Entities, I think it's too tightly coupled, can we pass in Pydantic if needed 
 
 from _shared.DecimalEncoder import DecimalEncoder
+from _shared.helpers import deprecated
 
+@deprecated("Use trigger_eventbridge_event instead")
 def triggerEBEvent(eventBridgeClient, source = "core", detail_type = "General", detail = {}):
+    """
+    DEPRECATED: Use trigger_eventbridge_event instead.
+    """
     logger = logging.getLogger()
     logger.info(f"Trigger Event Bus: \n{source} \n {detail_type} \n {detail}")
     eventBridgeClient.put_events(
@@ -47,7 +52,7 @@ class EventBridgeEventDetail(BaseModel):
     resource_id: str
     action: Action
     data: dict
-    meta: Optional[Dict] = Field(default_factory=dict())
+    meta: Optional[Dict] = Field(default_factory=dict)
 
 class EventBridgeEvent(BaseModel):
     source: str = Field(..., description="Source service, e.g., dance-engine.core")

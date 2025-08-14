@@ -45,4 +45,5 @@ _venv
 # Docs
 apps/apidocs/docs/core/
 apps/apidocs/docs/core/**
+**/__pycache__/
 tests/Dance Engine API/environments/

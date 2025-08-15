@@ -1,6 +1,7 @@
 'use client'
 import { z } from "zod";
 import { locationSchema } from "./locationSchema.js";
+import { ItemType, BundleTypeExtended } from "./bundleSchema.js";
 
 // Define the event schema
 export const eventSchema = z.object({
@@ -30,6 +31,18 @@ export const eventSchema = z.object({
 
 // Generate TypeScript type from the schema
 export type EventType = z.infer<typeof eventSchema>;
+export type EventResponseType = EventType & { items?: ItemType[], bundles?: BundleTypeExtended[] }
+export type EventModelType = EventType & { items?: Record<string, ItemType>, bundles?: BundleTypeExtended[] }
+
+export const createEvent =(eventData: EventResponseType) => {
+  const event: EventModelType = {...eventData, items: {}};
+  event.items = Object.fromEntries(
+    Object.entries(eventData?.items || {})
+      .filter(([_key, item]) => item.status == "live")
+      .map(([_key, item]) => [item.ksuid, { ...item }])
+  );
+  return event
+}
 
 // Additional no validation metadata relating to how we display data in forms
 export const eventMetadata = {

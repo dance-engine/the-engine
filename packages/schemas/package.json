@@ -20,6 +20,9 @@
     "./organisation": {
       "default": "./dist/organisationSchema.js"
     },
+    "./bundle": {
+      "default": "./dist/bundleSchema.js"
+    },
     ".": {
       "default": "./dist/index.js"
     }

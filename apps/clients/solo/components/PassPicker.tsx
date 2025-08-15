@@ -5,9 +5,8 @@ import ItemCard from "./ItemCard";
 import { PassSelectorProvider } from "@/contexts/PassSelectorContext";
 
 import { EventModelType } from "@dance-engine/schemas/events";
-import { ItemType } from "@dance-engine/schemas/bundle";
 
-const PassPicker = ({ event, org, theme }: { event: EventModelType, org: string, theme?: string }) => {
+const PassPicker = ({ event }: { event: EventModelType }) => {
   return (
       <PassSelectorProvider>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-6">
@@ -18,7 +17,7 @@ const PassPicker = ({ event, org, theme }: { event: EventModelType, org: string,
 
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 items-start gap-6 mt-6">
           {event && event.items && JSON.stringify(event.items) != "{}" && Object.keys(event.items).map((item_ksuid: string) => (
-            event.items?.[item_ksuid] ? <ItemCard key={item_ksuid} itemData={event.items[item_ksuid]} eventData={event} /> : null
+            event.items?.[item_ksuid] ? <ItemCard key={item_ksuid} itemData={event.items[item_ksuid]} /> : null
           ))}
         </div>
 

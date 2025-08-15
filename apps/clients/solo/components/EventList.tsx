@@ -20,7 +20,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
 
   return <div className=''>
     <div className="mx-auto w-full max-w-5xl pt-6 px-6 5xl:px-0">
-    <PassPicker event={event} org={org} />
+    <PassPicker event={event}/>
     {/* <h2 className='text-2xl '>Purchase Options</h2>
     <div className='flex gap-2'>
      { bundles && bundles.map((bundle: BundleTypeExtended) => <BundleCard key={bundle.ksuid} eventData={event} bundleData={bundle} />)}

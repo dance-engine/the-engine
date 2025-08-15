@@ -1,13 +1,12 @@
-import Link from "next/link"
-import { useContext } from "react"
-import { ItemType, BundleTypeExtended } from "@dance-engine/schemas/bundle"
-import { EventModelType, EventResponseType } from "@dance-engine/schemas/events"
+import { BundleTypeExtended } from "@dance-engine/schemas/bundle"
+import { EventModelType } from "@dance-engine/schemas/events"
 import { Fragment } from "react"
-import { PassSelectorContext, PassSelectorDispatchContext } from '../contexts/PassSelectorContext';
+import { usePassSelectorState, usePassSelectorActions } from '../contexts/PassSelectorContext';
 
 export default function BundleCard({bundleData, event }: { bundleData: BundleTypeExtended, event: EventModelType }) {
-  const { selected, included } = useContext(PassSelectorContext);
-  const dispatch = useContext(PassSelectorDispatchContext);
+const { selected } = usePassSelectorState();
+const { toggleBundle } = usePassSelectorActions();
+
   const bundle = bundleData
 
   bundle.current_price = () => {
@@ -26,7 +25,7 @@ export default function BundleCard({bundleData, event }: { bundleData: BundleTyp
 
   return (
     <Fragment>
-      <div onClick={() => {dispatch(bundleData); navigator.clipboard.writeText(bundleData.ksuid || "none")} } 
+      <div onClick={() => {toggleBundle(bundleData); navigator.clipboard.writeText(bundleData.ksuid || "none")} } 
         className="relative overflow-hidden h-full flex flex-col justify-items-stretch rounded-lg bg-white shadow-sm dark:divide-white/10 dark:bg-gray-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10">
         <header className="px-4 py-5 sm:p-6 flex-1 bg-keppel-on-light/90 ">
       
@@ -60,9 +59,9 @@ export default function BundleCard({bundleData, event }: { bundleData: BundleTyp
         && <div className="overflow-hidden absolute top-0 h-full w-full bg-black/70 text-white flex flex-col items-center justify-center">
           
           Selected <br/>
-          {selected.map((s) => (<p key={s}>{`${s},`}</p>) )}
-          Includes
-          {bundle.includes.map((s) => (<p key={s}>{`${s},`}</p>) )}
+          {/* {selected.map((s) => (<p key={s}>{`${s},`}</p>) )} */}
+          {/* Includes */}
+          {/* {bundle.includes.map((s) => (<p key={s}>{`${s},`}</p>) )} */}
       </div>
       }
     </div>

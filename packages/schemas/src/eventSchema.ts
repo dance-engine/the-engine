@@ -35,7 +35,6 @@ export type EventResponseType = EventType & { items?: ItemType[], bundles?: Bund
 export type EventModelType = EventType & { items?: Record<string, ItemType>, bundles?: BundleTypeExtended[] }
 
 export const createEvent =(eventData: EventResponseType) => {
-  console.log("createEvent", eventData)
   const event: EventModelType = {...eventData, items: {}};
   event.items = Object.fromEntries(
     Object.entries(eventData?.items || {})

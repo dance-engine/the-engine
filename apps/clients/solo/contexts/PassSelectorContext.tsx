@@ -1,7 +1,7 @@
 import { createContext, useReducer } from 'react';
 import { BundleTypeExtended } from '@dance-engine/schemas/bundle';
 
-type PassSelectorState = { selected: string[], included: string[] };
+type PassSelectorState = { selected: string[], included: string[][] };
 
 const initialSelection: PassSelectorState = {
   selected: [],
@@ -19,13 +19,18 @@ export function PassSelectorProvider({ children }: { children: React.ReactNode }
       <PassSelectorDispatchContext.Provider value={dispatch}>
         {children}
       </PassSelectorDispatchContext.Provider>
+      {<pre className="col-span-full">{JSON.stringify(selection, null, 2)}</pre>}
     </PassSelectorContext.Provider>
   );
 }
 
 function passSelectorReducer(_state: PassSelectorState, bundle: BundleTypeExtended): PassSelectorState {
+
+  const removing = _state.selected.includes(bundle.ksuid);
+  console.log(`${ removing ? "removing" : "adding"} bundle:`, bundle);
+  
   return {
-    selected: _state.selected.includes(bundle.ksuid) ? _state.selected.filter(id => id !== bundle.ksuid) : [..._state.selected, bundle.ksuid],
-    included: bundle.includes || []
+    selected: removing ? _state.selected.filter(id => id !== bundle.ksuid) : [..._state.selected, bundle.ksuid],
+    included: removing ? _state.included.filter(incArray => JSON.stringify(incArray) !== JSON.stringify(bundle.includes)) : [..._state.included, bundle.includes]
   };
 }

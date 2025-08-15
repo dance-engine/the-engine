@@ -26,8 +26,9 @@ export default function BundleCard({bundleData, event }: { bundleData: BundleTyp
 
   return (
     <Fragment>
-      <div onClick={() => {dispatch(bundleData); navigator.clipboard.writeText(bundleData.ksuid || "none")} } className="relative overflow-hidden rounded-lg bg-white shadow-sm dark:divide-white/10 dark:bg-gray-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10">
-        <header className="px-4 py-5 sm:p-6 bg-keppel-on-light/90 ">
+      <div onClick={() => {dispatch(bundleData); navigator.clipboard.writeText(bundleData.ksuid || "none")} } 
+        className="relative overflow-hidden h-full flex flex-col justify-items-stretch rounded-lg bg-white shadow-sm dark:divide-white/10 dark:bg-gray-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10">
+        <header className="px-4 py-5 sm:p-6 flex-1 bg-keppel-on-light/90 ">
       
           <h1 className='text-2xl uppercase'>{bundle.name}</h1>
           <p>{bundle.description}</p>
@@ -53,7 +54,17 @@ export default function BundleCard({bundleData, event }: { bundleData: BundleTyp
         </button>
       </div>
       
-      { selected && selected.length > 0 && selected.includes(bundle.ksuid) && <div className="overflow-hidden absolute top-0 h-full w-full bg-black/70 text-white flex items-center justify-center">Selected {JSON.stringify(selected)}</div>}
+      { selected 
+        && selected.length > 0 
+        && selected.includes(bundle.ksuid) 
+        && <div className="overflow-hidden absolute top-0 h-full w-full bg-black/70 text-white flex flex-col items-center justify-center">
+          
+          Selected <br/>
+          {selected.map((s) => (<p key={s}>{`${s},`}</p>) )}
+          Includes
+          {bundle.includes.map((s) => (<p key={s}>{`${s},`}</p>) )}
+      </div>
+      }
     </div>
     </Fragment>
   )

@@ -480,9 +480,6 @@ importers:
       little-state-machine:
         specifier: ^5.0.1
         version: 5.0.1(react@19.1.0)
-      power-set:
-        specifier: ^1.1.8
-        version: 1.1.8
       react:
         specifier: ^19.0.0
         version: 19.1.0
@@ -7335,9 +7332,6 @@ packages:
   postman-url-encoder@3.0.7:
     resolution: {integrity: sha512-JlWT4yLtL01ogxL+PSzs89++2sKdxsJrk5QrWken/VzKx5b+UMQ646/glZA3MbqfL3KtsUqanLhL0PQtkmcUyg==}
     engines: {node: '>=10'}
-
-  power-set@1.1.8:
-    resolution: {integrity: sha512-JLU/X7IlaQy6Q+uGTPoPan7r4frzfeUXp8cUQ9tXBQKias+4cYmzg3by5111RUAvugtIAKL2IAAl9+bSrB14ww==}
 
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -17915,8 +17909,6 @@ snapshots:
   postman-url-encoder@3.0.7:
     dependencies:
       punycode: 2.3.1
-
-  power-set@1.1.8: {}
 
   prelude-ls@1.2.1: {}
 

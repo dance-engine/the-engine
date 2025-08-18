@@ -12,7 +12,7 @@ export const bundleSchema = z.object({
 });
 
 // Generate TypeScript type from the schema
-export type ItemType = {name: string, status: string, ksuid: string, description: string}
+export type ItemType = {name: string, status: string, ksuid: string, description: string, primary_price: number, primary_price_name: string}
 export type BundleType = z.infer<typeof bundleSchema>;
 export type BundleTypeExtended = BundleType & {ksuid: string, event_slug?: string, status: string, current_price?: () => string, current_price_name?: () => string, items?: () => ItemType[], includes?: string[]};
 

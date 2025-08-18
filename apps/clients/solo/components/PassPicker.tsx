@@ -3,12 +3,15 @@ import { BundleTypeExtended } from "@dance-engine/schemas/bundle";
 import BundleCard from "./BundleCard";
 import ItemCard from "./ItemCard";
 import { PassSelectorProvider } from "@/contexts/PassSelectorContext";
-
+// import { usePassSelectorState } from '../contexts/PassSelectorContext';
+import PassDebug from "./PassDebug";
 import { EventModelType } from "@dance-engine/schemas/events";
 
 const PassPicker = ({ event }: { event: EventModelType }) => {
+  // const { selected } = usePassSelectorState();
+  
   return (
-      <PassSelectorProvider>
+      <PassSelectorProvider event={event}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-6">
           {event.bundles && event.bundles.map((bundle: BundleTypeExtended) => (
             <BundleCard key={bundle.ksuid} bundleData={bundle} event={event} />
@@ -21,7 +24,8 @@ const PassPicker = ({ event }: { event: EventModelType }) => {
           ))}
         </div>
 
-        {/* <pre className="col-span-full">{JSON.stringify(event,null,2)}</pre> */}
+        <div className="hidden"><PassDebug event={event}/></div>
+
       </PassSelectorProvider>
   );
 };

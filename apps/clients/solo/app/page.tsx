@@ -103,7 +103,7 @@ export default async function IndexPage() {
                 
         </div>
         {orgSlug == 'demo' ? 
-          <div className=''>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
+          <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
         : orgSlug == 'rebel-sbk' ? 
           <RebelPayment org={org} />
         :

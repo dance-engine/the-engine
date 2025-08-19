@@ -183,13 +183,14 @@ const buildBestCombo = (selectorState: PassSelectorState) => {
       });
     }).flat()
   ));
-  const requiredItems = Array.from(new Set([...itemsSpecific, ...itemsFromBundles]))
-  const suggestedItems = findCheapestCombination(requiredItems, selectorState.event?.bundles || [])
+  // Remove duplicates from everything your trying to buy
+  const requestedItems = [...new Map([...itemsSpecific, ...itemsFromBundles].map(item => [item.ksuid, item])).values()]
+  const suggestedItems = findCheapestCombination(requestedItems, selectorState.event?.bundles || [])
   const bestState = {
     selected: [...suggestedItems.chosenBundles.map(bundle => bundle.ksuid), ...suggestedItems.chosenItems.map(item => item.ksuid)],
     selectedTypes: [...suggestedItems.chosenBundles.map(() => 'bundle'), ...suggestedItems.chosenItems.map(() => 'item')],
     selectedPrices: [...suggestedItems.chosenBundles.map(bundle => bundle.primary_price), ...suggestedItems.chosenItems.map(item => item.primary_price)],
-    included: [...suggestedItems.chosenBundles.map(bundle => bundle.includes)],
+    included: Array.from(new Set([...suggestedItems.chosenBundles.map(bundle => bundle.includes)])),
     includedPrices: [...suggestedItems.chosenBundles.map(bundle => bundle.includes.map(item_ksuid => selectorState.event?.items?.[item_ksuid]?.primary_price || 0))],
     event: selectorState.event
   }

@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import EventList from '../components/EventList'
-import DanceEngineFooter from '../components/footer/DancEngine';
+import DanceEngineFooter from '../components/footer/DanceEngine';
 
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'

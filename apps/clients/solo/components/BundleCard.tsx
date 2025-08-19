@@ -64,7 +64,9 @@ const { toggleBundle } = usePassSelectorActions();
       {  
         (isSelected || isIncluded) && <div className={`overflow-hidden absolute top-0 h-full w-full bg-black/70 ${isSelected ? 'text-pear-logo font-bold' : 'text-white'}  text-3xl flex flex-col items-center justify-center`}>
           
-          {isIncluded ? "Included" : "Selected" } <br/>
+          {isSelected ?  "Selected" : "Included" } <br/>
+          {/* { isIncluded ? "IsIncluded" : null }
+          { isSelected ? "isSelected" : null } */}
           {/* {selected.map((s) => (<p key={s}>{`${s},`}</p>) )} */}
           {/* Includes */}
           {/* {bundle.includes.map((s) => (<p key={s}>{`${s},`}</p>) )} */}

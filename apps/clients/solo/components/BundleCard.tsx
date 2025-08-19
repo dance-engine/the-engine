@@ -1,10 +1,10 @@
-import { BundleTypeExtended } from "@dance-engine/schemas/bundle"
+import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle"
 import { EventModelType } from "@dance-engine/schemas/events"
 import { Fragment } from "react"
 import { usePassSelectorState, usePassSelectorActions } from '../contexts/PassSelectorContext';
 
 export default function BundleCard({bundleData, event }: { bundleData: BundleTypeExtended, event: EventModelType }) {
-const { selected } = usePassSelectorState();
+const { selected, included} = usePassSelectorState();
 const { toggleBundle } = usePassSelectorActions();
 
   const bundle = bundleData
@@ -26,13 +26,13 @@ const { toggleBundle } = usePassSelectorActions();
   const saving = bundle.includes ? bundle.includes.map((item_id) => event?.items?.[item_id] ).reduce((acc, item) => {
     return acc + (item?.primary_price || 0);
   }, 0) - bundle.primary_price : 0;
+  const isIncluded = (included && included.length > 0 && (new Set(bundle.includes)).isSubsetOf(new Set([...included.flat(), ...selected])));
+  const isSelected = selected && selected.length > 0 && selected.includes(bundle.ksuid)
+  const ignoreToggle = (bundle: BundleTypeExtended, items: Record<string, ItemType>)=>{ console.debug(`ignore ${bundle.name} toggle, ${items}`) }
 
-  const isSelected = selected 
-        && selected.length > 0 
-        && selected.includes(bundle.ksuid)
   return (
     <Fragment>
-      <div onClick={() => {toggleBundle(bundleData,event.items || {}); navigator.clipboard.writeText(bundleData.ksuid || "none")}  } 
+      <div onClick={() => {(isIncluded && !isSelected ? ignoreToggle : toggleBundle)(bundleData,event.items || {}) }  } 
         className={`${isSelected ? 'ring-6 ring-pear-logo' : null} relative overflow-hidden h-full flex flex-col justify-items-stretch rounded-lg bg-white shadow-sm dark:divide-white/10 dark:bg-gray-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10`}>
         <header className="px-4 py-5 sm:p-6 flex-1 bg-keppel-on-light/90 ">
       
@@ -62,9 +62,9 @@ const { toggleBundle } = usePassSelectorActions();
       </div>
       
       {  
-        isSelected && <div className="overflow-hidden absolute top-0 h-full w-full bg-black/70 text-pear-logo font-bold text-3xl flex flex-col items-center justify-center">
+        (isSelected || isIncluded) && <div className={`overflow-hidden absolute top-0 h-full w-full bg-black/70 ${isSelected ? 'text-pear-logo font-bold' : 'text-white'}  text-3xl flex flex-col items-center justify-center`}>
           
-          Selected <br/>
+          {isIncluded ? "Included" : "Selected" } <br/>
           {/* {selected.map((s) => (<p key={s}>{`${s},`}</p>) )} */}
           {/* Includes */}
           {/* {bundle.includes.map((s) => (<p key={s}>{`${s},`}</p>) )} */}

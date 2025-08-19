@@ -97,7 +97,7 @@ export default async function IndexPage() {
           
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
             {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
-                <div className='hidden'>
+                <div className=''>
                   {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
 
                 </div>

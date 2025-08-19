@@ -16,7 +16,12 @@ const domainConfig: Record<string, { title: string; favicon: string }> = {
   'power-of-woman': {
     title: 'Power of Woman',
     favicon: '/favicons/pow/favicon.ico',
+  },
+  'rebel-sbk': {
+    title: 'Rebel SBK',
+    favicon: '/favicons/rebel-sbk/favicon.ico',
   }
+
 };
 
 export default function RootLayout({
@@ -41,12 +46,12 @@ export default function RootLayout({
 export async function generateMetadata() {
   const host = (await headers()).get('x-site-org') || '';
   const config = domainConfig[host] || {
-    title: 'Powered by Dance Engine',
+    title: "Powered by Dance Engine",
     favicon: '/favicons/default.ico',
   };
 
   return {
-    title: config.title,
+    title: `${config.title}${process.env.NODE_ENV=='development' ? " - DEV" : null}`,
     icons: {
       icon: config.favicon,
     },

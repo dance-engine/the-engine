@@ -29,14 +29,14 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
         body: JSON.stringify({[entity?.toLowerCase()]: { ...record, status: "archived" }}),
       }).then(res => {
         if (res.ok) {
-          alert(`${entity} deleted successfully!`);
+          //alert(`${entity} deleted successfully!`);
           window.location.reload();
         } else {
-          alert(`Failed to delete ${entity}. Please try again.`);
+          //alert(`Failed to delete ${entity}. Please try again.`);
         }
       }).catch(err => {
         console.error("Error deleting entity:", err);
-        alert(`An error occurred while deleting the ${entity}.`);
+        //alert(`An error occurred while deleting the ${entity}.`);
       });
 
   }

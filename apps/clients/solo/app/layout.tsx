@@ -51,7 +51,7 @@ export async function generateMetadata() {
   };
 
   return {
-    title: `${config.title}${process.env.NODE_ENV=='development' ? " - DEV" : null}`,
+    title: `${config.title}${process.env.NODE_ENV=='development' ? " - DEV" : ""}`,
     icons: {
       icon: config.favicon,
     },

@@ -12,8 +12,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const { couponCode, accountId, priceId } = await req.json();
+    const { couponCode, accountId, priceId, priceIds } = await req.json();
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
+
+    const line_items = priceIds ? priceIds.map((id: string) => ({
+      price: id,
+      quantity: 1,
+    })) : [{
+          price: priceId, // This must be a price from the connected account
+          quantity: 1,
+        }];
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -23,12 +31,7 @@ export async function POST(req: Request) {
           coupon: couponCode, // must be the coupon ID, not the code name
         },
       ] : undefined,
-      line_items: [
-        {
-          price: priceId, // This must be a price from the connected account
-          quantity: 1,
-        },
-      ],
+      line_items: line_items,
       payment_intent_data: {
         application_fee_amount: isAndreas ? 0 : 50, //! This should be based on whats being charged!
         // transfer_data: {

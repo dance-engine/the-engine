@@ -3,6 +3,7 @@ import { BundleTypeExtended } from "@dance-engine/schemas/bundle";
 import BundleCard from "./BundleCard";
 import ItemCard from "./ItemCard";
 import { PassSelectorProvider } from "@/contexts/PassSelectorContext";
+import { CartProvider } from "@/contexts/CartContext";
 // import { usePassSelectorState } from '../contexts/PassSelectorContext';
 import PassDebug from "./PassDebug";
 import { EventModelType } from "@dance-engine/schemas/events";
@@ -25,6 +26,8 @@ const PassPicker = ({ event }: { event: EventModelType }) => {
         </div>
 
         <div className="hidden"><PassDebug event={event}/></div>
+
+        <CartProvider event={event}/>
 
       </PassSelectorProvider>
   );

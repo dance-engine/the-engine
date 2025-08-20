@@ -154,7 +154,10 @@ export function PassSelectorProvider({ event, children }: { event: EventModelTyp
         {children}
       </PassSelectorActionsContext.Provider>
       <pre className="hidden col-span-full mt-6">
-        {JSON.stringify(state, null, 2)}
+        Selected:
+        {JSON.stringify(state.selected, null, 2)}
+        Included:
+        {JSON.stringify(state.included, null, 2)}
       </pre>
     </PassSelectorContext.Provider>
   );

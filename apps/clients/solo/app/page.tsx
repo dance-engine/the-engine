@@ -40,7 +40,7 @@ export default async function IndexPage() {
   const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
   const eventsServerData = await events_res.json() as EventResponseType[];
 
-  console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
+  // console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
   const css = `
     :root {
       --main-bg-color: black;

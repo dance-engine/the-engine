@@ -4,7 +4,7 @@
 import { NextResponse } from "next/server"; // for App Router
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-06-30.basil", // check current supported version
 });
 
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
           price: priceId, // This must be a price from the connected account
           quantity: 1,
         }];
-
+    const stripe = accountId == 'acct_1Ry9rvDqtDds31FK' ? new Stripe(process.env.STRIPE_SECRET_KEY_DEV!, { apiVersion: "2025-06-30.basil" }) : mainStripe
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],

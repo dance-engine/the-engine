@@ -16,23 +16,32 @@ s3 = boto3.client("s3")
 db = boto3.resource("dynamodb")
 eventbridge = boto3.client('events')
 
+def j(obj) -> str:
+    return json.dumps(obj, separators=(",", ":"), default=str)
+
 def move_upload(event,context):
+    logger.info(j({"msg":"Source Event","event": event}))
+
     details = event.get("detail",{})
-    logger.info(f"Move Upload Event: {details}")
+    logger.info(j({"msg":"Move Upload Event","details": details}))
 
     organisationSlug = details.get("organisation")
     resource_type = details.get("resource_type")
     entity = details.get("data").get(resource_type) if resource_type else details
-    
-    logger.info(f"Entity: {entity}")
+    entity = entity.get("Attributes") if entity.get("Attributes") else entity
+
+    logger.info(j({"msg":"Entity Extracted","entity": entity}))
+
+    organisationSlug = organisationSlug if organisationSlug else entity.get("organisation")
 
     # Copyfile & Delete Files
     new_files = move_and_cleanup_uploaded_files(entity,organisationSlug)
-    logger.info(f"Move files {new_files}")
+    logger.info(j({"msg":"Move files","new_files": new_files}))
+
 
     # # Update name
-    response = update_dynamodb_paths(details.get("resource_id"),details.get("resource_id"),new_files,organisationSlug)
-    logger.info(f"DynamoDB {response}")
+    response = update_dynamodb_paths(entity.get("PK"),entity.get("SK"),new_files,organisationSlug)
+    logger.info(j({"msg":"DynamoDB Response","response": response}))
     # Invalidate CDN?
 
     # Trigger EventBridge
@@ -49,7 +58,7 @@ def move_upload(event,context):
 
 
 def move_and_cleanup_uploaded_files(detail,organisationSlug):
-    logger.info(f"Move files for {detail} in organisation {organisationSlug}")
+    logger.info(j({"msg":"Move files","detail": detail, "organisationSlug": organisationSlug}))
     CDN_URL = os.environ["CDN_URL"]
     prefix = f"uploads/{organisationSlug}/"
     cdn_prefix = f"cdn/{organisationSlug}/"
@@ -85,6 +94,8 @@ def cleanup_unused_uploads(prefix, keep_keys):
                 s3.delete_object(Bucket=BUCKET_NAME, Key=key)
 
 def update_dynamodb_paths(pk, sk, moved_files, organisationSlug):
+    logger.info(j({"msg":"Updating DynamoDB","pk": pk, "sk": sk, "organisationSlug": organisationSlug, "moved_files": moved_files}))
+
     org_table = db.Table(getOrganisationTableName(organisationSlug))
     core_table = db.Table(os.environ["CORE_TABLE_NAME"])
 

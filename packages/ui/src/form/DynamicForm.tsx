@@ -111,8 +111,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               <HiddenInput name={field} register={register} />
             ) : dateField ? (
               <>
-                {/* {(new Date).toISOString() }
-                <TextInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema}  validate={() => {trigger(field)}} /> */}
+                {(new Date).toISOString() }
+                {/* <TextInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema}  validate={() => {trigger(field)}} /> */}
                 <DateInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema} />
               </>
             ) : richText ? (

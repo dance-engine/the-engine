@@ -1,30 +1,34 @@
 import { headers } from 'next/headers';
 import Event from '../../components/Event'
-import Link from 'next/link';
 import { EventType } from '@dance-engine/schemas/events';
+import type { OrganisationType } from '@dance-engine/schemas/organisation';
+import { format } from 'date-fns/format';
+import Header from '@/components/header/Header';
+import DanceEngineFooter from '@/components/footer/DanceEngine';
 
 const EventPage = async ({ params }: {params: Promise<{ ksuid: string }>}) => {  
   const {ksuid} = await params; // Extract ksuid if it exists, else null
   const h = await headers();
-  const org = h.get('x-site-org') || 'default-org';
+  const orgSlug = h.get('x-site-org') || 'default-org';
   const theme = h.get('x-site-theme') || 'default';
-  const API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events/${ksuid}`
+  const API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events/${ksuid}`
   const res = await fetch(API_URL, {
     next: { revalidate: 60 }  // 60s cache
   });
+  const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisations`
+  const orgs_res = await fetch(ORGS_API_URL, { cache: 'force-cache', next: { revalidate: 120, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
+  const orgs_data = await orgs_res.json()
+  const org_details= orgs_data.organisations.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == orgSlug)
+  const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
 
   const serverData = await res.json() as EventType[];
 
   return <div className=''>
-      <header className='w-full bg-gray-900 text-white flex justify-center'>
-        <div className='max-w-4xl w-4xl px-4 py-2 bg-cover uppercase font-black lg:px-0'>
-          <Link href="/">{org}</Link>
-        </div>
-      </header>
+      <Header org={org} />
       <main className='w-full flex flex-col items-center'>
-        <Event fallbackData={serverData} org={org} theme={theme} eventKsuid={ksuid} />
+        <Event fallbackData={serverData} org={orgSlug} theme={theme} eventKsuid={ksuid} />
       </main>
-      
+      <DanceEngineFooter/>
     </div>
 }
 

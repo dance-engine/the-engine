@@ -213,6 +213,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.6
+      '@types/leaflet':
+        specifier: ^1.9.16
+        version: 1.9.17
       '@types/node':
         specifier: ^20
         version: 20.17.46

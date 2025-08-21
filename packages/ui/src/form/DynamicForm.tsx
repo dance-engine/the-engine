@@ -25,7 +25,7 @@ import { format, parseISO } from "date-fns";
 
 //! TODO Fix this to be generic not EVENT type
 
-function transformDates(formObj: FieldValues, metadata: object): FieldValues {
+function transformDates(formObj: FieldValues): EntityType | FieldValues {
   // Add any date fields you want to transform
   const dateFields = ["starts_at", "ends_at"];  //TODO Should calculate these from metadata
   const newObj = { ...formObj };
@@ -35,7 +35,7 @@ function transformDates(formObj: FieldValues, metadata: object): FieldValues {
       newObj[field] = format(date, "yyyy-MM-dd'T'HH:mm");
     }
   });
-  return newObj;
+  return newObj as EntityType;
 }
 
 
@@ -68,10 +68,10 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     console.log("Comparing versions \nlocal:",draft?.version,"\nremote:",data?.version, "[",(draft && draft.version && data && draft.version >= data.version),"]")
     if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
       console.info("Loading Cached", "\nDraft", draft, "\nData", data)
-      reset(transformDates(draft,metadata) as EntityType)
+      reset(transformDates(draft as FieldValues) as EntityType)
     } else { 
       console.info("Loading Remote", "\nDraft", draft, "\nData", data)
-      reset(transformDates(data,metadata) as EntityType)
+      reset(transformDates(data) as EntityType)
     }  
   }, [loadFromStorage, data, reset]);
   

@@ -42,7 +42,7 @@ export function useLocalAutoSave<T extends { ksuid?: string, meta?: { updated_at
   // Auto-save to localStorage
   useAutosave({
     data,
-    interval: 1500,
+    interval: 15000,
     onSave: (newData: T) => {
       if (!isDirty) return;
       saveLocally(newData)

@@ -41,7 +41,7 @@ export function CartProvider({ event, children }: { event: EventModelType; child
   return (
       <CartSelectorContext.Provider value={state}>
         {children}
-        { items() ? <StripeMultiPurchaseButton accountId='acct_1Ry9rvDqtDds31FK' priceIds={priceIds} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl'/> : "Nothing to add" }
+        { items() ? <StripeMultiPurchaseButton accountId='acct_1Ry9rvDqtDds31FK' priceIds={priceIds} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'/> : "Nothing to add" }
         {/* <pre>{JSON.stringify(event.bundles, null, 2)}</pre> */}
         {/* <pre>{JSON.stringify(items(), null, 2)}</pre> */}
       </CartSelectorContext.Provider>

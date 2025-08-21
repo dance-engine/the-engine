@@ -21,8 +21,23 @@ import Debug from '@dance-engine/ui/utils/Debug'
 import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
 import { labelFromSnake } from '@dance-engine/utils/textHelpers'
 import { EntityType } from '@dance-engine/schemas'
+import { format, parseISO } from "date-fns";
 
 //! TODO Fix this to be generic not EVENT type
+
+function transformDates(formObj: FieldValues): EntityType | FieldValues {
+  // Add any date fields you want to transform
+  const dateFields = ["starts_at", "ends_at"];  //TODO Should calculate these from metadata
+  const newObj = { ...formObj };
+  dateFields.forEach(field => {
+    if (formObj[field]) {
+      const date = parseISO(formObj[field]);
+      newObj[field] = format(date, "yyyy-MM-dd'T'HH:mm");
+    }
+  });
+  return newObj as EntityType;
+}
+
 
 const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
   const {
@@ -53,10 +68,10 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     console.log("Comparing versions \nlocal:",draft?.version,"\nremote:",data?.version, "[",(draft && draft.version && data && draft.version >= data.version),"]")
     if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
       console.info("Loading Cached", "\nDraft", draft, "\nData", data)
-      reset(draft as EntityType)
+      reset(transformDates(draft as FieldValues) as EntityType)
     } else { 
       console.info("Loading Remote", "\nDraft", draft, "\nData", data)
-      reset(data as EntityType)
+      reset(transformDates(data) as EntityType)
     }  
   }, [loadFromStorage, data, reset]);
   
@@ -95,7 +110,11 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
             { isHidden ? (
               <HiddenInput name={field} register={register} />
             ) : dateField ? (
-              <DateInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema} />
+              <>
+                {(new Date).toISOString() }
+                {/* <TextInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema}  validate={() => {trigger(field)}} /> */}
+                <DateInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema} />
+              </>
             ) : richText ? (
               <Controller
                 control={control}

@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
-import Link from 'next/link';
 import EventList from '../components/EventList'
 import DanceEngineFooter from '../components/footer/DanceEngine';
+import Header from '@/components/header/Header';
 
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
@@ -62,11 +62,7 @@ export default async function IndexPage() {
   return <div className='w-full' style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
       { org.css_vars ? <style dangerouslySetInnerHTML={{ __html: org.css_vars }} /> : <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} /> }
       
-      <header className='w-full bg-black text-white flex justify-center'>
-        <div className='max-w-4xl w-4xl px-4 uppercase font-black lg:px-0 py-3 flex items-center justify-center'>
-          <Link href="/" className='block'>{org.logo ? <img src={org.logo} alt={org.name} className='max-w-48 w-48'/> : org.name}</Link>
-        </div>
-      </header>
+      <Header org={org}/>
 
       <main className='w-full justify-center' >
 

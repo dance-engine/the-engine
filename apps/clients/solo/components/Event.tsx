@@ -13,6 +13,9 @@ import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
 import { EventType } from '@dance-engine/schemas/events';
+import PassPicker from './PassPicker';
+import { createEvent } from '@dance-engine/schemas/events';
+import MapDisplay from './Map';
 
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -25,29 +28,45 @@ export default function EventList({ fallbackData, org, theme, eventKsuid}: { fal
   );
 
   if (isLoading || !eventKsuid || error) return <p>Loading...{theme} </p>
-  let event = {} as Record<string, string> 
+  let event = {} as EventType
   if(eventData?.events &&  eventData.events.length > 1) { 
     return <p>Multiple events</p> 
   } else if (eventData.event) { 
-    event = eventData.event
+    event = createEvent(eventData.event)
   }
   
   // className='bg-[image:var(--image-url)]'>
   return <>
     
     <div style={{'--image-url': `url(${event.banner})`} as React.CSSProperties }  
-      className={"w-full min-h-[400px] bg-center bg-cover bg-[image:var(--image-url)] \
-      flex flex-col justify-end items-center text-white p-6"}>
-      <div className='max-w-4xl w-4xl px-4 lg:px-0 py-4 text-shadow-lg text-shadow-black/80'>
-        <h1 className='text-6xl '>{event.name}</h1>
-        <p>{format(event.starts_at,'h:mm aaa PPP')}</p>
+      className={"w-full min-h-[400px] \
+      flex flex-col justify-end items-center bg-de-background-dark"}>
+
+      <div className='hero w-full bg-center bg-cover bg-[image:var(--image-url)] min-h-[400px] flex flex-col items-center justify-center text-white text-shadow-de-background-dark text-shadow-lg'>
+        <h1 className='text-6xl font-bold uppercase text-center px-6 '>{event.name}</h1>
+        <h2 className='text-2xl text-center px-6'>{format(event.starts_at,'PPP, h:mmaaa')} - {format(event.ends_at,'h:mmaaa')}</h2>
+      </div>
+
+      <div className='max-w-6xl w-full px-4 lg:px-0 pb-4 pt-12 bg-de-background-dark text-white'>
         
-        {/* {org}:{theme} */}
-        {/* {eventKsuid} */}
-        {/* <pre className='text-white max-w-full'>{JSON.stringify(event, null, 2)}</pre> */}
+        <div className='grid grid-cols-1 md:grid-cols-2 mb-6 gap-6 items-start'> 
+
+          <div className='max-w-4xl w-full px-4 lg:px-0 py-4 prose prose-invert' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList],) }} />
+
+          <MapDisplay lat={event.location.lat} lng={event.location.lng} />
+
+        </div>
+        
+
+        <PassPicker event={event}/>
+
+        {/* <hr className='mt-6' />
+        <h1 className='text-xl mt-6 mb-3'>Debug</h1>
+        {org}:{theme}
+        {eventKsuid}
+        <pre className=' max-w-full'>{JSON.stringify(event, null, 2)}</pre> */}
       </div>
     </div>
 
-    <div className='max-w-4xl w-4xl px-4 lg:px-0 py-4 prose' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList],) }} />
   </>
 }

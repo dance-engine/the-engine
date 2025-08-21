@@ -13,13 +13,20 @@ const PassPicker = ({ event }: { event: EventModelType }) => {
   
   return (
       <PassSelectorProvider event={event}>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-6">
+        <div className={`grid grid-cols-1 max-w-full m-auto \
+          ${event.bundles && event.bundles.length > 1 ? 'md:grid-cols-2 md:max-w-5xl' : ''}
+          ${event.bundles && event.bundles.length > 2 ? 'xl:grid-cols-3 xl:max-w-full' : ''} \
+          items-start gap-6`}>
           {event.bundles && event.bundles.map((bundle: BundleTypeExtended) => (
             <BundleCard key={bundle.ksuid} bundleData={bundle} event={event} />
           ))}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 items-start gap-6 mt-6">
+        <div className={`grid m-auto \
+          ${event.items && Object.keys(event.items).length > 1 ? 'grid-cols-2' : 'grid-cols-1'} \
+          ${event.items && Object.keys(event.items).length > 2 ? 'md:grid-cols-3' : ''} \
+          ${event.items && Object.keys(event.items).length > 3 ? 'xl:grid-cols-4' : ''} \
+          items-start gap-6 mt-6`}>
           {event && event.items && JSON.stringify(event.items) != "{}" && Object.keys(event.items).map((item_ksuid: string) => (
             event.items?.[item_ksuid] ? <ItemCard key={item_ksuid} itemData={event.items[item_ksuid]} /> : null
           ))}

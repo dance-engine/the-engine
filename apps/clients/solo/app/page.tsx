@@ -71,7 +71,7 @@ export default async function IndexPage() {
         style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              { orgSlug == 'rebel-sbk' ? "" : `${org.name}, an event exclusively for women` }
+              { orgSlug == 'rebel-sbk' ? "" : `${org.name} - an event exclusively for women` }
             </div>
             
           </div>

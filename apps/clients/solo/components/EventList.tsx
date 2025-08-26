@@ -52,6 +52,6 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
     {/* {org}:{theme} */}
     {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </div>
-    <pre>{JSON.stringify(fallbackData, null, 2)}</pre>
+    {/* <pre>{JSON.stringify(fallbackData, null, 2)}</pre> */}
   </div>
 }

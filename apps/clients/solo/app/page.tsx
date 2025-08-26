@@ -34,7 +34,7 @@ export default async function IndexPage() {
   const EVENTS_API_URL = coreEvent == "cheese" ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events` : `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events/${coreEvent}`
   const events_res = await fetch(EVENTS_API_URL, { next: { revalidate: 60 } });
   const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisations`
-  const orgs_res = await fetch(ORGS_API_URL, { cache: 'force-cache', next: { revalidate: 120, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
+  const orgs_res = await fetch(ORGS_API_URL, { next: { revalidate: 120 } });
   const orgs_data = await orgs_res.json()
   const org_details= orgs_data.organisations.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == orgSlug)
   const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};

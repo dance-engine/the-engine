@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const { couponCode, accountId, priceId, priceIds, cartValue } = await req.json();
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
 
-    const platformCharge = isAndreas || !cartValue ? 0 : Math.round(cartValue * 0.0125);
+    const platformCharge = isAndreas || !cartValue ? 0 : Math.round((cartValue * 0.01) + 10 );
 
     const line_items = priceIds ? priceIds.map((id: string) => ({
       price: id,

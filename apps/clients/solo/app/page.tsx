@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { headers } from 'next/headers';
 import EventList from '../components/EventList'
 import DanceEngineFooter from '../components/footer/DanceEngine';
@@ -14,7 +15,6 @@ import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
 import { generateHTML } from '@tiptap/html'
-import { format } from 'date-fns/format';
 
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 import { EventResponseType } from '@dance-engine/schemas/events';
@@ -40,7 +40,7 @@ export default async function IndexPage() {
   const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
   const eventsServerData = await events_res.json() as EventResponseType[];
 
-  // console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
+  console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data, 'eventsServerData', eventsServerData);
   const css = `
     :root {
       --main-bg-color: black;

@@ -22,16 +22,14 @@ export async function POST(req: Request) {
           price: priceId, // This must be a price from the connected account
           quantity: 1,
         }];
+        
     const stripe = accountId == 'acct_1Ry9rvDqtDds31FK' ? new Stripe(process.env.STRIPE_SECRET_KEY_DEV!, { apiVersion: "2025-06-30.basil" }) : mainStripe
-    const session = await stripe.checkout.sessions.create({
+
+    // allow_promotion_codes: true,
+
+    const baseSessionObject = {
       mode: "payment",
       payment_method_types: ["card"],
-      allow_promotion_codes: true,
-      discounts: couponCode ? [
-        {
-          coupon: couponCode, // must be the coupon ID, not the code name
-        },
-      ] : undefined,
       line_items: line_items,
       payment_intent_data: {
         application_fee_amount: isAndreas ? 0 : 50, //! This should be based on whats being charged!
@@ -41,7 +39,11 @@ export async function POST(req: Request) {
       },
       success_url: isAndreas ? "https://iamrebel.co.uk/checkout/success" : `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
       cancel_url: isAndreas ? "https://iamrebel.co.uk/" : `${process.env.NEXT_PUBLIC_BASE_URL}/`,
-    },
+    } as Stripe.Checkout.SessionCreateParams;
+
+    const sessionObject = couponCode ? {...baseSessionObject, discounts: [{ coupon: couponCode }]} : {...baseSessionObject, allow_promotion_codes: true };
+
+    const session = await stripe.checkout.sessions.create(sessionObject,
     {
       stripeAccount: accountId, // 🔹 act on behalf of the connected account
     });

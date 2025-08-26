@@ -46,8 +46,11 @@ export default async function IndexPage() {
       --main-bg-color: black;
       --main-text-color: white;
       --alternate-bg-color: hsl(325, 100%, 20%);
-      --highlight-color: hsl(324, 98%, 62%)
+      --highlight-color: hsl(324, 98%, 62%);
     }
+      h1,h2,h3,h4,h5,h6 {
+        font-family: var(--font-luckiest-guy);
+      }
   `;
   const andreasCss = `
     :root {
@@ -58,8 +61,9 @@ export default async function IndexPage() {
     }
   `;
 
+  const bodyFont = orgSlug == 'power-of-woman' || orgSlug == 'pow' ? 'font-oswald' : 'font-inter';
 
-  return <div className='w-full' style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
+  return <div className={`w-full ${bodyFont}`} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
       { org.css_vars ? <style dangerouslySetInnerHTML={{ __html: org.css_vars }} /> : <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} /> }
       
       <Header org={org}/>

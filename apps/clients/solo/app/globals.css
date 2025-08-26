@@ -22,7 +22,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
 }
 
 @theme {
@@ -43,4 +43,12 @@ body {
 --color-keppel-on-dark: #00BD9D;
 
 --color-de-background-dark: #1d2546;
+}
+
+@theme inline {
+  /* --font-sans: var(--font-inter);
+  --font-sans-pow: var(--font-oswald);
+  --font-heading-pow: var(--font-luckiest-guy);
+  --font-mono: var(--font-roboto-mono); */
+  --font-oswald: var(--font-oswald);
 }

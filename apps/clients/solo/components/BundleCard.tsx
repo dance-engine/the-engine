@@ -39,7 +39,7 @@ const { toggleBundle } = usePassSelectorActions();
           <h1 className='text-2xl uppercase'>{bundle.name}</h1>
           <p>{bundle.description}</p>
           <p>{bundle.current_price_name()}: {bundle.current_price()}</p>
-          <p>{bundle.ksuid}</p>
+          {/* <p>{bundle.ksuid}</p> */}
           {bundle.includes && (
             <div>Includes:
               <ul className='flex gap-1'>

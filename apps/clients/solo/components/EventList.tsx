@@ -22,7 +22,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
   const events = eventData ? eventData.filter((event) => event.status === "live").map((item) => { return createEvent(item) }) : []
 
   return <div className=''>
-    <div className="mx-auto w-full flex max-w-5xl pt-6 px-6 5xl:px-0 gap-6">
+    <div className="mx-auto w-full flex flex-col sm:flex-row max-w-5xl pt-6 px-6 5xl:px-0 gap-6">
       {events.map((event) => {
         return (
           <Link href={`/${event.ksuid}`} style={{'--image-url': `url(${event.banner})`} as React.CSSProperties} key={event.ksuid} className='mb-12 rounded-lg bg-[image:var(--image-url)] flex items-end bg-cover bg-center aspect-square min-w-[300px]'>

@@ -37,11 +37,14 @@ export function CartProvider({ event, children }: { event: EventModelType; child
   },[selected,event])
 
   const priceIds = items().map((item) => item?.stripe_price_id).filter(Boolean) as string[];
+  const cartAmount = items().reduce((total, item) => total + (item?.primary_price || 0), 0);
 
   return (
       <CartSelectorContext.Provider value={state}>
         {children}
-        { items() ? <StripeMultiPurchaseButton accountId='acct_1Ry9rvDqtDds31FK' priceIds={priceIds} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'/> : "Nothing to add" }
+        <h2 className='mt-6 text-xl'>Total Cost: £{(cartAmount/100).toFixed(2)}</h2>
+
+        { items() ? <StripeMultiPurchaseButton accountId='acct_1Ry9rvDqtDds31FK' priceIds={priceIds} cartValue={cartAmount} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'/> : "Nothing to add" }
         {/* <pre>{JSON.stringify(event.bundles, null, 2)}</pre> */}
         {/* <pre>{JSON.stringify(items(), null, 2)}</pre> */}
       </CartSelectorContext.Provider>

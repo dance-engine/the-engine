@@ -13,6 +13,7 @@ export default function POWPayment({org}: {org: {account_id: string}}) {
               couponCode={ inProd ? "fVKhBZim" : 'u0trAdPd' } // 🔥 Live : 🔨 Test coupon code
               priceId={ inProd ? "price_1RkrE1DIMY9TzhzF2AFDc6q3" : 'price_1RnirUDIMY9TzhzFCSo3uo6K' } // 🔥 Live : 🔨 Test price ID
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
+              cartValue={4000} 
             />
            </div>
         </div>

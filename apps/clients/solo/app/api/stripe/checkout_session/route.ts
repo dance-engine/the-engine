@@ -12,8 +12,10 @@ const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const { couponCode, accountId, priceId, priceIds } = await req.json();
+    const { couponCode, accountId, priceId, priceIds, cartValue } = await req.json();
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
+
+    const platformCharge = isAndreas || !cartValue ? 0 : Math.round(cartValue * 0.0125);
 
     const line_items = priceIds ? priceIds.map((id: string) => ({
       price: id,
@@ -25,15 +27,12 @@ export async function POST(req: Request) {
         
     const stripe = accountId == 'acct_1Ry9rvDqtDds31FK' ? new Stripe(process.env.STRIPE_SECRET_KEY_DEV!, { apiVersion: "2025-06-30.basil" }) : mainStripe
 
-    // allow_promotion_codes: true,
-
     const baseSessionObject = {
       mode: "payment",
       payment_method_types: ["card"],
       line_items: line_items,
       payment_intent_data: {
-        application_fee_amount: isAndreas ? 0 : 50, //! This should be based on whats being charged!
-        // transfer_data: {
+        application_fee_amount: isAndreas ? 0 : platformCharge, 
         //   destination: accountId ,
         // },
       },
@@ -42,6 +41,8 @@ export async function POST(req: Request) {
     } as Stripe.Checkout.SessionCreateParams;
 
     const sessionObject = couponCode ? {...baseSessionObject, discounts: [{ coupon: couponCode }]} : {...baseSessionObject, allow_promotion_codes: true };
+
+    console.log("Checkout Session",sessionObject)
 
     const session = await stripe.checkout.sessions.create(sessionObject,
     {

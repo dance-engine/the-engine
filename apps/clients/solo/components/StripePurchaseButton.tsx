@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-const StripePurchaseButton = ({accountId, couponCode, label, priceId, className, style, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, className?: string, style?: React.CSSProperties}) => {
+const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue, className, style, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, cartValue?: number, className?: string, style?: React.CSSProperties}) => {
   const handleClick = async () => {
     const res = await fetch('/api/stripe/checkout_session', {
       method: 'POST',
@@ -10,6 +10,8 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, className,
         accountId: accountId, // if needed, otherwise remove
         couponCode: couponCode ? couponCode : false, // must be the actual coupon ID from Stripe
         priceId: priceId, // must be the actual product ID from Stripe
+        cartValue: cartValue ? cartValue : undefined,
+
       }),
     });
 
@@ -32,12 +34,13 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, className,
   );
 };
 
-const StripeMultiPurchaseButton = ({accountId, label, priceIds,className, style}: {accountId?: string, label?: string, priceIds: string[], className?: string, style?: React.CSSProperties}) => {
+const StripeMultiPurchaseButton = ({accountId, label, priceIds, cartValue, className, style}: {accountId?: string, label?: string, priceIds: string[], cartValue?: number, className?: string, style?: React.CSSProperties}) => {
   const handleClick = async () => {
 
     const body = JSON.stringify({
         accountId: accountId, // if needed, otherwise remove
         priceIds: priceIds, // must be the actual product IDs from Stripe
+        cartValue: cartValue ? cartValue : undefined,
       })
       console.log("StripeMultiPurchaseButton body:", body);
     const res = await fetch('/api/stripe/checkout_session', {

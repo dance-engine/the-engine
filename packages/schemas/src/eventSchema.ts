@@ -19,6 +19,7 @@ export const eventSchema = z.object({
   // venue: z.enum(["Indoor", "Outdoor", "Virtual"]).describe("Select the type of venue."),
   location: locationSchema.describe("The event location"),
   capacity: z.coerce.number().min(1,"Capacity must be at least 1 if set").describe("Maximum number of attendees."),
+  status: z.enum(["draft","live","archived", "outdated"]).default("draft").describe("Status of the organisation"),
   meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
@@ -31,7 +32,7 @@ export const eventSchema = z.object({
 
 // Generate TypeScript type from the schema
 export type EventType = z.infer<typeof eventSchema>;
-export type EventResponseType = EventType & { items?: ItemType[], bundles?: BundleTypeExtended[] }
+export type EventResponseType = EventType & { status: string, items?: ItemType[], bundles?: BundleTypeExtended[] }
 export type EventModelType = EventType & { items?: Record<string, ItemType>, bundles?: BundleTypeExtended[] }
 
 export const createEvent =(eventData: EventResponseType) => {

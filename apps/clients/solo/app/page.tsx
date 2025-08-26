@@ -28,10 +28,10 @@ export default async function IndexPage() {
   const orgSlug = h.get('x-site-org') || 'default-org';
   const theme = h.get('x-site-theme') || 'default';
   const domain = h.get('x-site-domain') || 'unknown';
-  const coreEvent = orgSlug == 'demo' ? "2vOyCJojl8ozmjx11c1tqwViE5O" : "cheese" ;
+  const coreEvent = orgSlug == 'demo2' ? "2vOyCJojl8ozmjx11c1tqwViE5O" : "cheese" ;
 
 
-  const EVENTS_API_URL = coreEvent == "cheese" ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events?${coreEvent}` : `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events/${coreEvent}`
+  const EVENTS_API_URL = coreEvent == "cheese" ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events` : `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events/${coreEvent}`
   const events_res = await fetch(EVENTS_API_URL, { next: { revalidate: 60 } });
   const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisations`
   const orgs_res = await fetch(ORGS_API_URL, { cache: 'force-cache', next: { revalidate: 120, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
@@ -71,7 +71,7 @@ export default async function IndexPage() {
         style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              { orgSlug == 'rebel-sbk' ? "" : `${org.name} - an event exclusively for women` }
+              { orgSlug == 'power-of-woman' ? `${org.name} - an event exclusively for women` : ""}
             </div>
             
           </div>
@@ -100,7 +100,8 @@ export default async function IndexPage() {
                 
         </div>
         {orgSlug == 'demo' ? 
-          <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
+          // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
+          <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
         : orgSlug == 'rebel-sbk' ? 
           <RebelPayment org={org} />
         :

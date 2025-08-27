@@ -15,12 +15,25 @@ import ListItem  from '@tiptap/extension-list-item'
 import { EventType } from '@dance-engine/schemas/events';
 import PassPicker from './PassPicker';
 import { createEvent } from '@dance-engine/schemas/events';
-import MapDisplay from './Map';
+
+import dynamic from "next/dynamic";
+import { useMemo } from "react";
+// Dynamically load map
+
 
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function EventList({ fallbackData, org, theme, eventKsuid}: { fallbackData: EventType[], org: string, theme: string, eventKsuid: string}) {
+export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbackData: EventType[], org: string, theme: string, eventKsuid: string}) {
+
+  const MapDisplay = useMemo(() => dynamic(
+        () => import('./Map'),
+        { 
+          loading: () => <p className='flex items-center justify-center h-[300px] bg-gray-500'>Map loading</p>,
+          ssr: false 
+        }
+    ), [])
+
   const { data: eventData, isLoading, error } = useSWR(
     `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events/${eventKsuid}`,
     fetcher,

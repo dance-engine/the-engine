@@ -9,11 +9,13 @@ const orgDomains: Record<string, string[]> = {
   'demo': ['localhost', '127.0.0.1','dance.likenobodyswatching.co.uk'],
   'pow': ['pow.dance-engine.com','www.pow.localhost'],
   'power-of-woman': ['powerofwomansbk.co.uk'],
+  'latin-soul': ['latinsoul.danceengine.co.uk', 'www.latinsoul.localhost']
 };
 
 const orgThemes: Record<string, string[]> = {
   'default': ['www.rbelsbk.com', 'rbelsbk.com','otherdomain.com', 'app.otherdomain.com','localhost', '127.0.0.1'],
   'coming-soon': ['powerofwomansbk.co.uk', 'pow.dance-engine.com','www.pow.localhost'],
+  'latin-soul': ['latinsoul.danceengine.co.uk', 'www.latinsoul.localhost']
 };
 
 const domainToOrgMap = Object.entries(orgDomains).reduce<Record<string, string>>((acc, [org, domains]) => {

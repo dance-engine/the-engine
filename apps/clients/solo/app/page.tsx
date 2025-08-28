@@ -40,7 +40,7 @@ export default async function IndexPage() {
   const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
   const eventsServerData = await events_res.json() as EventResponseType[];
 
-  console.log("requesting data", ORGS_API_URL, 'orgs_data', orgs_data) //, 'eventsServerData', eventsServerData);
+  console.log("requesting data", ORGS_API_URL) //, 'orgs_data', orgs_data) //, 'eventsServerData', eventsServerData);
   const css = `
     :root {
       --main-bg-color: black;
@@ -61,6 +61,8 @@ export default async function IndexPage() {
     }
   `;
 
+
+
   const bodyFont = orgSlug == 'power-of-woman' || orgSlug == 'pow' ? 'font-oswald' : 'font-inter';
 
   return <div className={`w-full ${bodyFont}`} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
@@ -70,8 +72,9 @@ export default async function IndexPage() {
 
       <main className='w-full justify-center' >
 
-        <div id="hero" className='w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
-        text-white flex items-stretch justify-center bg-no-repeat bg-center sm:bg-center md:bg-auto bg-size-[1024px_auto] sm:bg-size-[1400px_auto]' 
+        <div id="hero" className={`w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
+        text-white flex items-stretch justify-center bg-no-repeat \
+        ${theme == 'latin-soul' ?  "bg-cover bg-center": "bg-center sm:bg-center md:bg-auto bg-size-[1024px_auto] sm:bg-size-[1400px_auto]"}`} 
         style={{ backgroundImage: `url(${org.banner})` }}>
           <div className='max-w-4xl w-full p-8 overflow-hidden'>
             <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
@@ -96,7 +99,7 @@ export default async function IndexPage() {
               />
           
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
-            {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
+            <strong>headers</strong>: {domain}/{orgSlug}/{theme}
                 <div className='hidden'>
                   {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
 

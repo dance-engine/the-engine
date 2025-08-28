@@ -157,6 +157,10 @@ def get_events(organisationSlug: str, public: bool = False):
     except Exception as e:
         logger.error(f"DynamoDB query failed to get events for {organisationSlug}: {e}")
         raise Exception
+    
+    #! temporary fix this needs review
+    if isinstance(events, EventModel):
+        events = [events]
 
     return [e.to_public() if public else e for e in events]
 

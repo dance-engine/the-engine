@@ -48,7 +48,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     watch,
     setValue,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, dirtyFields},
   } = useForm<FieldValues>({ 
     defaultValues: data,
     resolver: zodResolver(schema) 
@@ -150,7 +150,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
             ) : isOnceOnly ? (
               <OnceOnly label={field} name={field} 
                 currentValue={watch(field)}
-                isDirty={isDirty}
+                isDirty={Object.keys(dirtyFields).includes(field)}
                 register={register} validate={() => {trigger(field)}} 
                 error={errors[field]?.message as string} fieldSchema={fieldSchema} 
                 />

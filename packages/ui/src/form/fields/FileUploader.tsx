@@ -14,8 +14,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
   const storedFileKey = watch(name);
   
   useEffect(() => {
+    console.log("Stored file key changed:", storedFileKey,getToken,hasUploaded,uploadUrl);
     const webUrlregex = /http(s?):\/\//
-    if (storedFileKey && !hasUploaded && !webUrlregex.test(storedFileKey)) {
+    if (storedFileKey && !hasUploaded && !webUrlregex.test(storedFileKey) && !/upload.*/.test(storedFileKey)) {
       const fetchPresignedUrl = async () => {
         try {
           const token = await getToken();
@@ -45,7 +46,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
     else if(storedFileKey && webUrlregex.test(storedFileKey)) {
       setFilePreview(storedFileKey)
     }
-  }, [storedFileKey,getToken,hasUploaded,uploadUrl,name]);
+  }, [storedFileKey,getToken,hasUploaded,uploadUrl]);
   
 
   // Handle file selection (Drag & Drop or Browse)
@@ -203,6 +204,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
           </div>
         )}
       </div>
+      {filePreview}
     </CustomComponent>
   );
 };

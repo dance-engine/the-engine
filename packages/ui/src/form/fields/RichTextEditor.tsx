@@ -137,8 +137,8 @@ const MenuBar = ({ editor }: MenuBarProps) => {
     // update link
     try {
       editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-    } catch (e) {
-      alert(e.message)
+    } catch (e: { message: string } | unknown) {
+      alert((e as { message: string }).message)
     }
   }, [editor])
 
@@ -257,18 +257,15 @@ const MenuBar = ({ editor }: MenuBarProps) => {
       type="button"
       aria-label="Link"
       title="Link"
-      onClick={() => editor.chain().focus().toggleLink().run()}
-      className={`p-2 rounded ${editor.isActive('link') ? bgColorClasses : ''}`}
+      onClick={setLink}
+      className={`p-2 rounded ${editorState.isLink ? bgColorClasses : ''}`}
     >
       <FaLink />
     </button>
 
-    <button onClick={setLink} className={editorState.isLink ? 'is-active' : ''}>
-            Set link
-          </button>
-          <button onClick={() => editor.chain().focus().unsetLink().run()} disabled={!editorState.isLink}>
-            Unset link
-          </button>
+    <button onClick={() => editor.chain().focus().unsetLink().run()} disabled={!editorState.isLink}>
+      Unset link
+    </button>
   </div>
   );
 }

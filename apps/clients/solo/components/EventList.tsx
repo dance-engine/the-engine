@@ -23,7 +23,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
 
   return <div className=''>
     <div className="mx-auto w-full flex flex-col sm:flex-row max-w-5xl pt-6 px-6 5xl:px-0 gap-6">
-      {events.map((event) => {
+      {events && events.length > 0 ? events.map((event) => {
         return (
           <Link href={`/${event.ksuid}`} style={{'--image-url': `url(${event.banner})`} as React.CSSProperties} key={event.ksuid} className='mb-12 rounded-lg bg-[image:var(--image-url)] flex items-end bg-cover bg-center aspect-square min-w-[300px]'>
             
@@ -38,7 +38,8 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
                         
           </Link>
         )
-      })}
+      }) : <div className='text-center'>Check back for a list of classes and events coming soon</div>
+    }
       
     {/* <PassPicker event={event}/> */}
     {/* <h2 className='text-2xl '>Purchase Options</h2>

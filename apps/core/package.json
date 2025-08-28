@@ -17,12 +17,12 @@
     "@dance-engine/schemas": "workspace:^",
     "@dance-engine/ui": "workspace:*",
     "@dance-engine/utils": "workspace:*",
+    "date-fns": "^4.1.0",
     "ksuid": "^3.0.0",
     "next": "^15.2.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-hook-form": "^7.55.0",
-    "date-fns": "^4.1.0"
+    "react-hook-form": "^7.55.0"
   },
   "devDependencies": {
     "@dance-engine/eslint-config": "workspace:*",

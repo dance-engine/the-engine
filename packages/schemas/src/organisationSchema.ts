@@ -7,6 +7,7 @@ export const organisationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   account_id: z.string().optional().describe("The account ID of the organisation"),
   banner: z.string().optional().describe('Appears at the top of your page'),
+  banner_overlay: z.string().optional().describe('Optional overlay image for the banner to improve text visibility'),
   logo: z.string().optional().describe('Appears in the top left of your page'),
   css_vars: z.string().optional().describe('CSS variables for the organisation used to customise SOLO templates'),
   description: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +29,7 @@ export type OrganisationType = z.infer<typeof organisationSchema>;
 export const organisationMetadata = {
   // account_id: { info: true },
   banner: { fileUploadField: 'single' },
+  banner_overlay: { fileUploadField: 'single' },
   logo: { fileUploadField: 'single' },
   css_vars: { info: true },
   description: { richText: true },

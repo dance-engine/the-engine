@@ -38,9 +38,12 @@ def move_upload(event,context):
     new_files = move_and_cleanup_uploaded_files(entity,organisationSlug)
     logger.info(j({"msg":"Move files","new_files": new_files}))
 
+    # Get an identifier
+    PK = entity.get("PK") if entity.get("PK") else details.get("resource_id")
+    SK = entity.get("SK") if entity.get("SK") else details.get("resource_id")
 
     # # Update name
-    response = update_dynamodb_paths(entity.get("PK"),entity.get("SK"),new_files,organisationSlug)
+    response = update_dynamodb_paths(PK, SK, new_files, organisationSlug)
     logger.info(j({"msg":"DynamoDB Response","response": response}))
     # Invalidate CDN?
 
@@ -67,6 +70,8 @@ def move_and_cleanup_uploaded_files(detail,organisationSlug):
 
     for key, value in detail.items():
         if isinstance(value, str) and value.startswith(prefix):
+            logger.info(j({"msg":"Copying file","file": value}))
+
             filename = value.split("/")[-1]
             new_key = value.replace(prefix, cdn_prefix)
             # new_key = f"{cdn_prefix}"

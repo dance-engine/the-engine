@@ -30,6 +30,8 @@ eventbridge = boto3.client('events')
 CORE_TABLE_NAME = os.environ.get("CORE_TABLE_NAME")
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
+def j(obj) -> str:
+    return json.dumps(obj, separators=(",", ":"), default=str)
 
 def _preprocess_organisation_item(item: dict) -> dict:
     if 'status' in item and isinstance(item["status"], str):
@@ -156,12 +158,15 @@ def eventbridge_handler(event, context):
     Core handler for the organisation lambda function.
     This is the entry point for the Lambda function.
     """
-    logger.info("Core handler invoked with event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+    logger.info(j({"msg":"Core handler invoked with event","event": event}))
+
     core_table = db.Table(CORE_TABLE_NAME)
-    logger.info("Organisation: %s", event.get("detail", {}).get("organisation", {}))
+
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
 
     org_data = event.get("detail", {}).get("data", {}).get("organisation", {})
+    logger.info(j({"msg": "Update Organisation", "org_data": org_data}))
+
     org_model = OrganisationModel.model_validate({
         **org_data,
         "updated_at":current_time,

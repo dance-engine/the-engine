@@ -19,7 +19,7 @@ OrganisationObject:
               - "suspended"
               - "archived"
             default: "draft"
-          ksuid:
+          ksuid: # TODO: Do we need this??
             type: string
             description: "ID of the organisation"
           organisation:
@@ -35,6 +35,9 @@ OrganisationObject:
           banner: 
             type: string
             description: "URL to the banner image for the organisation"
+          banner_overlay:
+            type: string
+            description: "URL to the banner overlay image for the organisation"
           logo:
             type: string
             description: "URL to the logo image for the organisation"
@@ -105,6 +108,9 @@ OrganisationObjectPublic:
           banner: 
             type: string
             description: "URL to the banner image for the organisation"
+          banner_overlay:
+            type: string
+            description: "URL to the banner overlay image for the organisation"
           logo:
             type: string
             description: "URL to the logo image for the organisation"

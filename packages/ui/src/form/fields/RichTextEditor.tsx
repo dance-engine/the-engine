@@ -1,17 +1,79 @@
 'use client'
 import { RichTextEditorProps } from "../../types/form"
-import { useEditor, EditorContent, Editor } from '@tiptap/react';
+import { useEditor, EditorContent, Editor, useEditorState} from '@tiptap/react';
+import Link from '@tiptap/extension-link'
 import StarterKit from '@tiptap/starter-kit';
 import { Level } from '@tiptap/extension-heading';
-import { useEffect } from 'react';
-import { FaBold, FaItalic, FaStrikethrough, FaListUl, FaListOl, FaQuoteRight,FaEraser } from 'react-icons/fa';
+import { useEffect, useCallback } from 'react';
+import { FaBold, FaItalic, FaStrikethrough, FaListUl, FaListOl, FaQuoteRight,FaEraser, FaLink } from 'react-icons/fa';
 import CustomComponent from "./CustomComponent";
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onChange, error, fieldSchema }: RichTextEditorProps) => {
 
 // export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const editor = useEditor({
-    extensions: [StarterKit.configure({ code: false, codeBlock: false })],
+    extensions: [
+      StarterKit.configure({ code: false, codeBlock: false }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        defaultProtocol: 'https',
+        protocols: ['http', 'https'],
+        isAllowedUri: (url:string, ctx:{defaultProtocol:string, protocols:(string | {scheme:string})[], defaultValidate:(url:string) => boolean}) => {
+          try {
+            // construct URL
+            const parsedUrl = url.includes(':') ? new URL(url) : new URL(`${ctx.defaultProtocol}://${url}`)
+
+            // use default validation
+            if (!ctx.defaultValidate(parsedUrl.href)) {
+              return false
+            }
+
+            // disallowed protocols
+            const disallowedProtocols = ['ftp', 'file', 'mailto']
+            const protocol = parsedUrl.protocol.replace(':', '')
+
+            if (disallowedProtocols.includes(protocol)) {
+              return false
+            }
+
+            // only allow protocols specified in ctx.protocols
+            const allowedProtocols = ctx.protocols.map(p => (typeof p === 'string' ? p : p.scheme))
+
+            if (!allowedProtocols.includes(protocol)) {
+              return false
+            }
+
+            // disallowed domains
+            const disallowedDomains = ['example-phishing.com', 'malicious-site.net']
+            const domain = parsedUrl.hostname
+
+            if (disallowedDomains.includes(domain)) {
+              return false
+            }
+
+            // all checks have passed
+            return true
+          } catch {
+            return false
+          }
+        },
+        shouldAutoLink: (url:string) => {
+          try {
+            // construct URL
+            const parsedUrl = url.includes(':') ? new URL(url) : new URL(`https://${url}`)
+
+            // only auto-link if the domain is not in the disallowed list
+            const disallowedDomains = ['example-no-autolink.com', 'another-no-autolink.com']
+            const domain = parsedUrl.hostname
+
+            return !disallowedDomains.includes(domain)
+          } catch {
+            return false
+          }
+        },
+      }),
+    ],
     immediatelyRender: false,
     content: value ? JSON.parse(value) : value,
     editorProps: {
@@ -54,8 +116,44 @@ interface MenuBarProps {
 
 const headingLevels: Level[] = [1, 2, 3, 4];
 const bgColorClasses = 'bg-gray-200 dark:bg-gray-100/20'
-const MenuBar = ({ editor }: MenuBarProps) => (
-  <div className="flex flex-wrap gap-1 border-b bg-black/2 dark:bg-white/5  p-1 border-gray-300">
+const MenuBar = ({ editor }: MenuBarProps) => { 
+
+  const setLink = useCallback(() => {
+    const previousUrl = editor.getAttributes('link').href
+    const url = window.prompt('URL', previousUrl)
+
+    // cancelled
+    if (url === null) {
+      return
+    }
+
+    // empty
+    if (url === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run()
+
+      return
+    }
+
+    // update link
+    try {
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+    } catch (e) {
+      alert(e.message)
+    }
+  }, [editor])
+
+  const editorState = useEditorState({
+    editor,
+    selector: ctx => ({
+      isLink: ctx.editor.isActive('link'),
+    }),
+  })
+
+  if (!editor) {
+    return null
+  }
+
+  return (<div className="flex flex-wrap gap-1 border-b bg-black/2 dark:bg-white/5  p-1 border-gray-300">
 
     {/* Heading Dropdown */}
     <select
@@ -153,7 +251,26 @@ const MenuBar = ({ editor }: MenuBarProps) => (
     >
       <FaEraser />
     </button>
+
+    {/* Link */}
+    <button
+      type="button"
+      aria-label="Link"
+      title="Link"
+      onClick={() => editor.chain().focus().toggleLink().run()}
+      className={`p-2 rounded ${editor.isActive('link') ? bgColorClasses : ''}`}
+    >
+      <FaLink />
+    </button>
+
+    <button onClick={setLink} className={editorState.isLink ? 'is-active' : ''}>
+            Set link
+          </button>
+          <button onClick={() => editor.chain().focus().unsetLink().run()} disabled={!editorState.isLink}>
+            Unset link
+          </button>
   </div>
-);
+  );
+}
 
 export default RichTextEditor

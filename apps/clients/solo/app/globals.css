@@ -51,4 +51,5 @@ body {
   --font-heading-pow: var(--font-luckiest-guy);
   --font-mono: var(--font-roboto-mono); */
   --font-oswald: var(--font-oswald);
+  --font-heading-latin-soul: var(--font-shadows-into-light-two);
 }

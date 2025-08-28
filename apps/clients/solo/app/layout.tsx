@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { Geist, Geist_Mono, Luckiest_Guy, Oswald } from "next/font/google";
+import { Geist, Geist_Mono, Luckiest_Guy, Oswald, Yesteryear, Caveat_Brush, Reenie_Beanie, Shadows_Into_Light_Two} from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,6 +23,30 @@ const luckiestGuy = Luckiest_Guy({
   subsets: ["latin"],
 });
 
+const yesteryear = Yesteryear({
+  variable: "--font-yesteryear",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const caveatBrush = Caveat_Brush({
+  variable: "--font-caveat-brush",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const reenieBeanie = Reenie_Beanie({
+  variable: "--font-reenie-beanie",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const shadowsIntoLightTwo = Shadows_Into_Light_Two({
+  variable: "--font-shadows-into-light-two",
+  weight: "400",
+  subsets: ["latin"],
+});
+
 const domainConfig: Record<string, { title: string; favicon: string }> = {
   'power-of-woman': {
     title: 'Power of Woman',
@@ -31,7 +55,11 @@ const domainConfig: Record<string, { title: string; favicon: string }> = {
   'rebel-sbk': {
     title: 'Rebel SBK',
     favicon: '/favicons/rebel-sbk/favicon.ico',
-  }
+  },
+  'latin-soul': {
+    title: 'Latin Soul',
+    favicon: '/favicons/latin-soul/favicon.ico',
+  },
 
 };
 
@@ -43,7 +71,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable} ${luckiestGuy.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} antialiased`}
       >
         {children}
       </body>

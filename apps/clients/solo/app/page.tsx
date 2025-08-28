@@ -14,6 +14,7 @@ import Heading  from '@tiptap/extension-heading'
 import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
+import Link  from '@tiptap/extension-link'
 import { generateHTML } from '@tiptap/html'
 
 import { OrganisationType } from '@dance-engine/schemas/organisation';
@@ -76,11 +77,14 @@ export default async function IndexPage() {
         text-white flex items-stretch justify-center bg-no-repeat \
         ${theme == 'latin-soul' ?  "bg-cover bg-center": "bg-center sm:bg-center md:bg-auto bg-size-[1024px_auto] sm:bg-size-[1400px_auto]"}`} 
         style={{ backgroundImage: `url(${org.banner})` }}>
-          <div className='max-w-4xl w-full p-8 overflow-hidden'>
-            <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>
-              { orgSlug == 'power-of-woman' ? `${org.name} - an event exclusively for women` : ""}
-            </div>
+          <div className='max-w-4xl bg-amber-300/0 w-full px-4 sm:px-8 pt-4 sm:pt-8 relative'>
             
+            { orgSlug == 'power-of-woman' ? <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>{`${org.name} - an event exclusively for women`}</div> : null}
+
+            { org.banner_overlay && <div className='relative bottom-[-6px] right-0 left-0 border-green-500 overflow-hidden h-[100%] flex flex-col items-center justify-start sm:flex-row sm:items-center sm:justify-center' >
+              <h1 className='text-4xl text-center px-6 font-heading-latin-soul'>&lsquo;Some tagline about the artist or brand goes here&rsquo;</h1>
+              <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-cover block h-[100%] max-h-[600px] w-full sm:w-[38%] sm:min-w-[300px] max-w-[500px] sm:self-end ' />
+            </div>} 
           </div>
         </div>
 
@@ -95,18 +99,18 @@ export default async function IndexPage() {
               `} 
                 dangerouslySetInnerHTML={{ __html: generateHTML(
                   JSON.parse(org.description), 
-                  [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList],) }} 
+                  [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link],) }} 
               />
           
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
-            <strong>headers</strong>: {domain}/{orgSlug}/{theme}
+            {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
                 <div className='hidden'>
                   {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
 
                 </div>
                 
         </div>
-        {orgSlug == 'demo' ? 
+        {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 
           // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
           <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
         : orgSlug == 'rebel-sbk' ? 

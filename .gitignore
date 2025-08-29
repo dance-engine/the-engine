@@ -38,7 +38,7 @@ yarn-error.log*
 *.pem
 
 # Serverless
-.serverless
+functions/.serverless/**
 _venv
 .venv
 

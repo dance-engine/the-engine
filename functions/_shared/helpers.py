@@ -39,3 +39,7 @@ def deprecated(reason="This function is deprecated."):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+def new_id(prefix: str, ksuid_func: function, test_flag: bool | None = None) -> str:
+    head = f"{prefix}_" + ("test_" if test_flag else "")
+    return head + str(ksuid_func())

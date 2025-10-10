@@ -23,7 +23,8 @@ export default function RebelPayment({org}: {org: {account_id: string}}) {
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
             />
             </div>
-            
+            <div className='hidden'>{Date.now()}</div>
+
           </div>
           </div>
   )

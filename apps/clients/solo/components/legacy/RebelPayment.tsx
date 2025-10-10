@@ -1,9 +1,10 @@
+'use client'
 import StripePurchaseButton from '@/components/StripePurchaseButton';
 
 export default function RebelPayment({org}: {org: {account_id: string}}) {
   const inProd = process.env.NODE_ENV == 'development' ? false : true;
 
-  return (
+  return Date.now() < 1760130000000 ? (
     <div className='w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--main-bg-color)', borderColor: 'var(--highlight-color)'}}>
            <div className={`max-w-4xl px-4 lg:px-0 py-24 flex flex-col items-center\ `}>
             <h2 className='text-4xl font-bold mb-4'>Early Bird Tickets</h2>
@@ -23,9 +24,9 @@ export default function RebelPayment({org}: {org: {account_id: string}}) {
               style={{backgroundColor: 'var(--highlight-color)'}} className='rounded px-8 py-6 text-4xl'  
             />
             </div>
-            <div className='hidden'>{Date.now()}</div>
+            <div className='hidden'>{Date.now()}{Date.now() > 1760130000000 ? 'true' : 'false'}</div>
 
           </div>
           </div>
-  )
+  ) : <div className='text-2xl'> Ticket Sales have now ended for this event. Party ticket will be available on the door</div>
 }

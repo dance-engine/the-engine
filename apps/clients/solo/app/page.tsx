@@ -74,6 +74,10 @@ export default async function IndexPage() {
 
       <main className='w-full justify-center' >
 
+        { orgSlug == 'rebel-sbk' ? 
+        <div id="hero" className='w-full bg-contain bg-no-repeat bg-center flex items-center justify-center text-white font-bold bg-[#4c8842]' style={{ backgroundImage: `url(${org.banner})` }}>
+          <img src={org.banner} alt="" className='' />
+        </div> : 
         <div id="hero" className={`w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
         text-white flex items-stretch justify-center bg-no-repeat \
         ${theme == 'latin-soul' ?  "bg-cover bg-center": "bg-center sm:bg-center md:bg-auto bg-size-[1024px_auto] sm:bg-size-[1400px_auto]"}`} 
@@ -84,10 +88,11 @@ export default async function IndexPage() {
 
             { org.banner_overlay && <div className='relative bottom-[-6px] right-0 left-0 border-green-500 overflow-hidden h-[100%] flex flex-col items-center justify-start sm:flex-row sm:items-center sm:justify-center' >
               <h1 className='text-4xl text-center px-6 font-heading-latin-soul'>&lsquo;Liverpool Moves to Latin Soul.&rsquo;</h1>
-              <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-cover block h-[100%] max-h-[600px] w-full sm:w-[38%] sm:min-w-[300px] max-w-[500px] sm:self-end ' />
+              <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-contain block h-[100%] max-h-[600px] w-full sm:w-[38%] sm:min-w-[300px] max-w-[500px] sm:self-end ' />
             </div>} 
           </div>
         </div>
+}
 
         <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
           
@@ -115,7 +120,7 @@ export default async function IndexPage() {
           // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
           <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
         : orgSlug == 'rebel-sbk' ? 
-          <RebelPayment org={org} />
+          <div className='hidden'><RebelPayment org={org} /></div>
         :
         (<POWPayment org={org} />)
 }

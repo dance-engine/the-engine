@@ -15,6 +15,7 @@ import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
 import Link  from '@tiptap/extension-link'
+import HardBreak from '@tiptap/extension-hard-break'
 import { generateHTML } from '@tiptap/html'
 
 import { OrganisationType } from '@dance-engine/schemas/organisation';
@@ -99,7 +100,7 @@ export default async function IndexPage() {
               `} 
                 dangerouslySetInnerHTML={{ __html: generateHTML(
                   JSON.parse(org.description), 
-                  [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link],) }} 
+                  [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link, HardBreak],) }} 
               />
           
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}

@@ -58,7 +58,7 @@ export default async function IndexPage() {
     :root {
       --main-bg-color: black;
       --main-text-color: white;
-      --alternate-bg-color: #871d24;
+      --alternate-bg-color: #000000;
       --highlight-color: hsla(350, 100%, 23%, 1.00);
     }
   `;

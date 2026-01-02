@@ -10,7 +10,7 @@ const Debug = ({debug, className}: {debug:any, className?:string}) => {
       <CgDebug />
       </button>
       <pre suppressHydrationWarning className={`${shown ? '' : 'hidden'} z-[1010] absolute right-0 bg-white p-3 border rounded w-[90vw] whitespace-pre`}>
-        {JSON.stringify(debug,null,2)}
+        {JSON.stringify(debug,(key, value) => (key === "ref" ? undefined : value),2)}
       </pre>
     </div>
   )

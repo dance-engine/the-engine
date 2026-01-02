@@ -58,7 +58,7 @@ export default async function IndexPage() {
     :root {
       --main-bg-color: black;
       --main-text-color: white;
-      --alternate-bg-color: #000000;
+      --alternate-bg-color: #871d24;
       --highlight-color: hsla(350, 100%, 23%, 1.00);
     }
   `;
@@ -75,7 +75,7 @@ export default async function IndexPage() {
       <main className='w-full justify-center' >
 
         { orgSlug == 'rebel-sbk' ? 
-        <div id="hero" className='w-full bg-contain bg-no-repeat bg-center flex items-center justify-center text-white font-bold bg-[#4c8842]' style={{ backgroundImage: `url(${org.banner})` }}>
+        <div id="hero" className='w-full bg-contain bg-no-repeat bg-center flex items-center justify-center text-white font-bold bg-black' style={{ backgroundImage: `url(${org.banner})` }}>
           <img src={org.banner} alt="" className='' />
         </div> : 
         <div id="hero" className={`w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
@@ -86,7 +86,7 @@ export default async function IndexPage() {
             
             { orgSlug == 'power-of-woman' ? <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>{`${org.name} - an event exclusively for women`}</div> : null}
 
-            { org.banner_overlay && <div className='relative bottom-[-6px] right-0 left-0 border-green-500 overflow-hidden h-[100%] flex flex-col items-center justify-start sm:flex-row sm:items-center sm:justify-center' >
+            { org.banner_overlay && <div className='relative bottom-[-6px] right-0 left-0  overflow-hidden h-[100%] flex flex-col items-center justify-start sm:flex-row sm:items-center sm:justify-center' >
               {/* <h1 className='text-4xl text-center px-6 font-heading-latin-soul'>&lsquo;Liverpool Moves to Latin Soul.&rsquo;</h1> */}
               <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-contain block h-[100%] max-h-[600px] w-full sm:w-[38%] sm:min-w-[300px] max-w-[500px] sm:self-end ' />
             </div>} 

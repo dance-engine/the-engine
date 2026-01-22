@@ -492,7 +492,8 @@ def transact_upsert(table,
                     condition_expression: str = None, 
                     add_fields: set[str] | None = None, 
                     extra_expression_attr_names: dict[str, str] | None = None, 
-                    extra_expression_attr_values: dict[str, object] | None = None):
+                    extra_expression_attr_values: dict[str, object] | None = None,
+                    version_override: bool = False):
     MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
     client = table.meta.client
 
@@ -518,7 +519,7 @@ def transact_upsert(table,
 
             item_dict = item.to_dynamo(exclude_keys=True)
 
-            if item.uses_versioning():
+            if item.uses_versioning() and not version_override:
                 incoming_version = item_dict.get('version', 0)
                 item_dict['version'] = incoming_version + 1
 

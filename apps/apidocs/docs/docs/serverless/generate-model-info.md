@@ -9,3 +9,7 @@ Make sure your in a VEnv with depdenacies (check by calling `datamodel-codegen`)
 
 `pnpm update-schema`
 
+---
+> 🚧 Warning for Models
+> 
+> Make sure that you add models to the `serverless.models.yml` in the root of the functions directory. 

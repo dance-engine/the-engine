@@ -9,6 +9,9 @@ LineItemObjectPublic:
         type: object
         required: ["line_items"]
         properties:
+          event_ksuid:
+            type: string
+            description: "The ksuid of the event associated with this item"
           price_id:
             type: string
             description: "The price id of the product in stripe"

@@ -38,7 +38,10 @@ models:
   - ${file(functions/bundles/sls.bundles.models.yml):BundleListResponse}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleResponsePublic}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleListResponsePublic}
-    
+
+  - ${file(functions/checkout/sls.checkout.models.yml):LineItemObjectPublic}
+  - ${file(functions/checkout/sls.checkout.models.yml):CheckoutObjectPublic}
+  - ${file(functions/checkout/sls.checkout.models.yml):CreateCheckoutRequest}
 
   - name: "ErrorResponse"
     description: "Error response model"

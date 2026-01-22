@@ -1,0 +1,48 @@
+LineItemObjectPublic:
+  name: "LineItemObjectPublic"
+  description: "Line item object for the public"
+  x-internal-group: "checkout"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["line_items"]
+        properties:
+          price_id:
+            type: string
+            description: "The price id of the product in stripe"
+          quantity:
+            type: integer
+            description: "The quantity of this item to add to the checkout"           
+CheckoutObjectPublic:
+  name: "CheckoutObjectPublic"
+  description: "Checkout object for the public"
+  x-internal-group: "checkout"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["line_items"]
+        properties:
+          line_items:
+            type: array
+            items:
+              $ref: "#/components/schemas/LineItemObjectPublic"
+CreateCheckoutRequest:
+  name: "CreateCheckoutRequest"
+  description: "Request model for creating a new checkout"
+  x-internal-group: "checkout"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["checkout"]
+        properties:
+          checkout:
+            type: array
+            items:
+              $ref: "#/components/schemas/CheckoutObjectPublic"

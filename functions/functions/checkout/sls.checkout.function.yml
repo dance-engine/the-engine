@@ -1,0 +1,20 @@
+Checkout:
+  runtime: python3.11
+  handler: functions/checkout/lambda_checkout.lambda_handler
+  name: "${sls:stage}-${self:service}-checkout"
+  package:
+    patterns:
+      - '!**/**'
+      - "_shared/**"
+      - "functions/checkout/**"
+    #   - "_pydantic/**" # this requires the pydantic layer also
+  environment:
+      STAGE_NAME: ${sls:stage}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer
+  events:
+      - httpApi:
+          path: /public/{organisation}/checkout/start
+          method: post
+          documentation: ${file(functions/checkout/sls.checkout.doc.yml):endpoints.checkout.POST}

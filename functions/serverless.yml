@@ -157,6 +157,7 @@ layers:
 #######################
 
 functions:
+  Checkout: ${file(functions/checkout/sls.checkout.function.yml):Checkout}
   Bundles: ${file(functions/bundles/sls.bundles.function.yml):Bundles}
   Items: ${file(functions/items/sls.items.function.yml):Items}
   ProvisionedOrganisation: ${file(privileged/eventbridge/provisioned_organisation/sls.provisioned_organisation.function.yml):ProvisionedOrganisation}

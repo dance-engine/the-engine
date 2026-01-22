@@ -1,0 +1,28 @@
+endpoints:
+  checkout:
+    POST:
+      summary: "POST Checkout"
+      description: "Handle POST requests for public/{organisation}/checkout/start"
+      tags:
+        - Checkout
+      security:
+       - {}
+      pathParams:
+       - name: organisation
+         description: Organisation slug
+         schema:
+           type: string
+      requestBody:
+       description: "Description of the request body"
+      requestModels:
+       application/json: "CreateCheckoutRequest" # models defined in serverless.models.yml in top level for now
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Success
+        - statusCode: 405
+          responseBody:
+            description: Method Not Allowed
+        - statusCode: 500
+          responseBody:
+            description: Internal Server Error

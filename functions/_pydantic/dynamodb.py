@@ -486,7 +486,13 @@ def batch_write(table, items: list, overwrite: bool = True):
         
     return successful_items, unprocessed_items
 
-def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], condition_expression: str = None, add_fields: set[str] | None = None):
+def transact_upsert(table, 
+                    items: list[DynamoModel], 
+                    only_set_once: list = [], 
+                    condition_expression: str = None, 
+                    add_fields: set[str] | None = None, 
+                    extra_expression_attr_names: dict[str, str] | None = None, 
+                    extra_expression_attr_values: dict[str, object] | None = None):
     MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
     client = table.meta.client
 
@@ -503,6 +509,9 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             conditions = []
             set_parts: list[str] = []
             add_parts: list[str] = []
+
+            extra_expression_attr_names = dict(extra_expression_attr_names or {})
+            extra_expression_attr_values = dict(extra_expression_attr_values or {})
 
             expression_attr_names = {}
             expression_attr_values = {}
@@ -533,6 +542,11 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
                     set_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
                 else:
                     set_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+            for k, v in extra_expression_attr_names.items():
+                expression_attr_names.setdefault(k, v)
+            for k, v in extra_expression_attr_values.items():
+                expression_attr_values.setdefault(k, v)
 
             parts = []
             if set_parts:

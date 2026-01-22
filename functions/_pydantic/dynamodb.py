@@ -486,9 +486,11 @@ def batch_write(table, items: list, overwrite: bool = True):
         
     return successful_items, unprocessed_items
 
-def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], condition_expression: str = None):
+def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], condition_expression: str = None, add_fields: set[str] | None = None):
     MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
     client = table.meta.client
+
+    add_fields = set(add_fields or [])
 
     batches = [items[i:i+MAX_BATCH_SIZE] for i in range(0, len(items), MAX_BATCH_SIZE)]
     successful_items = []
@@ -499,7 +501,9 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
 
         for item in batch:
             conditions = []
-            update_parts = []
+            set_parts: list[str] = []
+            add_parts: list[str] = []
+
             expression_attr_names = {}
             expression_attr_values = {}
 
@@ -521,12 +525,23 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
                 expression_attr_names[name_placeholder] = key
                 expression_attr_values[value_placeholder] = value
 
-                if key in only_set_once:
-                    update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
-                else:
-                    update_parts.append(f"{name_placeholder} = {value_placeholder}")
+                if key in add_fields:
+                    add_parts.append(f"{name_placeholder} {value_placeholder}")
+                    continue                
 
-            update_expression = "SET " + ", ".join(update_parts)
+                if key in only_set_once:
+                    set_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
+                else:
+                    set_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+            parts = []
+            if set_parts:
+                parts.append("SET " + ", ".join(set_parts))
+            if add_parts:
+                parts.append("ADD " + ", ".join(add_parts))
+            if not parts:
+                raise ValueError(f"transact_upsert: no updatable attributes for item {item!r}")
+            update_expression = " ".join(parts)
 
             transact_items.append({
                 "Update": {

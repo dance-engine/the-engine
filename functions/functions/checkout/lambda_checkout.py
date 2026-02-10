@@ -176,6 +176,37 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
     except Exception as e:
         logger.error("Stripe checkout session creation failed: %s", str(e))
         logger.error(traceback.format_exc())
+
+        try:
+            event_models_rollback = [
+                EventModel.model_validate({
+                    "organisation": organisation_slug,
+                    "ksuid": event_ksuid,
+                    "reserved": -1,
+                    "updated_at": current_time
+                }) for event_ksuid in event_ksuids
+            ]
+
+            transact_upsert(
+                table,
+                event_models_rollback,
+                condition_expression=condition_expr,
+                add_fields={"reserved"},
+                extra_expression_attr_names=extra_names,
+                extra_expression_attr_values=extra_values,
+                version_override=True
+            )
+        except Exception as rb_e:
+            logger.error("Rollback failed (reserved may be stranded): %s", str(rb_e))
+            logger.error(traceback.format_exc())
+
+        return make_response(500, {
+            "message": "Failed to create Stripe checkout session.",
+            "error": str(e),
+            "note": "Reservation rollback was attempted.",
+            "ignored_checkouts": ignored_checkouts if ignored_checkouts else None
+        })
+
 def lambda_handler(event, context):
     try:
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))

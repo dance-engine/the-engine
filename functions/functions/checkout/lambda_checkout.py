@@ -160,7 +160,9 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             },
             success_url=checkout.success_url,
             cancel_url=checkout.cancel_url,
-            expires_at=expires_at
+            expires_at=expires_at,
+            discounts=[{"coupon": checkout.coupon_code}] if checkout.coupon_code else None,
+            allow_promotion_codes = True
         )
 
         return make_response(201, {

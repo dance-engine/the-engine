@@ -27,8 +27,11 @@ CheckoutObjectPublic:
     application/json:
       schema:
         type: object
-        required: ["line_items"]
+        required: ["line_items", "stripe_account_id", "success_url", "cancel_url"]
         properties:
+          coupon_code:
+            type: string
+            description: "The coupon code to apply to the checkout"
           success_url:
             type: string
             description: "The url to redirect to after a successful checkout"

@@ -146,6 +146,8 @@ layers:
     path: _layers/utils
   pydantic:
     path: _layers/pydantic
+  stripe:
+    path: _layers/stripe    
 
 ###########################
 # Resources e.g. DynamoDB

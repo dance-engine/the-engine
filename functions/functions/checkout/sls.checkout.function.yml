@@ -13,6 +13,7 @@ Checkout:
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer
+      - !Ref StripeLambdaLayer
   events:
       - httpApi:
           path: /public/{organisation}/checkout/start

@@ -6,9 +6,11 @@ import logging
 import traceback
 import sys
 from datetime import datetime, timezone
+import time
 
 ## installed packages
 from pydantic import AfterValidator, ValidationError # layer: pydantic
+import stripe # layer: stripe
 
 ## custom scripts
 sys.path.append(os.path.dirname(__file__))
@@ -31,6 +33,7 @@ db = boto3.resource("dynamodb")
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'STRIPE_API_KEY' not found"))
 
 def start(validated_request: CreateCheckoutRequest, organisation_slug: str, actor: str):
     logger.info("Starting checkout process for organisation: %s", organisation_slug)
@@ -135,9 +138,44 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         logger.error("Reservation transaction failed: %s", str(e))
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
-        return make_response(500, {"message": "Something went wrong."})
-       
+        return make_response(500, {
+            "message": "Something went wrong.", 
+            "error": str(e)})
+    
+    try:
+        stripe.api_key = STRIPE_API_KEY
 
+        stripe_line_items = [
+            {"price": item.stripe_price_id, "quantity": item.quantity} for item in line_items
+        ]
+
+        expires_at = int(time.time()) + 30 * 60  # 30 minutes 
+
+        session = stripe.checkout.Session.create(
+            mode="payment",
+            payment_method_types=["card"],
+            line_items=stripe_line_items,
+            payment_intent_data={
+                "application_fee_amount": checkout.platform_fee_amount if checkout.platform_fee_amount else 0,
+            },
+            success_url=checkout.success_url,
+            cancel_url=checkout.cancel_url,
+            expires_at=expires_at
+        )
+
+        return make_response(201, {
+            "message": "Checkout session created successfully.",
+            "checkout": {
+                "stripe_session_id": session.get("id"),
+                "stripe_checkout_url": session.get("url"),
+                "expires_at": expires_at,
+            },
+            "ignored_checkouts": ignored_checkouts if ignored_checkouts else None
+        })
+    
+    except Exception as e:
+        logger.error("Stripe checkout session creation failed: %s", str(e))
+        logger.error(traceback.format_exc())
 def lambda_handler(event, context):
     try:
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))

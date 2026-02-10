@@ -29,6 +29,18 @@ CheckoutObjectPublic:
         type: object
         required: ["line_items"]
         properties:
+          success_url:
+            type: string
+            description: "The url to redirect to after a successful checkout"
+          cancel_url:
+            type: string
+            description: "The url to redirect to after a cancelled checkout"
+          application_fee_amount:
+            type: integer
+            description: "The amount to charge as an application fee in cents"
+          stripe_account_id:
+            type: string
+            description: "The stripe account id to use for this checkout"
           line_items:
             type: array
             items:

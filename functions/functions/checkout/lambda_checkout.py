@@ -35,6 +35,47 @@ STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Env
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'STRIPE_API_KEY' not found"))
 
+def _event_capacity_mutation(table, *,
+                             organisation_slug: str,
+                             event_ksuid: str,
+                             reserved_delta: int,
+                             remaining_capacity_delta: int,
+                             current_time: str,
+                             require_remaining_at_least: int | None = None):
+    """
+
+    """
+    extra_names = {"#remaining_capacity": "remaining_capacity"}
+    extra_values = {}
+
+    condition_expr = None
+    if require_remaining_at_least is not None:
+        condition_expr = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min"
+        extra_values[":min"] = int(require_remaining_at_least)
+
+    event_models = [
+        EventModel.model_validate({
+            "name": "placeholder", 
+            "organisation": organisation_slug,
+            "ksuid": event_ksuid,
+            "reserved": int(reserved_delta),
+            "remaining_capacity": int(remaining_capacity_delta),
+            "updated_at": current_time
+        })
+    ]
+
+    successful, failed = transact_upsert(
+        table,
+        event_models,
+        condition_expression=condition_expr,
+        add_fields={"reserved", "remaining_capacity"},
+        extra_expression_attr_names=extra_names,
+        extra_expression_attr_values=extra_values,
+        version_override=True,
+        only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
+    )
+    return successful, failed
+
 def start(validated_request: CreateCheckoutRequest, organisation_slug: str, actor: str):
     logger.info("Starting checkout process for organisation: %s", organisation_slug)
 
@@ -82,36 +123,15 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                 "ignored_checkouts": [c.model_dump_json() for c in ignored_checkouts]
             })
 
-    condition_expr = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :one"
-
-    extra_names = {
-        "#remaining_capacity": "remaining_capacity"
-    }
-    extra_values = {
-        ":one": 1,
-    }
-
     try:
-        event_models = [
-            EventModel.model_validate({
-                "name": "placeholder", 
-                "organisation": organisation_slug,
-                "ksuid": event_ksuid,
-                "reserved": 1,
-                "remaining_capacity": -1,
-                "updated_at": current_time
-            })
-        ]
-
-        successful, failed = transact_upsert(
-            table,
-            event_models,
-            condition_expression=condition_expr,
-            add_fields={"reserved", "remaining_capacity"},
-            extra_expression_attr_names=extra_names,
-            extra_expression_attr_values=extra_values,
-            version_override=True,
-            only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
+        successful, failed = _event_capacity_mutation(
+            table, 
+            organisation_slug=organisation_slug, 
+            event_ksuid=event_ksuid, 
+            reserved_delta=1, 
+            remaining_capacity_delta=-1, 
+            current_time=current_time, 
+            require_remaining_at_least=1
         )
 
         if failed:
@@ -187,26 +207,13 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         logger.error(traceback.format_exc())
 
         try:
-            event_models_rollback = [
-                EventModel.model_validate({
-                    "name": "placeholder", 
-                    "organisation": organisation_slug,
-                    "ksuid": event_ksuid,
-                    "reserved": -1,
-                    "remaining_capacity": 1,
-                    "updated_at": current_time
-                })
-            ]
-
-            transact_upsert(
-                table,
-                event_models_rollback,
-                condition_expression=condition_expr,
-                add_fields={"reserved", "remaining_capacity"},
-                extra_expression_attr_names=extra_names,
-                extra_expression_attr_values=extra_values,
-                version_override=True,
-                only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
+            _event_capacity_mutation(
+                table, 
+                organisation_slug=organisation_slug, 
+                event_ksuid=event_ksuid, 
+                reserved_delta=-1, 
+                remaining_capacity_delta=1, 
+                current_time=current_time
             )
         except Exception as rb_e:
             logger.error("Rollback failed (reserved may be stranded): %s", str(rb_e))

@@ -20,7 +20,7 @@ from _shared.helpers import make_response
 from _pydantic.models.checkout_models import CreateCheckoutRequest, CheckoutObjectPublic, LineItemObjectPublic
 from _pydantic.models.models_extended import EventModel
 from _pydantic.dynamodb import transact_upsert
-#from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -28,6 +28,7 @@ logger.setLevel("INFO")
 
 ## aws resources an clients
 db = boto3.resource("dynamodb")
+eventbridge = boto3.client('events')
 
 ## ENV variables
 # will throw an error if the env variable does not exist
@@ -41,38 +42,44 @@ def _event_capacity_mutation(table, *,
                              reserved_delta: int,
                              remaining_capacity_delta: int,
                              current_time: str,
-                             require_remaining_at_least: int | None = None):
+                             require_remaining_at_least: int | None = None,
+                             number_sold_delta: int | None = None):
     """
 
     """
     extra_names = {"#remaining_capacity": "remaining_capacity"}
     extra_values = {}
+    add_fields = {"reserved", "remaining_capacity"}
 
     condition_expr = None
     if require_remaining_at_least is not None:
         condition_expr = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min"
         extra_values[":min"] = int(require_remaining_at_least)
 
-    event_models = [
-        EventModel.model_validate({
+    model_data = {
             "name": "placeholder", 
             "organisation": organisation_slug,
             "ksuid": event_ksuid,
             "reserved": int(reserved_delta),
             "remaining_capacity": int(remaining_capacity_delta),
             "updated_at": current_time
-        })
-    ]
+        }
+    
+    if number_sold_delta is not None:
+        model_data["number_sold"] = int(number_sold_delta)
+        add_fields.add("number_sold")
+
+    event_models = [EventModel.model_validate(model_data)]
 
     result = transact_upsert(
         table,
         event_models,
         condition_expression=condition_expr,
-        add_fields={"reserved", "remaining_capacity"},
+        add_fields=add_fields,
         extra_expression_attr_names=extra_names,
         extra_expression_attr_values=extra_values,
         version_override=True,
-        only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
+        only_set_once={"created_at", "organisation", "ksuid", "name", "event_slug"}
     )
     return result
 
@@ -291,9 +298,66 @@ def unreserve(stripe_event: dict):
             "event_ksuid": event_ksuid
         })
     
+def completed(stripe_event: dict):
+    logger.info("Handling completed checkout session.")
 
-    # This function will be called by an EventBridge event when a checkout session expires
-    # It should find the events associated with the expired checkout session and decrement the reserved count by 1
+    # What event was the ticket sold for?
+    # Mutate the reserve (-1) and number_sold (+1) on the event. Remaining capacity does not need to be changed.
+    # Put an EventBridge event out to say a ticket has been sold including some details about it.
+    # Done
+
+    try:
+        detail = stripe_event.get("detail", {})
+        data_obj = detail.get("data", {}).get("object", {})
+        session_id = data_obj.get("id")
+        
+        metadata = data_obj.get("metadata", {}) or {}
+        organisation_slug = metadata.get("organisation")
+        event_ksuid = metadata.get("event_ksuid")
+        
+        logger.info(f"Organisation: {organisation_slug}, Event KSUID: {event_ksuid}")
+
+        reserved_delta = -1
+        remaining_capacity_delta = 1
+
+        TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
+        table = db.Table(TABLE_NAME)
+
+        current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+        logger.info(f"Current Time: {current_time}")
+
+        result = _event_capacity_mutation(
+            table,
+            organisation_slug=organisation_slug,
+            event_ksuid=event_ksuid, 
+            reserved_delta=-1, 
+            remaining_capacity_delta=0, 
+            current_time=current_time,
+            number_sold_delta=1
+        )
+
+        data = {
+            "session_id": session_id,
+            # line items
+            # personal details
+            # other data
+        }
+
+        # Put an EventBridge event out to say a ticket has been sold
+        trigger_eventbridge_event(eventbridge, 
+                            source="dance-engine.core", 
+                            resource_type=EventType.checkout,
+                            action=Action.completed,
+                            organisation=organisation_slug,
+                            resource_id=session_id,
+                            data=data)
+
+        return make_response(200, {"message": "Checkout session completed successfully."})
+
+    except Exception as e:
+        logger.error("Error handling completed checkout session: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Internal server error.", "error": str(e)})
 
 def lambda_handler(event, context):
     try:
@@ -328,6 +392,9 @@ def eventbridge_handler(event, context):
     if type == "checkout.session.expired":
         logger.info("Handling checkout.session.expired event.")
         return unreserve(event)
+    elif type == "checkout.session.completed":
+        logger.info("Received checkout.session.completed event.") 
+        return completed(event)
     else:
         logger.warning(f"Received event type I can not currently process: {type}")
         return make_response(400, {"message": f"Unhandled event type: {type}"})

@@ -34,7 +34,8 @@ class EventType(str, Enum):
     customer = "customer"
     organisation = "organisation"
     item = "item"
-    bundle = "bundle" 
+    bundle = "bundle"
+    checkout = "checkout"
 
 
 class Action(str, Enum):
@@ -44,6 +45,7 @@ class Action(str, Enum):
     restored = "restored"
     archived = "archived"
     published = "published"
+    completed = "completed"
 
 class EventBridgeEventDetail(BaseModel):
     timestamp: datetime

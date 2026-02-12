@@ -200,7 +200,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
 
             transact_upsert(
                 table,
-                event_models,
+                event_models_rollback,
                 condition_expression=condition_expr,
                 add_fields={"reserved", "remaining_capacity"},
                 extra_expression_attr_names=extra_names,

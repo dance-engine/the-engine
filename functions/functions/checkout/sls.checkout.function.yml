@@ -21,3 +21,33 @@ Checkout:
           path: /public/{organisation}/checkout/start
           method: post
           documentation: ${file(functions/checkout/sls.checkout.doc.yml):endpoints.checkout.POST}
+
+EventbridgeCheckout:
+  runtime: python3.11
+  handler: functions/checkout/lambda_checkout.eventbridge_handler
+  name: "${sls:stage}-${self:service}-eventbridge-checkout"
+  package:
+    patterns:
+      - '!**/**'
+      - "_shared/**"
+      - "functions/checkout/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+  environment:
+      STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      STRIPE_API_KEY: ${ssm:/danceengine/${sls:stage}/stripe/api_key}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer
+      - !Ref StripeLambdaLayer
+  events:
+    - eventBridge:
+        eventBus: ${param:stripe_event_bus}
+        pattern:
+          detail-type:
+            - "checkout.session.async_payment_failed"
+    - eventBridge:
+        eventBus: ${param:stripe_event_bus}
+        pattern:
+          detail-type:
+            - "checkout.session.expired"

@@ -192,7 +192,8 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             expires_at=expires_at,
             discounts=[{"coupon": checkout.coupon_code}] if checkout.coupon_code else None,
             allow_promotion_codes = True,
-            stripe_account = checkout.stripe_account_id
+            stripe_account = checkout.stripe_account_id,
+            metadata={"organisation": organisation_slug, "event_ksuid": event_ksuid},
         )
 
         return make_response(201, {
@@ -228,6 +229,71 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             "note": "Reservation rollback was attempted.",
             "ignored_checkouts": ignored_checkouts if ignored_checkouts else None
         })
+    
+def unreserve(stripe_event: dict):
+    logger.info("Unreserving tickets for expired checkout session.")
+    
+    detail = stripe_event.get("detail", {})
+    data_obj = detail.get("data", {}).get("object", {})
+    
+    metadata = data_obj.get("metadata", {}) or {}
+    organisation_slug = metadata.get("organisation")
+    event_ksuid = metadata.get("event_ksuid")
+
+    if not organisation_slug or not event_ksuid:
+        logger.warning("Missing metadata for unreserve. Can't map session to an event.")
+        return make_response(400, {
+            "message": "Missing metadata to unreserve reservation.",
+            "required": ["metadata.organisation", "metadata.event_ksuid"],
+        })
+    
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
+    table = db.Table(TABLE_NAME)
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    try:
+        result = _event_capacity_mutation(
+            table,
+            organisation_slug=organisation_slug,
+            event_ksuid=event_ksuid, 
+            reserved_delta=-1, 
+            remaining_capacity_delta=1, 
+            current_time=current_time 
+        ) 
+        if result.failed: 
+            f = result.failures[0]
+            if f.inferred == "remaining_capacity_insufficient":
+                return make_response(409, {"message": "Event is at capacity."})
+            if f.inferred == "version_conflict":
+                return make_response(409, {"message": "Version conflict."})
+            if f.code == "throttled":
+                return make_response(503, {"message": "Database throttled, retry."})
+            return make_response(409, {
+                "message": "Reservation failed.",
+                "reason": f.code,
+                "dynamodb_code": f.dynamodb_code,
+                "detail": f.message,
+            })
+        
+        logger.info("Successfully unreserved tickets for event %s.", event_ksuid)
+        return make_response(200, {
+            "message": "Successfully unreserved tickets.",
+            "event_ksuid": event_ksuid
+        }) 
+    except Exception as e:
+        logger.error("Error during unreservation: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {
+            "message": "Error during unreservation.",
+            "error": str(e),
+            "event_ksuid": event_ksuid
+        })
+    
+
+    # This function will be called by an EventBridge event when a checkout session expires
+    # It should find the events associated with the expired checkout session and decrement the reserved count by 1
 
 def lambda_handler(event, context):
     try:
@@ -254,3 +320,14 @@ def lambda_handler(event, context):
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Internal server error.", "error": str(e)})
     
+def eventbridge_handler(event, context):
+    logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+
+    type = event.get("detail-type", {})
+
+    if type == "checkout.session.expired":
+        logger.info("Handling checkout.session.expired event.")
+        return unreserve(event)
+    else:
+        logger.warning(f"Received event type I can not currently process: {type}")
+        return make_response(400, {"message": f"Unhandled event type: {type}"})

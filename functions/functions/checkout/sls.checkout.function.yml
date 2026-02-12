@@ -7,9 +7,11 @@ Checkout:
       - '!**/**'
       - "_shared/**"
       - "functions/checkout/**"
-    #   - "_pydantic/**" # this requires the pydantic layer also
+      - "_pydantic/**" # this requires the pydantic layer also
   environment:
       STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      STRIPE_API_KEY: ${ssm:/danceengine/${sls:stage}/stripe/api_key}
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer

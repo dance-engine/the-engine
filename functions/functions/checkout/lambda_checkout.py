@@ -65,6 +65,14 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         })
     
     event_ksuids = list(set(item.event_ksuid for item in line_items if hasattr(item, 'event_ksuid')))
+
+    if len(event_ksuids) != 1:
+        return make_response(400, {
+                "message": "All line items must be for the same event (checkout is currently only supported for one event at a time).",
+                "checkout": checkout.model_dump_json(), 
+                "ignored_checkouts": [c.model_dump_json() for c in ignored_checkouts] })
+    
+    event_ksuid = event_ksuids[0]
     
     for item in line_items:
         if item.quantity > 1:
@@ -74,38 +82,36 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                 "ignored_checkouts": [c.model_dump_json() for c in ignored_checkouts]
             })
 
-    condition_expr = (
-        "attribute_exists(#capacity) AND "
-        "(if_not_exists(#number_sold, :zero) + if_not_exists(#reserved, :zero) + :reserved) <= #capacity"
-    )
+    condition_expr = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :one"
 
     extra_names = {
-        "#capacity": "capacity",
-        "#number_sold": "number_sold",
-        "#reserved": "reserved",
+        "#remaining_capacity": "remaining_capacity"
     }
     extra_values = {
-        ":zero": 0
+        ":one": 1,
     }
 
     try:
         event_models = [
             EventModel.model_validate({
+                "name": "placeholder", 
                 "organisation": organisation_slug,
                 "ksuid": event_ksuid,
                 "reserved": 1,
+                "remaining_capacity": -1,
                 "updated_at": current_time
-            }) for event_ksuid in event_ksuids
+            })
         ]
 
         successful, failed = transact_upsert(
             table,
             event_models,
             condition_expression=condition_expr,
-            add_fields={"reserved"},
+            add_fields={"reserved", "remaining_capacity"},
             extra_expression_attr_names=extra_names,
             extra_expression_attr_values=extra_values,
-            version_override=True
+            version_override=True,
+            only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
         )
 
         if failed:
@@ -146,7 +152,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         stripe.api_key = STRIPE_API_KEY
 
         stripe_line_items = [
-            {"price": item.stripe_price_id, "quantity": item.quantity} for item in line_items
+            {"price": item.price_id, "quantity": item.quantity} for item in line_items
         ]
 
         expires_at = int(time.time()) + 30 * 60  # 30 minutes 
@@ -156,13 +162,14 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             payment_method_types=["card"],
             line_items=stripe_line_items,
             payment_intent_data={
-                "application_fee_amount": checkout.platform_fee_amount if checkout.platform_fee_amount else 0,
+                "application_fee_amount": checkout.application_fee_amount if checkout.application_fee_amount else 0
             },
             success_url=checkout.success_url,
             cancel_url=checkout.cancel_url,
             expires_at=expires_at,
             discounts=[{"coupon": checkout.coupon_code}] if checkout.coupon_code else None,
-            allow_promotion_codes = True
+            allow_promotion_codes = True,
+            stripe_account = checkout.stripe_account_id
         )
 
         return make_response(201, {
@@ -182,21 +189,24 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         try:
             event_models_rollback = [
                 EventModel.model_validate({
+                    "name": "placeholder", 
                     "organisation": organisation_slug,
                     "ksuid": event_ksuid,
                     "reserved": -1,
+                    "remaining_capacity": 1,
                     "updated_at": current_time
-                }) for event_ksuid in event_ksuids
+                })
             ]
 
             transact_upsert(
                 table,
-                event_models_rollback,
+                event_models,
                 condition_expression=condition_expr,
-                add_fields={"reserved"},
+                add_fields={"reserved", "remaining_capacity"},
                 extra_expression_attr_names=extra_names,
                 extra_expression_attr_values=extra_values,
-                version_override=True
+                version_override=True,
+                only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
             )
         except Exception as rb_e:
             logger.error("Rollback failed (reserved may be stranded): %s", str(rb_e))

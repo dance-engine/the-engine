@@ -75,6 +75,8 @@ class EventModel(EventBase, DynamoModel):
     number_sold: int = 0
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    remaining_capacity: int = 0
+    reserved: int = 0
 
     @property
     def related_entities(self):

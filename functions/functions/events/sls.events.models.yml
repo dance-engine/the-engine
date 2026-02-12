@@ -66,6 +66,11 @@ EventObject:
                 - "lecture"
           capacity:
             type: integer
+          remaining_capacity: 
+            type: integer
+          reserved: 
+            type: integer
+            default: 0
           number_sold:
             type: integer
             default: 0

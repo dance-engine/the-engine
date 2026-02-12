@@ -595,6 +595,7 @@ def test_batch_write_batching(dt):
 
 # Transaction Upsert Tests
 def test_transact_upsert_success(dt):
+    #! expected to fail due to updates to the function
     mock_table = MagicMock()
     mock_table.name = "org-demo"
     db_client = MagicMock()
@@ -617,6 +618,7 @@ def test_transact_upsert_success(dt):
     assert '#SK' not in payload[0]['Update']['ExpressionAttributeNames']
 
 def test_transact_upsert_with_versioning(valid_ksuid, dt):
+    #! expected to fail due to updates to the function
     class VersionedModel(SimpleModel):
         version: int = 1
 
@@ -639,6 +641,7 @@ def test_transact_upsert_with_versioning(valid_ksuid, dt):
     assert "attribute_not_exists(#version) OR #version <= :incoming_version" in update['ConditionExpression']
 
 def test_transact_upsert_with_only_set_once_and_condition(dt):
+    #! expected to fail due to updates to the function
     mock_table = MagicMock()
     mock_table.name = "org-demo"
     db_client = MagicMock()
@@ -654,6 +657,7 @@ def test_transact_upsert_with_only_set_once_and_condition(dt):
     assert "attribute_exists(PK)" in update['ConditionExpression']
 
 def test_transact_upsert_conflict(dt, valid_ksuid):
+    #! expected to fail due to updates to the function
     class VersionedModel(SimpleModel):
         version: int = 1
 
@@ -679,6 +683,7 @@ def test_transact_upsert_conflict(dt, valid_ksuid):
     assert e.value.incoming_versions == [1]
 
 def test_transact_upsert_empty_input():
+    #! expected to fail due to updates to the function
     mock_table = MagicMock()
     mock_table.name = "org-demo"
     db_client = MagicMock()

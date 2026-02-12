@@ -19,7 +19,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.models.checkout_models import CreateCheckoutRequest, CheckoutObjectPublic, LineItemObjectPublic
 from _pydantic.models.models_extended import EventModel
-from _pydantic.dynamodb import transact_upsert, VersionConflictError
+from _pydantic.dynamodb import transact_upsert
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 
 ## logger setup
@@ -64,7 +64,7 @@ def _event_capacity_mutation(table, *,
         })
     ]
 
-    successful, failed = transact_upsert(
+    result = transact_upsert(
         table,
         event_models,
         condition_expression=condition_expr,
@@ -74,7 +74,7 @@ def _event_capacity_mutation(table, *,
         version_override=True,
         only_set_once={"created_at", "number_sold", "organisation", "ksuid", "name", "event_slug"}
     )
-    return successful, failed
+    return result
 
 def start(validated_request: CreateCheckoutRequest, organisation_slug: str, actor: str):
     logger.info("Starting checkout process for organisation: %s", organisation_slug)
@@ -124,7 +124,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             })
 
     try:
-        successful, failed = _event_capacity_mutation(
+        result = _event_capacity_mutation(
             table, 
             organisation_slug=organisation_slug, 
             event_ksuid=event_ksuid, 
@@ -134,20 +134,23 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             require_remaining_at_least=1
         )
 
-        if failed:
+        logger.info(f"Event capacity mutation result: {result}")
+
+        if result.failed:
+            f = result.failures[0]
+            if f.inferred == "remaining_capacity_insufficient":
+                return make_response(409, {"message": "Event is at capacity."})
+            if f.inferred == "version_conflict":
+                return make_response(409, {"message": "Version conflict."})
+            if f.code == "throttled":
+                return make_response(503, {"message": "Database throttled, retry."})
             return make_response(409, {
-                "message": "Unable to reserve tickets for one or more events (likely at capacity).",
-                "events_attempted": event_ksuids,
-                "ignored_checkouts": ignored_checkouts if ignored_checkouts else None
+                "message": "Reservation failed.",
+                "reason": f.code,
+                "dynamodb_code": f.dynamodb_code,
+                "detail": f.message,
             })
 
-    except VersionConflictError as e:
-        logger.error(f"Version Conflict")
-        return make_response(409, {
-            "message": "Version conflict",
-            "resource": [m.PK for m in e.models],
-            "your_version": e.incoming_version
-        })
     except ValidationError as e:
         logger.error("Validation error: %s", str(e))
         logger.error(traceback.format_exc())

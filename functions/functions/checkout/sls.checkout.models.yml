@@ -1,0 +1,66 @@
+LineItemObjectPublic:
+  name: "LineItemObjectPublic"
+  description: "Line item object for the public"
+  x-internal-group: "checkout"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["line_items"]
+        properties:
+          event_ksuid:
+            type: string
+            description: "The ksuid of the event associated with this item"
+          price_id:
+            type: string
+            description: "The price id of the product in stripe"
+          quantity:
+            type: integer
+            description: "The quantity of this item to add to the checkout"           
+CheckoutObjectPublic:
+  name: "CheckoutObjectPublic"
+  description: "Checkout object for the public"
+  x-internal-group: "checkout"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["line_items", "stripe_account_id", "success_url", "cancel_url"]
+        properties:
+          coupon_code:
+            type: string
+            description: "The coupon code to apply to the checkout"
+          success_url:
+            type: string
+            description: "The url to redirect to after a successful checkout"
+          cancel_url:
+            type: string
+            description: "The url to redirect to after a cancelled checkout"
+          application_fee_amount:
+            type: integer
+            description: "The amount to charge as an application fee in cents"
+          stripe_account_id:
+            type: string
+            description: "The stripe account id to use for this checkout"
+          line_items:
+            type: array
+            items:
+              $ref: "#/components/schemas/LineItemObjectPublic"
+CreateCheckoutRequest:
+  name: "CreateCheckoutRequest"
+  description: "Request model for creating a new checkout"
+  x-internal-group: "checkout"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["checkout"]
+        properties:
+          checkout:
+            type: array
+            items:
+              $ref: "#/components/schemas/CheckoutObjectPublic"

@@ -75,6 +75,8 @@ class EventModel(EventBase, DynamoModel):
     number_sold: int = 0
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    remaining_capacity: int = 0
+    reserved: int = 0
 
     @property
     def related_entities(self):
@@ -118,7 +120,7 @@ class EventModel(EventBase, DynamoModel):
     @model_validator(mode="after")
     def validate_live(self) -> 'EventModel':
         if self.status == EventStatus.live:
-            REQUIRED_FIELDS_FOR_LIVE = ["name", "description", "starts_at", "ends_at"]
+            REQUIRED_FIELDS_FOR_LIVE = ["name", "description", "starts_at", "ends_at", "capacity"]
             missing = []
 
             for field in REQUIRED_FIELDS_FOR_LIVE:

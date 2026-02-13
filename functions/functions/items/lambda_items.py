@@ -20,7 +20,7 @@ from _shared.helpers import make_response
 from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest
 from _pydantic.models.models_extended import ItemModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
-from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
+from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -104,25 +104,41 @@ def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, acto
             }) for item_data in request.items
         ]
 
-        successful_items, failed_items = transact_upsert(table, item_models)
+        result = transact_upsert(table, item_models)
 
-        if failed_items:
+        if result.failed and not result.successful:
+            return make_response(400, {
+                "message": "Failed to update any items.",
+                "failed_items": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
+            })
+
+        if result.failed & result.successful:
             return make_response(207, {
-                "message": "Some items updated successfully, others failed.",
-                "items": [item.model_dump(mode="json") for item in successful_items],
-                "unprocessed": [item.model_dump(mode="json") for item in failed_items]
+                "message": "Partial success: some items updated successfully, others failed.",
+                "successful_items": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "updated successfully"
+                    } for item in result.successful
+                ],
+                "failed_items": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
             })
 
         return make_response(201, {
             "message": "Items updated successfully.",
-            "items": [item.model_dump(mode="json") for item in successful_items],
-        })
-    except VersionConflictError as e:
-        logger.error(f"Version Conflict")
-        return make_response(409, {
-            "message": "Version conflict",
-            "resource": [m.PK for m in e.models],
-            "your_version": e.incoming_version
+            "items": [item.model_dump(mode="json") for item in result.successful],
         })
     except ValidationError as e:
         logger.error("Validation error: %s", str(e))

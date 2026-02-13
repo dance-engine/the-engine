@@ -5,6 +5,8 @@ import logging
 from datetime import datetime, timezone
 import traceback
 from decimal import Decimal
+from dataclasses import dataclass
+from typing import Any, Optional
 
 from pydantic import BaseModel, field_validator, Field
 from ksuid import KsuidMs
@@ -486,32 +488,67 @@ def batch_write(table, items: list, overwrite: bool = True):
         
     return successful_items, unprocessed_items
 
-def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], condition_expression: str = None):
+@dataclass
+class TransactUpsertFailure:
+    index: int
+    pk: str
+    sk: str
+    code: str
+    dynamodb_code: Optional[str]
+    message: Optional[str]
+    old_item: Optional[dict[str, Any]]
+    inferred: Optional[str]
+
+@dataclass
+class TransactUpsertResult:
+    successful: list[Any]
+    failed: list[Any]
+    failures: list[TransactUpsertFailure]
+
+def transact_upsert(table, 
+                    items: list[DynamoModel], 
+                    only_set_once: list = [], 
+                    condition_expression: str = None, 
+                    add_fields: set[str] | None = None, 
+                    extra_expression_attr_names: dict[str, str] | None = None, 
+                    extra_expression_attr_values: dict[str, object] | None = None,
+                    version_override: bool = False
+                    ) -> TransactUpsertResult:
     MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
     client = table.meta.client
 
+    add_fields = set(add_fields or [])
+    only_set_once = list(only_set_once or [])
+
     batches = [items[i:i+MAX_BATCH_SIZE] for i in range(0, len(items), MAX_BATCH_SIZE)]
-    successful_items = []
-    failed_items = []
+    successful_items: list[DynamoModel] = []
+    failed_items: list[DynamoModel] = []
+    failures: list [TransactUpsertFailure] = []
 
     for batch in batches:
         transact_items = []
 
         for item in batch:
-            conditions = []
-            update_parts = []
+            conditions: list[str] = []
+            set_parts:  list[str] = []
+            add_parts:  list[str] = []
+
+            extra_expression_attr_names = dict(extra_expression_attr_names or {})
+            extra_expression_attr_values = dict(extra_expression_attr_values or {})
+
             expression_attr_names = {}
             expression_attr_values = {}
 
             item_dict = item.to_dynamo(exclude_keys=True)
 
-            if item.uses_versioning():
+            if item.uses_versioning() and not version_override:
                 incoming_version = item_dict.get('version', 0)
                 item_dict['version'] = incoming_version + 1
 
                 expression_attr_names["#version"] = "version"
                 expression_attr_values[":incoming_version"] = incoming_version
                 conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
+
             if condition_expression:
                 conditions.append(f"{condition_expression}")
 
@@ -521,12 +558,29 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
                 expression_attr_names[name_placeholder] = key
                 expression_attr_values[value_placeholder] = value
 
-                if key in only_set_once:
-                    update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
-                else:
-                    update_parts.append(f"{name_placeholder} = {value_placeholder}")
+                if key in add_fields:
+                    add_parts.append(f"{name_placeholder} {value_placeholder}")
+                    continue                
 
-            update_expression = "SET " + ", ".join(update_parts)
+                if key in only_set_once:
+                    set_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
+                else:
+                    set_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+            for k, v in extra_expression_attr_names.items():
+                expression_attr_names.setdefault(k, v)
+            for k, v in extra_expression_attr_values.items():
+                expression_attr_values.setdefault(k, v)
+
+            parts = []
+            if set_parts:
+                parts.append("SET " + ", ".join(set_parts))
+            if add_parts:
+                parts.append("ADD " + ", ".join(add_parts))
+            if not parts:
+                raise ValueError(f"transact_upsert: no updatable attributes for item {item!r}")
+            
+            update_expression = " ".join(parts)
 
             transact_items.append({
                 "Update": {
@@ -541,28 +595,116 @@ def transact_upsert(table, items: list[DynamoModel], only_set_once: list = [], c
             })
 
         try:
-            client.transact_write_items(TransactItems=transact_items)
+            client.transact_write_items(
+                TransactItems=transact_items
+            )
             successful_items.extend(batch)
         except client.exceptions.TransactionCanceledException as e:
             logger.warning("Transaction cancelled")
             reasons = e.response.get("CancellationReasons", [])
-            conflict_idxs = [
-                idx for idx, reason in enumerate(reasons)
-                if reason.get("Code") == "ConditionalCheckFailed"
-            ]
-            if conflict_idxs:
-                conflict_models = [batch[i] for i in conflict_idxs]
-                conflict_versions = [
-                    batch[i].version for i in conflict_idxs if batch[i].uses_versioning()
-                ]
 
-                raise VersionConflictError(conflict_models, conflict_versions)
+            if not reasons:
+                failed_items.extend(batch)
+                failures.extend([
+                    TransactUpsertFailure(
+                        index=i, 
+                        pk=batch[i].PK, 
+                        sk=batch[i].SK, 
+                        code="Unknown", 
+                        dynamodb_code=None, 
+                        message=None, 
+                        old_item=None, 
+                        inferred=None
+                    ) for i in range(len(batch))
+                ]) 
+                
+                logger.warning("No cancellation reasons provided, marking all items as failed.")
+                continue
 
-            logger.warning("Transaction cancelled for unknown reasons: %s", reasons)
-            failed_items.extend(batch)
+            for i, reason in enumerate(reasons):
+                code = reason.get("Code")
+                msg = reason.get("Message")
+                old_item = reason.get("Item")
+
+                inferred = None
+                normalised = "Unknown"
+
+                if code == "ConditionalCheckFailed":
+                    normalised = "conditional_failed"
+
+                    if (not version_override) and batch[i].uses_versioning():
+                        incoming_version = batch[i].to_dynamo(exclude_keys=True).get("version", 0)
+                        old_version = None
+                        if isinstance(old_item, dict):
+                            old_version = old_item.get("version", None)
+                        if isinstance(old_version, (int, float)) and old_version > incoming_version:
+                            inferred = "version_conflict"
+
+                    if isinstance(old_item, dict):
+                        rc = old_item.get("remaining_capacity", None)
+                        logger.info(f"Old item remaining capacity: {rc}, {type(rc)}")
+                        if "N" in rc and rc.get("N") is not None and int(rc["N"]) < 1: 
+                        # if isinstance(rc, (int, float)) and rc < 1:
+                            logger.info(f"current inffered problem is {inferred} and remaining capacity is {rc}")
+                            inferred = inferred or "remaining_capacity_insufficient"
+                
+                elif code == "TransactionConflict":
+                    normalised = "transaction_conflict"
+                elif code in ("ProvisionedThroughputExceeded", "ThrottlingException", "RequestLimitExceeded"):
+                    normalised = "throttled"
+                elif code == "ItemCollectionSizeLimitExceeded":
+                    normalised = "item_collection_limit"
+                else:
+                    normalised = "unknown"
+
+                if code is not None and code != "None":
+                    failed_items.append(batch[i])
+
+                failures.append(TransactUpsertFailure(
+                    index=i,
+                    pk=batch[i].PK,
+                    sk=batch[i].SK,
+                    code=normalised,
+                    dynamodb_code=code,
+                    message=msg,
+                    old_item=old_item,
+                    inferred=inferred,
+                ))
+
+            # conflict_idxs = [
+            #     idx for idx, reason in enumerate(reasons)
+            #     if reason.get("Code") == "ConditionalCheckFailed"
+            # ]
+            # if conflict_idxs:
+            #     conflict_models = [batch[i] for i in conflict_idxs]
+            #     conflict_versions = [
+            #         batch[i].version for i in conflict_idxs if batch[i].uses_versioning()
+            #     ]
+
+            #     raise VersionConflictError(conflict_models, conflict_versions)
+
+            # logger.warning("Transaction cancelled for unknown reasons: %s", reasons)
+            # failed_items.extend(batch)
         except Exception as e:
             logger.error(f"Unexpected transaction error: {e}")
             logger.error(traceback.format_exc())
             failed_items.extend(batch)
+            failures.extend([
+                TransactUpsertFailure(
+                    index=i,
+                    pk=batch[i].PK,
+                    sk=batch[i].SK,
+                    code="exception",
+                    dynamodb_code=None,
+                    message=str(e),
+                    old_item=None,
+                    inferred=None,
+                )
+                for i in range(len(batch))
+            ])            
 
-    return successful_items, failed_items
+    return TransactUpsertResult(
+        successful=successful_items,
+        failed=failed_items,
+        failures=failures
+    )

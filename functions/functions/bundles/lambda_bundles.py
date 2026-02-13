@@ -21,7 +21,7 @@ from _pydantic.models.bundles_models import BundleObject, BundleResponse, Create
 from _pydantic.models.models_extended import BundleModel
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
-from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
+from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -129,25 +129,41 @@ def update(request: UpdateBundleRequest, organisationSlug: str, eventId: str, ac
         resp = _validate_includes(table, bundle_models, eventId)
         if resp: return resp
 
-        successful_bundles, failed_bundles = transact_upsert(table, bundle_models)
+        result = transact_upsert(table, bundle_models)
 
-        if failed_bundles:
+        if result.failed and not result.successful:
+            return make_response(400, {
+                "message": "Failed to update any bundles.",
+                "failed_bundles": [
+                    {
+                        "bundle": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
+            })
+
+        if result.failed & result.successful:
             return make_response(207, {
-                "message": "Some bundles updated successfully, others failed.",
-                "bundles": [b.model_dump(mode="json") for b in successful_bundles],
-                "unprocessed": [b.model_dump(mode="json") for b in failed_bundles]
+                "message": "Partial success: some bundles updated successfully, others failed.",
+                "successful_bundles": [
+                    {
+                        "bundle": item.model_dump(mode="json"),
+                        "status": "updated successfully"
+                    } for item in result.successful
+                ],
+                "failed_bundles": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
             })
 
         return make_response(201, {
             "message": "Bundles updated successfully.",
-            "bundles": [b.model_dump(mode="json") for b in successful_bundles],
-        })
-    except VersionConflictError as e:
-        logger.error("Version Conflict")
-        return make_response(409, {
-            "message": "Version conflict",
-            "resource": [m.PK for m in e.models],
-            "your_version": e.incoming_version
+            "bundles": [b.model_dump(mode="json") for b in result.successful],
         })
     except ValidationError as e:
         logger.error("Validation error: %s", str(e))

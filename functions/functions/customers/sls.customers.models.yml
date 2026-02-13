@@ -1,0 +1,70 @@
+CustomerObject:
+  name: "CustomerObject"
+  description: "Customer object"
+  x-internal-group: "customers"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          ksuid:
+            type: string
+            description: "ID of the customer"
+          name:
+            type: string
+            description: "The name of the customer."
+          email:
+            type: string
+            description: "The email of the customer."
+          phone:
+            type: string
+            description: "Phone number for the customer."
+          bio:
+            type: string
+            description: "Short description or biography for the customer."
+          version:
+            type: integer
+CreateCustomerRequest:
+  name: "CreateCustomerRequest"
+  description: "Request model for creating a new customer"
+  x-internal-group: "customers"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["customer"]
+        properties:
+          customer:
+            $ref: "#/components/schemas/CustomerObject"
+UpdateCustomerRequest:          
+  name: "UpdateCustomerRequest"
+  description: "Request model for updating a customer"
+  x-internal-group: "customers"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["customer"]
+        properties:
+          customer:
+            $ref: "#/components/schemas/CustomerObject"
+CustomerListResponse:
+  name: "CustomerListResponse"
+  description: "Response model for a list of Customers"
+  x-internal-group: "customers"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          customers:
+            type: array 
+            items:
+              $ref: "#/components/schemas/CustomerObject"              

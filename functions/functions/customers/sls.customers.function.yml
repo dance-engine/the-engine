@@ -22,14 +22,20 @@ Customers:
           adminAuthorizer
         documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETall}
     - httpApi:
+        path: /{organisation}/customers/{ksuid}
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETone}        
+    - httpApi:
         path: /{organisation}/customers
         method: post
         authorizer:
           adminAuthorizer
         documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.POST}
     - httpApi:
-        path: /{organisation}/customers/{ksuid}
-        method: get
+        path: /{organisation}/events/{ksuid}
+        method: put
         authorizer:
           adminAuthorizer
-        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETone}
+        documentation: ${file(functions/events/sls.events.doc.yml):Events.PUT}        

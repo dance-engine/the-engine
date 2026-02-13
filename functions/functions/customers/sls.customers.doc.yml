@@ -13,16 +13,19 @@ Customers:
       - statusCode: 200
         responseBody:
           description: Returns a list of all customers.
+        responseModels:
+            application/json: "CustomerListResponse"            
       - statusCode: 404
         responseBody:
           description: No customers found.
       - statusCode: 500
         responseBody:
           description: Internal server error.
-
+        responseModels:
+            application/json: "ErrorResponse"
   GETone:
     summary: "Get Single Customer"
-    description: "Fetch details of a specific customer by their KSUID in a given organisation."
+    description: "Fetch details of a specific customer by their ksuid in a given organisation."
     tags:
       - Customers
     pathParams:
@@ -38,13 +41,16 @@ Customers:
       - statusCode: 200
         responseBody:
           description: The customer object.
+        responseModels:
+          application/json: "CustomerListResponse"
       - statusCode: 404
         responseBody:
           description: Customer not found
       - statusCode: 500
         responseBody:
           description: Internal server error.
-
+        responseModels:
+          application/json: "ErrorResponse"
   POST:
     summary: "Create Customer"
     description: "Creates a new customer record under a specific organisation."
@@ -65,7 +71,45 @@ Customers:
           description: Customer created successfully.
       - statusCode: 400
         responseBody:
-          description: Invalid input or duplicate entry.
+          description: Invalid input
+      - statusCode: 409
+        responseBody:
+          description: Version conflict.
       - statusCode: 500
         responseBody:
           description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"
+  PUT:
+    summary: "Update a Customer"
+    description: "Update an existing customer and its location"
+    tags:
+      - Customers
+    pathParams:
+      - name: organisation
+        description: Organisation slug
+        schema:
+          type: string
+      - name: ksuid
+        description: Unique event ID (KSUID)
+        schema:
+          type: string            
+    requestBody:
+      description: "Customer details"
+    requestModels:
+      application/json: "UpdateCustomerRequest"
+    methodResponses:
+      - statusCode: 201
+        responseBody:
+          description: Customer updated successfully.
+      - statusCode: 400
+        responseBody:
+          description: Invalid input
+      - statusCode: 409
+        responseBody:
+          description: Version conflict.
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"          

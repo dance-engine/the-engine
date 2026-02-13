@@ -120,7 +120,7 @@ class EventModel(EventBase, DynamoModel):
     @model_validator(mode="after")
     def validate_live(self) -> 'EventModel':
         if self.status == EventStatus.live:
-            REQUIRED_FIELDS_FOR_LIVE = ["name", "description", "starts_at", "ends_at"]
+            REQUIRED_FIELDS_FOR_LIVE = ["name", "description", "starts_at", "ends_at", "capacity"]
             missing = []
 
             for field in REQUIRED_FIELDS_FOR_LIVE:

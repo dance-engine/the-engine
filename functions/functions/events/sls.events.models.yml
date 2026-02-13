@@ -66,6 +66,7 @@ EventObject:
                 - "lecture"
           capacity:
             type: integer
+            minimum: 1
           remaining_capacity: 
             type: integer
           reserved: 

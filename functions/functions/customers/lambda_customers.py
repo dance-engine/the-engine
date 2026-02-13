@@ -1,25 +1,32 @@
+import sys
+import os
+
 import json
 import logging
-import os
+import boto3
 import traceback
 from datetime import datetime, timezone
-
-import boto3
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from ksuid import KsuidMs # utils layer
-from _pydantic.EventBridge import triggerEBEvent # pydantic layer
+from boto3.dynamodb.conditions import Key
 
+from ksuid import KsuidMs # utils layer
+
+sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, triggerEBEvent # pydantic layer
+from _pydantic.models.customers_models import CreateCustomerRequest, UpdateCustomerRequest, CustomerListResponse, CustomerObject
+
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
 db = boto3.resource("dynamodb")
-ORG_TABLE_NAME_TEMPLATE = os.environ.get("ORG_TABLE_NAME_TEMPLATE")
 eventbridge = boto3.client('events')
+
+STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
+ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
 def create_customer(event_data,organisationSlug):
     """

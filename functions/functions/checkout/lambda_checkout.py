@@ -317,9 +317,6 @@ def completed(stripe_event: dict):
         
         logger.info(f"Organisation: {organisation_slug}, Event KSUID: {event_ksuid}")
 
-        reserved_delta = -1
-        remaining_capacity_delta = 1
-
         TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
         table = db.Table(TABLE_NAME)
 

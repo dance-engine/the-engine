@@ -51,3 +51,8 @@ EventbridgeCheckout:
         pattern:
           detail-type:
             - "checkout.session.expired"
+    - eventBridge:
+        eventBus: ${param:stripe_event_bus}
+        pattern:
+          detail-type:
+            - "checkout.session.completed"            

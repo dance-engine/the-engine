@@ -12,12 +12,14 @@ from boto3.dynamodb.conditions import Key
 from ksuid import KsuidMs # utils layer
 
 sys.path.append(os.path.dirname(__file__))
-from _shared.parser import parse_event, validate_event
+from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName
+from _shared.helpers import make_response
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, triggerEBEvent # pydantic layer
-from _pydantic.models.customers_models import CreateCustomerRequest, UpdateCustomerRequest, CustomerListResponse, CustomerObject
-
+from _pydantic.dynamodb import VersionConflictError # pydantic layer
+from _pydantic.models.customers_models import CreateCustomerRequest, UpdateCustomerRequest, CustomerListResponse
+from _pydantic.models.models_extended import CustomerModel
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -28,42 +30,54 @@ eventbridge = boto3.client('events')
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
-def create_customer(event_data,organisationSlug):
-    """
-    Creates a new Customer
-    """
+def create_customer(request_data: CreateCustomerRequest, organisation_slug: str, actor: str = "unknown"):
+    logger.info(f"Create Customer: {request_data}")
 
-    logger.info(f"Create Customer: {event_data}")
-    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Adding event for {organisationSlug} into {TABLE_NAME}")
+    logger.info(f"Adding customer for {organisation_slug} into {TABLE_NAME}")
 
-    clientKsuid = KsuidMs.from_base62(event_data.get('ksuid'))
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-
     logger.info(f"Current Time: {current_time}")
 
-    customer_item = {
-        "ksuid":            f"{clientKsuid}",
-        "name":             event_data.get('name'),
-        "email":             event_data.get('email'),
-        "phone":             event_data.get('phone'),
-        "bio":              event_data.get("bio"),
-        "organisation":     organisationSlug,
-        "entity_type":      "CUSTOMER",
-        "created_at":       current_time,
-        "updated_at":       current_time,
-        "version":          event_data.get("version"),
-    }
-    try:
-        event_response = upsert_customer(table,clientKsuid,customer_item, ["created_at"])
+    # clientKsuid = KsuidMs.from_base62(event_data.get('ksuid'))
 
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
-            logger.error(f"Item already exists! {customer_item}")
-        else:
-            raise
-    return customer_item, event_response
+    customer_data  = request_data.customer
+    customer_model = CustomerModel.model_validate({
+        **customer_data.model_dump(mode="json", exclude_unset=True),
+        "ksuid": str(customer_data.ksuid) if customer_data.ksuid else str(KsuidMs()),
+        "organisation": organisation_slug,
+        "created_at": current_time,
+        "updated_at": current_time,
+        "version": customer_data.version or 0
+    })
+
+    try:
+        customer_response = customer_model.upsert(table, ["created_at", "ksuid"])
+        trigger_eventbridge_event(eventbridge, 
+                    source="dance-engine.core", 
+                    resource_type=EventType.customer,
+                    action=Action.created,
+                    organisation=organisation_slug,
+                    resource_id=customer_model.ksuid,
+                    data=customer_model.model_dump(mode="json", exclude_unset=True)
+        )
+        make_response(201,{
+            "message": "Customer created successfully.",
+            "customer": customer_model.model_dump(mode="json", exclude_unset=True)
+            }
+        )
+    except VersionConflictError as e:
+        logger.error(f"Version Conflict")
+        return make_response(409, {
+            "message": "Version conflict",
+            "resource": e.model.PK,
+            "your_version": e.incoming_version
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
 
 def upsert_customer(table, ksuid: str, item: dict, only_set_once: list = []):
     update_parts = []
@@ -150,19 +164,17 @@ def private_handler(event, context):
     try:
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
         parsed_event = parse_event(event)
-        http_method = event['requestContext']["http"]["method"]
+        http_method  = event['requestContext']["http"]["method"]
+
         organisationSlug = event.get("pathParameters", {}).get("organisation")
-        customerId = event.get("pathParameters", {}).get("ksuid",None)
+        customerId          = event.get("pathParameters", {}).get("ksuid",None)
+        is_public        = event.get("rawPath", "").startswith("/public")
+        actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
-
+        # POST /{organisation}/customers
         if http_method == "POST":
-            validated_event = validate_event(parsed_event, ["name"])
-
-            created_customer = create_customer(validated_event,organisationSlug)
-            if created_customer is None:
-                return { "statusCode": 400, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Customer with this name already exists."})}
-
-            return {"statusCode": 201, "headers": { "Content-Type": "application/json" }, "body": json.dumps({"message": "Event created successfully.", "event": created_customer}, cls=DecimalEncoder)}
+            validated_event = CreateCustomerRequest(**parsed_event)
+            return create_customer(validated_event, organisationSlug, actor)
 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{customerId}")

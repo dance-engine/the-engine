@@ -61,34 +61,86 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
     # Do I need to jsut use the line_items from the Stripe checkout session stored in the meta?
 
     ticket_ksuid = str(KsuidMs())
+    
+    try:
 
-    # build child items from line_items
-    child_items = [
-        TicketChildModel.model_validate({
-            "child_ksuid":it.get("ksuid"),
-            "child_type": it.get("type"),
-            "parent_ticket_ksuid": ticket_ksuid,
+        # build child items from line_items
+        child_items = [
+            TicketChildModel.model_validate({
+                "child_ksuid":it.get("ksuid"),
+                "child_type": it.get("type"),
+                "parent_ticket_ksuid": ticket_ksuid,
+                "organisation": organisation_slug,
+                "created_at": current_time,
+                "updated_at": current_time,
+                "name": it.get("name"),
+                "includes": it.get("includes", []) if it.get("type") == "bundle" else []
+            }) for it in data.get("line_items", [])
+        ]
+
+        ticket_includes = [f"{it.PK}" for it in child_items]
+
+        ticket_model = TicketModel.model_validate({
+            "ksuid": ticket_ksuid,
             "organisation": organisation_slug,
+            "parent_event_ksuid": data.get("parent_event_ksuid"),
             "created_at": current_time,
             "updated_at": current_time,
-            "name": it.get("name"),
-            "includes": it.get("includes", []) if it.get("type") == "bundle" else []
-        }) for it in data.get("line_items", [])
-    ]
+            "customer_email": data.get("customer_email"),
+            "name_on_ticket": data.get("name_on_ticket"),
+            "name": data.get("name"),
+            "includes": ticket_includes
+            })
+        
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })        
+    
+    try:
+        result = transact_upsert(table, child_items + [ticket_model])
 
-    ticket_includes = [f"{it.PK}" for it in child_items]
+        if result.failed and not result.successful:
+            return make_response(400, {
+                "message": "Failed to create a ticket.",
+                "failed_bundles": [
+                    {
+                        "items": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
+            })
 
-    ticket_model = TicketModel.model_validate({
-        "ksuid": ticket_ksuid,
-        "organisation": organisation_slug,
-        "parent_event_ksuid": data.get("parent_event_ksuid"),
-        "created_at": current_time,
-        "updated_at": current_time,
-        "customer_email": data.get("customer_email"),
-        "name_on_ticket": data.get("name_on_ticket"),
-        "name": data.get("name"),
-        "includes": ticket_includes
-        })   
+        if result.failed & result.successful:
+            return make_response(207, {
+                "message": "Partial success",
+                "successful": [
+                    {
+                        "bundle": item.model_dump(mode="json"),
+                        "status": "Created successfully"
+                    } for item in result.successful
+                ],
+                "failed": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
+            })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
 
 def lambda_handler(event, context):
     logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))

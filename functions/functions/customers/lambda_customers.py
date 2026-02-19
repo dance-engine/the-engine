@@ -79,86 +79,101 @@ def create_customer(request_data: CreateCustomerRequest, organisation_slug: str,
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
 
-def upsert_customer(table, ksuid: str, item: dict, only_set_once: list = []):
-    update_parts = []
-    expression_attr_names = {}
-    expression_attr_values = {}
+def update_customer(request_data: UpdateCustomerRequest, organisation_slug: str, actor: str = "unknown"):
+    logger.info(f"Updating Customer: {request_data.model_dump}")
 
-    incoming_version = item.get("version") if isinstance(item.get("version"), int) else 0
-    item["version"] = incoming_version + 1
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Updating customer for {organisation_slug} into {TABLE_NAME}")
 
-    for key, value in item.items():
-        name_placeholder = f"#{key}"
-        value_placeholder = f":{key}"
-        expression_attr_names[name_placeholder] = key
-        expression_attr_values[value_placeholder] = value
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
 
-        if key in only_set_once:
-            update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
-        else:
-            update_parts.append(f"{name_placeholder} = {value_placeholder}")
-
-    update_expression = "SET " + ", ".join(update_parts)
-
-    # Only update if existing version is less than the one being replaced
-    condition_expression = "attribute_not_exists(#version) OR #version <= :incoming_version"
-    expression_attr_names["#version"] = "version"
-    expression_attr_values[":incoming_version"] = incoming_version
+    customer_data = request_data.customer
 
     try:
-        response = table.update_item(
-            Key={"PK": f"CUSTOMER#{ksuid}", "SK": f"CUSTOMER#{ksuid}"},
-            UpdateExpression=update_expression,
-            ConditionExpression=condition_expression,
-            ExpressionAttributeNames=expression_attr_names,
-            ExpressionAttributeValues=expression_attr_values,
-            ReturnValues="ALL_NEW"
-        )
-        triggerEBEvent(eventbridge,"events", "UpsertEvent", response)
-        return response
-    except table.meta.client.exceptions.ConditionalCheckFailedException:
-        # Handle conflict (incoming version is too old)
-        return {
-            "error": "Version conflict",
-            "reason": f"Incoming version ({incoming_version}) is not newer."
-        }
+        customer_model = CustomerModel.model_validate({
+            **customer_data.model_dump(mode="json", exclude_unset=True),
+            "updated_at":current_time,
+            "organisation": organisation_slug,
+        })
 
-
+        customer_response = customer_model.upsert(table, ["created_at"])
+        trigger_eventbridge_event(eventbridge, 
+                                  source="dance-engine.core", 
+                                  resource_type=EventType.customer,
+                                  action=Action.updated,
+                                  organisation=organisation_slug,
+                                  resource_id=customer_model.PK,
+                                  data=request_data.model_dump(mode="json"),
+                                  meta={"accountId":actor})
+        return make_response(201, {
+            "message": "Customer updated successfully.",
+            "event": customer_model.model_dump(mode="json"),
+        })
+    except VersionConflictError as e:
+        logger.error(f"Version Conflict")
+        return make_response(409, {
+            "message": "Version conflict",
+            "resource": e.model.PK,
+            "your_version": e.incoming_version
+        })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })    
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
+    
 def get_customers(organisationSlug):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting Customers for {organisationSlug} from {TABLE_NAME}")
+    blank_model = CustomerModel(name="blank", organisation=organisationSlug)
 
-    response = table.query(
-                IndexName="typeIDX",
-                KeyConditionExpression=Key("entity_type").eq(f"CUSTOMER") & Key("PK").begins_with("CUSTOMER#"),
-                ScanIndexForward=True
-            )
-    events = response.get("Items", [])
-    return events
+    try:
+        customers = blank_model.query_gsi(
+            table=table,
+            index_name="gsi1",
+            key_condition=Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#"),
+        )
+        logger.info(f"Found customers for {organisationSlug}: {customers}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get customers for {organisationSlug}: {e}")
+        raise Exception
 
-def get_single_customer(organisationSlug,customerId):
+    return customers
+
+def get_single_customer(organisationSlug, customerId):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Getting customer {customerId} for {organisationSlug} from {TABLE_NAME} / ")
+    logger.info(f"Getting customer {customerId} for {organisationSlug} from {TABLE_NAME}")
+    blank_model = CustomerModel(email=customerId, name="blank", organisation=organisationSlug)
 
-    # response = table.get_item(
-    #     Key={ 'PK': f'EVENT#{eventId}', 'SK': f'EVENT#{eventId}'}
-    # )
-    response = table.query(
-        IndexName='IDXinv',  # Replace with your actual index name
-        KeyConditionExpression=Key('SK').eq(f'CUSTOMER#{customerId}')
-    )
-    event_related_items = response.get("Items", None)
-    if not event_related_items:
-        logger.info(f"Event not found {event_related_items}")
-        return []
-    else: 
-        logger.info(f"Event Related Response {event_related_items}")
-        event_item = event_related_items[0] #! BAd Code! need to think about how much checking is needed
-        # event = response.get("Items", {})
-    return event_item
-
+    try:
+        customer = blank_model.query_gsi(
+            table=table, 
+            key_condition=Key("PK").eq(f'{blank_model.PK}') & Key("SK").eq(f'{blank_model.SK}'),
+        )
+        logger.info(f"Found customer for {organisationSlug}: {customer}")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error(f"Customer not found for {organisationSlug}: {e}")
+            return None
+        else:
+            raise
+    except ValueError as e:
+        logger.error(f"Customer not found for {organisationSlug}: {e}")
+        return None
+    
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get customers for {organisationSlug}: {e}")
+        raise Exception
+    
+    return customer if customer else None
 
 def private_handler(event, context):
     try:
@@ -178,22 +193,31 @@ def private_handler(event, context):
 
         elif http_method == "GET":
             logger.info(f"{organisationSlug}:{customerId}")
+            response_cls = CustomerListResponse
+
             customers = [get_single_customer(organisationSlug,customerId)] if customerId else get_customers(organisationSlug)
             if customers is None:
-                return {"statusCode": 404, "headers": { "Content-Type": "application/json", "Allow-Origin": "*" }, "body": json.dumps({"message": "No customers found."})}
-            return {"statusCode": 200, "headers": { "Content-Type": "application/json" }, "body": json.dumps(customers, cls=DecimalEncoder)}
-
-        elif http_method == "PUT":
-            return {"statusCode": 405, "headers": { "Content-Type": "application/json", "Allow-Origin": "*" }, "body": json.dumps({"message": "Method not implemented."}, cls=DecimalEncoder)}
+                return make_response(404, {"message": "Customer not found."})
+            
+            resposne = response_cls(customers=customers)
+            return make_response(200, resposne.model_dump(mode="json", exclude_none=True))
         
+        elif http_method == "PUT":
+            if not customerId:
+                return make_response(404, {"message": "Missing event ID in request"})
+            validated_request = UpdateCustomerRequest(**parsed_event)
+            return update_customer(validated_request, organisationSlug, actor)
         else:
-            return {"statusCode": 405, "headers": { "Content-Type": "application/json", "Allow-Origin": "*"}, "body": json.dumps({"message": "Method not allowed."})}
-
+            return make_response(405, {"message": "Method not allowed."})
+        
     except ValueError as e:
         logger.error("Validation error: %s", str(e))
         logger.error(traceback.format_exc())
-        return {"statusCode": 400, "body": json.dumps({"message": "Validation error.", "error": str(e)})}
+        error_summary = ""
+        for error in e.errors():
+            error_summary += f"Field: { error['loc']} Message: {error['msg']}, Type: {error['type']}"
+        return make_response(400,{"message": "Validation error.", "error": str(e)})
     except Exception as e:
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
-        return {"statusCode": 500, "body": json.dumps({"message": "Internal server error.", "error": str(e)})}
+        return make_response(500, {"message": "Internal server error.", "error": str(e)})

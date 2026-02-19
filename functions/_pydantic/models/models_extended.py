@@ -176,10 +176,10 @@ class CustomerModel(CustomerBase, DynamoModel):
     def SK(self): return f"CUSTOMER#{self.email}"
 
     @property
-    def gsi1PK(self): return f"EVENTLIST#{self.org_slug}"
+    def gsi1PK(self): return f"CUSTOMERLIST#{self.org_slug}"
     
     @property
-    def gsi1SK(self): return f"LOCATION#{self.ksuid}"    
+    def gsi1SK(self): return f"CUSTOMER#{self.email}"    
 
     @property
     def name_slug(self): return self._slugify(self.name)

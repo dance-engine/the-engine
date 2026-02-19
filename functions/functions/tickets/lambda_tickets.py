@@ -39,11 +39,11 @@ from _pydantic.EventBridge import EventBridgeEventDetail  # Ensure this import i
 def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Creating ticket: {request_data}")
     event_detail: EventBridgeEventDetail = request_data.detail if "detail" in request_data else {}
-    meta = event_detail.meta if "meta" in event_detail else {}
+    data = event_detail.data if "deta" in event_detail else {}
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisation_slug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Creating ticket for {meta.get("parent_event_ksuid")}, {organisation_slug} into {TABLE_NAME}")    
+    logger.info(f"Creating ticket for {data.get("parent_event_ksuid")}, {organisation_slug} into {TABLE_NAME}")    
 
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")

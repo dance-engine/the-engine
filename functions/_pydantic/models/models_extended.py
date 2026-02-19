@@ -1,3 +1,4 @@
+from _pydantic.models.customers_models import CustomerObject as CustomerBase
 from _pydantic.models.bundles_models import BundleObject as BundleBase, BundleObjectPublic
 from _pydantic.models.items_models import ItemObject as ItemBase, ItemObjectPublic
 from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus, OrganisationObjectPublic
@@ -158,3 +159,33 @@ class LocationModel(LocationBase, DynamoModel):
     
     @property
     def org_slug(self): return self._slugify(self.organisation)
+
+class CustomerModel(CustomerBase, DynamoModel):
+    organisation: str
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    version: int = 0
+    
+    @property
+    def entity_type(self): return "CUSTOMER"
+
+    @property
+    def PK(self): return f"CUSTOMER#{self.email}"
+
+    @property
+    def SK(self): return f"CUSTOMER#{self.email}"
+
+    @property
+    def gsi1PK(self): return f"CUSTOMERLIST#{self.org_slug}"
+    
+    @property
+    def gsi1SK(self): return f"CUSTOMER#{self.email}"    
+
+    @property
+    def name_slug(self): return self._slugify(self.name)
+
+    @property
+    def org_slug(self): return self._slugify(self.organisation)
+    
+    def to_public(self) -> 'OrganisationObjectPublic':
+        return OrganisationObjectPublic.model_validate(self.model_dump(include=OrganisationObjectPublic.model_fields.keys()))    

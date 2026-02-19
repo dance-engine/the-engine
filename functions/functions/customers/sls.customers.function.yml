@@ -9,6 +9,7 @@ Customers:
       - "_shared/**"
       - "_pydantic/**"
   environment:
+    STAGE_NAME: ${sls:stage}
     CORE_TABLE_NAME: ${self:custom.core_table_name}
     ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
   layers:
@@ -22,6 +23,12 @@ Customers:
           adminAuthorizer
         documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETall}
     - httpApi:
+        path: /{organisation}/customers/{ksuid}
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETone}        
+    - httpApi:
         path: /{organisation}/customers
         method: post
         authorizer:
@@ -29,7 +36,7 @@ Customers:
         documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.POST}
     - httpApi:
         path: /{organisation}/customers/{ksuid}
-        method: get
+        method: put
         authorizer:
           adminAuthorizer
-        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.GETone}
+        documentation: ${file(functions/customers/sls.customers.doc.yml):Customers.PUT}

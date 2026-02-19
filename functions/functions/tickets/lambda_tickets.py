@@ -60,12 +60,35 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
     # How will I generate the child items from this info?
     # Do I need to jsut use the line_items from the Stripe checkout session stored in the meta?
 
+    ticket_ksuid = str(KsuidMs())
+
+    # build child items from line_items
+    child_items = [
+        TicketChildModel.model_validate({
+            "child_ksuid":it.get("ksuid"),
+            "child_type": it.get("type"),
+            "parent_ticket_ksuid": ticket_ksuid,
+            "organisation": organisation_slug,
+            "created_at": current_time,
+            "updated_at": current_time,
+            "name": it.get("name"),
+            "includes": it.get("includes", []) if it.get("type") == "bundle" else []
+        }) for it in data.get("line_items", [])
+    ]
+
+    ticket_includes = [f"{it.PK}" for it in child_items]
+
     ticket_model = TicketModel.model_validate({
-        "ksuid": str(KsuidMs()),
+        "ksuid": ticket_ksuid,
         "organisation": organisation_slug,
+        "parent_event_ksuid": data.get("parent_event_ksuid"),
         "created_at": current_time,
-        "updated_at": current_time
-        })    
+        "updated_at": current_time,
+        "customer_email": data.get("customer_email"),
+        "name_on_ticket": data.get("name_on_ticket"),
+        "name": data.get("name"),
+        "includes": ticket_includes
+        })   
 
 def lambda_handler(event, context):
     logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))

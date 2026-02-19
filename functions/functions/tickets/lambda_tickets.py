@@ -38,12 +38,15 @@ from _pydantic.EventBridge import EventBridgeEventDetail  # Ensure this import i
 
 def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Creating ticket: {request_data}")
-    event_detail: EventBridgeEventDetail = request_data.detail if "detail" in request_data else {}
-    data = event_detail.data if "deta" in event_detail else {}
+    event_detail: EventBridgeEventDetail = request_data.detail
+    data = event_detail.data
+
+    logger.info(f"Parsed event detail: {json.dumps(event_detail.model_dump(mode='json'), indent=2)}")
+    logger.info(f"Parsed data: {json.dumps(data, indent=2)}")
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisation_slug)
     table = db.Table(TABLE_NAME)
-    logger.info(f"Creating ticket for {data.get("parent_event_ksuid")}, {organisation_slug} into {TABLE_NAME}")    
+    logger.info(f"Creating ticket for {data.get('event_ksuid')}, {organisation_slug} into {TABLE_NAME}")    
 
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
@@ -83,7 +86,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         ticket_model = TicketModel.model_validate({
             "ksuid": ticket_ksuid,
             "organisation": organisation_slug,
-            "parent_event_ksuid": data.get("parent_event_ksuid"),
+            "parent_event_ksuid": data.get("event_ksuid"),
             "created_at": current_time,
             "updated_at": current_time,
             "customer_email": data.get("customer_email"),
@@ -103,7 +106,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
     try:
         result = transact_upsert(table, child_items + [ticket_model])
 
-        if result.failed and not result.successful:
+        if result.failed and not result.successful and len(result.failed) > 0:
             return make_response(400, {
                 "message": "Failed to create a ticket.",
                 "failed_bundles": [
@@ -115,7 +118,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
                 ]
             })
 
-        if result.failed & result.successful:
+        if result.failed and result.successful and len(result.failed) > 0 and len(result.successful) > 0:
             return make_response(207, {
                 "message": "Partial success",
                 "successful": [
@@ -132,6 +135,12 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
                     } for item, f in zip(result.failed, result.failures)
                 ]
             })
+        
+        return make_response(201, {
+            "message": "Ticket created successfully.",
+            "ticket": [t.model_dump(mode="json") for t in result.successful],
+        })
+            
     except ValueError as e:
         return make_response(400, {
             "message": "Invalid update request",
@@ -149,7 +158,7 @@ def lambda_handler(event, context):
     organisationSlug = event.get("detail", {}).get("organisation", {})
 
     if type == "checkout.completed":
-        logger.info("Handling checkout.session.expired event.")
+        logger.info("Handling checkout.completed event.")
         validated_request = EventBridgeEvent(**event)
 
         return create_ticket(validated_request, organisationSlug)

@@ -10,6 +10,7 @@ Tickets:
       - "_shared/**"
   environment:
       STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}      
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer

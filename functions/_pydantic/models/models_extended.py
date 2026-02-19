@@ -225,10 +225,10 @@ class TicketChildModel(DynamoModel):
     def SK(self): return f"TICKET#{self.parent_ticket_ksuid}"
 
     @property
-    def gsi2PK(self): return f"ICKET#{self.parent_ticket_ksuid}"
+    def gsi2PK(self): return f"TICKET#{self.parent_ticket_ksuid}"
 
     @property
-    def gsi2SK(self): return f"{self.child_type}#{self.child_ksuid}"
+    def gsi2SK(self): return f"{self.child_type.upper()}#{self.child_ksuid}"
 
     @property
     def org_slug(self): return self._slugify(self.organisation)

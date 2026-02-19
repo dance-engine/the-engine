@@ -1,0 +1,35 @@
+Tickets:
+  runtime: python3.11
+  handler: functions/tickets/lambda_tickets.lambda_handler
+  name: "${sls:stage}-${self:service}-tickets"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/tickets/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
+  environment:
+      STAGE_NAME: ${sls:stage}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+  events:
+      - httpApi:
+          path: /{organisation}/tickets
+          method: get
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/tickets/sls.tickets.doc.yml):endpoints.tickets.GET}
+      - httpApi:
+          path: /{organisation}/tickets
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/tickets/sls.tickets.doc.yml):endpoints.tickets.POST}
+      - httpApi:
+          path: /{organisation}/tickets
+          method: put
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/tickets/sls.tickets.doc.yml):endpoints.tickets.PUT}
+

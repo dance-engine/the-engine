@@ -118,7 +118,7 @@ def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, acto
                 ]
             })
 
-        if result.failed & result.successful:
+        if result.failed and result.successful and len(result.failed) > 0 and len(result.successful) > 0:
             return make_response(207, {
                 "message": "Partial success: some items updated successfully, others failed.",
                 "successful_items": [

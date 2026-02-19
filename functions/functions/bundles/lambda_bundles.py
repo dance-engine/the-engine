@@ -143,7 +143,7 @@ def update(request: UpdateBundleRequest, organisationSlug: str, eventId: str, ac
                 ]
             })
 
-        if result.failed & result.successful:
+        if result.failed and result.successful and len(result.failed) > 0 and len(result.successful) > 0:
             return make_response(207, {
                 "message": "Partial success: some bundles updated successfully, others failed.",
                 "successful_bundles": [

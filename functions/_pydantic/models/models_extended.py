@@ -170,7 +170,6 @@ class TicketModel(DynamoModel):
     ksuid: str
     organisation: str
     parent_event_ksuid: str
-    total_tickets: int = 0
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     customer_email: str
@@ -194,7 +193,7 @@ class TicketModel(DynamoModel):
     def gsi1SK(self): return f"TICKET#{self.ksuid}"
 
     @property
-    def gsi2PK(self): return f"ICKET#{self.ksuid}"
+    def gsi2PK(self): return f"TICKET#{self.ksuid}"
     
     @property
     def gsi2SK(self): return f"TICKET#{self.ksuid}"

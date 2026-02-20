@@ -101,7 +101,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
     if not validated_request.checkout or len(validated_request.checkout) == 0:
         return make_response(400, {"message": "No checkout request provided."})
     
-    checkout = validated_request.checkout[0]
+    checkout: CheckoutObjectPublic = validated_request.checkout[0]
     ignored_checkouts = validated_request.checkout[1:] if len(validated_request.checkout) > 1 else []
 
     line_items = checkout.line_items or []
@@ -123,12 +123,21 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
     event_ksuid = event_ksuids[0]
     
     for item in line_items:
-        if item.quantity > 1:
+        if item.quantity and item.quantity > 1:
             return make_response(400, {
                 "message": "Only quantity of 1 per line item is currently supported.",
                 "checkout": checkout.model_dump_json(),
                 "ignored_checkouts": [c.model_dump_json() for c in ignored_checkouts]
             })
+        
+    collect_customer_on_stripe = bool(checkout.collect_customer_on_stripe)
+
+    if not collect_customer_on_stripe and not checkout.name and not checkout.email:
+        return make_response(400, {
+            "message": "Customer information must be provided if not collecting on Stripe. Set collect_customer_on_stripe to true or provide name and email.",
+            "checkout": checkout.model_dump_json(),
+            "ignored_checkouts": [c.model_dump_json() for c in ignored_checkouts]
+        })
 
     try:
         result = _event_capacity_mutation(
@@ -181,8 +190,37 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
     try:
         stripe.api_key = STRIPE_API_KEY
 
+        stripe_customer_fields = {}
+        extra_metadata = {}
+        if collect_customer_on_stripe:
+            stripe_customer_fields = {
+                "phone_number_collection": {"enabled": True},
+                "custom_fields": [
+                    {
+                        "key": "full_name",
+                        "type": "text",
+                        "label": {"type": "custom", "custom": "Full Name"}
+                    }
+                ]
+            }
+        else:
+            stripe_customer_fields = { "customer_email": checkout.email }
+            extra_metadata = {
+                "customer_name": checkout.name,
+                "customer_email": checkout.email
+            }
+
         stripe_line_items = [
-            {"price": item.price_id, "quantity": item.quantity} for item in line_items
+            {
+                "quantity": item.quantity or 1,
+                "price": item.price_id,
+                "metadata": {
+                    "ksuid": item.ksuid,
+                    "type": item.type,
+                    "name": item.name,
+                    "includes": item.includes,
+                }
+            } for item in line_items
         ]
 
         expires_at = int(time.time()) + 30 * 60  # 30 minutes 
@@ -200,7 +238,8 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             discounts=[{"coupon": checkout.coupon_code}] if checkout.coupon_code else None,
             allow_promotion_codes = True,
             stripe_account = checkout.stripe_account_id,
-            metadata={"organisation": organisation_slug, "event_ksuid": event_ksuid},
+            metadata={"organisation": organisation_slug, "event_ksuid": event_ksuid, **extra_metadata},
+            **stripe_customer_fields
         )
 
         return make_response(201, {

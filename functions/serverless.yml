@@ -161,6 +161,7 @@ layers:
 #######################
 
 functions:
+  Tickets: ${file(functions/tickets/sls.tickets.function.yml):Tickets}
   EventbridgeCheckout: ${file(functions/checkout/sls.checkout.function.yml):EventbridgeCheckout}
   Checkout: ${file(functions/checkout/sls.checkout.function.yml):Checkout}
   Bundles: ${file(functions/bundles/sls.bundles.function.yml):Bundles}

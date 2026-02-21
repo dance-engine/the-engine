@@ -1,0 +1,21 @@
+Tickets:
+  runtime: python3.11
+  handler: functions/tickets/lambda_tickets.lambda_handler
+  name: "${sls:stage}-${self:service}-tickets"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/tickets/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
+  environment:
+      STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}      
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+  events:
+    - eventBridge:
+        pattern:
+          detail-type:
+            - "checkout.completed"

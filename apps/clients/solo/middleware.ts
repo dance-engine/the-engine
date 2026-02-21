@@ -8,7 +8,7 @@ const orgDomains: Record<string, string[]> = {
   'other-org': ['otherdomain.com', 'app.otherdomain.com'],
   'demo': ['localhost', '127.0.0.1','dance.likenobodyswatching.co.uk'],
   'pow': ['pow.dance-engine.com','www.pow.localhost'],
-  'power-of-woman': ['powerofwomansbk.co.uk'],
+  'power-of-woman': ['www.pow.localhost','powerofwomansbk.co.uk'],
   'latin-soul': ['latinsoul.danceengine.co.uk', 'www.latinsoul.localhost','192.168.50.226']
 };
 

@@ -7,8 +7,22 @@ LineItemObjectPublic:
     application/json:
       schema:
         type: object
-        required: ["line_items"]
+        required: ["ksuid", "type", "name", "price_id", "event_ksuid"]
         properties:
+          ksuid:
+            type: string
+            description: "The ksuid of the item/bundle associated with this line item"
+          type:
+            type: string
+            description: "The type of the line item, either 'item' or 'bundle'"
+          name:
+            type: string
+            description: "The name of the product associated with this line item"
+          includes:
+            type: array
+            items:
+              type: string
+            description: "The list of items included in this line item if it's a bundle"          
           event_ksuid:
             type: string
             description: "The ksuid of the event associated with this item"
@@ -17,7 +31,8 @@ LineItemObjectPublic:
             description: "The price id of the product in stripe"
           quantity:
             type: integer
-            description: "The quantity of this item to add to the checkout"           
+            description: "The quantity of this item to add to the checkout"
+            default: 1
 CheckoutObjectPublic:
   name: "CheckoutObjectPublic"
   description: "Checkout object for the public"
@@ -29,6 +44,16 @@ CheckoutObjectPublic:
         type: object
         required: ["line_items", "stripe_account_id", "success_url", "cancel_url"]
         properties:
+          email:
+            type: string
+            description: "The email of the customer to send the receipt to. Only applicable if collect_customer_on_stripe is false"
+          name:
+            type: string
+            description: "The name of the customer to send the receipt to. Only applicable if collect_customer_on_stripe is false"
+          collect_customer_on_stripe:
+            type: boolean
+            description: "Whether to collect customer information on stripe during checkout"
+            default: false
           coupon_code:
             type: string
             description: "The coupon code to apply to the checkout"

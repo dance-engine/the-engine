@@ -12,6 +12,7 @@ import Heading  from '@tiptap/extension-heading'
 import BulletedList  from '@tiptap/extension-bullet-list'
 import OrderedList  from '@tiptap/extension-ordered-list'
 import ListItem  from '@tiptap/extension-list-item'
+import { Link } from '@tiptap/extension-link'
 import { EventType } from '@dance-engine/schemas/events';
 import PassPicker from './PassPicker';
 import { createEvent } from '@dance-engine/schemas/events';
@@ -66,7 +67,7 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
         
         <div className='grid grid-cols-1 md:grid-cols-2 mb-6 gap-6 items-start'> 
 
-          <div className='max-w-4xl w-full px-4 lg:px-0 py-4 prose prose-invert' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList],) }} />
+          <div className='max-w-4xl w-full px-4 lg:px-0 py-4 prose prose-invert' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link],) }} />
 
           {event.location && event.location.lat && event.location.lng && <MapDisplay lat={event.location.lat} lng={event.location.lng} />  }
 

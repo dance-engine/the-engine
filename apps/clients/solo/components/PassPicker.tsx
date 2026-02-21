@@ -33,7 +33,7 @@ const PassPicker = ({ event, org }: { event: EventModelType, org: OrganisationTy
           ))}
         </div>
 
-        <div className="hidden"><PassDebug event={event} org={org}/></div>
+        <div className="hidden"><PassDebug event={event}/></div>
 
         <CartProvider event={event} org={org}/>
 

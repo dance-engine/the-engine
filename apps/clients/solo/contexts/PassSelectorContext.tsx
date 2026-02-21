@@ -2,10 +2,11 @@ import React, { createContext, useReducer, useContext, useCallback } from 'react
 import { BundleTypeExtended, ItemType} from '@dance-engine/schemas/bundle';
 import { findCheapestCombination } from "@/contexts/passCalculator";
 import { EventModelType } from '@dance-engine/schemas/events';
+import { OrganisationType } from '@dance-engine/schemas/organisation';
 
-type PassSelectorState = { selected: string[]; selectedPrices: number[]; selectedTypes: string[]; included: string[][], includedPrices: number[][], event: EventModelType | null };
+type PassSelectorState = { selected: string[]; selectedPrices: number[]; selectedTypes: string[]; included: string[][], includedPrices: number[][], event: EventModelType | null, org: OrganisationType | null };
 
-const initialSelection: PassSelectorState = { selected: [], selectedTypes: [], selectedPrices: [], included: [], includedPrices: [], event: null };
+const initialSelection: PassSelectorState = { selected: [], selectedTypes: [], selectedPrices: [], included: [], includedPrices: [], event: null, org: null };
 
 // ---------- Contexts ----------
 export const PassSelectorContext = createContext<PassSelectorState>(initialSelection);
@@ -52,7 +53,8 @@ function reducer(state: PassSelectorState, action: Action): PassSelectorState {
           selectedTypes: state.selectedTypes.filter((_, i) => i !== selectedIdx),
           selectedPrices: state.selectedPrices.filter((_, i) => i !== selectedIdx),
           includedPrices: state.includedPrices.filter((_, i) => i !== includedIdx),
-          event: state.event || null
+          event: state.event || null,
+          org: state.org || null
         };
         console.log('State post Remove:', buildBestCombo(newState))
         return buildBestCombo(newState)
@@ -86,7 +88,8 @@ function reducer(state: PassSelectorState, action: Action): PassSelectorState {
           selectedPrices: state.selectedPrices.filter((_, i) => i !== idx),
           included: state.included,
           includedPrices: state.includedPrices.filter((_, i) => i !== idx),
-          event: state.event || null
+          event: state.event || null,
+          org: state.org || null
         };
         console.log('State post Remove Item:', buildBestCombo(newState))
         return buildBestCombo(newState)
@@ -97,7 +100,8 @@ function reducer(state: PassSelectorState, action: Action): PassSelectorState {
         selectedPrices: [...state.selectedPrices, primary_price],
         included: state.included,
         includedPrices: state.includedPrices,
-        event: state.event || null
+        event: state.event || null,
+        org: state.org || null
       };
       console.log('State post Append Item:', buildBestCombo(newState))
       return buildBestCombo(newState)
@@ -125,8 +129,8 @@ function reducer(state: PassSelectorState, action: Action): PassSelectorState {
 }
 
 // ---------- Provider with functions ----------
-export function PassSelectorProvider({ event, children }: { event: EventModelType; children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, {...initialSelection, event});
+export function PassSelectorProvider({ event, org, children }: { event: EventModelType; org: OrganisationType; children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, {...initialSelection, event, org});
 
   const toggleBundle = useCallback((bundle: BundleTypeExtended, items: Record<string, ItemType>) => {
     dispatch({ type: 'toggleBundle', bundle, items  });
@@ -195,7 +199,9 @@ const buildBestCombo = (selectorState: PassSelectorState) => {
     selectedPrices: [...suggestedItems.chosenBundles.map(bundle => bundle.primary_price), ...suggestedItems.chosenItems.map(item => item.primary_price)],
     included: Array.from(new Set([...suggestedItems.chosenBundles.map(bundle => bundle.includes)])),
     includedPrices: [...suggestedItems.chosenBundles.map(bundle => bundle.includes.map(item_ksuid => selectorState.event?.items?.[item_ksuid]?.primary_price || 0))],
-    event: selectorState.event
+    event: selectorState.event,
+    org: selectorState.org
+
   }
   return bestState
 };

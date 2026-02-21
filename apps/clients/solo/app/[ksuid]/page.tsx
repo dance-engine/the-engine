@@ -23,10 +23,11 @@ const EventPage = async ({ params }: {params: Promise<{ ksuid: string }>}) => {
 
   const serverData = await res.json() as EventType[];
 
-  return <div className=''>
+  return <div className='min-h-screen flex flex-col bg-de-background-dark text-white'>
       <Header org={org} />
-      <main className='w-full flex flex-col items-center'>
-        <Event fallbackData={serverData} org={orgSlug} theme={theme} eventKsuid={ksuid} />
+      <main className='w-full flex flex-col items-center flex-1'>
+        <Event fallbackData={serverData} org={org} theme={theme} eventKsuid={ksuid} />
+        {org.account_id && <p className='text-sm mt-4'>Stripe Account: {org.account_id}</p>}
       </main>
       <DanceEngineFooter/>
     </div>

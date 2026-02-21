@@ -3,7 +3,7 @@ import { EventModelType } from '@dance-engine/schemas/events';
 import React, { createContext, useReducer, useCallback } from 'react';
 import { usePassSelectorState } from './PassSelectorContext';
 import { StripeMultiPurchaseButton } from '@/components/StripePurchaseButton';
-
+import { OrganisationType } from '@dance-engine/schemas/organisation';
 type CartSelectorState = { items: ItemType[] };
 
 const initialSelection: CartSelectorState = { items: [] };
@@ -24,7 +24,7 @@ function reducer(state: CartSelectorState, action: Action): CartSelectorState {
   }
 }
 
-export function CartProvider({ event, children }: { event: EventModelType; children?: React.ReactNode }) {
+export function CartProvider({ event, org, children }: { event: EventModelType; org: OrganisationType; children?: React.ReactNode }) {
   const [state] = useReducer(reducer, {...initialSelection});
   const { selected } = usePassSelectorState()
 
@@ -44,7 +44,7 @@ export function CartProvider({ event, children }: { event: EventModelType; child
         {children}
         <h2 className='mt-6 text-xl'>Total Cost: £{(cartAmount/100).toFixed(2)}</h2>
 
-        { items() ? <StripeMultiPurchaseButton accountId='acct_1Ry9rvDqtDds31FK' priceIds={priceIds} cartValue={cartAmount} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'/> : "Nothing to add" }
+        { items() ? <StripeMultiPurchaseButton accountId={org ? org.account_id || 'acct_1Ry9rvDqtDds31FK' : 'acct_1Ry9rvDqtDds31FK'} priceIds={priceIds} cartValue={cartAmount} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'/> : "Nothing to add" }
         {/* <pre>{JSON.stringify(event.bundles, null, 2)}</pre> */}
         {/* <pre>{JSON.stringify(items(), null, 2)}</pre> */}
       </CartSelectorContext.Provider>

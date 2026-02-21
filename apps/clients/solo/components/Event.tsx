@@ -18,13 +18,14 @@ import { createEvent } from '@dance-engine/schemas/events';
 
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
+import { OrganisationType } from '@dance-engine/schemas/organisation';
 // Dynamically load map
 
 
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbackData: EventType[], org: string, theme: string, eventKsuid: string}) {
+export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbackData: EventType[], org: OrganisationType, theme: string, eventKsuid: string}) {
 
   const MapDisplay = useMemo(() => dynamic(
         () => import('./Map'),
@@ -35,7 +36,7 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
     ), [])
 
   const { data: eventData, isLoading, error } = useSWR(
-    `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events/${eventKsuid}`,
+    `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org.organisation}/events/${eventKsuid}`,
     fetcher,
     { fallbackData }
   );
@@ -45,6 +46,7 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
   if(eventData?.events &&  eventData.events.length > 1) { 
     return <p>Multiple events</p> 
   } else if (eventData.event) { 
+    console.log(eventData)
     event = createEvent(eventData.event)
   }
   
@@ -55,7 +57,7 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
       className={"w-full min-h-[400px] \
       flex flex-col justify-end items-center bg-de-background-dark"}>
 
-      <div className='hero w-full bg-center bg-cover bg-[image:var(--image-url)] min-h-[400px] flex flex-col items-center justify-center text-white text-shadow-de-background-dark text-shadow-lg'>
+      <div className='hero w-full bg-center bg-cover bg-contain bg-no-repeat bg-[image:var(--image-url)]  min-h-[600px] flex flex-col items-center justify-center text-white text-shadow-de-background-dark text-shadow-lg'>
         <h1 className='text-6xl font-bold uppercase text-center px-6 '>{event.name}</h1>
         <h2 className='text-2xl text-center px-6'>{format(event.starts_at,'PPP, h:mmaaa')} - {format(event.ends_at,'h:mmaaa')}</h2>
       </div>
@@ -66,16 +68,16 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
 
           <div className='max-w-4xl w-full px-4 lg:px-0 py-4 prose prose-invert' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList],) }} />
 
-          <MapDisplay lat={event.location.lat} lng={event.location.lng} />
+          {event.location && event.location.lat && event.location.lng && <MapDisplay lat={event.location.lat} lng={event.location.lng} />  }
 
         </div>
         
 
-        <PassPicker event={event}/>
+        <PassPicker event={event} org={org}/>
 
         {/* <hr className='mt-6' />
         <h1 className='text-xl mt-6 mb-3'>Debug</h1>
-        {org}:{theme}
+        {org.account_id}:{theme}<br/>
         {eventKsuid}
         <pre className=' max-w-full'>{JSON.stringify(event, null, 2)}</pre> */}
       </div>

@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 ## installed packages
 from pydantic import ValidationError # layer: pydantic
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
@@ -202,7 +203,34 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         return make_response(500, {"message": "Something went wrong."})
     
 def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
-    return make_response(501, {"message": "Not implemented yet."})
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting ticket for {eventId} of {organisationSlug} from {TABLE_NAME}")
+    blank_model = TicketModel(ksuid=ticketId, parent_event_ksuid=eventId, name="blank", organisation=organisationSlug, name_on_ticket="blank", customer_email="blank", email="blank", includes=[])
+
+    try:
+        ticket = blank_model.query_gsi(
+            index_name="gsi2",
+            table=table, 
+            key_condition=Key("gsi2PK").eq(f'{blank_model.gsi2PK}'), 
+            assemble_entites=True
+        )
+        logger.info(f"Found ticket for {organisationSlug}: {ticket}")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error(f"Ticket not found for {organisationSlug}: {e}")
+            return None
+        else:
+            raise
+    except ValueError as e:
+        logger.error(f"Ticket not found for {organisationSlug}: {e}")
+        return None
+    
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get ticket for {organisationSlug}: {e}")
+        raise Exception
+    
+    return ticket if ticket else None
 
 def get_tickets(organisationSlug: str,  eventId: str, public: bool = False, actor: str = "unknown"):
     return make_response(501, {"message": "Not implemented yet."})

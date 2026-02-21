@@ -33,6 +33,11 @@ TicketObject:
             items:
               type: string
             description: "List of items included with the ticket"
+          expanded_includes:
+            type: array
+            items:
+              type: object
+            description: "List of the items included with the ticket"
 TicketListResponse:
   name: "TicketListResponse"
   description: "Response model for a list of tickets"

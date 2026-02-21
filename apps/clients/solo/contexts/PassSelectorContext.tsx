@@ -67,7 +67,8 @@ function reducer(state: PassSelectorState, action: Action): PassSelectorState {
         selectedPrices: [...state.selectedPrices, primary_price],
         included: [...state.included, includes],
         includedPrices: [...state.included, includes].map((group) => { return group.map(ksuid => items[ksuid]?.primary_price || 0 ) }),
-        event: state.event || null
+        event: state.event || null,
+        org: state.org || null
       };
       console.log('State post Append:', buildBestCombo(newState))
 

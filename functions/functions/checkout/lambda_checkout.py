@@ -348,12 +348,26 @@ def completed(stripe_event: dict):
     try:
         detail = stripe_event.get("detail", {})
         data_obj = detail.get("data", {}).get("object", {})
+
         session_id = data_obj.get("id")
-        
-        metadata = data_obj.get("metadata", {}) or {}
+
+        try:
+            stripe.api_key = STRIPE_API_KEY
+            stripe_checkout = stripe.checkout.Session.retrieve(session_id, expand=["line_items"], stripe_account = detail.get("account"),)
+            logger.info("Retrieved Stripe checkout session: %s", stripe_checkout)
+        except (stripe.error.InvalidRequestError, stripe.error.APIConnectionError) as e:
+            logger.error("Failed to retrieve Stripe checkout session: %s", str(e))
+            logger.error(traceback.format_exc())
+            return make_response(500, {
+                "message": "Internal Server Error: Failed to retrieve Stripe checkout session.",
+                "error": str(e)
+            })
+
+        metadata = stripe_checkout.get("metadata", {})
         organisation_slug = metadata.get("organisation")
         event_ksuid = metadata.get("event_ksuid")
         
+        #! Catch an error where metadat is missing
         logger.info(f"Organisation: {organisation_slug}, Event KSUID: {event_ksuid}")
 
         TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
@@ -372,11 +386,23 @@ def completed(stripe_event: dict):
             number_sold_delta=1
         )
 
+        line_items = [
+            {
+                "ksuid": it.get("metadata", {}).get("ksuid"),
+                "type":  it.get("metadata", {}).get("type"),
+                "name":  it.get("metadata", {}).get("name"),
+                "includes": it.get("metadata", {}).get("includes")
+            } for it in stripe_checkout.get("line_items", {}).get("data", [])
+        ]
+
+        name_on_ticket = stripe_checkout.get("custom_fields", [{}])[0].get("text", {}).get("value") if stripe_checkout.get("custom_fields") else metadata.get("customer_name")
+
         data = {
             "session_id": session_id,
-            # line items
-            # personal details
-            # other data
+            "event_ksuid": event_ksuid,
+            "line_items": line_items,
+            "customer_email": stripe_checkout.get("customer_email") or stripe_checkout.get("customer_details", {}).get("email"),
+            "name_on_ticket":  name_on_ticket,
         }
 
         # Put an EventBridge event out to say a ticket has been sold

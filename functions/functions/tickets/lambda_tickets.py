@@ -233,7 +233,27 @@ def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, publ
     return ticket if ticket else None
 
 def get_tickets(organisationSlug: str,  eventId: str, public: bool = False, actor: str = "unknown"):
-    return make_response(501, {"message": "Not implemented yet."})
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting Tickets for {eventId} of {organisationSlug} from {TABLE_NAME}")
+    blank_model = TicketModel(ksuid="blank", parent_event_ksuid=eventId, name="blank", organisation=organisationSlug, name_on_ticket="blank", customer_email="blank", email="blank", includes=[])
+
+    try:
+        tickets = blank_model.query_gsi(
+            table=table,
+            index_name="gsi1",
+            key_condition=Key("gsi1PK").eq(blank_model.gsi1PK) & Key("gsi1SK").begins_with(f"{blank_model.gsi1SK.split('#')[0]}#"),
+        )
+        logger.info(f"Found tickets for {eventId} of {organisationSlug}: {tickets}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get tickets for {organisationSlug}: {e}")
+        raise Exception
+    
+    #! temporary fix this needs review
+    if isinstance(tickets, TicketModel):
+        tickets = [tickets]    
+
+    return tickets
 
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))

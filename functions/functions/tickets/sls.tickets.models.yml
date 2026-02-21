@@ -1,1 +1,49 @@
- 
+TicketObject:
+  name: "TicketObject"
+  description: "Model representing a ticket object"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          ksuid:
+            type: string
+            description: "Unique identifier for the ticket"
+          name:
+            type: string
+            description: "Name of the ticket"
+          name_on_ticket:
+            type: string
+            description: "Name to be printed on the ticket"
+          customer_email:
+            type: string
+            description: "Email of the customer who owns the ticket"
+          created_at:
+            type: string
+            format: date-time
+            description: "Timestamp when the ticket was created"
+          updated_at:
+            type: string
+            format: date-time
+            description: "Timestamp when the ticket was last updated"
+          includes:
+            type: array
+            items:
+              type: string
+            description: "List of items included with the ticket"
+TicketListResponse:
+  name: "TicketListResponse"
+  description: "Response model for a list of tickets"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          tickets:
+            type: array
+            items:
+              $ref: "#/components/schemas/TicketObject" 

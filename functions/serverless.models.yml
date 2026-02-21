@@ -48,6 +48,9 @@ models:
   - ${file(functions/customers/sls.customers.models.yml):UpdateCustomerRequest}
   - ${file(functions/customers/sls.customers.models.yml):CustomerListResponse}
 
+  - ${file(functions/tickets/sls.tickets.models.yml):TicketObject}
+  - ${file(functions/tickets/sls.tickets.models.yml):TicketListResponse}
+
   - name: "ErrorResponse"
     description: "Error response model"
     content:

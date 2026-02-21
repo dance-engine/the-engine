@@ -1116,6 +1116,59 @@
         "x-internal-group": "customers",
         "x-internal-path": "_pydantic/models"
       },
+      "TicketObject": {
+        "type": "object",
+        "properties": {
+          "ksuid": {
+            "type": "string",
+            "description": "Unique identifier for the ticket"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the ticket"
+          },
+          "name_on_ticket": {
+            "type": "string",
+            "description": "Name to be printed on the ticket"
+          },
+          "customer_email": {
+            "type": "string",
+            "description": "Email of the customer who owns the ticket"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the ticket was created"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the ticket was last updated"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of items included with the ticket"
+          }
+        },
+        "x-internal-group": "tickets",
+        "x-internal-path": "_pydantic/models"
+      },
+      "TicketListResponse": {
+        "type": "object",
+        "properties": {
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketObject"
+            }
+          }
+        },
+        "x-internal-group": "tickets",
+        "x-internal-path": "_pydantic/models"
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -1217,6 +1270,131 @@
     }
   ],
   "paths": {
+    "/{organisation}/{event}/tickets": {
+      "get": {
+        "summary": "Get All Tickets",
+        "description": "Returns a list of all tickets for a given organisation and event.",
+        "operationId": "tickets",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Tickets"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of all tickets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketListResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "No tickets found.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/{organisation}/{event}/tickets/{ksuid}": {
+      "get": {
+        "summary": "Get Single Ticket",
+        "description": "Fetch details of a specific ticket by its KSUID.",
+        "operationId": "tickets-27a1b385-246c-4101-a5fb-05c7d654ea89",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          },
+          {
+            "name": "ksuid",
+            "in": "path",
+            "description": "Unique ticket ID (KSUID)",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ksuid"
+            }
+          }
+        ],
+        "tags": [
+          "Tickets"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list containing the ticket.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketListResponse"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Ticket not found",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
     "/public/{organisation}/checkout/start": {
       "post": {
         "summary": "POST Checkout",
@@ -1326,7 +1504,7 @@
       "post": {
         "summary": "Create Bundles",
         "description": "Creates a new bundle and stores it for the given event.",
-        "operationId": "bundles-6f57f70b-d799-44ce-ab76-332a3a5fab8d",
+        "operationId": "bundles-85467472-c379-4b32-a3e8-1f7a26b49263",
         "parameters": [
           {
             "name": "organisation",
@@ -1394,7 +1572,7 @@
       "put": {
         "summary": "Update Bundles",
         "description": "Update existing bundles for a given event.",
-        "operationId": "bundles-ccb4ca91-f0b9-4f6b-b83b-1aca2006c372",
+        "operationId": "bundles-9bd1538c-4876-4f81-bf24-8728285ef8f2",
         "parameters": [
           {
             "name": "organisation",
@@ -1460,7 +1638,7 @@
       "get": {
         "summary": "Get Single Bundle",
         "description": "Fetch details of a specific bundle by its KSUID.",
-        "operationId": "bundles-d375ba68-e381-41a3-9d96-0c637cc37d27",
+        "operationId": "bundles-00ea27ba-19ce-47b0-983e-f04ffdaeb49c",
         "parameters": [
           {
             "name": "organisation",
@@ -1527,7 +1705,7 @@
       "get": {
         "summary": "Public Get Bundles",
         "description": "Public endpoint to get a specific bundle by its KSUID.",
-        "operationId": "bundles-119a005e-ddfb-45ca-accc-b2abece0aa54",
+        "operationId": "bundles-30af83eb-6a6b-4957-831a-45f0000abfaa",
         "parameters": [
           {
             "name": "organisation",
@@ -1598,7 +1776,7 @@
       "get": {
         "summary": "Public Get All Bundles",
         "description": "Public endpoint to get all bundles for a given organisation and event.",
-        "operationId": "bundles-db262ed1-9f67-4728-a103-04e3b7fea3a8",
+        "operationId": "bundles-c41537b9-fe7f-459c-8f7a-f1dd21cefd6d",
         "parameters": [
           {
             "name": "organisation",
@@ -1716,7 +1894,7 @@
       "post": {
         "summary": "Create Item",
         "description": "Creates a new item and stores it for the given event.",
-        "operationId": "items-67b367b3-a20f-4e7e-8da8-930b0fdd5ea8",
+        "operationId": "items-015ac7f8-0a0a-4f2a-b141-149f7c1ee4f8",
         "parameters": [
           {
             "name": "organisation",
@@ -1784,7 +1962,7 @@
       "put": {
         "summary": "Update Items",
         "description": "Update existing items for a given event.",
-        "operationId": "items-25ea8171-8c08-4546-98d6-3b1cf652bb5f",
+        "operationId": "items-eb97b61c-c7a2-49aa-a1c9-9533b5c62f16",
         "parameters": [
           {
             "name": "organisation",
@@ -1850,7 +2028,7 @@
       "get": {
         "summary": "Get Single Item",
         "description": "Fetch details of a specific item by its KSUID.",
-        "operationId": "items-bf7a13a0-79e6-4a95-b6ed-4916f732aeac",
+        "operationId": "items-ef9ac1ae-f8f8-43af-aa38-5bb4ca1080cb",
         "parameters": [
           {
             "name": "organisation",
@@ -1917,7 +2095,7 @@
       "get": {
         "summary": "Public Get Item",
         "description": "Public endpoint to get a specific item by its KSUID.",
-        "operationId": "items-54a9ba35-b5b6-42a3-8431-970f65579c62",
+        "operationId": "items-edbfd5e9-56d0-49e4-879f-0c0ca9b3e6ed",
         "parameters": [
           {
             "name": "organisation",
@@ -1988,7 +2166,7 @@
       "get": {
         "summary": "Public Get All Items",
         "description": "Public endpoint to get all items for a given organisation and event.",
-        "operationId": "items-8e3eeda5-c572-4e0d-b1e8-75257a0204af",
+        "operationId": "items-ebfc3c50-cfce-4d57-b3a1-36f3f82455b7",
         "parameters": [
           {
             "name": "organisation",
@@ -2080,7 +2258,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-8ddf7913-a56a-419a-913f-f7d6467b0f85",
+        "operationId": "organisations-f337df40-2b66-4407-ab81-72c201bb06da",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -2116,7 +2294,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-2f76b898-ed48-4c65-9f4f-a1f77d878d67",
+        "operationId": "organisations-09785470-28f4-47cf-901e-fdbf04271242",
         "parameters": [],
         "tags": [
           "Public",
@@ -2194,7 +2372,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-1888bd4c-3785-4aba-9d49-28426c42fdef",
+        "operationId": "eventbridge-b9be9b22-984b-4dce-9da3-67df93db87a6",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -2266,7 +2444,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-676b585a-6abf-4cb1-afc8-c53fcff7cc6d",
+        "operationId": "events-0a1900f7-1937-40cd-8cd7-8c3b3c2000f4",
         "parameters": [
           {
             "name": "organisation",
@@ -2323,7 +2501,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-94c04821-142f-4bc8-b757-bb9c8664271b",
+        "operationId": "events-21ad403d-f9b1-4a14-9395-d7233a2181da",
         "parameters": [
           {
             "name": "organisation",
@@ -2379,7 +2557,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-1707ced7-17e2-4807-8480-a8d19421c54e",
+        "operationId": "events-5e3a3068-94d1-4c74-885c-cf2e82ff77ed",
         "parameters": [
           {
             "name": "organisation",
@@ -2443,7 +2621,7 @@
       "delete": {
         "summary": "Delete an Event",
         "description": "Permanently delete an event and its related entities. Requires super admin privileges.",
-        "operationId": "events-4115e3bb-2cb5-4a26-b64a-8c73d3879f2b",
+        "operationId": "events-864233a5-714a-4281-ac43-ae3f94d168e4",
         "parameters": [
           {
             "name": "organisation",
@@ -2509,7 +2687,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-5ca3f21e-5abe-442b-9a31-b5b17435df20",
+        "operationId": "events-d467ae14-6f63-4c8c-a572-de34c6de2677",
         "parameters": [
           {
             "name": "organisation",
@@ -2571,7 +2749,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-15b1eecc-2ef8-438d-8021-999924c15cd4",
+        "operationId": "events-9278ad0c-921a-4960-82e6-ab1a7ae42b83",
         "parameters": [
           {
             "name": "organisation",
@@ -2670,7 +2848,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-90ff68c8-6800-46e0-9ef9-8e6092f53b59",
+        "operationId": "presigned_url-62bc664e-56b1-4099-bc41-ffc9cd955245",
         "parameters": [],
         "tags": [
           "S3"
@@ -2753,7 +2931,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-a88e28cc-4a4e-43ff-82a3-ed60cd147055",
+        "operationId": "customers-45d5e3dc-f29d-43f4-acc0-bdc26281b478",
         "parameters": [
           {
             "name": "organisation",
@@ -2810,7 +2988,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their ksuid in a given organisation.",
-        "operationId": "customers-74879d4e-c68d-475f-bd70-d705115ad79d",
+        "operationId": "customers-470a5416-9754-467f-8d4d-6fa48e9d4a4f",
         "parameters": [
           {
             "name": "organisation",
@@ -2866,7 +3044,7 @@
       "put": {
         "summary": "Update a Customer",
         "description": "Update an existing customer and its location",
-        "operationId": "customers-f089d95e-f5e6-495f-8d37-f2633a0f44b5",
+        "operationId": "customers-52bf3de8-3f03-4676-aee2-c99751fde7a9",
         "parameters": [
           {
             "name": "organisation",
@@ -2979,7 +3157,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-ba17e6df-d2f0-40ca-a067-8fa115dae91d",
+        "operationId": "organisation-6c18956b-3975-44ea-b83a-e7a642da67e5",
         "parameters": [
           {
             "name": "organisation",

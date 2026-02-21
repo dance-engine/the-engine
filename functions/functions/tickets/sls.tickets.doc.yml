@@ -1,0 +1,62 @@
+endpoints: 
+  Tickets:
+    GETall:
+      summary: "Get All Tickets"
+      description: "Returns a list of all tickets for a given organisation and event."
+      tags:
+        - Tickets
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Returns a list of all tickets.
+          responseModels:
+            application/json: "TicketListResponse"            
+        - statusCode: 404
+          responseBody:
+            description: No tickets found.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    GETone:
+      summary: "Get Single Ticket"
+      description: "Fetch details of a specific ticket by its KSUID."
+      tags:
+        - Tickets
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique ticket ID (KSUID)
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Returns a list containing the ticket.
+          responseModels:
+            application/json: "TicketListResponse"
+        - statusCode: 404
+          responseBody:
+            description: Ticket not found
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"

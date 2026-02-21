@@ -7,12 +7,13 @@ import { CartProvider } from "@/contexts/CartContext";
 // import { usePassSelectorState } from '../contexts/PassSelectorContext';
 import PassDebug from "./PassDebug";
 import { EventModelType } from "@dance-engine/schemas/events";
+import { OrganisationType } from "@dance-engine/schemas/organisation";
 
-const PassPicker = ({ event }: { event: EventModelType }) => {
+const PassPicker = ({ event, org }: { event: EventModelType, org: OrganisationType }) => {
   // const { selected } = usePassSelectorState();
   
   return (
-      <PassSelectorProvider event={event}>
+      <PassSelectorProvider event={event} org={org}>
         <div className={`grid grid-cols-1 max-w-full m-auto \
           ${event.bundles && event.bundles.length > 1 ? 'md:grid-cols-2 md:max-w-5xl' : ''}
           ${event.bundles && event.bundles.length > 2 ? 'xl:grid-cols-3 xl:max-w-full' : ''} \
@@ -34,7 +35,7 @@ const PassPicker = ({ event }: { event: EventModelType }) => {
 
         <div className="hidden"><PassDebug event={event}/></div>
 
-        <CartProvider event={event}/>
+        <CartProvider event={event} org={org}/>
 
       </PassSelectorProvider>
   );

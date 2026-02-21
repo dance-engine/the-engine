@@ -71,7 +71,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} antialiased min-h-full`}
       >
         {children}
       </body>

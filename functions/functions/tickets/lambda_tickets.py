@@ -8,8 +8,8 @@ import sys
 from datetime import datetime, timezone
 
 ## installed packages
-from pydantic import AfterValidator, ValidationError # layer: pydantic
-# from boto3.dynamodb.conditions import Key
+from pydantic import ValidationError # layer: pydantic
+from boto3.dynamodb.conditions import Key
 from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
@@ -17,10 +17,10 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
+from _pydantic.models.tickets_models import TicketListResponse
 from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent # pydantic layer
-#from _pydantic.dynamodb import VersionConflictError # pydantic layer
-from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
+from _pydantic.dynamodb import transact_upsert # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
@@ -200,18 +200,49 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
+    
+def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
+    return make_response(501, {"message": "Not implemented yet."})
+
+def get_tickets(organisationSlug: str,  eventId: str, public: bool = False, actor: str = "unknown"):
+    return make_response(501, {"message": "Not implemented yet."})
 
 def lambda_handler(event, context):
-    logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+    logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
 
-    type = event.get("detail-type", {})
-    organisationSlug = event.get("detail", {}).get("organisation", {})
+    http_method = event.get('requestContext', {}).get("http", {}).get("method")
+    
+    if http_method:
+        logger.info("Triggered by API Gateway")
+        parsed_event = parse_event(event)
 
-    if type == "checkout.completed":
-        logger.info("Handling checkout.completed event.")
-        validated_request = EventBridgeEvent(**event)
+        organisationSlug = event.get("pathParameters", {}).get("organisation")
+        ticketId         = event.get("pathParameters", {}).get("ksuid")
+        eventId          = event.get("pathParameters", {}).get("event")
+        is_public        = event.get("rawPath", "").startswith("/public")
+        actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
-        return create_ticket(validated_request, organisationSlug)
+        if http_method == "GET":
+            logger.info(f"{organisationSlug}:{eventId}:{ticketId} - Getting ticket(s)")
+            response_cls = TicketListResponse
+
+            tickets = [get_single_ticket(organisationSlug, eventId, ticketId, is_public, actor)] if ticketId else get_tickets(organisationSlug, eventId, is_public, actor)
+            if tickets is None:
+                return make_response(404, {"message": "Ticket(s) not found."})
+            
+            resposne = response_cls(tickets=tickets)
+            return make_response(200, resposne.model_dump(mode="json", exclude_none=True))        
     else:
-        logger.warning(f"Received event type I can not currently process: {type}")
-        return make_response(400, {"message": f"Unhandled event type: {type}"})
+        logger.info("Triggered by EventBridge")
+
+        type = event.get("detail-type", {})
+        organisationSlug = event.get("detail", {}).get("organisation", {})
+
+        if type == "checkout.completed":
+            logger.info("Handling checkout.completed event.")
+            validated_request = EventBridgeEvent(**event)
+
+            return create_ticket(validated_request, organisationSlug)
+        else:
+            logger.warning(f"Received event type I can not currently process: {type}")
+            return make_response(400, {"message": f"Unhandled event type: {type}"})

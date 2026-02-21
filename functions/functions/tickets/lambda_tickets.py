@@ -17,7 +17,7 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.models_extended import TicketModel, TicketChildModel
+from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
@@ -28,6 +28,7 @@ logger.setLevel("INFO")
 
 ## aws resources an clients
 db = boto3.resource("dynamodb")
+eventbridge = boto3.client('events')
 
 ## ENV variables
 # will throw an error if the env variable does not exist
@@ -105,6 +106,15 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
             "name": ticket_name,
             "includes": ticket_includes
             })
+
+        customer_model = CustomerModel.model_validate({
+            "email": data.get("customer_email"),
+            "name": data.get("name_on_ticket"),
+            "organisation": organisation_slug,
+            "created_at": current_time,
+            "updated_at": current_time,
+            "version": 0
+        })
         
     except ValidationError as e:
         logger.error("Validation error: %s", str(e))
@@ -115,7 +125,10 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         })        
     
     try:
-        result = transact_upsert(table, child_items + [ticket_model])
+        result = transact_upsert(table=table, 
+                                 items = child_items + [ticket_model, customer_model],
+                                 only_set_once=["created_at", "ksuid"],
+                                 condition_expression="attribute_not_exists(PK)")
 
         if result.failed and not result.successful and len(result.failed) > 0:
             return make_response(400, {
@@ -130,23 +143,49 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
             })
 
         if result.failed and result.successful and len(result.failed) > 0 and len(result.successful) > 0:
-            return make_response(207, {
-                "message": "Partial success",
-                "successful": [
-                    {
-                        "bundle": item.model_dump(mode="json"),
-                        "status": "Created successfully"
-                    } for item in result.successful
-                ],
-                "failed": [
-                    {
-                        "item": item.model_dump(mode="json"),
-                        "status": "failed",
-                        "reason": f.inferred
-                    } for item, f in zip(result.failed, result.failures)
-                ]
-            })
+            if customer_model in result.failed:
+                logger.info(f"Customer creation failed for {customer_model.email}")
+            if customer_model in result.failed and len(result.failed) > 1:
+                logger.info(f"Other items failed to create along with the customer: {[item.model_dump(mode='json') for item in result.failed if item != customer_model]}")
+
+                return make_response(207, {
+                    "message": "Partial success",
+                    "successful": [
+                        {
+                            "bundle": item.model_dump(mode="json"),
+                            "status": "Created successfully"
+                        } for item in result.successful
+                    ],
+                    "failed": [
+                        {
+                            "item": item.model_dump(mode="json"),
+                            "status": "failed",
+                            "reason": f.inferred
+                        } for item, f in zip(result.failed, result.failures)
+                    ]
+                })
         
+        trigger_eventbridge_event(eventbridge, 
+                                  source="dance-engine.core", 
+                                  resource_type=EventType.ticket,
+                                  action=Action.created,
+                                  organisation=organisation_slug,
+                                  resource_id=ticket_model.PK,
+                                  data={
+                                      "ticket": ticket_model.model_dump(mode="json"), 
+                                      "child_items": [ci.model_dump(mode="json") for ci in child_items]},
+                                  meta={"accountId":actor})
+        
+        if customer_model in result.successful:
+            trigger_eventbridge_event(eventbridge, 
+                                    source="dance-engine.core", 
+                                    resource_type=EventType.customer,
+                                    action=Action.created,
+                                    organisation=organisation_slug,
+                                    resource_id=customer_model.PK,
+                                    data=customer_model.model_dump(mode="json"),
+                                    meta={"accountId":actor})
+
         return make_response(201, {
             "message": "Ticket created successfully.",
             "ticket": [t.model_dump(mode="json") for t in result.successful],

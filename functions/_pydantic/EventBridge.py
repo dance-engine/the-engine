@@ -36,7 +36,7 @@ class EventType(str, Enum):
     item = "item"
     bundle = "bundle"
     checkout = "checkout"
-
+    ticket = "ticket"
 
 class Action(str, Enum):
     created = "created"

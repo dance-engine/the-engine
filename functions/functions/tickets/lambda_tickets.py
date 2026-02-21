@@ -83,6 +83,17 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
 
         ticket_includes = [f"{it.PK}" for it in child_items]
 
+        ticket_name = ""
+        bundle_names = [it.get("name") for it in data.get("line_items", []) if it.get("type") == "bundle"]
+        item_names = [it.get("name") for it in data.get("line_items", []) if it.get("type") == "item"]
+
+        if bundle_names:
+            ticket_name = " and ".join(bundle_names) + " with " + ", ".join(item_names) if item_names else " and ".join(bundle_names)
+        else:
+            ticket_name = ", ".join(item_names)
+
+        logger.info(f"Determined ticket name: {ticket_name}")
+
         ticket_model = TicketModel.model_validate({
             "ksuid": ticket_ksuid,
             "organisation": organisation_slug,
@@ -91,7 +102,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
             "updated_at": current_time,
             "customer_email": data.get("customer_email"),
             "name_on_ticket": data.get("name_on_ticket"),
-            "name": data.get("name"),
+            "name": ticket_name,
             "includes": ticket_includes
             })
         

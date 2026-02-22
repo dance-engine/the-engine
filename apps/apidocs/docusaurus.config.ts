@@ -69,8 +69,14 @@ const config: Config = {
 
 
   themeConfig: {
+    languageTabs: [
+      {language: "javascript"},
+      {language: "python"},
+      {language: "nodejs"},
+      {language: "curl"},
+    ],    
     // Replace with your project's social card
-    image: 'img/dance-engine-social-card.png',
+    image: 'img/dance-engine-social-card.png',    
     navbar: {
       title: 'Dance Engine Documentation',
       logo: {

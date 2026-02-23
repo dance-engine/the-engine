@@ -58,6 +58,45 @@ OrganisationObject:
             type: array
             items:
               type: object
+          logo_secondary_url:
+            type: string
+            description: "Secondary URL to the logo image for the organisation, used for dark mode or alternative themes"
+          logo_icon_url:
+            type: string
+            description: "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+          colour_primary:
+            type: string
+            description: "Primary colour for the organisation, used for theming and branding purposes"
+          colour_primary_dark:
+            type: string
+            description: "Darker shade of the primary colour for the organisation, used for hover states and accents"
+          colour_primary_light:
+            type: string
+            description: "Lighter shade of the primary colour for the organisation, used for backgrounds and highlights"
+          colour_secondary:
+            type: string
+            description: "Secondary colour for the organisation, used for theming and branding purposes"
+          colour_secondary_dark:
+            type: string
+            description: "Darker shade of the secondary colour for the organisation, used for hover states and accents"
+          colour_secondary_light:
+            type: string
+            description: "Lighter shade of the secondary colour for the organisation, used for backgrounds and highlights"
+          colour_background:
+            type: string
+            description: "Background colour for the organisation, used for theming and branding purposes"
+          colour_background_alt:
+            type: string
+            description: "Alternative background colour for the organisation, used for theming and branding purposes"
+          colour_text_primary:
+            type: string
+            description: "Text colour for the organisation, used for theming and branding purposes"
+          colour_text_secondary:
+            type: string
+            description: "Secondary text colour for the organisation, used for theming and branding purposes"
+          colour_text_inverted:
+            type: string
+            description: "Inverted text colour for the organisation, used for theming and branding purposes"            
 OrganisationResponse:
   name: "OrganisationResponse"
   description: "Single organisation response object"

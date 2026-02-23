@@ -177,6 +177,7 @@ class TicketModel(TicketBase, DynamoModel):
     name_on_ticket: str
     name: str
     includes: list[str] = []
+    qr_token: Optional[str] = None
 
     @property
     def related_entities(self):

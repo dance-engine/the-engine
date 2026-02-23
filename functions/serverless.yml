@@ -149,7 +149,9 @@ layers:
   pydantic:
     path: _layers/pydantic
   stripe:
-    path: _layers/stripe    
+    path: _layers/stripe
+  brevo:
+    path: _layers/brevo
 
 ###########################
 # Resources e.g. DynamoDB
@@ -161,6 +163,7 @@ layers:
 #######################
 
 functions:
+  Email: ${file(functions/email/sls.email.function.yml):Email}
   Tickets: ${file(functions/tickets/sls.tickets.function.yml):Tickets}
   EventbridgeCheckout: ${file(functions/checkout/sls.checkout.function.yml):EventbridgeCheckout}
   Checkout: ${file(functions/checkout/sls.checkout.function.yml):Checkout}

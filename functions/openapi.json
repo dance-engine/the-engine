@@ -365,6 +365,58 @@
             "items": {
               "type": "object"
             }
+          },
+          "logo_secondary_url": {
+            "type": "string",
+            "description": "Secondary URL to the logo image for the organisation, used for dark mode or alternative themes"
+          },
+          "logo_icon_url": {
+            "type": "string",
+            "description": "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+          },
+          "colour_primary": {
+            "type": "string",
+            "description": "Primary colour for the organisation, used for theming and branding purposes"
+          },
+          "colour_primary_dark": {
+            "type": "string",
+            "description": "Darker shade of the primary colour for the organisation, used for hover states and accents"
+          },
+          "colour_primary_light": {
+            "type": "string",
+            "description": "Lighter shade of the primary colour for the organisation, used for backgrounds and highlights"
+          },
+          "colour_secondary": {
+            "type": "string",
+            "description": "Secondary colour for the organisation, used for theming and branding purposes"
+          },
+          "colour_secondary_dark": {
+            "type": "string",
+            "description": "Darker shade of the secondary colour for the organisation, used for hover states and accents"
+          },
+          "colour_secondary_light": {
+            "type": "string",
+            "description": "Lighter shade of the secondary colour for the organisation, used for backgrounds and highlights"
+          },
+          "colour_background": {
+            "type": "string",
+            "description": "Background colour for the organisation, used for theming and branding purposes"
+          },
+          "colour_background_alt": {
+            "type": "string",
+            "description": "Alternative background colour for the organisation, used for theming and branding purposes"
+          },
+          "colour_text_primary": {
+            "type": "string",
+            "description": "Text colour for the organisation, used for theming and branding purposes"
+          },
+          "colour_text_secondary": {
+            "type": "string",
+            "description": "Secondary text colour for the organisation, used for theming and branding purposes"
+          },
+          "colour_text_inverted": {
+            "type": "string",
+            "description": "Inverted text colour for the organisation, used for theming and branding purposes"
           }
         },
         "x-internal-group": "organisation",
@@ -1339,7 +1391,7 @@
       "get": {
         "summary": "Get Single Ticket",
         "description": "Fetch details of a specific ticket by its KSUID.",
-        "operationId": "tickets-559cff86-c0c1-49d2-b3dc-197aee88e4f1",
+        "operationId": "tickets-f29c89de-7c46-45ea-ac26-16fb1d5df255",
         "parameters": [
           {
             "name": "organisation",
@@ -1511,7 +1563,7 @@
       "post": {
         "summary": "Create Bundles",
         "description": "Creates a new bundle and stores it for the given event.",
-        "operationId": "bundles-b6dbe380-fc0a-4c24-99d8-0aca9834df8e",
+        "operationId": "bundles-65fd7466-7344-445c-be99-1c670e900cdd",
         "parameters": [
           {
             "name": "organisation",
@@ -1579,7 +1631,7 @@
       "put": {
         "summary": "Update Bundles",
         "description": "Update existing bundles for a given event.",
-        "operationId": "bundles-94b025d9-bec9-4cda-af4c-7ba276d64400",
+        "operationId": "bundles-85d5cbff-3029-45e3-92c9-02fbe2d2371c",
         "parameters": [
           {
             "name": "organisation",
@@ -1645,7 +1697,7 @@
       "get": {
         "summary": "Get Single Bundle",
         "description": "Fetch details of a specific bundle by its KSUID.",
-        "operationId": "bundles-f4efbdbc-56ed-46f3-9ff8-4c09ffd4b850",
+        "operationId": "bundles-d5139421-ca8b-4bb9-8c07-e56b28a00f45",
         "parameters": [
           {
             "name": "organisation",
@@ -1712,7 +1764,7 @@
       "get": {
         "summary": "Public Get Bundles",
         "description": "Public endpoint to get a specific bundle by its KSUID.",
-        "operationId": "bundles-135ae0e9-e227-46f0-88d0-4aa9adbd2e7e",
+        "operationId": "bundles-6c083af2-4210-438d-ad35-3ed44fc9bb4d",
         "parameters": [
           {
             "name": "organisation",
@@ -1783,7 +1835,7 @@
       "get": {
         "summary": "Public Get All Bundles",
         "description": "Public endpoint to get all bundles for a given organisation and event.",
-        "operationId": "bundles-8b20e129-da61-4aae-9156-df3c9f5fc054",
+        "operationId": "bundles-4c01f8e7-2552-4330-8357-48704c5e1f2e",
         "parameters": [
           {
             "name": "organisation",
@@ -1901,7 +1953,7 @@
       "post": {
         "summary": "Create Item",
         "description": "Creates a new item and stores it for the given event.",
-        "operationId": "items-af0c94fb-09ce-4c80-8ffc-3c380e16f3e4",
+        "operationId": "items-74f630e4-4ed1-43e1-a4c2-ae5a83a36117",
         "parameters": [
           {
             "name": "organisation",
@@ -1969,7 +2021,7 @@
       "put": {
         "summary": "Update Items",
         "description": "Update existing items for a given event.",
-        "operationId": "items-631289f9-381b-4ba8-bb64-24f0674fd230",
+        "operationId": "items-a1ee4b9d-f529-4955-a98a-81fda217fb37",
         "parameters": [
           {
             "name": "organisation",
@@ -2035,7 +2087,7 @@
       "get": {
         "summary": "Get Single Item",
         "description": "Fetch details of a specific item by its KSUID.",
-        "operationId": "items-3e431f04-8b03-4d84-bfec-2841e45fc155",
+        "operationId": "items-2eefb1d3-53ee-452e-a5c7-6348446cd00f",
         "parameters": [
           {
             "name": "organisation",
@@ -2102,7 +2154,7 @@
       "get": {
         "summary": "Public Get Item",
         "description": "Public endpoint to get a specific item by its KSUID.",
-        "operationId": "items-0f0fca60-7c71-4d7a-bd2b-9f8b42c7b6fd",
+        "operationId": "items-8ad174b1-456d-4e32-a058-dd1963478daa",
         "parameters": [
           {
             "name": "organisation",
@@ -2173,7 +2225,7 @@
       "get": {
         "summary": "Public Get All Items",
         "description": "Public endpoint to get all items for a given organisation and event.",
-        "operationId": "items-fe4ebd70-c31c-4247-b266-5c898ce820bc",
+        "operationId": "items-23894a24-a8b5-449c-a48d-e2396b77b0ac",
         "parameters": [
           {
             "name": "organisation",
@@ -2265,7 +2317,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-3dc408d9-e83a-49c8-821a-f46b4226bee9",
+        "operationId": "organisations-9641e5c6-e550-4895-9084-cd6348fde946",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -2301,7 +2353,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-0ed37932-fd04-421e-9385-fd8a251895e2",
+        "operationId": "organisations-d34f6cb7-5929-4592-898a-7a930cfc2c65",
         "parameters": [],
         "tags": [
           "Public",
@@ -2379,7 +2431,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-8720a813-05f1-440f-8ea0-39d91487a05e",
+        "operationId": "eventbridge-e2b2a76e-0a04-4f2f-8a99-463cd629af52",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -2451,7 +2503,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-e9590c26-cd0b-4236-bcb9-e1b15651c401",
+        "operationId": "events-0285e00a-dc95-4aab-94f5-122ac897c605",
         "parameters": [
           {
             "name": "organisation",
@@ -2508,7 +2560,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-3e4feb04-b189-41d4-9cae-20364e78df4c",
+        "operationId": "events-1aed6f9b-9ad7-4561-82f2-84145edf5de4",
         "parameters": [
           {
             "name": "organisation",
@@ -2564,7 +2616,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-211fbe30-e61d-482a-8448-41d4b66345c8",
+        "operationId": "events-ee0ec522-d59c-4762-a8f9-a905b013881e",
         "parameters": [
           {
             "name": "organisation",
@@ -2628,7 +2680,7 @@
       "delete": {
         "summary": "Delete an Event",
         "description": "Permanently delete an event and its related entities. Requires super admin privileges.",
-        "operationId": "events-d9cc0d0b-ce9b-422d-8f4c-056b37381753",
+        "operationId": "events-279f6ae6-4abd-4afa-8c61-3d48ac775444",
         "parameters": [
           {
             "name": "organisation",
@@ -2694,7 +2746,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-97a9be02-6643-4c10-bf4f-daa799ac9679",
+        "operationId": "events-fe3a135e-0ad8-4d5e-9bb5-8089554c2d93",
         "parameters": [
           {
             "name": "organisation",
@@ -2756,7 +2808,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-c906cb9b-cd7e-4d74-9b91-b4587584a5b0",
+        "operationId": "events-36ca0370-299a-4933-819c-ce2b80496e3f",
         "parameters": [
           {
             "name": "organisation",
@@ -2855,7 +2907,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-8a6e368d-b56c-4eef-a630-4e417284807a",
+        "operationId": "presigned_url-24d55671-e833-4c58-9adc-1d480305ac6a",
         "parameters": [],
         "tags": [
           "S3"
@@ -2938,7 +2990,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-35472835-73c0-4f31-aee5-a71718f34f11",
+        "operationId": "customers-6e3fc31d-5642-4be6-9045-e78527902a7b",
         "parameters": [
           {
             "name": "organisation",
@@ -2995,7 +3047,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their ksuid in a given organisation.",
-        "operationId": "customers-44c20d21-cc5d-49a3-b5e8-9b8be1333aa1",
+        "operationId": "customers-11fde094-30f8-49aa-91ac-5c11fd92807e",
         "parameters": [
           {
             "name": "organisation",
@@ -3051,7 +3103,7 @@
       "put": {
         "summary": "Update a Customer",
         "description": "Update an existing customer and its location",
-        "operationId": "customers-a5ce141a-546c-4925-a73e-b74d35d807ef",
+        "operationId": "customers-758d1208-6897-42ab-badb-3d73cb98494c",
         "parameters": [
           {
             "name": "organisation",
@@ -3164,7 +3216,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-1a4092e8-2893-4245-ba1a-040a235a7b9c",
+        "operationId": "organisation-8929ce9e-c0f4-4364-9b05-37fa4c47cd17",
         "parameters": [
           {
             "name": "organisation",

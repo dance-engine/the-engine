@@ -1,0 +1,24 @@
+Email:
+  runtime: python3.11
+  handler: functions/email/lambda_email.lambda_handler
+  name: "${sls:stage}-${self:service}-email"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/email/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
+  environment:
+      STAGE_NAME: ${sls:stage}
+      BREVO_API_KEY: ${ssm:/danceengine/brevo/api_key}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+      - !Ref BrevoLambdaLayer
+  events:
+    - eventBridge:
+        pattern:
+          detail-type:
+            - prefix: "ticket.created"
+

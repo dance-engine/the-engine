@@ -93,8 +93,8 @@ def send_ticket(event):
 
         template_params = {
             **template_params,
-            "qr_image_url": f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={ticket.get('qr_token')}",
-            "view_in_browser_url": f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={ticket.get('qr_token')}",
+            "qr_image_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ticket.get('qr_token')}",
+            "view_in_browser_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ticket.get('qr_token')}",
             "brand_name": detail.get("organisation"),
             "event_name": event_details.get("name"),
             "event_date": event_details.get("date"),

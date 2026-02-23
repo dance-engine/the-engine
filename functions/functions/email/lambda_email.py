@@ -72,17 +72,24 @@ def send_ticket(event):
     try:
         organisation_settings = get_organisation_settings(detail.get("organisation"))
         required_fields = ["colour_background", "logo"]
-        
-        missing_fields = [field for field in required_fields if not hasattr(organisation_settings, field)]
-        if missing_fields:
-            logger.error(f"Missing fields in organisation settings: {', '.join(missing_fields)}")
-            raise Exception(f"Missing fields in organisation settings: {', '.join(missing_fields)}")
-        
-        tempalte_id = 2
-        template_params = {
-            "brand_background_colour": organisation_settings.colour_background.strip("#"),
-            "brand_logo_url": organisation_settings.logo
-        }
+
+        if organisation_settings.org_slug == "rebel-sbk":
+            tempalte_id = 2
+            template_params = {
+                "brand_background_colour": "000",
+                "brand_logo_url": organisation_settings.banner
+            }
+        else:
+            missing_fields = [field for field in required_fields if not hasattr(organisation_settings, field)]
+            if missing_fields:
+                logger.error(f"Missing fields in organisation settings: {', '.join(missing_fields)}")
+                raise Exception(f"Missing fields in organisation settings: {', '.join(missing_fields)}")
+            
+            tempalte_id = 2
+            template_params = {
+                "brand_background_colour": organisation_settings.colour_background.strip("#"),
+                "brand_logo_url": organisation_settings.logo
+            }
     except Exception as e:
         logger.error(f"Failed to get organisation settings for {detail.get('organisation')}: {e}")
         tempalte_id = 1

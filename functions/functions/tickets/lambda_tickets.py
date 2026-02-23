@@ -127,9 +127,18 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
     
     try:
         result = transact_upsert(table=table, 
-                                 items = child_items + [ticket_model, customer_model],
+                                 items = child_items + [ticket_model],
                                  only_set_once=["created_at", "ksuid"],
                                  condition_expression="attribute_not_exists(PK)")
+        
+        #! Temporary fix. See issue #77
+        customer_result = transact_upsert(table=table, 
+                                         items = [customer_model],
+                                         only_set_once=["created_at", "email"],
+                                         condition_expression="attribute_not_exists(PK)")
+        result.failed.extend(customer_result.failed)
+        
+        logger.info(f"Transact upsert result: {result}")
 
         if result.failed and not result.successful and len(result.failed) > 0:
             return make_response(400, {

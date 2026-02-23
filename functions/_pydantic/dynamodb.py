@@ -630,6 +630,7 @@ def transact_upsert(table,
                 normalised = "Unknown"
 
                 if code == "ConditionalCheckFailed":
+                    logger.warning(f"Conditional check failed for item with PK: {batch[i].PK}, SK: {batch[i].SK}. Message: {msg}")
                     normalised = "conditional_failed"
 
                     if (not version_override) and batch[i].uses_versioning():
@@ -642,11 +643,12 @@ def transact_upsert(table,
 
                     if isinstance(old_item, dict):
                         rc = old_item.get("remaining_capacity", None)
-                        logger.info(f"Old item remaining capacity: {rc}, {type(rc)}")
-                        if "N" in rc and rc.get("N") is not None and int(rc["N"]) < 1: 
-                        # if isinstance(rc, (int, float)) and rc < 1:
-                            logger.info(f"current inffered problem is {inferred} and remaining capacity is {rc}")
-                            inferred = inferred or "remaining_capacity_insufficient"
+                        if rc is not None:
+                            logger.info(f"Old item remaining capacity: {rc}, {type(rc)}")
+                            if "N" in rc and rc.get("N") is not None and int(rc["N"]) < 1: 
+                            # if isinstance(rc, (int, float)) and rc < 1:
+                                logger.info(f"current inffered problem is {inferred} and remaining capacity is {rc}")
+                                inferred = inferred or "remaining_capacity_insufficient"
                 
                 elif code == "TransactionConflict":
                     normalised = "transaction_conflict"
@@ -701,7 +703,7 @@ def transact_upsert(table,
                     inferred=None,
                 )
                 for i in range(len(batch))
-            ])            
+            ])
 
     return TransactUpsertResult(
         successful=successful_items,

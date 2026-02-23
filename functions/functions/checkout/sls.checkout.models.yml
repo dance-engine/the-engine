@@ -7,12 +7,12 @@ LineItemObjectPublic:
     application/json:
       schema:
         type: object
-        required: ["ksuid", "type", "name", "price_id", "event_ksuid"]
+        required: ["ksuid", "entity_type", "name", "price_id", "event_ksuid"]
         properties:
           ksuid:
             type: string
             description: "The ksuid of the item/bundle associated with this line item"
-          type:
+          entity_type:
             type: string
             description: "The type of the line item, either 'item' or 'bundle'"
           name:

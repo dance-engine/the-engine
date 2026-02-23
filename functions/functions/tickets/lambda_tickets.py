@@ -90,7 +90,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         child_items = [
             TicketChildModel.model_validate({
                 "child_ksuid":it.get("ksuid"),
-                "child_type": it.get("type"),
+                "child_type": it.get("entity_type"),
                 "parent_ticket_ksuid": ticket_ksuid,
                 "organisation": organisation_slug,
                 "created_at": current_time,
@@ -103,8 +103,8 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         ticket_includes = [f"{it.PK}" for it in child_items]
 
         ticket_name = ""
-        bundle_names = [it.get("name") for it in data.get("line_items", []) if it.get("type") == "bundle"]
-        item_names = [it.get("name") for it in data.get("line_items", []) if it.get("type") == "item"]
+        bundle_names = [it.get("name") for it in data.get("line_items", []) if it.get("entity_type") == "bundle"]
+        item_names = [it.get("name") for it in data.get("line_items", []) if it.get("entity_type") == "item"]
 
         if bundle_names:
             ticket_name = " and ".join(bundle_names) + " with " + ", ".join(item_names) if item_names else " and ".join(bundle_names)

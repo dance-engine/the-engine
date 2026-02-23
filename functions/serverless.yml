@@ -43,6 +43,7 @@ stages:
       githubBranchDestination: "develop"
       cdn_url: 'https://d43ttk7zo7n9p.cloudfront.net'
       stripe_event_bus: "arn:aws:events:eu-west-1:717279731911:event-bus/aws.partner/stripe.com/ed_test_61U8o84Nllf0AFXkC16SchqJR3E9FtPxruCKVY5Gq8yW"
+      default_event_bus_source: "dance-engine.core.preview"
   prod:
     params:
       isProd: true
@@ -50,6 +51,7 @@ stages:
       githubBranchDestination: "main"
       cdn_url: 'https://content.danceengine.co.uk'
       stripe_event_bus: "arn:aws:events:eu-west-1:717279731911:event-bus/aws.partner/stripe.com/ed_61TzjmeGEXAr0xOVD16ScRrOR3E98cwnqFUTtWNR2MbQ"
+      default_event_bus_source: "dance-engine.core"
 
 #######################
 # Provider Information

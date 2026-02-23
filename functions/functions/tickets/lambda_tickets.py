@@ -195,7 +195,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
                 })
         
         trigger_eventbridge_event(eventbridge, 
-                                  source="dance-engine.core", 
+                                  source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview", 
                                   resource_type=EventType.ticket,
                                   action=Action.created,
                                   organisation=organisation_slug,
@@ -207,7 +207,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         
         if customer_model in result.successful:
             trigger_eventbridge_event(eventbridge, 
-                                    source="dance-engine.core", 
+                                    source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview", 
                                     resource_type=EventType.customer,
                                     action=Action.created,
                                     organisation=organisation_slug,

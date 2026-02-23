@@ -407,7 +407,7 @@ def completed(stripe_event: dict):
 
         # Put an EventBridge event out to say a ticket has been sold
         trigger_eventbridge_event(eventbridge, 
-                            source="dance-engine.core", 
+                            source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview", 
                             resource_type=EventType.checkout,
                             action=Action.completed,
                             organisation=organisation_slug,

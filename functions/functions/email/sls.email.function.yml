@@ -11,6 +11,7 @@ Email:
   environment:
       STAGE_NAME: ${sls:stage}
       BREVO_API_KEY: ${ssm:/danceengine/brevo/api_key}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer

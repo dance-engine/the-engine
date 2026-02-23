@@ -13,6 +13,7 @@ from brevo.core.api_error import ApiError # layer: brevo
 from brevo.transactional_emails.types import SendTransacEmailRequestToItem # layer: brevo
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 #from ksuid import KsuidMs # layer: utils
 
 ## custom scripts
@@ -20,7 +21,7 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.models_extended import OrganisationModel
+from _pydantic.models.models_extended import OrganisationModel, EventModel
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
 #from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
@@ -37,6 +38,31 @@ db = boto3.resource("dynamodb")
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'BREVO_API_KEY' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+
+def get_single_event(organisationSlug: str, eventId: str):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting event for {organisationSlug} from {TABLE_NAME}")
+    blank_model = EventModel(ksuid=eventId, name="blank", organisation=organisationSlug)
+
+    try:
+        result = blank_model.query_gsi(
+            table=table,
+            index_name="IDXinv",
+            key_condition=Key('SK').eq(f'{blank_model.PK}'),
+            assemble_entites=True
+        )
+        logger.info(f"Found event for {organisationSlug}: {result}")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error(f"Event not found for {organisationSlug}: {e}")
+            return None
+        raise
+    except (ValueError, Exception) as e:
+        logger.error(f"DynamoDB query failed to get event for {organisationSlug}: {e}")
+        return None
+
+    return [result]
 
 def get_organisation_settings(organisationSlug: str) -> OrganisationModel:
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -64,8 +90,8 @@ def send_ticket(event):
     data   = detail.get("data", {})
     meta   = detail.get("meta", {})
 
-    event_details = meta.get("event_details", {})
     ticket = data.get("ticket", {})
+    event_details: EventModel = get_single_event(detail.get("organisation"), ticket.get("parent_event_ksuid"))[0]
 
     template_params = {}
 
@@ -103,10 +129,10 @@ def send_ticket(event):
             "qr_image_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ticket.get('qr_token')}",
             "view_in_browser_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ticket.get('qr_token')}",
             "brand_name": detail.get("organisation"),
-            "event_name": event_details.get("name"),
-            "event_date": event_details.get("date"),
-            "event_time": event_details.get("time"),
-            "venue_name": event_details.get("venue"),
+            "event_name": event_details.name,
+            "event_date": event_details.starts_at.strftime("%d{} %B %Y").format("th" if 11 <= event_details.starts_at.day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(event_details.starts_at.day % 10, "th")) if event_details.starts_at else None,
+            "event_time": event_details.starts_at.strftime("%I:%M %p").lstrip("0") if event_details.starts_at else None,
+            "venue_name": event_details.location.name if event_details.location else None,
             "customer_name": ticket.get("name_on_ticket"),
             "ticket_type": ticket.get("name"),
             "order_code": meta.get("stripe_order_code"),

@@ -19,6 +19,8 @@ Tickets:
   events:
     - eventBridge:
         pattern:
+          source:
+            - ${param:default_event_bus_source}
           detail-type:
             - "checkout.completed"
     - httpApi:

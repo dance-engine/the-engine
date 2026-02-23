@@ -216,7 +216,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                 "price": item.price_id,
                 "metadata": {
                     "ksuid": item.ksuid,
-                    "type": item.type,
+                    "entity_type": item.entity_type,
                     "name": item.name,
                     "includes": item.includes,
                 }
@@ -389,7 +389,7 @@ def completed(stripe_event: dict):
         line_items = [
             {
                 "ksuid": it.get("metadata", {}).get("ksuid"),
-                "type":  it.get("metadata", {}).get("type"),
+                "entity_type":  it.get("metadata", {}).get("entity_type"),
                 "name":  it.get("metadata", {}).get("name"),
                 "includes": it.get("metadata", {}).get("includes")
             } for it in stripe_checkout.get("line_items", {}).get("data", [])
@@ -407,7 +407,7 @@ def completed(stripe_event: dict):
 
         # Put an EventBridge event out to say a ticket has been sold
         trigger_eventbridge_event(eventbridge, 
-                            source="dance-engine.core", 
+                            source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview", 
                             resource_type=EventType.checkout,
                             action=Action.completed,
                             organisation=organisation_slug,

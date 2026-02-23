@@ -52,6 +52,8 @@ _BundleCommon: &BundleCommon
     type: array
     items:
       type: string
+  entity_type:
+    type: string
 BundleObject:
   name: "BundleObject"
   description: "Bundle object"

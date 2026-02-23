@@ -56,7 +56,8 @@ _ItemCommon: &_ItemCommon
   stripe_price_id: 
     description: "Whats the related stripe price_id"
     type: string
-
+  entity_type:
+    type: string
 ItemObject:
   name: "ItemObject"
   description: "Item object"

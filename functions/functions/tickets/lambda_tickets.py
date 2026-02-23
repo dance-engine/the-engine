@@ -12,6 +12,7 @@ from pydantic import ValidationError # layer: pydantic
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from ksuid import KsuidMs # layer: utils
+import jwt
 
 ## custom scripts
 sys.path.append(os.path.dirname(__file__))
@@ -20,7 +21,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.models.tickets_models import TicketListResponse
 from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel
-from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent # pydantic layer
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent, EventBridgeEventDetail # pydantic layer
 from _pydantic.dynamodb import transact_upsert # pydantic layer
 
 ## logger setup
@@ -35,8 +36,24 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+# TICKET_QR_AUDIENCE = os.environ.get('TICKET_QR_AUDIENCE') or (_ for _ in ()).throw(KeyError("Environment variable 'TICKET_QR_AUDIENCE' not found"))
+TICKET_QR_JWT_SECRET = os.environ.get('TICKET_QR_JWT_SECRET') or (_ for _ in ()).throw(KeyError("Environment variable 'TICKET_QR_JWT_SECRET' not found"))
 
-from _pydantic.EventBridge import EventBridgeEventDetail  # Ensure this import is present
+def mint_qr_token(ticket) -> str:
+    iat = int(datetime.now(timezone.utc).timestamp())
+
+    payload = {
+        "v": 1,
+        "iss": "DANCEENGINE",
+        "sub": ticket.ksuid,
+        "aud": "1",#TICKET_QR_AUDIENCE,
+        "o": ticket.organisation,
+        "e": ticket.parent_event_ksuid,
+        "jti": str(KsuidMs()),
+        "iat": iat,
+    }
+
+    return jwt.encode(payload, TICKET_QR_JWT_SECRET, algorithm="HS256")
 
 def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Creating ticket: {request_data}")
@@ -107,6 +124,8 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
             "name": ticket_name,
             "includes": ticket_includes
             })
+        
+        ticket_model.qr_token = mint_qr_token(ticket_model)
 
         customer_model = CustomerModel.model_validate({
             "email": data.get("customer_email"),

@@ -1,4 +1,6 @@
 'use client';
+import { BundleTypeExtended, ItemType } from '@dance-engine/schemas/bundle';
+import { OrganisationType } from '@dance-engine/schemas/organisation';
 import React from 'react';
 
 const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue, className, style, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, cartValue?: number, className?: string, style?: React.CSSProperties}) => {
@@ -34,12 +36,14 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   );
 };
 
-const StripeMultiPurchaseButton = ({accountId, label, priceIds, cartValue, className, style}: {accountId?: string, label?: string, priceIds: string[], cartValue?: number, className?: string, style?: React.CSSProperties}) => {
+const StripeMultiPurchaseButton = ({accountId, org, label, lineItems, cartValue, className, style}: {accountId?: string, org?: OrganisationType, label?: string, lineItems?: (ItemType | BundleTypeExtended)[], cartValue?: number, className?: string, style?: React.CSSProperties}) => {
   const handleClick = async () => {
 
     const body = JSON.stringify({
         accountId: accountId, // if needed, otherwise remove
-        priceIds: priceIds, // must be the actual product IDs from Stripe
+        org: org,
+        // priceIds: priceIds, // must be the actual product IDs from Stripe
+        lineItems: lineItems, // must be the actual product IDs from Stripe
         cartValue: cartValue ? cartValue : undefined,
       })
       console.log("StripeMultiPurchaseButton body:", body);

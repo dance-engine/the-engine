@@ -11,12 +11,14 @@ from datetime import datetime, timezone
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 from boto3.dynamodb.conditions import Key
 from ksuid import KsuidMs # layer: utils
+import stripe
 
 ## custom scripts
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
+from _shared.stripe_catalog import create_stripe_catalog_items, rollback_stripe_created
 from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest
 from _pydantic.models.models_extended import ItemModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
@@ -33,6 +35,10 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'STRIPE_API_KEY' not found"))
+
+# setup stripe key
+stripe.api_key = STRIPE_API_KEY
 
 ## write here the code which is called from the handler
 def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = False, actor: str = "unknown"):

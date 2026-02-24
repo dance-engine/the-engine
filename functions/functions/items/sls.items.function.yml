@@ -11,9 +11,11 @@ Items:
   environment:
       STAGE_NAME: ${sls:stage}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      STRIPE_API_KEY: ${ssm:/danceengine/${sls:stage}/stripe/api_key}
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer
+      - !Ref StripeLambdaLayer
   events:
       - httpApi:
           path: /{organisation}/{event}/items

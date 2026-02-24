@@ -19,7 +19,7 @@ from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _shared.stripe_catalog import create_stripe_catalog_items, rollback_stripe_created
-from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest
+from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest, Status
 from _pydantic.models.models_extended import ItemModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
@@ -176,6 +176,7 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
     items_data  = request.items
     item_models = []
     for item_data in items_data:
+        item_data.status = Status.draft # force new items to be created in draft mode
         item_models.append(ItemModel.model_validate({
             **item_data.model_dump(mode="json", exclude_unset=True),
             "ksuid": str(item_data.ksuid) if item_data.ksuid else str(KsuidMs()),
@@ -184,25 +185,6 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
             "created_at": current_time,
             "updated_at": current_time
         }))
-
-
-    created_resources = []
-    try:
-        for i, item in enumerate(item_models):
-            logger.info(f"Creating Stripe catalog for item: {item}, {type( item )}")
-            item_models[i], created = create_stripe_catalog_items(organisationSlug, eventId, item, stripe)
-            created_resources.append(created)
-
-    except Exception as e:
-        logger.error(f"Stripe catalog sync failed: {e}")
-        logger.error(traceback.format_exc())
-
-        rollback_stripe_created(created_resources, stripe)
-
-        return make_response(502, {
-            "message": "Failed to create Stripe product/price for item set; rolled back Stripe resources (archived).",
-            "error": str(e),
-        })  
     
     try:
         successful_items, unprocessed_items = batch_write(table, item_models)

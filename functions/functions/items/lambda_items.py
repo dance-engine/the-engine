@@ -184,6 +184,25 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
             "created_at": current_time,
             "updated_at": current_time
         }))
+
+
+    created_resources = []
+    try:
+        for i, item in enumerate(item_models):
+            logger.info(f"Creating Stripe catalog for item: {item}, {type( item )}")
+            item_models[i], created = create_stripe_catalog_items(organisationSlug, eventId, item, stripe)
+            created_resources.append(created)
+
+    except Exception as e:
+        logger.error(f"Stripe catalog sync failed: {e}")
+        logger.error(traceback.format_exc())
+
+        rollback_stripe_created(created_resources, stripe)
+
+        return make_response(502, {
+            "message": "Failed to create Stripe product/price for item set; rolled back Stripe resources (archived).",
+            "error": str(e),
+        })  
     
     try:
         successful_items, unprocessed_items = batch_write(table, item_models)

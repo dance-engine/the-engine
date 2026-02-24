@@ -115,6 +115,23 @@ CreateItemRequest:
             type: array
             items:
               $ref: "#/components/schemas/ItemObject"
+PublishItemsRequest:          
+  name: "PublishItemsRequest"
+  description: "Request model for publishing a draft item."
+  x-internal-group: "items"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["items"]
+        properties:
+          items:
+            type: array
+            description: "List of item KSUIDs to publish"
+            items:
+              type: string
 UpdateItemRequest:
   name: "UpdateItemRequest"
   description: "Request model for updating an item"

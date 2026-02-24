@@ -228,6 +228,9 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
+    
+def publish_items(request: CreateItemRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    return make_response(200, {"message": "Publish items endpoint is not implemented yet."})    
 
 def lambda_handler(event, context):
     try:
@@ -239,6 +242,7 @@ def lambda_handler(event, context):
         itemId           = event.get("pathParameters", {}).get("ksuid")
         eventId          = event.get("pathParameters", {}).get("event")
         is_public        = event.get("rawPath", "").startswith("/public")
+        is_publish       = event.get("rawPath", "").endswith("/items/publish") and not is_public
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
         if not eventId: 
@@ -246,6 +250,9 @@ def lambda_handler(event, context):
 
         # POST /{organisation}/events
         if http_method == "POST":
+            if is_publish:
+                return publish_items(parsed_event, organisationSlug, eventId, actor)        
+                
             validated_request = CreateItemRequest(**parsed_event)
             return create(validated_request, organisationSlug, eventId, actor)
 

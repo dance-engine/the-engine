@@ -36,6 +36,12 @@ Items:
             adminAuthorizer
           documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.POST}
       - httpApi:
+          path: /{organisation}/{event}/items/publish
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/items/sls.items.doc.yml):endpoints.items.PUBLISH}          
+      - httpApi:
           path: /{organisation}/{event}/items
           method: put
           authorizer:

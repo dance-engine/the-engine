@@ -107,6 +107,8 @@ class DynamoModel(BaseModel):
     assemble_from_items(items)
         Assembles a model instance from a list of DynamoDB items.
     """
+    entity_type: Optional[str] = Field(default=None)
+
     class Config:
         json_encoders = {
             datetime: convert_datetime_to_iso_8601_with_z_suffix
@@ -125,10 +127,6 @@ class DynamoModel(BaseModel):
     @property
     def related_entities(self) -> dict:
         return {}
-
-    @property
-    def entity_type(self) -> str:
-        raise NotImplementedError()
     
     @property
     def PK(self) -> str:

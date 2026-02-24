@@ -7,16 +7,14 @@ from _pydantic.models.events_models import EventObject as EventBase, LocationObj
 from _pydantic.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
 from pydantic import model_validator, field_validator, Field
-from typing import Optional
+from typing import Optional, Literal
 
 class BundleModel(BundleBase, DynamoModel):
     organisation: str
     parent_event_ksuid: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    
-    @property
-    def entity_type(self): return "BUNDLE"
+    entity_type: Literal["BUNDLE"] = "BUNDLE"
 
     @property
     def PK(self): return f"BUNDLE#{self.ksuid}"
@@ -36,10 +34,8 @@ class ItemModel(ItemBase, DynamoModel):
     parent_event_ksuid: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    entity_type: Literal["ITEM"] = "ITEM"
     
-    @property
-    def entity_type(self): return "ITEM"
-
     @property
     def PK(self): return f"ITEM#{self.ksuid}"
 
@@ -57,9 +53,7 @@ class OrganisationModel(OrganisationBase, DynamoModel):
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     version: int = 0
-    
-    @property
-    def entity_type(self): return "ORGANISATION"
+    entity_type: Literal["ORGANISATION"] = "ORGANISATION"
 
     @property
     def PK(self): return f"ORG#{self.org_slug}"
@@ -80,6 +74,7 @@ class EventModel(EventBase, DynamoModel):
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     remaining_capacity: int = 0
     reserved: int = 0
+    entity_type: Literal["EVENT"] = "EVENT"    
 
     @property
     def related_entities(self):
@@ -90,9 +85,6 @@ class EventModel(EventBase, DynamoModel):
             "BUNDLE": ("bundles", "list", BundleModel),
             }
     
-    @property
-    def entity_type(self): return f"EVENT"
-
     @property
     def PK(self): return f"EVENT#{self.ksuid}"
 
@@ -143,9 +135,7 @@ class LocationModel(LocationBase, DynamoModel):
     parent_event_ksuid: str
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    
-    @property
-    def entity_type(self): return "LOCATION"
+    entity_type: Literal["LOCATION"] = "LOCATION"    
 
     @property
     def PK(self): return f"LOCATION#{self.ksuid}"
@@ -178,15 +168,13 @@ class TicketModel(TicketBase, DynamoModel):
     name: str
     includes: list[str] = []
     qr_token: Optional[str] = None
+    entity_type: Literal["TICKET"] = "TICKET"    
 
     @property
     def related_entities(self):
         return {
             "TICKETCHILD": ("expanded_includes", "list", TicketChildModel)
             }
-
-    @property
-    def entity_type(self): return "TICKET"
 
     @property
     def PK(self): return f"TICKET#{self.ksuid}"
@@ -221,9 +209,7 @@ class TicketChildModel(DynamoModel):
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     name: str
     includes: Optional[list[str]] = Field(None)
-
-    @property
-    def entity_type(self): return "TICKETCHILD"
+    entity_type: Literal["TICKETCHILD"] = "TICKETCHILD"
 
     @property
     def PK(self): return f"{self.child_type}#{self.child_ksuid}"
@@ -248,9 +234,7 @@ class CustomerModel(CustomerBase, DynamoModel):
     created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     version: int = 0
-    
-    @property
-    def entity_type(self): return "CUSTOMER"
+    entity_type: Literal["CUSTOMER"] = "CUSTOMER"
 
     @property
     def PK(self): return f"CUSTOMER#{self.email}"

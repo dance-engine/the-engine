@@ -61,6 +61,9 @@ def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = F
     except Exception as e:
         logger.error(f"DynamoDB query failed to get item ({itemId}) for {eventId} of {organisationSlug}: {e}")
         raise Exception
+    
+    if public and getattr(result, "status", None) != "live":
+        return None    
 
     return result.to_public() if public else result
 
@@ -84,6 +87,9 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
     #! temporary fix this needs review
     if len(items) == 1:
         items = [items]
+
+    if public:
+        items = [i for i in items if getattr(i, "status", None) == "live"]
 
     return [i.to_public() if public else i for i in items]
 

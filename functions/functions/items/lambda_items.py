@@ -116,7 +116,24 @@ def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, acto
             }) for item_data in request.items
         ]
 
-        result = transact_upsert(table, item_models)
+        result = transact_upsert(table=table, 
+                                 items=item_models,
+                                 condition_expression="attribute_exists(PK) AND #status = :draft",
+                                 extra_expression_attr_names={"#status": "status"},
+                                 extra_expression_attr_values={":draft": "draft"},
+                                 only_set_once=["organisation", "parent_event_ksuid", "created_at", "status"])
+        
+        if result.failures and result.failures[0].reason == "conditional_failed":
+            return make_response(400, {
+                "message": "Failed to update items. All items must exist and be in 'draft' status to be updated.",
+                "failed_items": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
+            })
 
         if result.failed and not result.successful:
             return make_response(400, {

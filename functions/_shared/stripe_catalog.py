@@ -30,7 +30,7 @@ def create_stripe_catalog_items(organisation: str, event_id: str, item, stripe):
         product = stripe.Product.create(
             name=item.name,
             description=item.description,
-            active=(getattr(item, "status", "draft") == "live"),
+            active=(getattr(item.status, "value", "draft") == "live"),
             metadata={
                 "organisation": organisation,
                 "event_id": event_id,

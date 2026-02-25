@@ -22,7 +22,7 @@ from _shared.stripe_catalog import create_stripe_catalog, rollback_stripe_create
 from _pydantic.models.bundles_models import BundleObject, BundleResponse, CreateBundleRequest, BundleListResponse, BundleResponsePublic, BundleListResponsePublic, UpdateBundleRequest, PublishBundlesRequest, Status
 from _pydantic.models.models_extended import BundleModel
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
-#from _pydantic.dynamodb import VersionConflictError # pydantic layer
+from _pydantic.dynamodb import DynamoModel # pydantic layer
 from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
 
 ## logger setup
@@ -41,7 +41,8 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyEr
 # setup stripe key
 stripe.api_key = STRIPE_API_KEY
 
-def _validate_includes(table, models, eventId: str, check_live_items: bool = False):
+def _validate_includes(table, models: list[DynamoModel], eventId: str, check_live_items: bool = False):
+    logger.info(f"Validating included items for bundles")
     item_ids = {item_id for m in models if m.includes for item_id in m.includes}
     if item_ids:
         client = table.meta.client
@@ -52,6 +53,7 @@ def _validate_includes(table, models, eventId: str, check_live_items: bool = Fal
         resp = client.batch_get_item(RequestItems={table.name: {'Keys': request_keys}})
         found = resp.get('Responses', {}).get(table.name, [])
         found_ids = {it['PK'].split('#', 1)[1] for it in found}
+        logger.info(f"Included item IDs: {item_ids}, Found item IDs: {found_ids}")
         missing = list(item_ids - found_ids)
         non_live_items = [item_id for item_id in found_ids if not any(it['status'] == 'live' for it in found if it['PK'] == f'ITEM#{item_id}')] if check_live_items else []
 
@@ -66,7 +68,7 @@ def _validate_includes(table, models, eventId: str, check_live_items: bool = Fal
             response['missing_items'] = missing
 
         if missing or non_live_items:
-            make_response(400, {
+            return make_response(400, {
                 'message': 'Referenced item(s) not found or are not live',
                 **response,
                 'bundles': [BundleObject.model_validate(m.model_dump(include=BundleObject.model_fields.keys())).model_dump(mode='json')
@@ -212,6 +214,7 @@ def create(request: CreateBundleRequest, organisationSlug: str, eventId: str, ac
     bundles_data  = request.bundles
     bundles_models = []
     for bd in bundles_data:
+        bd.status = Status.draft # force new bundles to be created in draft mode        
         bundles_models.append(BundleModel.model_validate({
             **bd.model_dump(mode="json", exclude_unset=True),
             "ksuid": str(bd.ksuid) if bd.ksuid else str(KsuidMs()),
@@ -244,6 +247,22 @@ def create(request: CreateBundleRequest, organisationSlug: str, eventId: str, ac
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
+    
+def _rollback_created_bundle(bundle: BundleModel, table):
+    try:        
+        bundle.status = Status.draft
+        bundle.upsert(
+            table=table,
+            only_set_once=["organisation", "parent_event_ksuid", "created_at", "name"],
+            condition_expression="attribute_exists(PK)"
+        )
+        logger.info(f"Rolled back bundle {bundle.ksuid} to draft status after failure.")
+    except Exception as e:
+        logger.error(f"Failed to rollback bundle {bundle.ksuid} after failure: {e}")
+        logger.error(traceback.format_exc())
+        return False
+
+    return True
 
 def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
     logger.info(f"Publish Bundles: {request}")
@@ -262,16 +281,13 @@ def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str,
         bundle_models = [
             BundleModel.model_validate({
                 "status": Status.live,
-                "ksuid": str(bd.ksuid),
+                "ksuid": bundle_ksuid,
+                "name": "palceholder",
                 "organisation": organisationSlug,
                 "parent_event_ksuid": eventId,
                 "published_at": current_time
-            }) for bd in request.bundles
+            }) for bundle_ksuid in request.bundles
         ]
-
-        # validate that referenced items in includes exist and are live
-        resp = _validate_includes(table, bundle_models, eventId, check_live_items=True)
-        if resp: return resp        
 
         successful_bundles, failed_bundles = [], []
         for bd in bundle_models:
@@ -284,26 +300,25 @@ def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str,
             )
             if result.success:
                 bundle = BundleModel(**result.item)
+
+                # validate that referenced items in includes exist and are live
+                resp = _validate_includes(table, [bundle], eventId, check_live_items=True)
+                if resp:
+                    _rollback_created_bundle(bundle, table)
+                    body = json.loads(resp.get("body", ""))
+                    failed_bundles.append((bundle, f'{body.get("message", "Validaiton of referenced child items faild")}: Missing:{str(body.get("missing_items", []))} Drafts:{str(body.get("non_live_items", []))}'))
+                    continue
                 try:
-                    bundle, created = create_stripe_catalog(item=bd, organisation=organisationSlug, event_id=eventId, stripe=stripe)
+                    bundle, created = create_stripe_catalog(item=bundle, organisation=organisationSlug, event_id=eventId, stripe=stripe)
                     successful_bundles.append(bundle)
                 except Exception as e:
                     logger.error(f"Stripe catalog creation failed for bundle {bundle.ksuid}: {e}")
                     logger.error(traceback.format_exc())
-                    try:
-                        bundle.status = Status.draft
-                        bundle.upsert(
-                            table=table,
-                            only_set_once=["organisation", "parent_event_ksuid", "created_at", "name"],
-                            condition_expression="attribute_exists(PK)"
-                        )
-                        logger.info(f"Rolled back bundle {bundle.ksuid} to draft status after Stripe failure.")
-                    except Exception as rollback_e:
-                        logger.error(f"Failed to rollback bundle {bundle.ksuid} after Stripe failure: {rollback_e}")
-                        logger.error(traceback.format_exc())
+                    _rollback_created_bundle(bundle, table)
                     failed_bundles.append((bundle, f"Stripe catalog creation failed: {str(e)}"))
+
                 try:
-                    logger.info(f"Updating itbundleem {bundle.ksuid} with Stripe IDs: {bundle.stripe_product_id}, {bundle.stripe_price_id}, {bundle.stripe_primary_price_id}, {bundle.stripe_secondary_price_id}, {bundle.stripe_tertiary_price_id}")
+                    logger.info(f"Updating bundle {bundle.ksuid} with Stripe IDs: {bundle.stripe_product_id}, {bundle.stripe_price_id}, {bundle.stripe_primary_price_id}, {bundle.stripe_secondary_price_id}, {bundle.stripe_tertiary_price_id}")
                     bundle.upsert(table=table, only_set_once=["organisation", "parent_event_ksuid", "created_at", "name", "status"])
                 except Exception as e:
                     logger.error(f"Failed to update bundle {bundle.ksuid} with Stripe IDs: {e}")

@@ -16,6 +16,12 @@ from _pydantic.EventBridge import Action, EventType
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
+@dataclass
+class UpsertResult:
+    success: bool
+    item: Optional[dict]
+    error: Optional[str]
+
 def convert_datetime_to_iso_8601_with_z_suffix(dt: Union[datetime, str]) -> str:
     """
     Convert a datetime object or an ISO 8601 formatted string to an ISO 8601 string 
@@ -259,7 +265,13 @@ class DynamoModel(BaseModel):
 
         return convert_floats_to_decimals({**base, **props})
     
-    def upsert(self, table, only_set_once: list = [], condition_expression: str = None):
+    def upsert(self, 
+               table, 
+               only_set_once: list = [], 
+               condition_expression: str = None,
+               extra_expression_attr_names: dict[str, str] | None = None, 
+               extra_expression_attr_values: dict[str, object] | None = None
+               ) -> UpsertResult:
         """
         Upserts an item into the DynamoDB table.
 
@@ -273,22 +285,24 @@ class DynamoModel(BaseModel):
         condition_expression : str, optional
             An additional condition expression to apply during the upsert operation.
             Default is None.
-
-        Raises
-        ------
-        VersionConflictError
-            If a version conflict occurs during the upsert operation.
-        Exception
-            If any other error occurs during the upsert operation.
+        extra_expression_attr_names : dict[str, str], optional
+            A dictionary of extra expression attribute names to include in the update expression.
+            Default is None.
+        extra_expression_attr_values : dict[str, object], optional
+            A dictionary of extra expression attribute values to include in the update expression.
+            Default is None.
 
         Returns
         -------
-        dict
-            The updated item after the upsert operation.
+        UpsertResult
+            An object containing the result of the upsert operation, including success status,
+            the updated item if successful, and any error message if not successful.
         """
         update_parts = []
         expression_attr_names = {}
         expression_attr_values = {}
+        extra_expression_attr_names = dict(extra_expression_attr_names or {})
+        extra_expression_attr_values = dict(extra_expression_attr_values or {})            
         
         item = self.to_dynamo()
 
@@ -300,12 +314,17 @@ class DynamoModel(BaseModel):
             name_placeholder = f"#{key}"
             value_placeholder = f":{key}"
             expression_attr_names[name_placeholder] = key
-            expression_attr_values[value_placeholder] = value        
+            expression_attr_values[value_placeholder] = value
 
             if key in only_set_once:
                 update_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
             else:
                 update_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+        for k, v in extra_expression_attr_names.items():
+            expression_attr_names.setdefault(k, v)
+        for k, v in extra_expression_attr_values.items():
+            expression_attr_values.setdefault(k, v)                
 
         update_expression = "SET " + ", ".join(update_parts)
 
@@ -330,14 +349,31 @@ class DynamoModel(BaseModel):
             kwargs["ConditionExpression"] = " AND ".join(conditions)
 
         try:
-            return table.update_item(**kwargs)
+            result = table.update_item(**kwargs)
+
+            return UpsertResult(
+                success=True,
+                item=result.get("Attributes", None),
+                error=None
+            )
+
         except table.meta.client.exceptions.ConditionalCheckFailedException as e:
             if self.uses_versioning():
-                raise VersionConflictError(self, expression_attr_values.get(":incoming_version"))
+                return UpsertResult(
+                    success=False,
+                    item=None,
+                    error="Version conflict"
+                )
+                # raise VersionConflictError(self, expression_attr_values.get(":incoming_version"))
             raise
         except Exception as e:
             logger.error(traceback.format_exc())
-            raise
+            return UpsertResult(
+                success=False,
+                item=None,
+                error=str(e)
+            )
+            # raise
 
     def assemble_from_items(self, items: list[dict]) -> "DynamoModel":
         """

@@ -18,7 +18,7 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _shared.stripe_catalog import create_stripe_catalog_items, rollback_stripe_created
+from _shared.stripe_catalog import create_stripe_catalog, rollback_stripe_created
 from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest, Status, PublishItemsRequest
 from _pydantic.models.models_extended import ItemModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
@@ -272,7 +272,7 @@ def publish_items(request: PublishItemsRequest, organisationSlug: str, eventId: 
             if result.success:
                 item = ItemModel(**result.item)
                 try:
-                    item, created = create_stripe_catalog_items(item=item, organisation=organisationSlug, event_id=eventId, stripe=stripe)
+                    item, created = create_stripe_catalog(item=item, organisation=organisationSlug, event_id=eventId, stripe=stripe)
                     successful_items.append(item)
                 except Exception as e:
                     logger.error(f"Stripe catalog creation failed for item {item.ksuid}: {e}")

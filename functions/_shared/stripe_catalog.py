@@ -15,12 +15,11 @@ def _stripe_idempotency_key(*parts: str) -> str:
     raw = "|".join(parts)
     return raw[:250]
 
-def create_stripe_catalog_items(organisation: str, event_id: str, item, stripe):
+def create_stripe_catalog(organisation: str, event_id: str, item, stripe):
     """
     """
     created = StripeCreated()
     logger.info(f"{item}")
-    # logger.info("Creating Stripe catalog for item: %s", json.dumps(item.model_dump(mode="json", exclude_none=False), indent=2))
 
     logger.info(f"Creating Stripe catalog for item: {item.name} (event_id={event_id}, organisation={organisation}), type={getattr(item, 'entity_type', 'unknown')}")
 
@@ -29,12 +28,12 @@ def create_stripe_catalog_items(organisation: str, event_id: str, item, stripe):
         idem = _stripe_idempotency_key("de", organisation, event_id, item.ksuid, "product")
         product = stripe.Product.create(
             name=item.name,
-            description=item.description,
+            description=item.description or "",
             active=(getattr(item.status, "value", "draft") == "live"),
             metadata={
                 "organisation": organisation,
                 "event_id": event_id,
-                "item_ksuid": item.ksuid,
+                "ksuid": item.ksuid,
                 "entity_type": getattr(item, "entity_type", "unknown"),
             },
             idempotency_key=idem,
@@ -66,7 +65,7 @@ def create_stripe_catalog_items(organisation: str, event_id: str, item, stripe):
             metadata={
                 "organisation": organisation,
                 "parent_event_id": event_id,
-                "item_ksuid": item.ksuid,
+                "ksuid": item.ksuid,
                 "tier": tier,
             },
             idempotency_key=idem,

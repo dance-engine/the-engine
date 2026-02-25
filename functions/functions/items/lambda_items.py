@@ -85,7 +85,7 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
         raise Exception
 
     #! temporary fix this needs review
-    if len(items) == 1:
+    if isinstance(items, ItemModel):
         items = [items]
 
     if public:

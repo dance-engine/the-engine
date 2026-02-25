@@ -11,13 +11,15 @@ from datetime import datetime, timezone
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 from boto3.dynamodb.conditions import Key
 from ksuid import KsuidMs # layer: utils
+import stripe
 
 ## custom scripts
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.bundles_models import BundleObject, BundleResponse, CreateBundleRequest, BundleListResponse, BundleResponsePublic, BundleListResponsePublic, UpdateBundleRequest
+from _shared.stripe_catalog import create_stripe_catalog, rollback_stripe_created
+from _pydantic.models.bundles_models import BundleObject, BundleResponse, CreateBundleRequest, BundleListResponse, BundleResponsePublic, BundleListResponsePublic, UpdateBundleRequest, PublishBundlesRequest, Status
 from _pydantic.models.models_extended import BundleModel
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
@@ -34,8 +36,12 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'STRIPE_API_KEY' not found"))
 
-def _validate_includes(table, models, eventId: str):
+# setup stripe key
+stripe.api_key = STRIPE_API_KEY
+
+def _validate_includes(table, models, eventId: str, check_live_items: bool = False):
     item_ids = {item_id for m in models if m.includes for item_id in m.includes}
     if item_ids:
         client = table.meta.client
@@ -47,11 +53,22 @@ def _validate_includes(table, models, eventId: str):
         found = resp.get('Responses', {}).get(table.name, [])
         found_ids = {it['PK'].split('#', 1)[1] for it in found}
         missing = list(item_ids - found_ids)
+        non_live_items = [item_id for item_id in found_ids if not any(it['status'] == 'live' for it in found if it['PK'] == f'ITEM#{item_id}')] if check_live_items else []
+
+        response = {}
+
+        if non_live_items:
+            logger.error(f"Non-live referenced item(s) on update/create: {non_live_items}")
+            response['non_live_items'] = non_live_items
+
         if missing:
             logger.error(f"Missing referenced item(s) on update/create: {missing}")
-            return make_response(400, {
-                'message': 'Referenced item(s) not found',
-                'missing_items': missing,
+            response['missing_items'] = missing
+
+        if missing or non_live_items:
+            make_response(400, {
+                'message': 'Referenced item(s) not found or are not live',
+                **response,
                 'bundles': [BundleObject.model_validate(m.model_dump(include=BundleObject.model_fields.keys())).model_dump(mode='json')
                             for m in models
                     ]
@@ -228,6 +245,113 @@ def create(request: CreateBundleRequest, organisationSlug: str, eventId: str, ac
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
 
+def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    logger.info(f"Publish Bundles: {request}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Publishing bundles for {eventId} of {organisationSlug}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    if not request.bundles or request.bundles == None or request.bundles == []:
+        return make_response(400, {"message": "No bundles provided for publishing."})
+    
+    try:
+        bundle_models = [
+            BundleModel.model_validate({
+                "status": Status.live,
+                "ksuid": str(bd.ksuid),
+                "organisation": organisationSlug,
+                "parent_event_ksuid": eventId,
+                "published_at": current_time
+            }) for bd in request.bundles
+        ]
+
+        # validate that referenced items in includes exist and are live
+        resp = _validate_includes(table, bundle_models, eventId, check_live_items=True)
+        if resp: return resp        
+
+        successful_bundles, failed_bundles = [], []
+        for bd in bundle_models:
+            result = bd.upsert(
+                table=table,
+                only_set_once=["organisation", "parent_event_ksuid", "created_at", "name"],
+                condition_expression="attribute_exists(PK) AND attribute_exists(primary_price) AND attribute_exists(#name) AND #status = :draft",
+                extra_expression_attr_names={"#status": "status", "#name": "name"},
+                extra_expression_attr_values={":draft": "draft"},
+            )
+            if result.success:
+                bundle = BundleModel(**result.item)
+                try:
+                    bundle, created = create_stripe_catalog(item=bd, organisation=organisationSlug, event_id=eventId, stripe=stripe)
+                    successful_bundles.append(bundle)
+                except Exception as e:
+                    logger.error(f"Stripe catalog creation failed for bundle {bundle.ksuid}: {e}")
+                    logger.error(traceback.format_exc())
+                    try:
+                        bundle.status = Status.draft
+                        bundle.upsert(
+                            table=table,
+                            only_set_once=["organisation", "parent_event_ksuid", "created_at", "name"],
+                            condition_expression="attribute_exists(PK)"
+                        )
+                        logger.info(f"Rolled back bundle {bundle.ksuid} to draft status after Stripe failure.")
+                    except Exception as rollback_e:
+                        logger.error(f"Failed to rollback bundle {bundle.ksuid} after Stripe failure: {rollback_e}")
+                        logger.error(traceback.format_exc())
+                    failed_bundles.append((bundle, f"Stripe catalog creation failed: {str(e)}"))
+                try:
+                    logger.info(f"Updating itbundleem {bundle.ksuid} with Stripe IDs: {bundle.stripe_product_id}, {bundle.stripe_price_id}, {bundle.stripe_primary_price_id}, {bundle.stripe_secondary_price_id}, {bundle.stripe_tertiary_price_id}")
+                    bundle.upsert(table=table, only_set_once=["organisation", "parent_event_ksuid", "created_at", "name", "status"])
+                except Exception as e:
+                    logger.error(f"Failed to update bundle {bundle.ksuid} with Stripe IDs: {e}")
+                    logger.error(traceback.format_exc())
+
+                    rollback_stripe_created(created, stripe)
+
+                    failed_bundles.append((bundle, f"Failed to update bundle with Stripe IDs: {str(e)}"))
+            elif not result.success:
+                failed_bundles.append((bd, result.error if result.error else "Unknown failure"))
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid publish request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
+    
+    response = {
+        "successful_bundles": [bundle.model_dump(mode="json", exclude_none=True) for bundle in successful_bundles],
+        "failed_bundles": [
+            {
+                "bundle": bundle.model_dump(mode="json", exclude_none=True),
+                "reason": reason
+            } for bundle, reason in failed_bundles
+        ]
+    }
+
+    if failed_bundles:
+        if successful_bundles:
+            return make_response(207, {
+                "message": "Partial success: some bundles published successfully, others failed.",
+                **response
+            })
+        return make_response(400, {
+            "message": "Failed to publish any bundles.",
+            **response
+        })
+
+    return make_response(200, {
+        "message": "Bundles published successfully.",
+        **response
+    })    
+
 def lambda_handler(event, context):
     try:
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
@@ -238,6 +362,7 @@ def lambda_handler(event, context):
         bundleId         = event.get("pathParameters", {}).get("ksuid")
         eventId          = event.get("pathParameters", {}).get("event")
         is_public        = event.get("rawPath", "").startswith("/public")
+        is_publish       = event.get("rawPath", "").endswith("/bundles/publish") and not is_public
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
         if not eventId: 
@@ -245,8 +370,12 @@ def lambda_handler(event, context):
 
         # POST /{organisation}/events
         if http_method == "POST":
-            validated_request = CreateBundleRequest(**parsed_event)
-            return create(validated_request, organisationSlug, eventId, actor)
+            if is_publish:
+                validated_request = PublishBundlesRequest(**parsed_event)
+                return publish(validated_request, organisationSlug, eventId, actor)
+            else:
+                validated_request = CreateBundleRequest(**parsed_event)
+                return create(validated_request, organisationSlug, eventId, actor)
 
         # GET 
         elif http_method == "GET":

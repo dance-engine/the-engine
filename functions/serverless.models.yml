@@ -34,6 +34,7 @@ models:
   - ${file(functions/bundles/sls.bundles.models.yml):BundleObject}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleObjectPublic}
   - ${file(functions/bundles/sls.bundles.models.yml):CreateBundleRequest}
+  - ${file(functions/bundles/sls.bundles.models.yml):PublishBundlesRequest}
   - ${file(functions/bundles/sls.bundles.models.yml):UpdateBundleRequest}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleResponse}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleListResponse}

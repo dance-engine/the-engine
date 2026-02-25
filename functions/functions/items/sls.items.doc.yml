@@ -141,7 +141,7 @@ endpoints:
           schema:
             type: string
       requestBody:
-        description: "List of Item details"
+        description: "List of Item ksuids"
       requestModels:
         application/json: "CreateItemRequest"
       methodResponses:

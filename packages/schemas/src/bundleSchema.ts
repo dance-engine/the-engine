@@ -12,9 +12,20 @@ export const bundleSchema = z.object({
 });
 
 // Generate TypeScript type from the schema
-export type ItemType = {name: string, status: string, ksuid: string, description: string, primary_price: number, primary_price_name: string, stripe_price_id?: string}
+export type ItemType = {name: string, status: string, ksuid: string, description: string, primary_price: number, primary_price_name: string, stripe_price_id?: string, parent_event_ksuid: string, event_slug?: string, entity_type: string };
 export type BundleType = z.infer<typeof bundleSchema>;
-export type BundleTypeExtended = BundleType & {ksuid: string, event_slug?: string, status: string, current_price?: () => string, current_price_name?: () => string, items?: () => ItemType[], stripe_price_id?: string, includes?: string[]};
+export type BundleTypeExtended = BundleType & {
+    ksuid: string, 
+    event_slug?: string, 
+    parent_event_ksuid: string,
+    entity_type: string,
+    status: string, 
+    current_price?: () => string, 
+    current_price_name?: () => string, 
+    items?: () => ItemType[], 
+    stripe_price_id?: string, 
+    includes?: string[]
+  };
 
 // Additional no validation metadata relating to how we display data in forms
 export const bundleMetadata = {

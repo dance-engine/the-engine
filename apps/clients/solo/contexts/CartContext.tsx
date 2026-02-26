@@ -1,4 +1,4 @@
-import { ItemType } from '@dance-engine/schemas/bundle';
+import { BundleTypeExtended, ItemType } from '@dance-engine/schemas/bundle';
 import { EventModelType } from '@dance-engine/schemas/events';
 import React, { createContext, useReducer, useCallback } from 'react';
 import { usePassSelectorState } from './PassSelectorContext';
@@ -28,16 +28,17 @@ export function CartProvider({ event, org, children }: { event: EventModelType; 
   const [state] = useReducer(reducer, {...initialSelection});
   const { selected } = usePassSelectorState()
 
-  const items = useCallback(() => {
-    const items = selected.map((ksuid) => event.items?.[ksuid])
+  const lineItems = useCallback(() => {
+    const items = selected.map((ksuid) => event.items?.[ksuid]) || []
     const bundles = event.bundles?.filter((bundle) => selected.includes(bundle.ksuid)).map((bundle) => {
       return bundle
     }) || []
-    return [...items, ...bundles].filter(Boolean)
+    const returnVal = [...items, ...bundles].filter(Boolean) as (ItemType | BundleTypeExtended)[]
+    return returnVal
   },[selected,event])
 
-  const priceIds = items().map((item) => item?.stripe_price_id).filter(Boolean) as string[];
-  const cartAmount = items().reduce((total, item) => total + (item?.primary_price || 0), 0);
+  // const priceIds = lineItems().map((item) => item?.stripe_price_id).filter(Boolean) as string[];
+  const cartAmount = lineItems().reduce((total, item) => total + (item?.primary_price || 0), 0);
 
   return (
       <CartSelectorContext.Provider value={state}>

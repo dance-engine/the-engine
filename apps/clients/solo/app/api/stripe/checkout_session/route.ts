@@ -9,6 +9,13 @@ import { NextResponse } from "next/server"; // for App Router
 //   apiVersion: "2025-06-30.basil", // check current supported version
 // });
 
+const getUrlOfAccount = (accountId: string) => {
+  const accountUrls: Record<string, string> = {
+    'acct_1RnpiyD1ZofqWwLa': 'https://iamrebel.co.uk',
+    'acct_1Rkp1ODIMY9TzhzF': "https://powerofwomansbk.co.uk"
+  }
+  return accountUrls[accountId] || "https://danceengine.co.uk";
+}
 
 
 export async function POST(req: Request) {
@@ -35,8 +42,8 @@ export async function POST(req: Request) {
     {
       "collect_customer_on_stripe": true,
       "coupon_code": couponCode || undefined,
-      "success_url": `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
-      "cancel_url": `${process.env.NEXT_PUBLIC_BASE_URL}/`,
+      "success_url": `${getUrlOfAccount(org.account_id || '')}/checkout/success`,
+      "cancel_url": `${getUrlOfAccount(org.account_id || '')}/`,
       "application_fee_amount": isAndreas ? 0 : platformCharge,
       "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
       "line_items": line_items

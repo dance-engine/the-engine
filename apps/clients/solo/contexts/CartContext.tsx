@@ -44,9 +44,17 @@ export function CartProvider({ event, org, children }: { event: EventModelType; 
         {children}
         <h2 className='mt-6 text-xl'>Total Cost: £{(cartAmount/100).toFixed(2)}</h2>
 
-        { items() ? <StripeMultiPurchaseButton accountId={org ? org.account_id || 'acct_1Ry9rvDqtDds31FK' : 'acct_1Ry9rvDqtDds31FK'} priceIds={priceIds} cartValue={cartAmount} label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'/> : "Nothing to add" }
-        {/* <pre>{JSON.stringify(event.bundles, null, 2)}</pre> */}
-        {/* <pre>{JSON.stringify(items(), null, 2)}</pre> */}
+        { lineItems() ? <StripeMultiPurchaseButton 
+            accountId={org ? org.account_id || 'acct_1Ry9rvDqtDds31FK' : 'acct_1Ry9rvDqtDds31FK'} 
+            org={org}
+            // priceIds={priceIds} 
+            lineItems={lineItems()}
+            cartValue={cartAmount} 
+            label="Checkout Now" className='text-de-background-dark px-6 py-3 bg-pear-logo rounded text-xl mt-6'
+          /> 
+            : "Nothing to add" }
+        {/* <pre>BUNDLES{JSON.stringify(event.bundles, null, 2)}</pre>
+        <pre>ITEMS{JSON.stringify(lineItems(), null, 2)}</pre> */}
       </CartSelectorContext.Provider>
   )
 }

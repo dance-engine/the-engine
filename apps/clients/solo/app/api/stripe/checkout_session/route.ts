@@ -59,6 +59,16 @@ export async function POST(req: Request) {
       console.error("Error response from checkout session API:", errorData);
       return new NextResponse("Failed to create checkout session", { status: 500 });
     }
+
+    const data = await response.json();
+    console.log("Data from checkout session API:", data);
+
+    if (data.checkout && data.checkout.stripe_checkout_url) {
+      return NextResponse.json({ url: data.checkout.stripe_checkout_url });
+    } else {
+      console.error("No URL in checkout session API response:", data);
+      return NextResponse.json({ error: "Failed to create checkout session", ...data }, { status: 500 });
+    }
     // const stripe = accountId == 'acct_1Ry9rvDqtDds31FK' ? new Stripe(process.env.STRIPE_SECRET_KEY_DEV!, { apiVersion: "2025-06-30.basil" }) : mainStripe
 
     // const baseSessionObject = {

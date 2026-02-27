@@ -98,6 +98,9 @@ def get_one(organisationSlug: str,  eventId: str,  bundleId: str, public: bool =
     except Exception as e:
         logger.error(f"DynamoDB query failed to get bundle ({bundleId}) for {eventId} of {organisationSlug}: {e}")
         raise Exception
+    
+    if public and getattr(result, "status", None) != Status.live:
+        return None    
 
     return result.to_public() if public else result
 
@@ -121,6 +124,9 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
     #! temporary fix this needs review
     if isinstance(bundles, BundleModel):
         bundles = [bundles]
+
+    if public:
+        bundles = [i for i in bundles if getattr(i, "status", None) == Status.live]
 
     return [b.to_public() if public else b for b in bundles]
 

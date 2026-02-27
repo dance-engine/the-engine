@@ -1,0 +1,32 @@
+endpoints: 
+  Email:
+    POST:
+      summary: "Send Tickets"
+      description: "Sends tickets emails for tickets that already exist."
+      tags:
+        - Email
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      requestBody:
+        description: "List of Ticket ksuids"
+      requestModels:
+        application/json: "SendTicketEmailRequest"
+      methodResponses:
+        - statusCode: 201
+          responseBody:
+            description: Ticket send requested successfully.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"     

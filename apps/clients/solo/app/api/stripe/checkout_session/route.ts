@@ -42,8 +42,8 @@ export async function POST(req: Request) {
           //   destination: accountId ,
           // },
         },
-        success_url: isAndreas ? "https://iamrebel.co.uk/checkout/success" : `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
-        cancel_url: isAndreas ? "https://iamrebel.co.uk/" : `${process.env.NEXT_PUBLIC_BASE_URL}/`,
+        success_url: isAndreas ? "https://iamrebel.co.uk/checkout/success" : `${getUrlOfAccount(accountId)}/checkout/success`,
+        cancel_url: isAndreas ? "https://iamrebel.co.uk/" : `${getUrlOfAccount(accountId)}/`,
       } as Stripe.Checkout.SessionCreateParams;
       const sessionObject = couponCode ? {...baseSessionObject, discounts: [{ coupon: couponCode }]} : {...baseSessionObject, allow_promotion_codes: true };
         const session = await stripe.checkout.sessions.create(sessionObject,

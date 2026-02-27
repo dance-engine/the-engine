@@ -36,13 +36,21 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   );
 };
 
-const StripeMultiPurchaseButton = ({accountId, org, label, lineItems, cartValue, className, style}: {accountId?: string, org?: OrganisationType, label?: string, lineItems?: (ItemType | BundleTypeExtended)[], cartValue?: number, className?: string, style?: React.CSSProperties}) => {
+const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style}: 
+    {accountId?: string, 
+      org?: OrganisationType, 
+      label?: string, 
+      priceId?: string, 
+      lineItems?: (ItemType | BundleTypeExtended)[], 
+      cartValue?: number,
+      className?: string, 
+      style?: React.CSSProperties}) => {
   const handleClick = async () => {
 
     const body = JSON.stringify({
         accountId: accountId, // if needed, otherwise remove
         org: org,
-        // priceIds: priceIds, // must be the actual product IDs from Stripe
+        priceId: priceId, // must be the actual product IDs from Stripe
         lineItems: lineItems, // must be the actual product IDs from Stripe
         cartValue: cartValue ? cartValue : undefined,
       })

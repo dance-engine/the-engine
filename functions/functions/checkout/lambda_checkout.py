@@ -79,7 +79,7 @@ def _event_capacity_mutation(table, *,
         extra_expression_attr_names=extra_names,
         extra_expression_attr_values=extra_values,
         version_override=True,
-        only_set_once={"created_at", "organisation", "ksuid", "name", "event_slug"}
+        only_set_once={"created_at", "organisation", "ksuid", "name", "event_slug", "status"}
     )
     return result
 

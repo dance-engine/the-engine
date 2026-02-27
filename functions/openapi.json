@@ -611,6 +611,22 @@
             "description": "Whats the related stripe price_id",
             "type": "string"
           },
+          "stripe_primary_price_id": {
+            "description": "Whats the related stripe price_id for the primary price",
+            "type": "string"
+          },
+          "stripe_secondary_price_id": {
+            "description": "Whats the related stripe price_id for the secondary price",
+            "type": "string"
+          },
+          "stripe_tertiary_price_id": {
+            "description": "Whats the related stripe price_id for the tertiary price",
+            "type": "string"
+          },
+          "stripe_product_id": {
+            "description": "Whats the related stripe product_id",
+            "type": "string"
+          },
           "entity_type": {
             "type": "string"
           },
@@ -685,6 +701,22 @@
             "description": "Whats the related stripe price_id",
             "type": "string"
           },
+          "stripe_primary_price_id": {
+            "description": "Whats the related stripe price_id for the primary price",
+            "type": "string"
+          },
+          "stripe_secondary_price_id": {
+            "description": "Whats the related stripe price_id for the secondary price",
+            "type": "string"
+          },
+          "stripe_tertiary_price_id": {
+            "description": "Whats the related stripe price_id for the tertiary price",
+            "type": "string"
+          },
+          "stripe_product_id": {
+            "description": "Whats the related stripe product_id",
+            "type": "string"
+          },
           "entity_type": {
             "type": "string"
           }
@@ -702,6 +734,23 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ItemObject"
+            }
+          }
+        },
+        "x-internal-group": "items",
+        "x-internal-path": "_pydantic/models"
+      },
+      "PublishItemsRequest": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of item KSUIDs to publish",
+            "items": {
+              "type": "string"
             }
           }
         },
@@ -835,6 +884,22 @@
             "description": "Whats the related stripe price_id",
             "type": "string"
           },
+          "stripe_primary_price_id": {
+            "description": "Whats the related stripe price_id for the primary price",
+            "type": "string"
+          },
+          "stripe_secondary_price_id": {
+            "description": "Whats the related stripe price_id for the secondary price",
+            "type": "string"
+          },
+          "stripe_tertiary_price_id": {
+            "description": "Whats the related stripe price_id for the tertiary price",
+            "type": "string"
+          },
+          "stripe_product_id": {
+            "description": "Whats the related stripe product_id",
+            "type": "string"
+          },
           "includes": {
             "type": "array",
             "items": {
@@ -903,6 +968,22 @@
             "description": "Whats the related stripe price_id",
             "type": "string"
           },
+          "stripe_primary_price_id": {
+            "description": "Whats the related stripe price_id for the primary price",
+            "type": "string"
+          },
+          "stripe_secondary_price_id": {
+            "description": "Whats the related stripe price_id for the secondary price",
+            "type": "string"
+          },
+          "stripe_tertiary_price_id": {
+            "description": "Whats the related stripe price_id for the tertiary price",
+            "type": "string"
+          },
+          "stripe_product_id": {
+            "description": "Whats the related stripe product_id",
+            "type": "string"
+          },
           "includes": {
             "type": "array",
             "items": {
@@ -926,6 +1007,23 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BundleObject"
+            }
+          }
+        },
+        "x-internal-group": "bundles",
+        "x-internal-path": "_pydantic/models"
+      },
+      "PublishBundlesRequest": {
+        "type": "object",
+        "required": [
+          "bundles"
+        ],
+        "properties": {
+          "bundles": {
+            "type": "array",
+            "description": "List of bundle KSUIDs to publish",
+            "items": {
+              "type": "string"
             }
           }
         },
@@ -1403,7 +1501,7 @@
       "get": {
         "summary": "Get Single Ticket",
         "description": "Fetch details of a specific ticket by its KSUID.",
-        "operationId": "tickets-3b80778a-b293-4cc2-aff2-10faa697c58a",
+        "operationId": "tickets-c11eaf53-5190-4980-90e9-eeeaf35db139",
         "parameters": [
           {
             "name": "organisation",
@@ -1575,7 +1673,7 @@
       "post": {
         "summary": "Create Bundles",
         "description": "Creates a new bundle and stores it for the given event.",
-        "operationId": "bundles-f9dd2942-1d04-4c3d-820d-5a540ec89c05",
+        "operationId": "bundles-047acc5c-724b-4fcc-b56e-6a4f8a705051",
         "parameters": [
           {
             "name": "organisation",
@@ -1643,7 +1741,7 @@
       "put": {
         "summary": "Update Bundles",
         "description": "Update existing bundles for a given event.",
-        "operationId": "bundles-89708cec-7bc9-4be0-8f29-e8bbbb0e2325",
+        "operationId": "bundles-7868c4d0-3fba-4618-a070-d4900229c2a4",
         "parameters": [
           {
             "name": "organisation",
@@ -1709,7 +1807,7 @@
       "get": {
         "summary": "Get Single Bundle",
         "description": "Fetch details of a specific bundle by its KSUID.",
-        "operationId": "bundles-ba96b003-c8e6-48d7-94a3-1b8a62ac2deb",
+        "operationId": "bundles-23a4c5f6-0e05-4958-88c4-1efe11817799",
         "parameters": [
           {
             "name": "organisation",
@@ -1772,11 +1870,74 @@
         }
       }
     },
+    "/{organisation}/{event}/bundles/publish": {
+      "post": {
+        "summary": "Publish Bundles",
+        "description": "Publishes one or more draft bundles: validates includes, creates Stripe product/prices and sets status to live.",
+        "operationId": "bundles-568113c7-49a6-417a-a977-7628613b5ba6",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Bundles"
+        ],
+        "requestBody": {
+          "description": "Bundles to publish",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishBundlesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bundles published successfully.",
+            "headers": {}
+          },
+          "409": {
+            "description": "Some bundles were not draft.",
+            "headers": {}
+          },
+          "422": {
+            "description": "Some bundles were not publishable.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          },
+          "502": {
+            "description": "Stripe creation failed.",
+            "headers": {}
+          }
+        }
+      }
+    },
     "/public/{organisation}/{event}/bundles/{ksuid}": {
       "get": {
         "summary": "Public Get Bundles",
         "description": "Public endpoint to get a specific bundle by its KSUID.",
-        "operationId": "bundles-8a6c12f5-4374-42bf-91ff-29396b3060aa",
+        "operationId": "bundles-f67be76a-2d44-4175-80ac-40eba45fabc5",
         "parameters": [
           {
             "name": "organisation",
@@ -1847,7 +2008,7 @@
       "get": {
         "summary": "Public Get All Bundles",
         "description": "Public endpoint to get all bundles for a given organisation and event.",
-        "operationId": "bundles-cdb621bc-5879-4251-97aa-bed6676d9b7b",
+        "operationId": "bundles-7f922011-e345-4477-8734-39acb689a950",
         "parameters": [
           {
             "name": "organisation",
@@ -1965,7 +2126,7 @@
       "post": {
         "summary": "Create Item",
         "description": "Creates a new item and stores it for the given event.",
-        "operationId": "items-d777a2e5-adb0-4c12-b687-50d4c512b12b",
+        "operationId": "items-87985512-db5c-4e82-8aa1-6f7c7cbc2164",
         "parameters": [
           {
             "name": "organisation",
@@ -1990,7 +2151,7 @@
           "Items"
         ],
         "requestBody": {
-          "description": "List of Item details",
+          "description": "List of Item ksuids",
           "required": false,
           "content": {
             "application/json": {
@@ -2033,7 +2194,7 @@
       "put": {
         "summary": "Update Items",
         "description": "Update existing items for a given event.",
-        "operationId": "items-808ed1e2-8236-4e1f-9421-8d8b20c659b9",
+        "operationId": "items-c1c4032f-6233-4a1e-851a-8a3a88cbedf0",
         "parameters": [
           {
             "name": "organisation",
@@ -2099,7 +2260,7 @@
       "get": {
         "summary": "Get Single Item",
         "description": "Fetch details of a specific item by its KSUID.",
-        "operationId": "items-7669346a-53d4-433f-8c05-b351f4138b74",
+        "operationId": "items-afbaa41f-620c-47d1-82e5-1a73018b3a97",
         "parameters": [
           {
             "name": "organisation",
@@ -2162,11 +2323,74 @@
         }
       }
     },
+    "/{organisation}/{event}/items/publish": {
+      "post": {
+        "summary": "Publish Items",
+        "description": "Publishes one or more draft items: creates Stripe product/prices and sets status to live.",
+        "operationId": "items-123f1ac4-4cf0-463b-bf66-7f7a062b9bb1",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          },
+          {
+            "name": "event",
+            "in": "path",
+            "description": "Event slug or ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/event"
+            }
+          }
+        ],
+        "tags": [
+          "Items"
+        ],
+        "requestBody": {
+          "description": "Items to publish",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishItemsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Items published successfully.",
+            "headers": {}
+          },
+          "409": {
+            "description": "Some items were not draft.",
+            "headers": {}
+          },
+          "422": {
+            "description": "Some items were not publishable.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "headers": {}
+          },
+          "502": {
+            "description": "Stripe creation failed.",
+            "headers": {}
+          }
+        }
+      }
+    },
     "/public/{organisation}/{event}/items/{ksuid}": {
       "get": {
         "summary": "Public Get Item",
         "description": "Public endpoint to get a specific item by its KSUID.",
-        "operationId": "items-f37f32a1-4ba4-4be5-a1d7-6a142c9ad79e",
+        "operationId": "items-a9f23c97-d7dc-460c-a92a-bfee2ecdc032",
         "parameters": [
           {
             "name": "organisation",
@@ -2237,7 +2461,7 @@
       "get": {
         "summary": "Public Get All Items",
         "description": "Public endpoint to get all items for a given organisation and event.",
-        "operationId": "items-77a67179-4f79-4314-9447-99a6c7df8d80",
+        "operationId": "items-1c67f456-b0bc-49d7-ab9c-744a4a8a54d9",
         "parameters": [
           {
             "name": "organisation",
@@ -2329,7 +2553,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-443e6e03-be73-4110-9a06-c85b6ec8a2b0",
+        "operationId": "organisations-d983197e-82e9-4f24-86f0-03f8afd514a5",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -2365,7 +2589,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-f9733418-c413-4b85-ae3c-5b08bcb0faba",
+        "operationId": "organisations-78b246cc-a19c-448a-9ecd-c4313623c7ae",
         "parameters": [],
         "tags": [
           "Public",
@@ -2443,7 +2667,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-3430bf2d-03f8-44ef-b89f-d9b4f3c3ddb5",
+        "operationId": "eventbridge-50b87328-4898-4447-b942-f9b69e2b9ed4",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -2515,7 +2739,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-d83a6363-e0f8-4f27-8f5f-a98e586137b6",
+        "operationId": "events-c7184e3c-61c0-40fb-9e8e-cb5b1f5d87a0",
         "parameters": [
           {
             "name": "organisation",
@@ -2572,7 +2796,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-9b6ab917-510d-4298-b881-2bce8a07af55",
+        "operationId": "events-b9227756-efda-4a8f-bb7b-3805e23eb655",
         "parameters": [
           {
             "name": "organisation",
@@ -2628,7 +2852,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-4c10a55e-14f7-476c-8c4b-4660867c43cf",
+        "operationId": "events-ce93e4a7-6b1a-4653-9cd4-48b032da34f0",
         "parameters": [
           {
             "name": "organisation",
@@ -2692,7 +2916,7 @@
       "delete": {
         "summary": "Delete an Event",
         "description": "Permanently delete an event and its related entities. Requires super admin privileges.",
-        "operationId": "events-34bd61b5-955d-4987-88b7-f0bd3cf1b40c",
+        "operationId": "events-7b6bf0bf-7b78-4795-8577-6ecf32ca307f",
         "parameters": [
           {
             "name": "organisation",
@@ -2758,7 +2982,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-6e90e334-a45d-4c50-af9a-63d27f334f79",
+        "operationId": "events-349210a4-5e42-4950-a6aa-ad139107f875",
         "parameters": [
           {
             "name": "organisation",
@@ -2820,7 +3044,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-5f54bfcd-0b31-4601-913e-1227f839c1f1",
+        "operationId": "events-65db2c8c-9fcb-4417-b56c-ea8291d602ed",
         "parameters": [
           {
             "name": "organisation",
@@ -2919,7 +3143,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-66ca114d-d693-4e41-9ab9-1bc4a700bfb6",
+        "operationId": "presigned_url-eff6c32a-3d36-4856-9991-3f2a32b93b02",
         "parameters": [],
         "tags": [
           "S3"
@@ -3002,7 +3226,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-d43ea00a-0f39-4e50-9767-709dab09395e",
+        "operationId": "customers-2455bf07-9b07-4af7-b099-732d578c7b17",
         "parameters": [
           {
             "name": "organisation",
@@ -3059,7 +3283,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their ksuid in a given organisation.",
-        "operationId": "customers-641ee8b5-70ab-4c7d-a950-1b41454db585",
+        "operationId": "customers-a184c07c-493d-482f-9dfa-e6206feb0aff",
         "parameters": [
           {
             "name": "organisation",
@@ -3115,7 +3339,7 @@
       "put": {
         "summary": "Update a Customer",
         "description": "Update an existing customer and its location",
-        "operationId": "customers-359e8e28-9557-4e7e-babb-093ef948d1d9",
+        "operationId": "customers-042b7b52-09ac-4924-a68e-16b8b698e56d",
         "parameters": [
           {
             "name": "organisation",
@@ -3228,7 +3452,7 @@
       "put": {
         "summary": "Update Organisatioon Settings",
         "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-9c0e17b4-430d-4230-b9f2-3978dfc64a63",
+        "operationId": "organisation-3b2a7255-d3f0-4fb5-be67-23d3f5d4d9a9",
         "parameters": [
           {
             "name": "organisation",

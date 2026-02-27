@@ -23,6 +23,7 @@ models:
   - ${file(functions/items/sls.items.models.yml):ItemObject}
   - ${file(functions/items/sls.items.models.yml):ItemObjectPublic}
   - ${file(functions/items/sls.items.models.yml):CreateItemRequest}
+  - ${file(functions/items/sls.items.models.yml):PublishItemsRequest}
   - ${file(functions/items/sls.items.models.yml):UpdateItemRequest}
   - ${file(functions/items/sls.items.models.yml):ItemResponse}
   - ${file(functions/items/sls.items.models.yml):ItemListResponse}
@@ -33,6 +34,7 @@ models:
   - ${file(functions/bundles/sls.bundles.models.yml):BundleObject}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleObjectPublic}
   - ${file(functions/bundles/sls.bundles.models.yml):CreateBundleRequest}
+  - ${file(functions/bundles/sls.bundles.models.yml):PublishBundlesRequest}
   - ${file(functions/bundles/sls.bundles.models.yml):UpdateBundleRequest}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleResponse}
   - ${file(functions/bundles/sls.bundles.models.yml):BundleListResponse}

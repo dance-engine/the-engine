@@ -20,7 +20,8 @@ from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, Eve
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, DeleteEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from _pydantic.models.models_extended import EventModel, LocationModel
-
+from _pydantic.models.items_models import Status as ItemStatus
+from _pydantic.models.bundles_models import Status as BundleStatus
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -162,6 +163,9 @@ def get_events(organisationSlug: str, public: bool = False):
     if isinstance(events, EventModel):
         events = [events]
 
+    if public:
+        events = [i for i in events if getattr(i, "status", None) == Status.live]
+
     return [e.to_public() if public else e for e in events]
 
 def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
@@ -193,6 +197,12 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
     except Exception as e:
         logger.error(f"DynamoDB query failed to get event for {organisationSlug}: {e}")
         raise Exception
+    
+    if public:
+        if getattr(result, "status", None) != Status.live:
+            return None
+        result.items = [i for i in result.items if getattr(i, "status", None) == ItemStatus.live]
+        result.bundles = [b for b in result.bundles if getattr(b, "status", None) == BundleStatus.live]
 
     if not result:
         return None

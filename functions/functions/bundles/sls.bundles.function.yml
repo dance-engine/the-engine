@@ -11,9 +11,11 @@ Bundles:
   environment:
       STAGE_NAME: ${sls:stage}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      STRIPE_API_KEY: ${ssm:/danceengine/${sls:stage}/stripe/api_key}
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+      - !Ref StripeLambdaLayer
   events:
       - httpApi:
           path: /{organisation}/{event}/bundles
@@ -33,6 +35,12 @@ Bundles:
           authorizer:
             adminAuthorizer
           documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.POST}
+      - httpApi:
+          path: /{organisation}/{event}/bundles/publish
+          method: post
+          authorizer:
+            adminAuthorizer
+          documentation: ${file(functions/bundles/sls.bundles.doc.yml):endpoints.Bundles.PUBLISH}               
       - httpApi:
           path: /{organisation}/{event}/bundles
           method: put

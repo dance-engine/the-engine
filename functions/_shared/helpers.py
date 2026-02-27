@@ -1,5 +1,11 @@
 import json
 from _shared.DecimalEncoder import DecimalEncoder
+import logging
+from boto3.dynamodb.conditions import Key
+
+## logger setup
+logger = logging.getLogger()
+logger.setLevel("INFO")
 
 def make_response(status_code, body):
     """
@@ -39,3 +45,24 @@ def deprecated(reason="This function is deprecated."):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+def get_organisation_settings(organisationSlug: str, db, OrganisationModel, ORG_TABLE_NAME_TEMPLATE):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting settings of {organisationSlug} from {TABLE_NAME} / ")
+    blank_model = OrganisationModel(name="blank", organisation=organisationSlug)
+    logger.info(f"Querying DynamoDB for settings of {blank_model.model_dump(mode='json')}")
+
+    try:
+        result = blank_model.query_gsi(
+            table=table,
+            index_name="IDXinv", 
+            key_condition=Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
+            assemble_entites=True
+            )
+        logger.info(f"Found settings for {organisationSlug}: {result}")
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get settings for {organisationSlug}: {e}")
+        raise Exception
+
+    return OrganisationModel.model_validate(result)

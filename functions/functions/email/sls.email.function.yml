@@ -23,4 +23,9 @@ Email:
             - ${param:default_event_bus_source}        
           detail-type:
             - prefix: "ticket.created"
-
+    - httpApi:
+        path: /{organisation}/{event}/email/send/ticket
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/email/sls.email.doc.yml):endpoints.Email.POST}        

@@ -11,14 +11,16 @@ from datetime import datetime, timezone
 from pydantic import AfterValidator, ValidationError # layer: pydantic
 from boto3.dynamodb.conditions import Key
 from ksuid import KsuidMs # layer: utils
+import stripe
 
 ## custom scripts
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.helpers import make_response
-from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest
-from _pydantic.models.models_extended import ItemModel
+from _shared.helpers import make_response, get_organisation_settings
+from _shared.stripe_catalog import create_stripe_catalog, rollback_stripe_created
+from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest, Status, PublishItemsRequest
+from _pydantic.models.models_extended import ItemModel, OrganisationModel, DynamoModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
 
@@ -33,6 +35,10 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'STRIPE_API_KEY' not found"))
+
+# setup stripe key
+stripe.api_key = STRIPE_API_KEY
 
 ## write here the code which is called from the handler
 def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = False, actor: str = "unknown"):
@@ -55,6 +61,9 @@ def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = F
     except Exception as e:
         logger.error(f"DynamoDB query failed to get item ({itemId}) for {eventId} of {organisationSlug}: {e}")
         raise Exception
+    
+    if public and getattr(result, "status", None) != Status.live:
+        return None    
 
     return result.to_public() if public else result
 
@@ -76,8 +85,11 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
         raise Exception
 
     #! temporary fix this needs review
-    if len(items) == 1:
+    if isinstance(items, ItemModel):
         items = [items]
+
+    if public:
+        items = [i for i in items if getattr(i, "status", None) == Status.live]
 
     return [i.to_public() if public else i for i in items]
 
@@ -104,7 +116,24 @@ def update(request: UpdateItemRequest, organisationSlug: str, eventId: str, acto
             }) for item_data in request.items
         ]
 
-        result = transact_upsert(table, item_models)
+        result = transact_upsert(table=table, 
+                                 items=item_models,
+                                 condition_expression="attribute_exists(PK) AND #status = :draft",
+                                 extra_expression_attr_names={"#status": "status"},
+                                 extra_expression_attr_values={":draft": "draft"},
+                                 only_set_once=["organisation", "parent_event_ksuid", "created_at", "status"])
+        
+        if result.failures and result.failures[0].reason == "conditional_failed":
+            return make_response(400, {
+                "message": "Failed to update items. All items must exist and be in 'draft' status to be updated.",
+                "failed_items": [
+                    {
+                        "item": item.model_dump(mode="json"),
+                        "status": "failed",
+                        "reason": f.inferred
+                    } for item, f in zip(result.failed, result.failures)
+                ]
+            })
 
         if result.failed and not result.successful:
             return make_response(400, {
@@ -170,6 +199,7 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
     items_data  = request.items
     item_models = []
     for item_data in items_data:
+        item_data.status = Status.draft # force new items to be created in draft mode
         item_models.append(ItemModel.model_validate({
             **item_data.model_dump(mode="json", exclude_unset=True),
             "ksuid": str(item_data.ksuid) if item_data.ksuid else str(KsuidMs()),
@@ -198,6 +228,120 @@ def create(request: CreateItemRequest, organisationSlug: str, eventId: str, acto
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
+    
+def publish_items(request: PublishItemsRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    logger.info(f"Publish Items: {request}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Publishing items for {eventId} of {organisationSlug}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    if not request.items or request.items == None or request.items == []:
+        return make_response(400, {"message": "No items provided for publishing."})
+
+    organisation: OrganisationModel = get_organisation_settings(organisationSlug, db, OrganisationModel, ORG_TABLE_NAME_TEMPLATE)
+    account_id = organisation.account_id    
+
+    # Update Item with ReturnValues ALL_NEW to get updated item back
+    #    Condition: attribute_exists(PK) AND attribute_exists(primary_price) AND attribute_exists(name) AND #status = :draft
+    # If not failed, create stripe catalog for the item; else append to failed list with reason
+    # If stripe fails, rollback item updated to live; else append to successful list
+    # Update successful items with product and price ids from stripe
+
+    try:
+        item_models = [
+            ItemModel.model_validate({
+                "status": Status.live,
+                "ksuid": item_ksuid,
+                "name": "placeholder",
+                "organisation": organisationSlug,
+                "parent_event_ksuid": eventId,
+                "updated_at": current_time
+            }) for item_ksuid in request.items
+        ]
+
+        successful_items, failed_items = [], []
+        for it in item_models:
+            result = it.upsert(
+                table=table,
+                only_set_once=["organisation", "parent_event_ksuid", "created_at", "name"],
+                condition_expression="attribute_exists(PK) AND attribute_exists(primary_price) AND attribute_exists(#name) AND #status = :draft",
+                extra_expression_attr_names={"#status": "status", "#name": "name"},
+                extra_expression_attr_values={":draft": "draft"},
+            )
+            if result.success:
+                item = ItemModel(**result.item)
+                try:
+                    item, created = create_stripe_catalog(item=item, organisation=organisationSlug, event_id=eventId, account_id=account_id, stripe=stripe)
+                    successful_items.append(item)
+                except Exception as e:
+                    logger.error(f"Stripe catalog creation failed for item {item.ksuid}: {e}")
+                    logger.error(traceback.format_exc())
+                    # rollback item status to draft
+                    try:
+                        item.status = Status.draft
+                        item.upsert(
+                            table=table,
+                            only_set_once=["organisation", "parent_event_ksuid", "created_at", "name"],
+                            condition_expression="attribute_exists(PK)",
+                        )
+                        logger.info(f"Rolled back item {item.ksuid} to draft status after Stripe failure.")
+                    except Exception as rollback_e:
+                        logger.error(f"Failed to rollback item {item.ksuid} after Stripe failure: {rollback_e}")
+                        logger.error(traceback.format_exc())
+                    failed_items.append((item, f"Stripe catalog creation failed: {str(e)}"))
+                try:
+                    logger.info(f"Updating item {item.ksuid} with Stripe IDs: {item.stripe_product_id}, {item.stripe_price_id}, {item.stripe_primary_price_id}, {item.stripe_secondary_price_id}, {item.stripe_tertiary_price_id}")
+                    item.upsert(table=table, only_set_once=["organisation", "parent_event_ksuid", "created_at", "name", "status"])
+                except Exception as e:
+                    logger.error(f"Failed to update item {item.ksuid} with Stripe IDs: {e}")
+                    logger.error(traceback.format_exc())
+
+                    rollback_stripe_created(created_list=created, account_id=account_id, stripe=stripe)
+
+                    failed_items.append((item, f"Failed to update item with Stripe IDs: {str(e)}"))
+            elif not result.success:
+                failed_items.append((it, result.error if result.error else "Unknown failure"))
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid publish request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
+    
+    response = {
+        "successful_items": [item.model_dump(mode="json", exclude_none=True) for item in successful_items],
+        "failed_items": [
+            {
+                "item": item.model_dump(mode="json", exclude_none=True),
+                "reason": reason
+            } for item, reason in failed_items
+        ]
+    }
+
+    if failed_items:
+        if successful_items:
+            return make_response(207, {
+                "message": "Partial success: some items published successfully, others failed.",
+                **response
+            })
+        return make_response(400, {
+            "message": "Failed to publish any items.",
+            **response
+        })
+
+    return make_response(200, {
+        "message": "Items published successfully.",
+        **response
+    })
 
 def lambda_handler(event, context):
     try:
@@ -209,6 +353,7 @@ def lambda_handler(event, context):
         itemId           = event.get("pathParameters", {}).get("ksuid")
         eventId          = event.get("pathParameters", {}).get("event")
         is_public        = event.get("rawPath", "").startswith("/public")
+        is_publish       = event.get("rawPath", "").endswith("/items/publish") and not is_public
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
         if not eventId: 
@@ -216,8 +361,12 @@ def lambda_handler(event, context):
 
         # POST /{organisation}/events
         if http_method == "POST":
-            validated_request = CreateItemRequest(**parsed_event)
-            return create(validated_request, organisationSlug, eventId, actor)
+            if is_publish:
+                validated_request = PublishItemsRequest(**parsed_event)
+                return publish_items(validated_request, organisationSlug, eventId, actor)
+            else:
+                validated_request = CreateItemRequest(**parsed_event)
+                return create(validated_request, organisationSlug, eventId, actor)
 
         # GET 
         elif http_method == "GET":

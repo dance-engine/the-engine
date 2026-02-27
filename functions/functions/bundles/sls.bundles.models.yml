@@ -48,6 +48,18 @@ _BundleCommon: &BundleCommon
   stripe_price_id: 
     description: "Whats the related stripe price_id"
     type: string
+  stripe_primary_price_id: 
+    description: "Whats the related stripe price_id for the primary price"
+    type: string    
+  stripe_secondary_price_id: 
+    description: "Whats the related stripe price_id for the secondary price"
+    type: string    
+  stripe_tertiary_price_id: 
+    description: "Whats the related stripe price_id for the tertiary price"
+    type: string    
+  stripe_product_id:
+    description: "Whats the related stripe product_id"
+    type: string
   includes:
     type: array
     items:
@@ -96,6 +108,23 @@ CreateBundleRequest:
             type: array
             items:
               $ref: "#/components/schemas/BundleObject"
+PublishBundlesRequest:
+  name: "PublishBundlesRequest"
+  description: "Request model for publishing a draft bundle."
+  x-internal-group: "bundles"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["bundles"]
+        properties:
+          bundles:
+            type: array
+            description: "List of bundle KSUIDs to publish"
+            items:
+              type: string              
 UpdateBundleRequest:
   name: "UpdateBundleRequest"
   description: "Request model for updating a bundle"

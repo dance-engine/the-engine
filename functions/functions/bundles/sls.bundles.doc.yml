@@ -162,6 +162,40 @@ endpoints:
             description: Internal server error.
           responseModels:
             application/json: "ErrorResponse"
+    PUBLISH:
+      summary: "Publish Bundles"
+      description: "Publishes one or more draft bundles: validates includes, creates Stripe product/prices and sets status to live."
+      tags:
+        - Bundles
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      requestBody:
+        description: "Bundles to publish"
+      requestModels:
+        application/json: "PublishBundlesRequest"
+      methodResponses:
+        - statusCode: 201
+          responseBody:
+            description: Bundles published successfully.
+        - statusCode: 409
+          responseBody:
+            description: Some bundles were not draft.
+        - statusCode: 422
+          responseBody:
+            description: Some bundles were not publishable.
+        - statusCode: 502
+          responseBody:
+            description: Stripe creation failed.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.                   
     PUT:
       summary: "Update Bundles"
       description: "Update existing bundles for a given event."

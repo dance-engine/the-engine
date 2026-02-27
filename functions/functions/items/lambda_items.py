@@ -17,10 +17,10 @@ import stripe
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.helpers import make_response
+from _shared.helpers import make_response, get_organisation_settings
 from _shared.stripe_catalog import create_stripe_catalog, rollback_stripe_created
 from _pydantic.models.items_models import CreateItemRequest, ItemObject, ItemResponse, ItemListResponse, ItemResponsePublic, ItemListResponsePublic, UpdateItemRequest, Status, PublishItemsRequest
-from _pydantic.models.models_extended import ItemModel
+from _pydantic.models.models_extended import ItemModel, OrganisationModel, DynamoModel
 # from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
 
@@ -242,6 +242,9 @@ def publish_items(request: PublishItemsRequest, organisationSlug: str, eventId: 
     if not request.items or request.items == None or request.items == []:
         return make_response(400, {"message": "No items provided for publishing."})
 
+    organisation: OrganisationModel = get_organisation_settings(organisationSlug, db, OrganisationModel, ORG_TABLE_NAME_TEMPLATE)
+    account_id = organisation.account_id    
+
     # Update Item with ReturnValues ALL_NEW to get updated item back
     #    Condition: attribute_exists(PK) AND attribute_exists(primary_price) AND attribute_exists(name) AND #status = :draft
     # If not failed, create stripe catalog for the item; else append to failed list with reason
@@ -272,7 +275,7 @@ def publish_items(request: PublishItemsRequest, organisationSlug: str, eventId: 
             if result.success:
                 item = ItemModel(**result.item)
                 try:
-                    item, created = create_stripe_catalog(item=item, organisation=organisationSlug, event_id=eventId, stripe=stripe)
+                    item, created = create_stripe_catalog(item=item, organisation=organisationSlug, event_id=eventId, account_id=account_id, stripe=stripe)
                     successful_items.append(item)
                 except Exception as e:
                     logger.error(f"Stripe catalog creation failed for item {item.ksuid}: {e}")
@@ -297,7 +300,7 @@ def publish_items(request: PublishItemsRequest, organisationSlug: str, eventId: 
                     logger.error(f"Failed to update item {item.ksuid} with Stripe IDs: {e}")
                     logger.error(traceback.format_exc())
 
-                    rollback_stripe_created(created, stripe)
+                    rollback_stripe_created(created_list=created, account_id=account_id, stripe=stripe)
 
                     failed_items.append((item, f"Failed to update item with Stripe IDs: {str(e)}"))
             elif not result.success:

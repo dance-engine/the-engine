@@ -17,10 +17,10 @@ import stripe
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.helpers import make_response
+from _shared.helpers import make_response, get_organisation_settings
 from _shared.stripe_catalog import create_stripe_catalog, rollback_stripe_created
 from _pydantic.models.bundles_models import BundleObject, BundleResponse, CreateBundleRequest, BundleListResponse, BundleResponsePublic, BundleListResponsePublic, UpdateBundleRequest, PublishBundlesRequest, Status
-from _pydantic.models.models_extended import BundleModel
+from _pydantic.models.models_extended import BundleModel, OrganisationModel
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import DynamoModel # pydantic layer
 from _pydantic.dynamodb import batch_write, transact_upsert # pydantic layer
@@ -277,6 +277,9 @@ def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str,
     if not request.bundles or request.bundles == None or request.bundles == []:
         return make_response(400, {"message": "No bundles provided for publishing."})
     
+    organisation: OrganisationModel = get_organisation_settings(organisationSlug, db, OrganisationModel, ORG_TABLE_NAME_TEMPLATE)
+    account_id = organisation.account_id
+    
     try:
         bundle_models = [
             BundleModel.model_validate({
@@ -309,7 +312,7 @@ def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str,
                     failed_bundles.append((bundle, f'{body.get("message", "Validaiton of referenced child items faild")}: Missing:{str(body.get("missing_items", []))} Drafts:{str(body.get("non_live_items", []))}'))
                     continue
                 try:
-                    bundle, created = create_stripe_catalog(item=bundle, organisation=organisationSlug, event_id=eventId, stripe=stripe)
+                    bundle, created = create_stripe_catalog(item=bundle, organisation=organisationSlug, event_id=eventId, account_id=account_id, stripe=stripe)
                     successful_bundles.append(bundle)
                 except Exception as e:
                     logger.error(f"Stripe catalog creation failed for bundle {bundle.ksuid}: {e}")
@@ -324,7 +327,7 @@ def publish(request: PublishBundlesRequest, organisationSlug: str, eventId: str,
                     logger.error(f"Failed to update bundle {bundle.ksuid} with Stripe IDs: {e}")
                     logger.error(traceback.format_exc())
 
-                    rollback_stripe_created(created, stripe)
+                    rollback_stripe_created(created_list=created, account_id=account_id, stripe=stripe)
 
                     failed_bundles.append((bundle, f"Failed to update bundle with Stripe IDs: {str(e)}"))
             elif not result.success:

@@ -21,7 +21,8 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.models_extended import OrganisationModel, EventModel
+from _pydantic.models.models_extended import OrganisationModel, EventModel, TicketModel
+from _pydantic.models.email_models import SendTicketEmailRequest
 #from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 #from _pydantic.dynamodb import VersionConflictError # pydantic layer
 #from _pydantic.dynamodb import batch_write, transact_upsert, VersionConflictError # pydantic layer
@@ -38,6 +39,36 @@ db = boto3.resource("dynamodb")
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'BREVO_API_KEY' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+
+def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Getting ticket for {eventId} of {organisationSlug} from {TABLE_NAME}")
+    blank_model = TicketModel(ksuid=ticketId, parent_event_ksuid=eventId, name="blank", organisation=organisationSlug, name_on_ticket="blank", customer_email="blank", email="blank", includes=[])
+
+    try:
+        ticket = blank_model.query_gsi(
+            index_name="gsi2",
+            table=table, 
+            key_condition=Key("gsi2PK").eq(f'{blank_model.gsi2PK}'), 
+            assemble_entites=True
+        )
+        logger.info(f"Found ticket for {organisationSlug}: {ticket}")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error(f"Ticket not found for {organisationSlug}: {e}")
+            return None
+        else:
+            raise
+    except ValueError as e:
+        logger.error(f"Ticket not found for {organisationSlug}: {e}")
+        return None
+    
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get ticket for {organisationSlug}: {e}")
+        raise Exception
+    
+    return ticket if ticket else None
 
 def get_single_event(organisationSlug: str, eventId: str):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
@@ -84,19 +115,10 @@ def get_organisation_settings(organisationSlug: str) -> OrganisationModel:
 
     return OrganisationModel.model_validate(result)
 
-def send_ticket(event):
-    logger.info("Sending ticket email")
-    detail = event.get("detail", {})
-    data   = detail.get("data", {})
-    meta   = detail.get("meta", {})
-
-    ticket = data.get("ticket", {})
-    event_details: EventModel = get_single_event(detail.get("organisation"), ticket.get("parent_event_ksuid"))[0]
-
+def _send_ticket_email(ticket, event_details, organisation_settings: OrganisationModel, meta):
     template_params = {}
 
     try:
-        organisation_settings = get_organisation_settings(detail.get("organisation"))
         required_fields = ["colour_background", "logo"]
 
         if organisation_settings.org_slug == "rebel-sbk":
@@ -117,7 +139,7 @@ def send_ticket(event):
                 "brand_logo_url": organisation_settings.logo
             }
     except Exception as e:
-        logger.error(f"Failed to get organisation settings for {detail.get('organisation')}: {e}")
+        logger.error(f"Failed to get organisation settings for {organisation_settings.org_slug}: {e}")
         tempalte_id = 1
 
     try:
@@ -128,7 +150,7 @@ def send_ticket(event):
             **template_params,
             "qr_image_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ticket.get('qr_token')}",
             "view_in_browser_url": f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ticket.get('qr_token')}",
-            "brand_name": detail.get("organisation"),
+            "brand_name": organisation_settings.name,
             "event_name": event_details.name,
             "event_date": event_details.starts_at.strftime("%d{} %B %Y").format("th" if 11 <= event_details.starts_at.day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(event_details.starts_at.day % 10, "th")) if event_details.starts_at else None,
             "event_time": event_details.starts_at.strftime("%I:%M %p").lstrip("0") if event_details.starts_at else None,
@@ -156,14 +178,61 @@ def send_ticket(event):
         logger.error("Unexpected error occured: %s\n", e)
         return e
 
-def lambda_handler(event, context):
-    logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+def send_ticket_eventbridge(event):
+    logger.info("Sending ticket email")
+    detail = event.get("detail", {})
+    data   = detail.get("data", {})
+    meta   = detail.get("meta", {})
 
-    type = event.get("detail-type", {})
-    if type == "ticket.created":
-        logger.info("Handling ticket.created event.")
-        return send_ticket(event)
+    ticket = data.get("ticket", {})
+    event_details: EventModel = get_single_event(detail.get("organisation"), ticket.get("parent_event_ksuid"))[0]
+
+    organisation_settings = get_organisation_settings(detail.get("organisation"))
+
+    return _send_ticket_email(ticket, event_details, organisation_settings, meta)
+
+def send_ticket_http(request: SendTicketEmailRequest, organisationSlug: str, eventId: str, actor: str):
+    tickets = [get_single_ticket(organisationSlug, eventId, ticketId, actor=actor).model_dump() for ticketId in request.tickets]
+
+    event_details: EventModel = get_single_event(organisationSlug, eventId)[0]
+
+    organisation_settings = get_organisation_settings(organisationSlug)
+
+    for ticket in tickets:
+        logger.info(type(ticket))
+        logger.info(f"Sending email for ticket {ticket}")
+
+        _send_ticket_email(ticket, event_details, organisation_settings, {"triggered_by": "http", "actor": actor})
+
+def lambda_handler(event, context):
+
+    logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+
+    http_method = event.get('requestContext', {}).get("http", {}).get("method")
+
+    if http_method:
+        logger.info("Triggered by API Gateway")
+        parsed_event = parse_event(event)
+
+        organisationSlug = event.get("pathParameters", {}).get("organisation")
+        eventId          = event.get("pathParameters", {}).get("event")
+        is_public        = event.get("rawPath", "").startswith("/public")
+        actor            = event.get("requestContext", {}).get("accountId", "unknown")
+        
+        if http_method == "POST":
+            validated_request = SendTicketEmailRequest(**parsed_event)
+            return send_ticket_http(validated_request, organisationSlug, eventId, actor)
+        else:
+            logger.warning(f"Received unsupported HTTP method: {http_method}")
+            return make_response(400, {"message": f"Unsupported HTTP method: {http_method}"})
     else:
-        logger.warning(f"Received event type I can not currently process: {type}")
-        return make_response(400, {"message": f"Unhandled event type: {type}"})
-    
+        logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
+
+        type = event.get("detail-type", {})
+        if type == "ticket.created":
+            logger.info("Handling ticket.created event.")
+            return send_ticket_eventbridge(event)
+        else:
+            logger.warning(f"Received event type I can not currently process: {type}")
+            return make_response(400, {"message": f"Unhandled event type: {type}"})
+        

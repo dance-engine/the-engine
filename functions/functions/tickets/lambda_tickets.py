@@ -128,6 +128,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         ticket_model.qr_token = mint_qr_token(ticket_model)
 
         customer_model = CustomerModel.model_validate({
+            "ksuid": str(KsuidMs()),
             "email": data.get("customer_email"),
             "name": data.get("name_on_ticket"),
             "organisation": organisation_slug,
@@ -153,7 +154,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         #! Temporary fix. See issue #77
         customer_result = transact_upsert(table=table, 
                                          items = [customer_model],
-                                         only_set_once=["created_at", "email"],
+                                         only_set_once=["created_at", "email", "ksuid"],
                                          condition_expression="attribute_not_exists(PK)")
         result.failed.extend(customer_result.failed)
         

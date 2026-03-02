@@ -237,6 +237,12 @@ class CustomerModel(CustomerBase, DynamoModel):
     entity_type: Literal["CUSTOMER"] = "CUSTOMER"
 
     @property
+    def related_entities(self):
+        return {
+            "TICKET": ("tickets", "list", TicketModel)
+            }    
+
+    @property
     def PK(self): return f"CUSTOMER#{self.email}"
 
     @property

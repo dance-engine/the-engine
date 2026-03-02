@@ -26,15 +26,15 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const defaultEntity = useMemo(() => ({ entity_type: "CUSTOMER", ksuid }), [ksuid])
   const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
   
-  const remoteEntity = data || defaultEntity
-  
+  const remoteEntity = data?.customers || defaultEntity
+    
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
   const handleSubmit = async (data: FieldValues) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const eventId = `CUSTOMER#${data.ksuid}`
+    const eventId = `CUSTOMER#${remoteEntity.email}`
     try {
       const res = await fetch(createUrlEndpoint, {
         method: "POST",
@@ -43,7 +43,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify(cleanedData),
+        body: JSON.stringify({customer: cleanedData}),
       })
 
       const result = await res.json()

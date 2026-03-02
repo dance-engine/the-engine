@@ -35,7 +35,7 @@ const ArtistsListPage = async () => {
         <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
           <div className={`max-w-4xl w-4xl px-4 lg:px-0 mb-12 text-white text-xl `}> 
               <h1 className='text-4xl my-8'>Artists</h1>
-              <p className='mb-8 text-lg leading-relaxed'>We're thrilled to bring together an incredible lineup of world-class dancers and choreographers from across the UK and beyond. Each artist brings their unique style, passion, and expertise to create an unforgettable experience. From salsa and bachata to contemporary movement and samba, our artists are dedicated to inspiring, educating, and connecting dancers of all levels. Click on any artist below to learn more about their journey and what they'll be sharing at our event.</p>
+              <p className='mb-8 text-lg leading-relaxed'>We&apos;re thrilled to bring together an incredible lineup of world-class dancers and choreographers from across the UK and beyond. Each artist brings their unique style, passion, and expertise to create an unforgettable experience. From salsa and bachata to contemporary movement and samba, our artists are dedicated to inspiring, educating, and connecting dancers of all levels. Click on any artist below to learn more about their journey and what they&apos;ll be sharing at our event.</p>
               <div className='sm:flex flex-wrap gap-3'>
                  {Object.keys(artists).sort().map((artistKey) => (
                 <div key={artistKey} className='mb-2'>

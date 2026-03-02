@@ -38,7 +38,7 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
   const allEntities = useMemo(() => {
     // return [...remoteEntities,...localEntities]
     const byId = new Map<string, EntityType>() 
-    const remoteEntities = entity == "EVENT" ? remoteEntityData.events : remoteEntityData
+    const remoteEntities = remoteEntityData[`${entity.toLowerCase()}s`] || [];
     console.log("remoteEntities",remoteEntities)
     // Step 1: Add remote records
     if(remoteEntities){ //TODO This is now tied to events

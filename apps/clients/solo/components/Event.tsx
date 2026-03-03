@@ -51,8 +51,9 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
     console.log(eventData)
     event = createEvent(eventData.event)
   } else {
-    return <div>
-      <h2>Event Missined?</h2>
+    return <div className='mt-12'>
+      <h1 className='text-xl'>Event Missing?</h1>
+
       <p>No event for this URL, Try the <NextLink className="underline" href="/">main site</NextLink> and see if they&apos;ve changed the event </p>
     </div>
   }

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 // Define the event schema
 export const customerSchema = z.object({
+  entity_type: z.literal("CUSTOMER").describe("Entity type").optional(),
   ksuid: z.string().describe("ID of the event").optional(),
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().min(2, "Name must be at least 2 characters"),

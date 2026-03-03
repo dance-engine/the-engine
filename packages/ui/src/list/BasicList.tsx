@@ -65,29 +65,30 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
               {groupByToArray(records, r => getNestedValue(r, "meta.saved")).map((group,idx)=>{
                 return (
                   <Fragment key={`group-${idx}`}>
-                    <tr key=""><td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved Changes"))}</h2></td></tr>
-                    {group[1].filter((record) => {return record?.status != 'archived'}).map((record)=>{
-                      return <tr key={`${record.ksuid}`}>
-                        {
-                          columns.map((col,idx)=>{
-                            const value = getNestedValue(record, col) || ''
-                            return <td key={`${record.ksuid}-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses].join(' ')}>
-                              {formatField(String(value || ''),formats?.[idx] ) || "-"}
-                            </td>
-                          })
-                        }
-                        <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2 justify-end items-center">
-                        <Link href={`/${entityTypeSlug}/${record.ksuid}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
-                          <MdModeEdit className='h-5 w-5'></MdModeEdit> 
-                          <span className="sr-only">Edit {String(record.name)}</span>
-                        </Link>
-                        { record.ksuid ? 
-                          <DestructiveButton className='text-white flex items-center justify-center gap-1 bg-keppel-on-light px-1.5 py-1.5 rounded z-0' record={record} onClick={handleDelete}>
-                            <MdDeleteOutline className='h-5 w-5'></MdDeleteOutline> <span className='sr-only'>Delete {String(record.name)}</span>
-                          </DestructiveButton> : null }
-                      </td>
-                      </tr>
-                    })}   
+                    <tr data-key={`group-${idx}`}>
+                      <td colSpan={columns.length+1} className="py-1 bg-dark-outline/10 pr-3 pl-4 sm:pl-4 lg:pl-8"><h2 className='text-sm font-bold'>{nameFromHypenated(String(group[0] || "Unsaved Changes"))}</h2></td></tr>
+                      {group[1].filter((record) => {return record?.status != 'archived'}).map((record)=>{
+                        return <tr key={`${record.ksuid || record.email}`}>
+                          {
+                            columns.map((col,idx)=>{
+                              const value = getNestedValue(record, col) || ''
+                              return <td key={`${record.ksuid || record.email }-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses].join(' ')}>
+                                {formatField(String(value || ''),formats?.[idx] ) || "-"}
+                              </td>
+                            })
+                          }
+                          <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2 justify-end items-center">
+                          <Link href={`/${entityTypeSlug}/${record.ksuid}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
+                            <MdModeEdit className='h-5 w-5'></MdModeEdit> 
+                            <span className="sr-only">Edit {String(record.name)}</span>
+                          </Link>
+                          { record.ksuid ? 
+                            <DestructiveButton className='text-white flex items-center justify-center gap-1 bg-keppel-on-light px-1.5 py-1.5 rounded z-0' record={record} onClick={handleDelete}>
+                              <MdDeleteOutline className='h-5 w-5'></MdDeleteOutline> <span className='sr-only'>Delete {String(record.name)}</span>
+                            </DestructiveButton> : null }
+                        </td>
+                    </tr>
+                  })}   
                   </Fragment>
                 )
               })}

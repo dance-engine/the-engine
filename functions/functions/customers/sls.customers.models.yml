@@ -24,6 +24,11 @@ CustomerObject:
           bio:
             type: string
             description: "Short description or biography for the customer."
+          tickets:
+            type: array
+            description: "List of tickets associated with the customer."
+            items:
+              type: object            
           version:
             type: integer
 CreateCustomerRequest:

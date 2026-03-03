@@ -155,8 +155,10 @@ def get_single_customer(organisationSlug, customerId):
 
     try:
         customer = blank_model.query_gsi(
-            table=table, 
-            key_condition=Key("PK").eq(f'{blank_model.PK}') & Key("SK").eq(f'{blank_model.SK}'),
+            table=table,
+            index_name="IDXinv",
+            key_condition=Key("SK").eq(f'{blank_model.SK}'),
+            assemble_entites=True
         )
         logger.info(f"Found customer for {organisationSlug}: {customer}")
     except ClientError as e:

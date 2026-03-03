@@ -7,6 +7,7 @@ import { useOrgContext } from '@dance-engine/utils/OrgContext';
 import { validateEntity, EntityNameType, EntityType } from '@dance-engine/schemas'
 import Spinner from '@dance-engine/ui/general/Spinner'
 import { IoCloudOffline } from "react-icons/io5";
+import { CustomerType } from "@dance-engine/schemas/customer";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //TODO Does this actually need to be dynamic?
   ssr: false, // ⬅ Disables SSR for this component
@@ -16,7 +17,8 @@ const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //T
 const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined] }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[] }) => {
   const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${entity?.toLowerCase()}s`
   const { activeOrg } = useOrgContext() 
-  const { data: remoteEntityData= [], error, isLoading } = useClerkSWR(eventsApiUrl.replace('/{org}',activeOrg ? `/${activeOrg}`: ''),{ suspense: false, });
+  // Pass null as key when no activeOrg to prevent the fetch
+  const { data: remoteEntityData= [], error, isLoading } = useClerkSWR(activeOrg ? eventsApiUrl.replace('/{org}',`/${activeOrg}`) : null,{ suspense: false, });
 
   const getEntity = (entityType: EntityNameType) => {
     const cached = window.localStorage.getItem(`local:${entityType}`)
@@ -38,12 +40,12 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
   const allEntities = useMemo(() => {
     // return [...remoteEntities,...localEntities]
     const byId = new Map<string, EntityType>() 
-    const remoteEntities = entity == "EVENT" ? remoteEntityData.events : remoteEntityData
+    const remoteEntities = remoteEntityData[`${entity.toLowerCase()}s`] || [];
     console.log("remoteEntities",remoteEntities)
     // Step 1: Add remote records
     if(remoteEntities){ //TODO This is now tied to events
       remoteEntities.forEach((r: EntityType) => {
-        const id = String(r.ksuid)
+        const id = entity == "CUSTOMER" ? String((r as CustomerType)?.email) : String(r.ksuid)
         const newMeta = { ...(r.meta ?? {}), valid: true, source: `remote${id}`, saved: "saved"}
         byId.set(id, { ...r, meta: newMeta})
       })
@@ -68,9 +70,15 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
   
   return (
   <div className="mt-4 w-full">
-    { isLoading || error ? <div className="flex items-center gap-1 px-4 py-1 bg-pear-on-light text-gray-100 dark:text-gray-600 font-bold"> <Spinner className="w-4 h-4"/> Loading </div> : null }
-    { (error instanceof CorsError) ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white">Looks like a CORS issue (server unreachable or blocked)</div> : null }
-    { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null }
+    { isLoading || error ? 
+      <div className="flex items-center gap-1 px-4 py-1 bg-pear-on-light text-gray-100 dark:text-gray-600 font-bold"> <Spinner className="w-4 h-4"/> Loading </div> : null 
+    }
+    { (error instanceof CorsError) ? 
+      <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white">Looks like a CORS issue (server unreachable or blocked)</div> : null 
+    }
+    { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> 
+      <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null 
+    }
     { allEntities ? <BasicList 
         entity={entity}
         columns={columns}

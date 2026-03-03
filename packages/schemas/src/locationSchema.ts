@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Define location schema
 export const locationSchema = z.object({
+  entity_type: z.literal("LOCATION").describe("Entity type").optional(),
   ksuid: z.string().optional(),
   name: z.string().min(1, "Name is required"),
   address: z.string().min(5, "Address must be at least 5 characters").optional().describe("Enter the full event address."),

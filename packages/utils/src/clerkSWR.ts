@@ -8,7 +8,7 @@ export class CorsError extends Error {
   }
 }
 
-export default function useClerkSWR(url: string, swrConfig = {}) {
+export default function useClerkSWR(url: string | null, swrConfig = {}) {
   const { getToken } = useAuth()
 
   // const fetcher = async (url: string, config?: RequestInit): Promise<any> => {

@@ -78,7 +78,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                             })
                           }
                           <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2 justify-end items-center">
-                          <Link href={`/${entityTypeSlug}/${record.ksuid}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
+                          <Link href={`/${entityTypeSlug}/${record.ksuid || record.email}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
                             <MdModeEdit className='h-5 w-5'></MdModeEdit> 
                             <span className="sr-only">Edit {String(record.name)}</span>
                           </Link>

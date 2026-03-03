@@ -70,9 +70,15 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
   
   return (
   <div className="mt-4 w-full">
-    { isLoading || error ? <div className="flex items-center gap-1 px-4 py-1 bg-pear-on-light text-gray-100 dark:text-gray-600 font-bold"> <Spinner className="w-4 h-4"/> Loading </div> : null }
-    { (error instanceof CorsError) ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white">Looks like a CORS issue (server unreachable or blocked)</div> : null }
-    { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null }
+    { isLoading || error ? 
+      <div className="flex items-center gap-1 px-4 py-1 bg-pear-on-light text-gray-100 dark:text-gray-600 font-bold"> <Spinner className="w-4 h-4"/> Loading </div> : null 
+    }
+    { (error instanceof CorsError) ? 
+      <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white">Looks like a CORS issue (server unreachable or blocked)</div> : null 
+    }
+    { error ? <div className="px-4 py-4 flex justify-center items-center gap-2 text-lg bg-red-800 text-white"> 
+      <IoCloudOffline className="w-6 h-6"/>Failed to Load events, Offline mode</div> : null 
+    }
     { allEntities ? <BasicList 
         entity={entity}
         columns={columns}

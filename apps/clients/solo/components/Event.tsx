@@ -2,6 +2,7 @@
 import useSWR from 'swr';
 import { format } from 'date-fns'
 import { generateHTML } from '@tiptap/core'
+import NextLink from 'next/link';
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -49,6 +50,11 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
   } else if (eventData.event) { 
     console.log(eventData)
     event = createEvent(eventData.event)
+  } else {
+    return <div>
+      <h2>Event Missined?</h2>
+      <p>No event for this URL, Try the <NextLink className="underline" href="/">main site</NextLink> and see if they&apos;ve changed the event </p>
+    </div>
   }
   
   // className='bg-[image:var(--image-url)]'>
@@ -60,14 +66,14 @@ export default function Event({ fallbackData, org, theme, eventKsuid}: { fallbac
 
       <div className='hero w-full bg-center bg-cover bg-contain bg-no-repeat bg-[image:var(--image-url)]  min-h-[600px] flex flex-col items-center justify-center text-white text-shadow-de-background-dark text-shadow-lg'>
         <h1 className='text-6xl font-bold uppercase text-center px-6 '>{event.name}</h1>
-        <h2 className='text-2xl text-center px-6'>{format(event.starts_at,'PPP, h:mmaaa')} - {format(event.ends_at,'h:mmaaa')}</h2>
+        <h2 className='text-2xl text-center px-6'>{event.starts_at && format(event.starts_at,'PPP, h:mmaaa')} - {event.ends_at && format(event.ends_at,'h:mmaaa')}</h2>
       </div>
 
       <div className='max-w-6xl w-full px-4 lg:px-0 pb-4 pt-12 bg-de-background-dark text-white'>
         
         <div className='grid grid-cols-1 md:grid-cols-2 mb-6 gap-6 items-start'> 
 
-          <div className='max-w-4xl w-full px-4 lg:px-0 py-4 prose prose-invert' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link],) }} />
+          {event.description && <div className='max-w-4xl w-full px-4 lg:px-0 py-4 prose prose-invert' dangerouslySetInnerHTML={{ __html: generateHTML(JSON.parse(event.description), [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link],) }} />}
 
           {event.location && event.location.lat && event.location.lng && <MapDisplay lat={event.location.lat} lng={event.location.lng} />  }
 

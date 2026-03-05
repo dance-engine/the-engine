@@ -31,13 +31,13 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
+    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: eventsApiUrl});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
     const eventId = `EVENT#${data.ksuid}`
     try {
-      const res = await fetch(createUrlEndpoint, {
-        method: "POST",
+      const res = await fetch(eventsApiUrl, {
+        method: "PUT",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${await getToken()}`

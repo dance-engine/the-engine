@@ -46,7 +46,7 @@ export type BundleTypeExtended = BundleType & {
 // Additional no validation metadata relating to how we display data in forms
 export const bundleMetadata = {
   ksuid: { hidden: true },
-  description: { richText: true },
+  description: { richText: false },
   status: { selectField: true },
   primary_price: { currencyField: true },
   secondary_price: { currencyField: true },

@@ -28,19 +28,19 @@ const PageClient = ({ eventKsuid, bundleKsuid }: { eventKsuid?: string; bundleKs
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: baseUrlEndpoint});
+    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: bundlesEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
     const bundleId = `BUNDLE#${data.ksuid}`
     try {
-      const res = await fetch(baseUrlEndpoint, {
+      const res = await fetch(bundlesEndpoint, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify({bundle: cleanedData }),
+        body: JSON.stringify({bundles: [cleanedData] }),
       })
 
       const result = await res.json()

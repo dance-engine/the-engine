@@ -65,7 +65,7 @@ const PageBundlesClient = ({ ksuid }: BundlesClientProps) => {
         <h2 className="text-lg font-semibold text-gray-900 px-4 lg:px-8">Bundles ({bundles.length})</h2>
         <BasicList 
           entity="BUNDLE" as any
-          columns={["name", "primary_price", "primary_price_name"]}
+          columns={["name", "primary_price", "primary_price_name","ksuid"]}
           formats={[undefined, "currency", undefined]}
           records={bundles}
           activeOrg={activeOrg || ''}

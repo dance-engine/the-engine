@@ -22,7 +22,9 @@ const ProfileControl = () => {
 
   if (!isSignedIn) {
     // You could also add a redirect to the sign-in page here
-    return <div className="flex items-center gap-x-4 lg:gap-x-6"><SignInButton ><button className="block px-3 py-1 text-gray-900 dark:text-white" role="menuitem" tabIndex={-1} id="user-menu-item-1">Sign-in</button></SignInButton></div>
+    return <div className="flex items-center gap-x-4 lg:gap-x-6">
+      <SignInButton ><button className="block px-3 py-1 text-gray-900 dark:text-white" role="menuitem" tabIndex={-1} id="user-menu-item-1">Sign-in</button></SignInButton>
+    </div>
   }
 
   return (    

@@ -45,6 +45,8 @@ export const formatField = (fieldValue: string | string | number | boolean | nul
 
   if(formatAs == 'icon')
     return getIcon(fieldValue)
+  else if(formatAs == 'currency')
+    return `£${(Number(fieldValue) / 100).toFixed(2)}`
   else if(isTimeRelated && isDateTimeString) 
     return formatAs == 'time' ? new Date(timestamp).toLocaleTimeString().slice(0, -3) : new Date(timestamp).toLocaleDateString()
   else if(isArray)

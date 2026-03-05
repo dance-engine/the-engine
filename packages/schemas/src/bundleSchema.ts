@@ -1,14 +1,30 @@
 'use client'
 import { z } from "zod";
 
-// Define the event schema
+// Define the bundle schema
 export const bundleSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
-  description: z.string().min(10, "Description must be at least 10 characters").describe("A brief description of the event."), //TODO This should deal with the fact it's a JSON  
-  category: z.enum(["congress", "workshop", "party", "class"]).array().min(1,"Must have at least one category").describe("Category"),
-  includes: z.string().array().min(1,"Must have at least one include").describe("Includes these items"),  
-  primary_price: z.number().min(0, "Primary price must be a positive number").describe("The primary price of the bundle."),
-  primary_price_name: z.string().min(2, "Primary price name must be at least 2 characters").describe("The name of the primary price.")
+  ksuid: z.string().optional().describe("ID of the bundle"),
+  name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the bundle"),
+  description: z.string().min(10, "Description must be at least 10 characters").describe("A brief description of the bundle"),
+  status: z.enum(["draft", "live", "archived"]).default("draft").describe("Status of the bundle"),
+  primary_price: z.coerce.number().min(0, "Price must be a positive number").describe("Primary price in cents"),
+  secondary_price: z.coerce.number().min(0, "Price must be a positive number").optional().describe("Secondary price in cents"),
+  tertiary_price: z.coerce.number().min(0, "Price must be a positive number").optional().describe("Tertiary price in cents"),
+  primary_price_name: z.string().min(2, "Price name must be at least 2 characters").describe("Name of the primary price tier"),
+  secondary_price_name: z.string().min(2, "Price name must be at least 2 characters").optional().describe("Name of the secondary price tier"),
+  tertiary_price_name: z.string().min(2, "Price name must be at least 2 characters").optional().describe("Name of the tertiary price tier"),
+  pricing_schedule: z.record(z.any()).optional().describe("Pricing schedule configuration"),
+  stripe_price_id: z.string().optional().describe("Stripe price ID"),
+  stripe_primary_price_id: z.string().optional().describe("Stripe primary price ID"),
+  stripe_secondary_price_id: z.string().optional().describe("Stripe secondary price ID"),
+  stripe_tertiary_price_id: z.string().optional().describe("Stripe tertiary price ID"),
+  stripe_product_id: z.string().optional().describe("Stripe product ID"),
+  includes: z.string().array().min(1, "Must include at least one item").describe("Items included in this bundle"),
+  entity_type: z.string().optional().describe("Entity type"),
+  version: z.coerce.number().optional().describe("Version number"),
+  meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
+  created_at: z.string().optional().describe("Creation timestamp"),
+  updated_at: z.string().optional().describe("Update timestamp"),
 });
 
 // Generate TypeScript type from the schema
@@ -29,7 +45,21 @@ export type BundleTypeExtended = BundleType & {
 
 // Additional no validation metadata relating to how we display data in forms
 export const bundleMetadata = {
+  ksuid: { hidden: true },
   description: { richText: true },
-  date: { dateField: true },
-  category: { checkboxesField: true }
+  status: { selectField: true },
+  primary_price: { currencyField: true },
+  secondary_price: { currencyField: true },
+  tertiary_price: { currencyField: true },
+  pricing_schedule: { hidden: true },
+  stripe_price_id: { hidden: true },
+  stripe_primary_price_id: { hidden: true },
+  stripe_secondary_price_id: { hidden: true },
+  stripe_tertiary_price_id: { hidden: true },
+  stripe_product_id: { hidden: true },
+  includes: { checkboxesField: true },
+  entity_type: { hidden: true },
+  version: { info: true },
+  created_at: { info: true },
+  updated_at: { info: true },
 }

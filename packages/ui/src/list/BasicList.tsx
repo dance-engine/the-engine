@@ -9,7 +9,7 @@ import { MdModeEdit, MdDeleteOutline } from "react-icons/md";
 import { useAuth } from '@clerk/nextjs'
 
 
-const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ entity, columns, formats, records, activeOrg, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
+const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({ entity, columns, formats, records, activeOrg, parentKsuid, parentEntityName, ...tableProps}: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
   const { getToken } = useAuth()
   const entityTypeSlug = `${entity?.toLowerCase()}s`
   const entityApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${entityTypeSlug}`
@@ -51,7 +51,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
               <tr className='sticky top-16 z-10'>
                 { columns.map((col,idx) => {
                                       
-                  return <th key={`${columnKeys[idx]}-key`} scope="col" className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses,"bg-dark-highlight/90  text-white"].join(' ')} >
+                  return <th key={`${columnKeys[idx]}-key`} scope="col" className={[(idx == 0 ? firstHeaderClasses + " grow" : restHeaderClasses), allHeaderClasses,"bg-dark-highlight/90  text-white"].join(' ')} >
                     {/* return <th key={`${col}-key`} scope="col" className="sticky top-0 z-10 border-b border-gray-300 bg-white/75 py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 backdrop-blur-sm backdrop-filter sm:pl-6 lg:pl-8"> */}
                     {labelFromSnake(col.replace('meta.',''))}
                   </th>
@@ -72,13 +72,13 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                           {
                             columns.map((col,idx)=>{
                               const value = getNestedValue(record, col) || ''
-                              return <td key={`${record.ksuid || record.email }-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses : restHeaderClasses), allHeaderClasses].join(' ')}>
+                              return <td key={`${record.ksuid || record.email }-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses + " grow" : restHeaderClasses), allHeaderClasses].join(' ')}>
                                 {formatField(String(value || ''),formats?.[idx] ) || "-"}
                               </td>
                             })
                           }
                           <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2 justify-end items-center">
-                          <Link href={`/${entityTypeSlug}/${record.ksuid || record.email}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
+                          <Link href={parentKsuid && parentEntityName ? `/${parentEntityName}s/${parentKsuid}/${entityTypeSlug}/${record.ksuid}/edit` : `/${entityTypeSlug}/${record.ksuid || record.email}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
                             <MdModeEdit className='h-5 w-5'></MdModeEdit> 
                             <span className="sr-only">Edit {String(record.name)}</span>
                           </Link>

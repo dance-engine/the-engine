@@ -3,6 +3,8 @@ import { headers } from 'next/headers';
 import EventList from '../components/EventList'
 import DanceEngineFooter from '../components/footer/DanceEngine';
 import Header from '@/components/header/Header';
+import RebelHero from '../components/legacy/RebelHero';
+import PowHero from '../components/legacy/PowHero';
 
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
@@ -50,9 +52,6 @@ export default async function IndexPage() {
       --alternate-bg-color: hsl(325, 100%, 20%);
       --highlight-color: hsl(324, 98%, 62%);
     }
-      h1,h2,h3,h4,h5,h6 {
-        font-family: var(--font-luckiest-guy);
-      }
   `;
   const andreasCss = `
     :root {
@@ -72,31 +71,10 @@ export default async function IndexPage() {
       
       <Header org={org}/>
 
-      <main className='w-full justify-center' >
+      <main className='w-full justify-center'>
 
-        { orgSlug == 'rebel-sbk' ? 
-        <div id="hero" className='w-full bg-contain bg-no-repeat relative bg-center flex items-center justify-center text-white font-bold bg-black' style={{ backgroundImage: `url(${org.banner})` }}>
-          <img src={org.banner} alt="" className='' />
-          { org.banner_overlay && <div className='absolute bottom-0 right-0 left-0 border-green-500  overflow-hidden h-[100%] flex flex-col items-end justify-end xl:items-center' >
-            {/* <h1 className='text-4xl text-center px-6 font-heading-latin-soul'>&lsquo;Liverpool Moves to Latin Soul.&rsquo;</h1> */}
-            <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-contain block max-h-[600px] w-[200px] sm:w-[300px] md:w-[400px] lg:w-[800px] ' />
-          </div>}
-        </div> : 
-        <div id="hero" className={`w-full h-[60vh] XXmin-h-[550px] max-h-[1024px] 
-        text-white flex items-stretch justify-center bg-no-repeat \
-        ${theme == 'latin-soul' ?  "bg-cover bg-center": "bg-center sm:bg-center md:bg-auto bg-size-[1024px_auto] sm:bg-size-[1400px_auto]"}`} 
-        style={{ backgroundImage: `url(${org.banner})` }}>
-          <div className='max-w-4xl bg-amber-300/0 w-full px-4 sm:px-8 pt-4 sm:pt-8 relative'>
-            
-            { orgSlug == 'power-of-woman' ? <div className='max-w-[400px] XXmr-[400px] text-4xl font-bold'>{`${org.name} - an event exclusively for women`}</div> : null}
-
-            { org.banner_overlay && <div className='relative bottom-[-6px] right-0 left-0  overflow-hidden h-[100%] flex flex-col items-center justify-start sm:flex-row sm:items-center sm:justify-center' >
-              {/* <h1 className='text-4xl text-center px-6 font-heading-latin-soul'>&lsquo;Liverpool Moves to Latin Soul.&rsquo;</h1> */}
-              <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-contain block h-[100%] max-h-[600px] w-full sm:w-[38%] sm:min-w-[300px] max-w-[500px] sm:self-end ' />
-            </div>} 
-          </div>
-        </div>
-}
+        {orgSlug == 'rebel-sbk' ? <RebelHero org={org} /> : 
+          orgSlug == 'power-of-woman' || orgSlug == 'pow' ? <PowHero org={org} orgSlug={orgSlug} theme={theme} /> : null}
 
         <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
           

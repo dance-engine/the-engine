@@ -6,6 +6,7 @@ import { labelFromSnake, formatField, nameFromHypenated } from '@dance-engine/ut
 import { deDupKeys,groupByToArray, getNestedValue } from '@dance-engine/utils/arrayHelpers'
 import DestructiveButton from '../general/DestructiveButton'
 import { MdModeEdit, MdDeleteOutline } from "react-icons/md";
+import { LuPackage } from "react-icons/lu";
 import { useAuth } from '@clerk/nextjs'
 
 
@@ -78,6 +79,12 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                             })
                           }
                           <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2 justify-end items-center">
+                          {entity === "EVENT" && (
+                            <Link href={`/${entityTypeSlug}/${record.ksuid}/bundles`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
+                              <LuPackage className='h-5 w-5'></LuPackage>
+                              <span className="sr-only">Manage Bundles for {String(record.name)}</span>
+                            </Link>
+                          )}
                           <Link href={parentKsuid && parentEntityName ? `/${parentEntityName}s/${parentKsuid}/${entityTypeSlug}/${record.ksuid}/edit` : `/${entityTypeSlug}/${record.ksuid || record.email}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
                             <MdModeEdit className='h-5 w-5'></MdModeEdit> 
                             <span className="sr-only">Edit {String(record.name)}</span>

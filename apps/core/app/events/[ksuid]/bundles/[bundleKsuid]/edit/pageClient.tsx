@@ -18,8 +18,8 @@ const PageClient = ({ eventKsuid, bundleKsuid }: { eventKsuid?: string; bundleKs
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
 
-  const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events/${eventKsuid}`.replace('/{org}',`/${activeOrg}`)
-  const bundleApiUrl = `${baseUrlEndpoint}/bundles/${bundleKsuid}`
+  const bundlesEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${eventKsuid}/bundles`
+  const bundleApiUrl = `${bundlesEndpoint}/${bundleKsuid}`
   const defaultEntity = useMemo(() => ({ type: "BUNDLE", ksuid: bundleKsuid }), [bundleKsuid])
   const { data, error, isLoading } = useClerkSWR(activeOrg && bundleKsuid ? bundleApiUrl : null)
   

@@ -63,6 +63,7 @@ export interface NumberInputProps {
   validate: () => void;
   error?: string;
   fieldSchema: ZodTypeAny;
+  currency?: boolean;
 }
 
 // RichText
@@ -147,6 +148,8 @@ export interface DynamicFieldOptions {
   fileUploadField?: string;
   info?: boolean;
   onceOnly?: boolean; // This field can only be set once and is not editable after that
+  selectField?: boolean; // show as select input
+  currencyField?: boolean; // render currency formatting
 }
 
 export type MetaData = {

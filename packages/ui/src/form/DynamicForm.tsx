@@ -65,6 +65,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   const { status: autosaveStatus, isStatusVisible: isAutosaveStatusVisible,  loadFromStorage } = useLocalAutoSave<EntityType>({
     data: watchedValues as EntityType,
     entityType: data?.entity_type || "UNKNOWN",
+    activeOrgId: orgSlug,
     remoteUpdatedAt: data?.updated_at,
     isDirty
   });

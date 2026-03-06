@@ -79,6 +79,22 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
 
         event_response = event_model.upsert(table, ["event_slug", "created_at"])
         location_response = location_model.upsert(table, ["created_at"])
+
+        if (
+            (not event_response.success and event_response.error == "Version conflict")
+            or (not location_response.success and location_response.error == "Version conflict")
+        ):
+            return make_response(409, {
+                "message": "Version conflict",
+                "resource": event_model.PK,
+                "your_version": getattr(event_data, "version", None)
+            })
+
+        if not event_response.success:
+            raise RuntimeError(event_response.error or "Failed to upsert event")
+        if not location_response.success:
+            raise RuntimeError(location_response.error or "Failed to upsert location")
+
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.core", 
                                   resource_type=EventType.event,
@@ -96,7 +112,8 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
         return make_response(409, {
             "message": "Version conflict",
             "resource": e.model.PK,
-            "your_version": e.incoming_version
+            "your_version": e.incoming_version,
+            "error": str(e)
         })
     except ValueError as e:
         return make_response(400, {
@@ -249,6 +266,22 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str, actor
     try:
         event_response = event_model.upsert(table,["event_slug", "created_at"])
         location_response = location_model.upsert(table, ["created_at"])
+
+        if (
+            (not event_response.success and event_response.error == "Version conflict")
+            or (not location_response.success and location_response.error == "Version conflict")
+        ):
+            return make_response(409, {
+                "message": "Version conflict",
+                "resource": event_model.PK,
+                "your_version": getattr(event_data, "version", None)
+            })
+
+        if not event_response.success:
+            raise RuntimeError(event_response.error or "Failed to upsert event")
+        if not location_response.success:
+            raise RuntimeError(location_response.error or "Failed to upsert location")
+
         triggerEBEvent(eventbridge, "events", "UpsertEvent", event_response)
         return make_response(201, {
             "message": "Event created successfully.",

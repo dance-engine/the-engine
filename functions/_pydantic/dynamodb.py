@@ -4,14 +4,18 @@ from botocore.exceptions import ClientError
 import logging
 from datetime import datetime, timezone
 import traceback
-from decimal import Decimal
 from dataclasses import dataclass
-from typing import Any, Optional
 
 from pydantic import BaseModel, field_validator, Field
 from ksuid import KsuidMs
 
 from _pydantic.EventBridge import Action, EventType
+from _pydantic.dynamodb_helpers import (
+    convert_datetime_to_iso_8601_with_z_suffix,
+    convert_floats_to_decimals,
+    _get_failed_item_field,
+    _repair_string_number_field,
+)
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -21,81 +25,6 @@ class UpsertResult:
     success: bool
     item: Optional[dict]
     error: Optional[str]
-
-def convert_datetime_to_iso_8601_with_z_suffix(dt: Union[datetime, str]) -> str:
-    """
-    Convert a datetime object or an ISO 8601 formatted string to an ISO 8601 string 
-    with a 'Z' suffix indicating UTC time.
-
-    Parameters
-    ----------
-    dt : Union[datetime, str]
-        A datetime object or an ISO 8601 formatted string. If a string is provided, 
-        it should be in a format that can be parsed by `datetime.fromisoformat`.
-
-    Returns
-    -------
-    str
-        An ISO 8601 formatted string representing the input datetime in UTC with a 'Z' suffix.
-
-    Raises
-    ------
-    ValueError
-        If the input is not a valid datetime or string representation of a datetime.
-    """
-    try:
-        if isinstance(dt, str):
-            dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
-        return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-    except Exception as e:
-        raise ValueError(f"Invalid input for datetime conversion: {dt!r}. Error: {e}")
-
-
-def convert_floats_to_decimals(obj: Any) -> Any:
-    """
-    Convert all float values in a given object to Decimal.
-
-    This function recursively traverses the input object, which can be a 
-    float, dictionary, list, or any other type, and converts any float 
-    values it encounters to Decimal. If the input is a dictionary or 
-    list, it processes each element accordingly.
-
-    Parameters
-    ----------
-    obj : Any
-        The input object that may contain float values.
-
-    Returns
-    -------
-    Any
-        The input object with all float values converted to Decimal.
-    """
-    if isinstance(obj, float):
-        return Decimal(str(obj))
-    elif isinstance(obj, dict):
-        return {k: convert_floats_to_decimals(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_floats_to_decimals(i) for i in obj]
-    else:
-        return obj
-
-
-def _decode_dynamodb_attr_value(value: Any) -> tuple[Any, Optional[str]]:
-    """Decode low-level DynamoDB AttributeValue shapes when present."""
-    if isinstance(value, dict) and len(value) == 1:
-        attr_type, attr_value = next(iter(value.items()))
-        if attr_type == "N":
-            try:
-                return int(attr_value), attr_type
-            except (TypeError, ValueError):
-                try:
-                    return float(attr_value), attr_type
-                except (TypeError, ValueError):
-                    return attr_value, attr_type
-        if attr_type == "S":
-            return attr_value, attr_type
-        return attr_value, attr_type
-    return value, None
 
 class DynamoModel(BaseModel):
     """

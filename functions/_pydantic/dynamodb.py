@@ -79,6 +79,24 @@ def convert_floats_to_decimals(obj: Any) -> Any:
     else:
         return obj
 
+
+def _decode_dynamodb_attr_value(value: Any) -> tuple[Any, Optional[str]]:
+    """Decode low-level DynamoDB AttributeValue shapes when present."""
+    if isinstance(value, dict) and len(value) == 1:
+        attr_type, attr_value = next(iter(value.items()))
+        if attr_type == "N":
+            try:
+                return int(attr_value), attr_type
+            except (TypeError, ValueError):
+                try:
+                    return float(attr_value), attr_type
+                except (TypeError, ValueError):
+                    return attr_value, attr_type
+        if attr_type == "S":
+            return attr_value, attr_type
+        return attr_value, attr_type
+    return value, None
+
 class DynamoModel(BaseModel):
     """
     A base model for DynamoDB interactions using Pydantic.
@@ -342,6 +360,8 @@ class DynamoModel(BaseModel):
             expression_attr_names["#version"] = "version"
             expression_attr_values[":incoming_version"] = incoming_version
             conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
+            # Ask DynamoDB to include the prior item in a condition check failure response.
+            kwargs["ReturnValuesOnConditionCheckFailure"] = "ALL_OLD"
         if condition_expression:
             conditions.append(f"{condition_expression}")
         
@@ -359,6 +379,74 @@ class DynamoModel(BaseModel):
 
         except table.meta.client.exceptions.ConditionalCheckFailedException as e:
             if self.uses_versioning():
+                current_version = None
+                current_version_type = None
+                old_item = (
+                    e.response.get("Item")
+                    if hasattr(e, "response") and isinstance(e.response, dict)
+                    else None
+                )
+                if isinstance(old_item, dict):
+                    current_version, current_version_type = _decode_dynamodb_attr_value(old_item.get("version"))
+
+                # Repair legacy/string-typed version values once, then retry original update.
+                if current_version_type == "S":
+                    try:
+                        repaired_numeric_version = int(current_version)
+                        logger.warning(
+                            "Detected version type mismatch on %s/%s: current_version_type=%s incoming_type=%s. Attempting repair.",
+                            self.PK,
+                            self.SK,
+                            current_version_type,
+                            type(incoming_version).__name__,
+                        )
+
+                        table.update_item(
+                            Key={"PK": self.PK, "SK": self.SK},
+                            UpdateExpression="SET #version = :version_number",
+                            ConditionExpression="attribute_exists(#version) AND attribute_type(#version, :version_type) AND #version = :version_string",
+                            ExpressionAttributeNames={"#version": "version"},
+                            ExpressionAttributeValues={
+                                ":version_number": repaired_numeric_version,
+                                ":version_type": "S",
+                                ":version_string": str(current_version),
+                            },
+                        )
+
+                        retry_result = table.update_item(**kwargs)
+                        logger.warning(
+                            "Version type repair succeeded on %s/%s and upsert retry completed.",
+                            self.PK,
+                            self.SK,
+                        )
+                        return UpsertResult(
+                            success=True,
+                            item=retry_result.get("Attributes", None),
+                            error=None,
+                        )
+                    except table.meta.client.exceptions.ConditionalCheckFailedException:
+                        logger.warning(
+                            "Version type repair/retry condition failed on %s/%s.",
+                            self.PK,
+                            self.SK,
+                        )
+                    except Exception:
+                        logger.error(
+                            "Version type repair failed for %s/%s\n%s",
+                            self.PK,
+                            self.SK,
+                            traceback.format_exc(),
+                        )
+
+                logger.warning(
+                    "Version conflict on upsert: resource=%s/%s incoming_version=%s current_version=%s current_version_type=%s",
+                    self.PK,
+                    self.SK,
+                    incoming_version,
+                    current_version,
+                    current_version_type,
+                )
+
                 return UpsertResult(
                     success=False,
                     item=None,

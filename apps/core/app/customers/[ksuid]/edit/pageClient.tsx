@@ -34,7 +34,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const eventId = `CUSTOMER#${remoteEntity.email}`
+    const customerId = remoteEntity.email
     try {
       const res = await fetch(createUrlEndpoint, {
         method: "POST",
@@ -47,17 +47,17 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
       })
 
       const result = await res.json()
-
-      const previousCache = JSON.parse(localStorage.getItem(eventId) || '{}')
+      const storageKey = `${activeOrg}:CUSTOMER#${customerId}`
+      const previousCache = JSON.parse(localStorage.getItem(storageKey) || '{}')
       if (!res.ok) {
         const failedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(eventId,failedCache)
-        console.error("Failed to save",eventId,failedCache)
+        localStorage.setItem(storageKey,failedCache)
+        console.error("Failed to save",storageKey,failedCache)
         throw new Error(result.message || "Something went wrong")
       } else {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(eventId,savedCache)
-        console.log("Event created!", result, eventId,savedCache)
+        localStorage.setItem(storageKey,savedCache)
+        console.log("Customer created!", result, storageKey,savedCache)
         router.push("/customers")
       }
      

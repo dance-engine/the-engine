@@ -31,7 +31,7 @@ const PageClient = ({ eventKsuid, bundleKsuid }: { eventKsuid?: string; bundleKs
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: bundlesEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const bundleId = `BUNDLE#${data.ksuid}`
+    const bundleId = data.ksuid
     try {
       const res = await fetch(bundlesEndpoint, {
         method: "POST",
@@ -44,17 +44,17 @@ const PageClient = ({ eventKsuid, bundleKsuid }: { eventKsuid?: string; bundleKs
       })
 
       const result = await res.json()
-
-      const previousCache = JSON.parse(localStorage.getItem(bundleId) || '{}')
+      const storageKey = `${activeOrg}:BUNDLE#${bundleId}`
+      const previousCache = JSON.parse(localStorage.getItem(storageKey) || '{}')
       if (!res.ok) {
         const failedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(bundleId,failedCache)
-        console.error("Failed to save",bundleId,failedCache)
+        localStorage.setItem(storageKey,failedCache)
+        console.error("Failed to save",storageKey,failedCache)
         throw new Error(result.message || "Something went wrong")
       } else {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(bundleId,savedCache)
-        console.log("Bundle saved!", result, bundleId,savedCache)
+        localStorage.setItem(storageKey,savedCache)
+        console.log("Bundle saved!", result, storageKey,savedCache)
         router.push(`/events/${eventKsuid}/bundles`)
       }
      

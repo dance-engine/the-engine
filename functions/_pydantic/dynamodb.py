@@ -316,12 +316,11 @@ class DynamoModel(BaseModel):
                     else None
                 )
                 if isinstance(old_item, dict):
-                    current_version, current_version_type = _decode_dynamodb_attr_value(old_item.get("version"))
+                    current_version, current_version_type = _get_failed_item_field(e.response, "version")
 
                 # Repair legacy/string-typed version values once, then retry original update.
                 if current_version_type == "S":
                     try:
-                        repaired_numeric_version = int(current_version)
                         logger.warning(
                             "Detected version type mismatch on %s/%s: current_version_type=%s incoming_type=%s. Attempting repair.",
                             self.PK,
@@ -330,29 +329,32 @@ class DynamoModel(BaseModel):
                             type(incoming_version).__name__,
                         )
 
-                        table.update_item(
-                            Key={"PK": self.PK, "SK": self.SK},
-                            UpdateExpression="SET #version = :version_number",
-                            ConditionExpression="attribute_exists(#version) AND attribute_type(#version, :version_type) AND #version = :version_string",
-                            ExpressionAttributeNames={"#version": "version"},
-                            ExpressionAttributeValues={
-                                ":version_number": repaired_numeric_version,
-                                ":version_type": "S",
-                                ":version_string": str(current_version),
-                            },
+                        repaired = _repair_string_number_field(
+                            table=table,
+                            pk=self.PK,
+                            sk=self.SK,
+                            field_name="version",
+                            current_value=current_version,
                         )
-
-                        retry_result = table.update_item(**kwargs)
-                        logger.warning(
-                            "Version type repair succeeded on %s/%s and upsert retry completed.",
-                            self.PK,
-                            self.SK,
-                        )
-                        return UpsertResult(
-                            success=True,
-                            item=retry_result.get("Attributes", None),
-                            error=None,
-                        )
+                        if not repaired:
+                            logger.warning(
+                                "Version type repair skipped on %s/%s: value %r is not int-like.",
+                                self.PK,
+                                self.SK,
+                                current_version,
+                            )
+                        else:
+                            retry_result = table.update_item(**kwargs)
+                            logger.warning(
+                                "Version type repair succeeded on %s/%s and upsert retry completed.",
+                                self.PK,
+                                self.SK,
+                            )
+                            return UpsertResult(
+                                success=True,
+                                item=retry_result.get("Attributes", None),
+                                error=None,
+                            )
                     except table.meta.client.exceptions.ConditionalCheckFailedException:
                         logger.warning(
                             "Version type repair/retry condition failed on %s/%s.",

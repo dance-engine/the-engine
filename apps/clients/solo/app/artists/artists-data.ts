@@ -189,5 +189,17 @@ export const artists: Record<string, ArtistType> = {
     image: "/artists/libby.jpg",
     handle: "@libbyfairhurst",
     instagram: "https://www.instagram.com/libbyfairhurst?igsh=MW5ydmI1dnhqOHdzNw%3D%3D"
+  },
+  laurita: {
+    name: "Laurita",
+    bio: [
+      "Laurita has worked as a professional dancer/ choreographer for the last 15 years and is currently studying at London Studio Centre for a Masters in Dance Production and Management.",
+      "She has travelled to perform and teach internationally for theatre productions, cruise ships, and events as well as international festivals within the Salsa/Bachata world, and regularly teaches in London. ",
+      "Laura recently choreographed the debut music video for winners of The Voice- for Universal Music, and choreographs and trains multiple teams in London - some of who compete as well as perform. ",
+      "Laura now lives in London but trained at LIPA in Liverpool and is excited to return and to join this amazing event!",
+      ],
+    image: "/artists/laurita.jpg",
+    handle: "@laurita.choreography",
+    instagram: "https://www.instagram.com/laurita.choreography?igsh=emNzcGF0Mmwyajgx"
   }
 };

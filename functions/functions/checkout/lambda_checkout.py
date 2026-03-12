@@ -16,9 +16,9 @@ import stripe # layer: stripe
 sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
-from _shared.helpers import make_response
+from _shared.helpers import make_response, get_organisation_settings
 from _pydantic.models.checkout_models import CreateCheckoutRequest, CheckoutObjectPublic, LineItemObjectPublic
-from _pydantic.models.models_extended import EventModel
+from _pydantic.models.models_extended import EventModel, OrganisationModel
 from _pydantic.dynamodb import transact_upsert
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 
@@ -190,6 +190,9 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
     try:
         stripe.api_key = STRIPE_API_KEY
 
+        organisation: OrganisationModel = get_organisation_settings(organisation_slug, db, OrganisationModel, ORG_TABLE_NAME_TEMPLATE)
+        account_id = organisation.account_id
+
         stripe_customer_fields = {}
         extra_metadata = {}
         if collect_customer_on_stripe:
@@ -237,7 +240,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             expires_at=expires_at,
             discounts=[{"coupon": checkout.coupon_code}] if checkout.coupon_code else None,
             allow_promotion_codes = True,
-            stripe_account = checkout.stripe_account_id,
+            stripe_account = account_id,
             metadata={"organisation": organisation_slug, "event_ksuid": event_ksuid, **extra_metadata},
             **stripe_customer_fields
         )

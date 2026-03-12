@@ -15,7 +15,7 @@ import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
 import OnceOnly from "@dance-engine/ui/form/fields/OnceOnly";
-import { DynamicFormProps } from '@dance-engine/ui/types' 
+import { DynamicFormProps, MetaData } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
@@ -25,7 +25,7 @@ import { format, parseISO } from "date-fns";
 
 //! TODO Fix this to be generic not EVENT type
 
-function transformDates(formObj: FieldValues): EntityType | FieldValues {
+function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityType | FieldValues {
   // Add any date fields you want to transform
   const dateFields = ["starts_at", "ends_at"];  //TODO Should calculate these from metadata
   const newObj = { ...formObj };
@@ -33,6 +33,12 @@ function transformDates(formObj: FieldValues): EntityType | FieldValues {
     if (formObj[field]) {
       const date = parseISO(formObj[field]);
       newObj[field] = format(date, "yyyy-MM-dd'T'HH:mm");
+    }
+  });
+  // Transform currency fields from cents to dollars for display
+  Object.keys(metadata || {}).forEach(field => {
+    if (metadata![field]?.currencyField && typeof formObj[field] === 'number') {
+      newObj[field] = formObj[field] / 100;
     }
   });
   return newObj as EntityType;
@@ -59,6 +65,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
   const { status: autosaveStatus, isStatusVisible: isAutosaveStatusVisible,  loadFromStorage } = useLocalAutoSave<EntityType>({
     data: watchedValues as EntityType,
     entityType: data?.entity_type || "UNKNOWN",
+    activeOrgId: orgSlug,
     remoteUpdatedAt: data?.updated_at,
     isDirty
   });
@@ -68,12 +75,12 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
     console.log("Comparing versions \nlocal:",draft?.version,"\nremote:",data?.version, "[",(draft && draft.version && data && draft.version >= data.version),"]")
     if (!data || (draft && draft.version && data && draft.version >= data.version)) { 
       console.info("Loading Cached", "\nDraft", draft, "\nData", data)
-      reset(transformDates(draft as FieldValues) as EntityType)
+      reset(transformFormData(draft as FieldValues, metadata) as EntityType)
     } else { 
       console.info("Loading Remote", "\nDraft", draft, "\nData", data)
-      reset(transformDates(data) as EntityType)
+      reset(transformFormData(data, metadata) as EntityType)
     }  
-  }, [loadFromStorage, data, reset]);
+  }, [loadFromStorage, data, reset, metadata]);
   
   const fields = Object.keys(schema.shape);
   
@@ -104,6 +111,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
         const isDisplayInfo = metadata && metadata[field]?.info
         const isOnceOnly = metadata && metadata[field]?.onceOnly; // Get metadata for the field
+        const isCurrency = metadata && metadata[field]?.currencyField; // Get metadata for the field
 
         return (
           <div key={field} className={`flex flex-col ${isDisplayInfo ? "mb-1" : null}`}>
@@ -176,7 +184,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
             ) : fieldType === "ZodNumber" ? (
               <NumberInput label={field} name={field} fieldSchema={fieldSchema}
               register={register} validate={() => {trigger(field)}}
-              error={errors[field]?.message as string} />
+              error={errors[field]?.message as string} currency={isCurrency} />
             ) : fieldType === "ZodEnum" ? (
               <Select label={field} name={field} options={Object.values(fieldSchema._def.values)} fieldSchema={fieldSchema}
               register={register} validate={() => {trigger(field)}}

@@ -87,7 +87,7 @@ const CustomPage = () => {
         
         ) : ""}
 
-      {/* <pre>{JSON.stringify(user.publicMetadata,null,2)}</pre> */}
+      <pre>{JSON.stringify(user.publicMetadata,null,2)}</pre>
       {/* <p>This is the content of the custom page.</p> */}
     </div>
   )

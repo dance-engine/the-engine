@@ -5,6 +5,7 @@ import { useCallback, useState, useRef } from 'react';
 interface AutoSaveOptions<T extends { ksuid?: string, meta?: { updated_at?: string } }> {
   data: T;
   entityType: string;
+  activeOrgId?: string;
   remoteUpdatedAt?: string; // ISO timestamp from the server
   isDirty?: boolean;
 }
@@ -12,11 +13,12 @@ interface AutoSaveOptions<T extends { ksuid?: string, meta?: { updated_at?: stri
 export function useLocalAutoSave<T extends { ksuid?: string, meta?: { updated_at?: string } }>({
   data,
   entityType,
+  activeOrgId,
   remoteUpdatedAt,
   isDirty = true
 }: AutoSaveOptions<T>) {
-  const STORAGE_KEY = `${entityType}#${data?.ksuid}`;
-  const STORAGE_LIST_KEY = `local:${entityType}`
+  const STORAGE_KEY = `${activeOrgId}:${entityType}#${data?.ksuid}`;
+  const STORAGE_LIST_KEY = `${activeOrgId}:${entityType}`
   const [status, setStatus] = useState<
     'Idle' | 'Saving...' | 'Saved to server' | 'Draft saved locally' | 'Save failed' | 'Local save error'
   >('Idle');
@@ -44,12 +46,16 @@ export function useLocalAutoSave<T extends { ksuid?: string, meta?: { updated_at
     data,
     interval: 15000,
     onSave: (newData: T) => {
-      if (!isDirty) return;
+      if (!isDirty || !activeOrgId) return;
       saveLocally(newData)
     }
   });
 
   const saveLocally = (newData: T ) => {
+    if (!activeOrgId) {
+      console.warn('Cannot save locally: activeOrgId is not defined');
+      return;
+    }
     try {
       const updated_at = new Date().toISOString();
       const updatedData: T = {
@@ -96,7 +102,7 @@ export function useLocalAutoSave<T extends { ksuid?: string, meta?: { updated_at
       console.error('Failed to load local draft', e);
       return null;
     }
-  }, [STORAGE_KEY, remoteUpdatedAt]);
+  }, [STORAGE_KEY, remoteUpdatedAt, activeOrgId]);
 
   return { status, isStatusVisible, loadFromStorage, saveLocally };
 }

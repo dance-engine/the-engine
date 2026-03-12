@@ -1,6 +1,6 @@
 'use client'
 import dynamic from "next/dynamic";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import useClerkSWR, { CorsError }  from '@dance-engine/utils/clerkSWR'
 import { useOrgContext } from '@dance-engine/utils/OrgContext';
 // import {EventType, eventSchema} from '@dance-engine/schemas/events'
@@ -20,22 +20,23 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
   // Pass null as key when no activeOrg to prevent the fetch
   const { data: remoteEntityData= [], error, isLoading } = useClerkSWR(activeOrg ? eventsApiUrl.replace('/{org}',`/${activeOrg}`) : null,{ suspense: false, });
 
-  const getEntity = (entityType: EntityNameType) => {
-    const cached = window.localStorage.getItem(`local:${entityType}`)
-    return cached ? JSON.parse(cached)?.map((entry: EntityType)=>{
-      const parsed = JSON.parse(window.localStorage.getItem(`${entry}`) || '{}')
+  const getEntity = useCallback((entityType: EntityNameType) => {
+    if (!activeOrg) return []
+    const cached = window.localStorage.getItem(`${activeOrg}:${entityType}`)
+    return cached ? JSON.parse(cached)?.map((storageKey: string)=>{
+      const parsed = JSON.parse(window.localStorage.getItem(storageKey) || '{}')
       const result = validateEntity(entityType,parsed)
       const entity = result.success
         ? { ...result.data, meta: { ...(result.data.meta ?? {}), valid: true } }
         : { ...(parsed ?? {}), meta: { ...(parsed?.meta ?? {}), valid: false } }
       return entity
     }).filter(Boolean) : []
-  }
+  }, [activeOrg])
   
   
   const localEntities = useMemo(() => {
     return typeof window !== "undefined" && entity ? getEntity(entity): []
-  },[entity])
+  },[entity, getEntity])
 
   const allEntities = useMemo(() => {
     // return [...remoteEntities,...localEntities]

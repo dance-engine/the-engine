@@ -4,14 +4,18 @@ from botocore.exceptions import ClientError
 import logging
 from datetime import datetime, timezone
 import traceback
-from decimal import Decimal
 from dataclasses import dataclass
-from typing import Any, Optional
 
 from pydantic import BaseModel, field_validator, Field
 from ksuid import KsuidMs
 
 from _pydantic.EventBridge import Action, EventType
+from _pydantic.dynamodb_helpers import (
+    convert_datetime_to_iso_8601_with_z_suffix,
+    convert_floats_to_decimals,
+    _get_failed_item_field,
+    _repair_string_number_field,
+)
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -21,63 +25,6 @@ class UpsertResult:
     success: bool
     item: Optional[dict]
     error: Optional[str]
-
-def convert_datetime_to_iso_8601_with_z_suffix(dt: Union[datetime, str]) -> str:
-    """
-    Convert a datetime object or an ISO 8601 formatted string to an ISO 8601 string 
-    with a 'Z' suffix indicating UTC time.
-
-    Parameters
-    ----------
-    dt : Union[datetime, str]
-        A datetime object or an ISO 8601 formatted string. If a string is provided, 
-        it should be in a format that can be parsed by `datetime.fromisoformat`.
-
-    Returns
-    -------
-    str
-        An ISO 8601 formatted string representing the input datetime in UTC with a 'Z' suffix.
-
-    Raises
-    ------
-    ValueError
-        If the input is not a valid datetime or string representation of a datetime.
-    """
-    try:
-        if isinstance(dt, str):
-            dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
-        return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-    except Exception as e:
-        raise ValueError(f"Invalid input for datetime conversion: {dt!r}. Error: {e}")
-
-
-def convert_floats_to_decimals(obj: Any) -> Any:
-    """
-    Convert all float values in a given object to Decimal.
-
-    This function recursively traverses the input object, which can be a 
-    float, dictionary, list, or any other type, and converts any float 
-    values it encounters to Decimal. If the input is a dictionary or 
-    list, it processes each element accordingly.
-
-    Parameters
-    ----------
-    obj : Any
-        The input object that may contain float values.
-
-    Returns
-    -------
-    Any
-        The input object with all float values converted to Decimal.
-    """
-    if isinstance(obj, float):
-        return Decimal(str(obj))
-    elif isinstance(obj, dict):
-        return {k: convert_floats_to_decimals(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_floats_to_decimals(i) for i in obj]
-    else:
-        return obj
 
 class DynamoModel(BaseModel):
     """
@@ -342,6 +289,8 @@ class DynamoModel(BaseModel):
             expression_attr_names["#version"] = "version"
             expression_attr_values[":incoming_version"] = incoming_version
             conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
+            # Ask DynamoDB to include the prior item in a condition check failure response.
+            kwargs["ReturnValuesOnConditionCheckFailure"] = "ALL_OLD"
         if condition_expression:
             conditions.append(f"{condition_expression}")
         
@@ -359,6 +308,76 @@ class DynamoModel(BaseModel):
 
         except table.meta.client.exceptions.ConditionalCheckFailedException as e:
             if self.uses_versioning():
+                current_version = None
+                current_version_type = None
+                old_item = (
+                    e.response.get("Item")
+                    if hasattr(e, "response") and isinstance(e.response, dict)
+                    else None
+                )
+                if isinstance(old_item, dict):
+                    current_version, current_version_type = _get_failed_item_field(e.response, "version")
+
+                # Repair legacy/string-typed version values once, then retry original update.
+                if current_version_type == "S":
+                    try:
+                        logger.warning(
+                            "Detected version type mismatch on %s/%s: current_version_type=%s incoming_type=%s. Attempting repair.",
+                            self.PK,
+                            self.SK,
+                            current_version_type,
+                            type(incoming_version).__name__,
+                        )
+
+                        repaired = _repair_string_number_field(
+                            table=table,
+                            pk=self.PK,
+                            sk=self.SK,
+                            field_name="version",
+                            current_value=current_version,
+                        )
+                        if not repaired:
+                            logger.warning(
+                                "Version type repair skipped on %s/%s: value %r is not int-like.",
+                                self.PK,
+                                self.SK,
+                                current_version,
+                            )
+                        else:
+                            retry_result = table.update_item(**kwargs)
+                            logger.warning(
+                                "Version type repair succeeded on %s/%s and upsert retry completed.",
+                                self.PK,
+                                self.SK,
+                            )
+                            return UpsertResult(
+                                success=True,
+                                item=retry_result.get("Attributes", None),
+                                error=None,
+                            )
+                    except table.meta.client.exceptions.ConditionalCheckFailedException:
+                        logger.warning(
+                            "Version type repair/retry condition failed on %s/%s.",
+                            self.PK,
+                            self.SK,
+                        )
+                    except Exception:
+                        logger.error(
+                            "Version type repair failed for %s/%s\n%s",
+                            self.PK,
+                            self.SK,
+                            traceback.format_exc(),
+                        )
+
+                logger.warning(
+                    "Version conflict on upsert: resource=%s/%s incoming_version=%s current_version=%s current_version_type=%s",
+                    self.PK,
+                    self.SK,
+                    incoming_version,
+                    current_version,
+                    current_version_type,
+                )
+
                 return UpsertResult(
                     success=False,
                     item=None,

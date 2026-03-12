@@ -21,7 +21,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const { getToken } = useAuth()
 
   const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events`.replace('/{org}',`/${activeOrg}`)
-  const createUrlEndpoint = baseUrlEndpoint
+  // const createUrlEndpoint = baseUrlEndpoint
   const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
   const defaultEntity = useMemo(() => ({ type: "EVENT", ksuid }), [ksuid])
   const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
@@ -31,13 +31,13 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
+    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: eventsApiUrl});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const eventId = `EVENT#${data.ksuid}`
+    const eventId = data.ksuid
     try {
-      const res = await fetch(createUrlEndpoint, {
-        method: "POST",
+      const res = await fetch(eventsApiUrl, {
+        method: "PUT",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${await getToken()}`
@@ -47,16 +47,16 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
       })
 
       const result = await res.json()
-
-      const previousCache = JSON.parse(localStorage.getItem(eventId) || '{}')
+      const storageKey = `${activeOrg}:EVENT#${eventId}`
+      const previousCache = JSON.parse(localStorage.getItem(storageKey) || '{}')
       if (!res.ok) {
         const failedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(eventId,failedCache)
-        console.error("Failed to save",eventId,failedCache)
+        localStorage.setItem(storageKey,failedCache)
+        console.error("Failed to save",storageKey,failedCache)
         throw new Error(result.message || "Something went wrong")
       } else {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(eventId,savedCache)
+        localStorage.setItem(storageKey,savedCache)
         console.log("Event created!", result, eventId,savedCache)
         router.push("/events")
       }

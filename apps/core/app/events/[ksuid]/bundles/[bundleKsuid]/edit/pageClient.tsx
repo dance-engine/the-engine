@@ -2,52 +2,49 @@
 import dynamic from "next/dynamic";
 import { MapPickerProps, DanceEngineEntity } from '@dance-engine/ui/types'
 import DynamicForm from "@dance-engine/ui/form/DynamicForm";
-import { customerSchema, customerMetadata, CustomerType } from "@dance-engine/schemas/customer"; // Import the schema
+import { bundleSchema, bundleMetadata } from "@dance-engine/schemas/bundle";
 import { FieldValues } from "react-hook-form";
 import {useOrgContext} from '@dance-engine/utils/OrgContext'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from "next/navigation";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
-// import KSUID from "ksuid";
-// import { useRouter,usePathname } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 
 const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker'), { ssr: false }) as React.FC<MapPickerProps>
 
 
-const PageClient = ({ ksuid }: { ksuid?: string }) => {
+const PageClient = ({ eventKsuid, bundleKsuid }: { eventKsuid?: string; bundleKsuid?: string }) => {
   const router = useRouter()
   const { activeOrg } = useOrgContext() 
   const { getToken } = useAuth()
 
-  const baseUrlEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/customers`.replace('/{org}',`/${activeOrg}`)
-  const createUrlEndpoint = baseUrlEndpoint
-  const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
-  const defaultEntity = useMemo(() => ({ entity_type: "CUSTOMER", ksuid }), [ksuid])
-  const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
+  const bundlesEndpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${eventKsuid}/bundles`
+  const bundleApiUrl = `${bundlesEndpoint}/${bundleKsuid}`
+  const defaultEntity = useMemo(() => ({ type: "BUNDLE", ksuid: bundleKsuid }), [bundleKsuid])
+  const { data, error, isLoading } = useClerkSWR(activeOrg && bundleKsuid ? bundleApiUrl : null)
   
-  const remoteEntity = data?.customers || defaultEntity
-    
+  const remoteEntity = data || defaultEntity
+  
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: createUrlEndpoint});
+    console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: bundlesEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const customerId = remoteEntity.email
+    const bundleId = data.ksuid
     try {
-      const res = await fetch(createUrlEndpoint, {
+      const res = await fetch(bundlesEndpoint, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify({customer: cleanedData}),
+        body: JSON.stringify({bundles: [cleanedData] }),
       })
 
       const result = await res.json()
-      const storageKey = `${activeOrg}:CUSTOMER#${customerId}`
+      const storageKey = `${activeOrg}:BUNDLE#${bundleId}`
       const previousCache = JSON.parse(localStorage.getItem(storageKey) || '{}')
       if (!res.ok) {
         const failedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
@@ -57,27 +54,25 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
       } else {
         const savedCache = JSON.stringify({...previousCache, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}})
         localStorage.setItem(storageKey,savedCache)
-        console.log("Customer created!", result, storageKey,savedCache)
-        router.push("/customers")
+        console.log("Bundle saved!", result, storageKey,savedCache)
+        router.push(`/events/${eventKsuid}/bundles`)
       }
      
       
     } catch (err) {
-      console.error("Error creating event", err)
+      console.error("Error saving bundle", err)
     }
   };
 
   useEffect(()=>{
     const blankEntity = {
-      entity_type: "CUSTOMER",
-      ksuid: ksuid, // Extract the ksuid if it exists
+      entity_type: "BUNDLE",
+      ksuid: bundleKsuid,
       version: 1
     } as DanceEngineEntity
-    // const localEntity = JSON.parse(typeof window !== "undefined" ? localStorage.getItem(`${blankEntity.type}#${blankEntity.ksuid}`) || "{}" : "{}")
-    // const initEntity = {...blankEntity, ...remoteEntity[0], ...localEntity}
-    const initEntity = {...blankEntity, ...remoteEntity[0]}
+    const initEntity = {...blankEntity, ...remoteEntity.bundle}
     setEntity(initEntity)
-  },[remoteEntity,ksuid])
+  },[remoteEntity,bundleKsuid])
   
   if(error) {
     console.error(error)
@@ -95,9 +90,9 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
 
   return !isLoading && entity && entity.ksuid && entity.ksuid != ""
     ? <><DynamicForm 
-        schema={customerSchema} 
+        schema={bundleSchema} 
         {...(activeOrg ? {orgSlug: activeOrg} : {})} 
-        metadata={customerMetadata} 
+        metadata={bundleMetadata} 
         onSubmit={handleSubmit}  
         MapComponent={MapPicker} 
         persistKey={entity} 

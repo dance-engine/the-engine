@@ -31,7 +31,7 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
     console.log("Form Submitted:", data, "destination", { orgSlug: activeOrg, url: updateUrlEndpoint});
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
-    const organisationSlug = `ORGANISATION#${activeOrg}`
+    const storageKey = `${activeOrg}:ORGANISATION#${activeOrg}`
     try {
       const res = await fetch(updateUrlEndpoint, {
         method: "PUT",
@@ -45,16 +45,16 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
 
       const result = await res.json()
 
-      const previousCache = JSON.parse(localStorage.getItem(organisationSlug) || '{}')
+      const previousCache = JSON.parse(localStorage.getItem(storageKey) || '{}')
       if (!res.ok) {
         const failedCache = JSON.stringify({...previousCache, ...cleanedData, ...{meta: { saved: 'failed', updated_at: new Date().toISOString()}}})
-        localStorage.setItem(organisationSlug,failedCache)
+        localStorage.setItem(storageKey,failedCache)
         throw new Error(result.message || "Something went wrong")
       } else {
         // version increase because we aren't loading remote stuff as we stay on same page
         const savedData = {...previousCache, ...cleanedData, ...{version: parseInt(result.organisation.version)+1}, ...{meta: { saved: 'saved', updated_at: new Date().toISOString()}}}
         const savedCache = JSON.stringify(savedData)
-        localStorage.setItem(organisationSlug,savedCache)
+        localStorage.setItem(storageKey,savedCache)
         setEntity(savedData)
         router.push("/settings/org")
       }

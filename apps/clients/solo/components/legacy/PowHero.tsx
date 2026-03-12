@@ -7,7 +7,7 @@ interface PowHeroProps {
   theme: string;
 }
 
-export default function PowHero({ org, orgSlug, theme }: PowHeroProps) {
+export default function PowHero({ org, }: PowHeroProps) {
   return (
     <div id="hero" className={`w-full OLDsm:h-[60vh] OLDmax-h-[1024px]
     text-white flex items-stretch justify-center bg-no-repeat \
@@ -20,7 +20,7 @@ export default function PowHero({ org, orgSlug, theme }: PowHeroProps) {
         {org.banner_overlay && <div className='relative w-full h-full overflow-hidden flex flex-col items-center justify-start sm:flex-row sm:items-center sm:justify-center'>
           {/* <h1 className='text-4xl text-center px-6 font-heading-latin-soul'>&lsquo;Liverpool Moves to Latin Soul.&rsquo;</h1> */}
           {/* <img src={org.banner_overlay} alt="Banner Overlay" className='object-top object-contain block h-[100%] w-full border-b-blue-400 border' /> */}
-          <img src={org.banner_overlay} alt=""  />
+          <img src={org.banner_overlay} alt=""/>
         </div>}
       </div>
     </div>

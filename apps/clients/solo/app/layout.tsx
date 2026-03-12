@@ -60,6 +60,10 @@ const domainConfig: Record<string, { title: string; favicon: string }> = {
     title: 'Latin Soul',
     favicon: '/favicons/latin-soul/favicon.ico',
   },
+  'cuban-y-dominican': {
+    title: 'Cuban y Dominican',
+    favicon: '/favicons/default.ico',
+  },  
 
 };
 

@@ -15,7 +15,7 @@ import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
 import OnceOnly from "@dance-engine/ui/form/fields/OnceOnly";
-import { DynamicFormProps, MetaData } from '@dance-engine/ui/types' 
+import { DynamicFieldOptions, DynamicFormProps, MetaData } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
 import Debug from '@dance-engine/ui/utils/Debug'
 import { useLocalAutoSave } from '@dance-engine/utils/LocalAutosave'
@@ -24,6 +24,27 @@ import { EntityType } from '@dance-engine/schemas'
 import { format, parseISO } from "date-fns";
 
 //! TODO Fix this to be generic not EVENT type
+
+const isDynamicFieldOptions = (value: DynamicFieldOptions | MetaData | undefined): value is DynamicFieldOptions => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return (
+    "multiline" in value ||
+    "richText" in value ||
+    "dateField" in value ||
+    "checkboxesField" in value ||
+    "hidden" in value ||
+    "fileUploadField" in value ||
+    "info" in value ||
+    "onceOnly" in value ||
+    "selectField" in value ||
+    "currencyField" in value
+  );
+};
+
+const getFieldMetadata = (metadata: MetaData | undefined, field: string): DynamicFieldOptions | undefined => {
+  const fieldMetadata = metadata?.[field];
+  return isDynamicFieldOptions(fieldMetadata) ? fieldMetadata : undefined;
+};
 
 function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityType | FieldValues {
   // Add any date fields you want to transform
@@ -37,7 +58,8 @@ function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityTyp
   });
   // Transform currency fields from cents to dollars for display
   Object.keys(metadata || {}).forEach(field => {
-    if (metadata![field]?.currencyField && typeof formObj[field] === 'number') {
+    const fieldMetadata = getFieldMetadata(metadata, field);
+    if (fieldMetadata?.currencyField && typeof formObj[field] === 'number') {
       newObj[field] = formObj[field] / 100;
     }
   });
@@ -103,15 +125,16 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
 
         const fieldSchema = getInnerSchema(rawSchema);
         const fieldType = fieldSchema._def.typeName;
-        const isMultiline = metadata && metadata[field]?.multiline; // Get metadata for the field
-        const richText = metadata && metadata[field]?.richText; // Get metadata for the field
-        const dateField = metadata && metadata[field]?.dateField; // Get metadata for the field
-        const checkboxesField = metadata && metadata[field]?.checkboxesField; // Get metadata for the field
-        const isHidden = metadata && metadata[field]?.hidden
-        const isSingleFileUpload = metadata && metadata[field]?.fileUploadField && metadata[field]?.fileUploadField == 'single'
-        const isDisplayInfo = metadata && metadata[field]?.info
-        const isOnceOnly = metadata && metadata[field]?.onceOnly; // Get metadata for the field
-        const isCurrency = metadata && metadata[field]?.currencyField; // Get metadata for the field
+        const fieldMetadata = getFieldMetadata(metadata, field);
+        const isMultiline = fieldMetadata?.multiline; // Get metadata for the field
+        const richText = fieldMetadata?.richText; // Get metadata for the field
+        const dateField = fieldMetadata?.dateField; // Get metadata for the field
+        const checkboxesField = fieldMetadata?.checkboxesField; // Get metadata for the field
+        const isHidden = fieldMetadata?.hidden
+        const isSingleFileUpload = fieldMetadata?.fileUploadField === 'single'
+        const isDisplayInfo = fieldMetadata?.info
+        const isOnceOnly = fieldMetadata?.onceOnly; // Get metadata for the field
+        const isCurrency = fieldMetadata?.currencyField; // Get metadata for the field
 
         return (
           <div key={field} className={`flex flex-col ${isDisplayInfo ? "mb-1" : null}`}>

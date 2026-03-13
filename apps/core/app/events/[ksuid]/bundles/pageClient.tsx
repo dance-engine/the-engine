@@ -64,10 +64,10 @@ const PageBundlesClient = ({ ksuid }: BundlesClientProps) => {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 px-4 lg:px-8">Bundles ({bundles.length})</h2>
         <BasicList 
-          entity="BUNDLE" as any
+          entity="BUNDLE"
           columns={["name", "primary_price", "primary_price_name","ksuid"]}
           formats={[undefined, "currency", undefined]}
-          records={bundles}
+          records={bundles as Record<string, unknown>[]}
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}
           parentEntityName="event"
@@ -78,10 +78,10 @@ const PageBundlesClient = ({ ksuid }: BundlesClientProps) => {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 px-4 lg:px-8">Items ({items.length})</h2>
         <BasicList 
-          entity="ITEM" as any
+          entity="ITEM"
           columns={["name", "primary_price", "primary_price_name"]}
           formats={[undefined, "currency", undefined]}
-          records={items}
+          records={items as Record<string, unknown>[]}
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}
           parentEntityName="event"

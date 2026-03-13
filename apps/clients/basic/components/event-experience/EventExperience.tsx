@@ -113,7 +113,7 @@ export default function EventExperience({
       <div
         className="min-h-screen"
         style={{
-          background: 'linear-gradient(180deg, var(--scheme-page-bg-start) 0%, var(--scheme-page-bg-mid) 42%, var(--scheme-page-bg-end) 100%)',
+          backgroundColor: 'var(--scheme-page-bg-start)',
           color: 'var(--scheme-page-text)',
         }}
       >
@@ -126,7 +126,7 @@ export default function EventExperience({
 
           <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div
-              className="rounded-[2rem] border p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur"
+              className="border p-6"
               style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg)", color: "var(--scheme-surface-text)" }}
             >
               <p className="text-xs font-semibold uppercase tracking-[0.28em]" style={{ color: "var(--scheme-surface-muted)" }}>
@@ -137,7 +137,7 @@ export default function EventExperience({
                 className="prose prose-slate mt-6 max-w-none prose-headings:font-black prose-a:text-[var(--highlight-color)] prose-strong:text-slate-950"
                 dangerouslySetInnerHTML={{ __html: eventDescription }}
               />
-              <div className="mt-8 rounded-[1.5rem] px-5 py-4" style={{ backgroundColor: "var(--scheme-surface-bg-soft)" }}>
+              <div className="mt-8 border px-5 py-4" style={{ backgroundColor: "var(--scheme-surface-bg-soft)", borderColor: "var(--scheme-surface-border)" }}>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--scheme-surface-muted)" }}>
                   Schedule
                 </p>
@@ -153,14 +153,14 @@ export default function EventExperience({
             </div>
 
             <div
-              className="rounded-[2rem] border p-3 shadow-[0_24px_70px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur"
+              className="border p-3"
               style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg)" }}
             >
               {typeof event.location?.lat === 'number' && typeof event.location?.lng === 'number' ? (
                 <MapDisplay lat={event.location.lat} lng={event.location.lng} />
               ) : (
                 <div
-                  className="flex h-[320px] items-center justify-center rounded-[1.75rem] text-sm"
+                  className="flex h-[320px] items-center justify-center border text-sm"
                   style={{ backgroundColor: "var(--scheme-surface-bg-soft)", color: "var(--scheme-surface-muted)" }}
                 >
                   Venue map unavailable

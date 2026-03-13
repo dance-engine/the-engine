@@ -17,7 +17,7 @@ export default function EventHeroBanner({
   const mutedColour = bannerImage ? "var(--scheme-panel-muted)" : "var(--scheme-page-text-muted)";
 
   return (
-    <section className="relative isolate overflow-hidden">
+    <section className="relative isolate overflow-hidden border-b" style={{ borderColor: "var(--scheme-surface-border)" }}>
       {bannerImage ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -34,25 +34,25 @@ export default function EventHeroBanner({
       ) : null}
       <div
         className={`relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${
-          bannerImage ? "flex min-h-[360px] items-end py-14 lg:min-h-[400px] lg:py-16" : "py-10 lg:py-12"
+          bannerImage ? "flex min-h-[320px] items-end py-12 lg:min-h-[360px] lg:py-14" : "py-8 lg:py-10"
         }`}
       >
         <div className="flex w-full items-end justify-between gap-8">
           <div className="max-w-3xl" style={{ color: foregroundColour }}>
-            <p className="mb-3 text-sm font-semibold tracking-tight sm:text-base" style={{ color: mutedColour }}>
+            <p className="mb-2 text-sm font-semibold tracking-tight sm:text-base" style={{ color: mutedColour }}>
               {org.name}
             </p>
-            <h1 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl lg:text-7xl">
+            <h1 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
               {event.name}
             </h1>
           </div>
 
           {heroLogo ? (
-            <div className="hidden w-full max-w-[240px] shrink-0 justify-end md:flex lg:max-w-[300px]">
+            <div className="hidden w-full max-w-[200px] shrink-0 justify-end md:flex lg:max-w-[240px]">
               <img
                 src={heroLogo}
                 alt={org.name}
-                className="h-auto max-h-[220px] w-full object-contain drop-shadow-[0_14px_35px_rgba(0,0,0,0.28)]"
+                className="h-auto max-h-[180px] w-full object-contain"
               />
             </div>
           ) : null}

@@ -15,8 +15,7 @@ type CheckoutLineItem = (ItemType | BundleTypeExtended) & {
   checkout_price_name?: string;
 };
 
-const surfaceClasses =
-  "rounded-[2rem] border p-6 shadow-[0_25px_80px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur";
+const surfaceClasses = "border p-6";
 
 const getHighlightBundleKsuid = (event: EventModelType) => {
   const metaBundleKsuid = event.meta?.highlight_bundle_ksuid;
@@ -65,10 +64,10 @@ const TicketCard = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border text-left transition ${
+    className={`group relative flex h-full flex-col overflow-hidden border text-left transition ${
       selected
-        ? "shadow-[0_22px_55px_rgba(15,23,42,0.28),inset_0_1px_0_rgba(255,255,255,0.12)]"
-        : "hover:-translate-y-1 shadow-[0_18px_45px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.85)]"
+        ? ""
+        : ""
     } ${disabled ? "cursor-default opacity-85" : ""}`}
     style={{
       borderColor: selected ? "var(--highlight-color)" : "var(--scheme-surface-border)",
@@ -78,8 +77,8 @@ const TicketCard = ({
   >
     {highlighted ? (
       <div
-        className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--highlight-color)]"
-        style={{ backgroundColor: "rgba(255, 255, 255, 0.78)" }}
+        className="absolute right-4 top-4 inline-flex items-center gap-2 border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--highlight-color)]"
+        style={{ backgroundColor: "var(--scheme-surface-bg-strong)", borderColor: "var(--highlight-color)" }}
       >
         <SparklesIcon className="h-4 w-4" />
         Highlighted pass
@@ -103,7 +102,7 @@ const TicketCard = ({
 
       {includes && includes.length > 0 ? (
         <div
-          className="rounded-[1.35rem] border p-4"
+          className="border p-4"
           style={{
             borderColor: selected ? "rgba(255,255,255,0.08)" : "var(--scheme-surface-border)",
             backgroundColor: selected ? "var(--scheme-panel-bg-soft)" : "var(--scheme-surface-bg-soft)",
@@ -134,9 +133,10 @@ const TicketCard = ({
           ) : null}
         </div>
         <span
-          className="inline-flex rounded-2xl px-4 py-2 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.28)]"
+          className="inline-flex border px-4 py-2 text-sm font-semibold"
           style={{
             backgroundColor: selected ? "var(--scheme-hero-chip)" : "var(--highlight-color)",
+            borderColor: selected ? "var(--scheme-hero-chip)" : "var(--highlight-color)",
             color: selected ? "var(--surface-text-color)" : "var(--org-color-text-primary)",
           }}
         >
@@ -217,7 +217,7 @@ function EventTicketingContent({
 
           {showStudentToggle ? (
             <label
-              className="inline-flex items-center gap-3 rounded-full border px-4 py-3 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+              className="inline-flex items-center gap-3 border px-4 py-3 text-sm font-semibold"
               style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg-soft)", color: "var(--scheme-surface-text)" }}
             >
               <span>Student pricing</span>
@@ -342,11 +342,7 @@ function EventTicketingContent({
         ) : null}
       </section>
 
-      <section
-        id="checkout"
-        className="rounded-[2rem] border p-6 shadow-[0_30px_90px_rgba(15,23,42,0.12)]"
-        style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg-strong)" }}
-      >
+      <section id="checkout" className="border p-6" style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg-strong)" }}>
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em]" style={{ color: "var(--scheme-surface-muted)" }}>
@@ -361,7 +357,7 @@ function EventTicketingContent({
                 {lineItems.map((item) => (
                   <div
                     key={item.ksuid}
-                    className="flex items-start justify-between gap-4 rounded-[1.35rem] border px-4 py-4"
+                    className="flex items-start justify-between gap-4 border px-4 py-4"
                     style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg-soft)" }}
                   >
                     <div>
@@ -384,7 +380,7 @@ function EventTicketingContent({
               </div>
             ) : (
               <div
-                className="mt-6 rounded-[1.5rem] border border-dashed p-6 text-sm"
+                className="mt-6 border border-dashed p-6 text-sm"
                 style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg-soft)", color: "var(--scheme-surface-muted)" }}
               >
                 Select a pass or item above to start your order.
@@ -393,7 +389,7 @@ function EventTicketingContent({
           </div>
 
           <div
-            className="rounded-[1.75rem] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+            className="border p-6"
             style={{ backgroundColor: "var(--scheme-panel-bg)", color: "var(--scheme-panel-text)" }}
           >
             <div className="flex items-center gap-3" style={{ color: "var(--scheme-panel-muted)" }}>
@@ -402,11 +398,11 @@ function EventTicketingContent({
             </div>
 
             <div className="mt-8 space-y-4">
-              <div className="rounded-[1.35rem] p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)" }}>
+              <div className="border p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)", borderColor: "color-mix(in srgb, var(--scheme-panel-text) 10%, transparent)" }}>
                 <p className="text-sm" style={{ color: "var(--scheme-panel-muted)" }}>Selected options</p>
                 <p className="mt-1 text-3xl font-black">{lineItems.length}</p>
               </div>
-              <div className="rounded-[1.35rem] p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)" }}>
+              <div className="border p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)", borderColor: "color-mix(in srgb, var(--scheme-panel-text) 10%, transparent)" }}>
                 <p className="text-sm" style={{ color: "var(--scheme-panel-muted)" }}>Total price</p>
                 <p className="mt-1 text-4xl font-black">{formatPounds(checkoutTotal)}</p>
                 {savings > 0 ? (

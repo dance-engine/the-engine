@@ -25,11 +25,11 @@ export default function EventFactsPanel({
   return (
     <section className="relative z-10 mx-auto -mt-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div
-        className="grid gap-6 border p-4 md:grid-cols-[1.5fr_0.8fr] md:p-6"
-        style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-panel-bg)", color: "var(--scheme-panel-text)" }}
+        className="grid gap-6 p-4 md:grid-cols-[1.5fr_0.8fr] md:p-6"
+        style={{ backgroundColor: "transparent", color: "var(--scheme-panel-text)" }}
       >
         <div className="grid gap-4">
-          <div className={factCardClasses} style={{ borderColor: "color-mix(in srgb, var(--scheme-panel-text) 10%, transparent)" }}>
+          <div className={factCardClasses} style={{ borderColor: "transparent" }}>
             <div
               className="p-3 text-[var(--highlight-color)]"
             >
@@ -44,7 +44,7 @@ export default function EventFactsPanel({
             </div>
           </div>
 
-          <div className={factCardClasses} style={{ borderColor: "color-mix(in srgb, var(--scheme-panel-text) 10%, transparent)" }}>
+          <div className={factCardClasses} style={{ borderColor: "transparent" }}>
             <div
               className="p-3 text-[var(--highlight-color)]"
             >
@@ -62,10 +62,7 @@ export default function EventFactsPanel({
           </div>
         </div>
 
-        <div
-          className="flex flex-col justify-center gap-3 border p-5"
-          style={{ borderColor: "color-mix(in srgb, var(--scheme-panel-text) 10%, transparent)" }}
-        >
+        <div className="flex flex-col justify-center gap-3 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em]" style={{ color: "var(--scheme-panel-muted)" }}>
             Ready to book
           </p>

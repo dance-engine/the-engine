@@ -125,10 +125,7 @@ export default function EventExperience({
           <EventTicketing event={event} org={org} />
 
           <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-            <div
-              className="border p-6"
-              style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg)", color: "var(--scheme-surface-text)" }}
-            >
+            <div className="p-6" style={{ color: "var(--scheme-surface-text)" }}>
               <p className="text-xs font-semibold uppercase tracking-[0.28em]" style={{ color: "var(--scheme-surface-muted)" }}>
                 About this event
               </p>
@@ -137,7 +134,7 @@ export default function EventExperience({
                 className="prose prose-slate mt-6 max-w-none prose-headings:font-black prose-a:text-[var(--highlight-color)] prose-strong:text-slate-950"
                 dangerouslySetInnerHTML={{ __html: eventDescription }}
               />
-              <div className="mt-8 border px-5 py-4" style={{ backgroundColor: "var(--scheme-surface-bg-soft)", borderColor: "var(--scheme-surface-border)" }}>
+              <div className="mt-8 px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--scheme-surface-muted)" }}>
                   Schedule
                 </p>
@@ -152,16 +149,13 @@ export default function EventExperience({
               </div>
             </div>
 
-            <div
-              className="border p-3"
-              style={{ borderColor: "var(--scheme-surface-border)", backgroundColor: "var(--scheme-surface-bg)" }}
-            >
+            <div className="p-3">
               {typeof event.location?.lat === 'number' && typeof event.location?.lng === 'number' ? (
                 <MapDisplay lat={event.location.lat} lng={event.location.lng} />
               ) : (
                 <div
-                  className="flex h-[320px] items-center justify-center border text-sm"
-                  style={{ backgroundColor: "var(--scheme-surface-bg-soft)", color: "var(--scheme-surface-muted)" }}
+                  className="flex h-[320px] items-center justify-center text-sm"
+                  style={{ color: "var(--scheme-surface-muted)" }}
                 >
                   Venue map unavailable
                 </div>

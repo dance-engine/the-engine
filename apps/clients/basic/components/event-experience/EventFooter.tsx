@@ -11,14 +11,7 @@ export default function EventFooter({
   theme: OrganisationTheme;
 }) {
   return (
-    <footer
-      className="mt-20"
-      style={{
-        backgroundColor: "var(--scheme-panel-bg)",
-        color: "var(--scheme-panel-text)",
-        borderTop: `1px solid var(--scheme-surface-border)`,
-      }}
-    >
+    <footer className="mt-20" style={{ color: "var(--scheme-panel-text)" }}>
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
         <div className="flex flex-col gap-3 text-sm" style={{ color: "var(--scheme-panel-muted)" }}>
           <div className="flex gap-4">
@@ -36,9 +29,6 @@ export default function EventFooter({
             Tickets powered by
           </p>
           <Link href={`https://danceengine.co.uk?src=event_footer&org=${org.organisation}`}>
-            {theme.logoIconUrl ? (
-              <img src={theme.logoIconUrl} alt={org.name} className="mx-auto h-10 w-10 object-contain" />
-            ) : null}
             <Image
               src="/dance-engine-logo.png"
               width={220}

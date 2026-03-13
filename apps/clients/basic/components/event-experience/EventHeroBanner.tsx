@@ -17,7 +17,7 @@ export default function EventHeroBanner({
   const mutedColour = bannerImage ? "var(--scheme-panel-muted)" : "var(--scheme-page-text-muted)";
 
   return (
-    <section className="relative isolate overflow-hidden border-b" style={{ borderColor: "var(--scheme-surface-border)" }}>
+    <section className="relative isolate overflow-hidden">
       {bannerImage ? (
         <div
           className="absolute inset-0 bg-cover bg-center"

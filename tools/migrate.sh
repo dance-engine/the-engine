@@ -61,8 +61,8 @@ if [ -n "$AWS_PROFILE_ARG" ]; then
 fi
 
 # tables
-TABLE_FROM="prod-${ORG_NAME}"
-TABLE_TO="preview-${ORG_NAME}"
+TABLE_FROM="prod-org-${ORG_NAME}"
+TABLE_TO="preview-org-${ORG_NAME}"
 
 # read
 aws dynamodb scan \

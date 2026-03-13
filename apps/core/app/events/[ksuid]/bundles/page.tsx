@@ -3,8 +3,8 @@ import { LuCalendarPlus2 } from "react-icons/lu";
 import Link from "next/link";
 import PageBundlesClient from "./pageClient";
 
-const EventBundlesPage = async ({ params }: { params: { ksuid: string } }) => {
-  const { ksuid } = params;
+const EventBundlesPage = async ({ params }: { params: Promise<{ ksuid: string }> }) => {
+  const { ksuid } = await params;
 
   return (
     <div className="flex flex-col justify-start items-center relative">

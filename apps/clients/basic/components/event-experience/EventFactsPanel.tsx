@@ -23,7 +23,7 @@ export default function EventFactsPanel({
         : "Time TBC";
 
   return (
-    <section className="relative z-10 mx-auto -mt-10 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div
         className="grid gap-6 p-4 md:grid-cols-[1.5fr_0.8fr] md:p-6"
         style={{ backgroundColor: "transparent", color: "var(--scheme-panel-text)" }}
@@ -33,14 +33,14 @@ export default function EventFactsPanel({
             <div
               className="p-3 text-[var(--highlight-color)]"
             >
-              <CalendarIcon className="h-6 w-6" />
+              <CalendarIcon className="h-8 w-8" />
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.26em]" style={{ color: "var(--scheme-panel-muted)" }}>
                 Date and time
               </p>
-              <p className="mt-1 text-lg font-semibold">{start}</p>
-              <p className="text-sm" style={{ color: "var(--scheme-panel-muted)" }}>{timeRange}</p>
+              <p className="mt-1 text-2xl font-semibold">{start}</p>
+              <p className="text-lg">{timeRange}</p>
             </div>
           </div>
 
@@ -48,13 +48,13 @@ export default function EventFactsPanel({
             <div
               className="p-3 text-[var(--highlight-color)]"
             >
-              <MapPinIcon className="h-6 w-6" />
+              <MapPinIcon className="h-8 w-8" />
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.26em]" style={{ color: "var(--scheme-panel-muted)" }}>
                 Venue
               </p>
-              <p className="mt-1 text-lg font-semibold">{event.location?.name || "Venue TBC"}</p>
+              <p className="mt-1 text-2xl font-semibold">{event.location?.name || "Venue TBC"}</p>
               {event.location?.address ? (
                 <p className="text-sm whitespace-pre-line" style={{ color: "var(--scheme-panel-muted)" }}>{event.location.address}</p>
               ) : null}
@@ -79,7 +79,7 @@ export default function EventFactsPanel({
             className="inline-flex items-center justify-center border px-5 py-4 text-sm font-semibold transition"
             style={{ borderColor: "color-mix(in srgb, var(--scheme-panel-text) 26%, transparent)", backgroundColor: "transparent", color: "var(--scheme-panel-text)" }}
           >
-            Review order
+            Another button
           </Link>
         </div>
       </div>

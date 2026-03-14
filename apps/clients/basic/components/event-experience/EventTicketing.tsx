@@ -41,6 +41,7 @@ const TicketCard = ({
   includes,
   price,
   priceName,
+  savingsLabel,
   selected,
   included,
   highlighted = false,
@@ -53,6 +54,7 @@ const TicketCard = ({
   includes?: string[];
   price: string;
   priceName: string;
+  savingsLabel?: string;
   selected: boolean;
   included: boolean;
   highlighted?: boolean;
@@ -64,59 +66,72 @@ const TicketCard = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`group relative flex h-full flex-col overflow-hidden text-left transition ${
-      selected
-        ? ""
-        : ""
-    } ${disabled ? "cursor-default opacity-85" : ""}`}
+    className={`group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-[1.75rem] px-6 py-5 text-left transition ${
+      disabled ? "cursor-default opacity-85" : "hover:-translate-y-0.5"
+    }`}
     style={{
-      borderColor: selected ? "var(--highlight-color)" : "var(--scheme-surface-border)",
-      backgroundColor: selected ? "var(--scheme-panel-bg)" : "var(--scheme-surface-bg-strong)",
-      color: selected ? "var(--scheme-panel-text)" : "var(--scheme-surface-text)",
+      backgroundColor: disabled
+        ? "color-mix(in srgb, var(--scheme-panel-bg) 70%, grey)"
+        : selected
+        ? "color-mix(in srgb, var(--scheme-panel-bg) 88%, black)"
+        : "color-mix(in srgb, var(--scheme-panel-bg) 78%, black)",
+  
+      color: disabled
+        ? "color-mix(in srgb, var(--scheme-panel-text) 60%, grey)"
+        : "var(--scheme-panel-text)",
+  
+      outline: disabled
+        ? "1px solid color-mix(in srgb, grey 50%, transparent)"
+        : selected
+        ? "2px solid var(--highlight-color)"
+        : "1px solid color-mix(in srgb, var(--scheme-panel-text) 8%, transparent)",
+  
+      outlineOffset: "-1px",
     }}
   >
     {highlighted ? (
       <div
-        className="absolute right-4 top-4 inline-flex items-center gap-2 border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--highlight-color)]"
-        style={{ backgroundColor: "var(--scheme-surface-bg-strong)", borderColor: "transparent" }}
+        className="absolute right-4 top-4 inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--highlight-color)]"
       >
         <SparklesIcon className="h-4 w-4" />
         Highlighted pass
       </div>
     ) : null}
-    <div className="flex flex-1 flex-col gap-4 p-5">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--highlight-color)]">
-          {priceName}
-        </p>
-        <h3 className="mt-2 text-2xl font-black tracking-tight">{title}</h3>
-        {description ? (
+    <div className="flex flex-1 flex-col gap-5">
+      <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
+        <div>
+          <p className="text-xl font-black uppercase text-[var(--highlight-color)]">
+            {title}
+          </p>
           <p
             className="mt-3 text-sm leading-6"
-            style={{ color: selected ? "var(--scheme-panel-muted)" : "var(--scheme-surface-muted)" }}
+            style={{ color: selected ? "var(--scheme-panel-text)" : "color-mix(in srgb, var(--scheme-panel-text) 88%, transparent)" }}
           >
-            {description}
+            {description || " "}
           </p>
-        ) : null}
+        </div>
+        <div className="shrink-0 md:min-w-[96px]">
+          {priceName !== "Default" && (
+            <p className="text-right text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--highlight-color)]">
+              {priceName}
+            </p>
+          )}          
+          <p className="text-4xl font-black tracking-tight">{price}</p>
+          {savingsLabel ? (
+            <p className="mt-1 text-sm font-black text-[var(--highlight-color)]">{savingsLabel}</p>
+          ) : null}
+        </div>
       </div>
 
       {includes && includes.length > 0 ? (
-        <div
-          className="p-4"
-          style={{
-            backgroundColor: selected ? "var(--scheme-panel-bg-soft)" : "var(--scheme-surface-bg-soft)",
-          }}
-        >
-          <p
-            className="text-xs font-semibold uppercase tracking-[0.22em]"
-            style={{ color: selected ? "var(--scheme-panel-muted)" : "var(--scheme-surface-muted)" }}
-          >
-            Includes
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--highlight-color)]">
+          Includes
           </p>
-          <ul className="mt-3 grid gap-2 text-sm" style={{ color: selected ? "var(--scheme-panel-text)" : "var(--scheme-surface-text)" }}>
+          <ul className="mt-3 grid gap-2 text-sm" style={{ color: "color-mix(in srgb, var(--scheme-panel-text) 92%, transparent)" }}>
             {includes.map((item) => (
               <li key={item} className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "var(--highlight-color)" }} />
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: "var(--highlight-color)" }} />
                 {item}
               </li>
             ))}
@@ -124,18 +139,16 @@ const TicketCard = ({
         </div>
       ) : null}
 
-      <div className="mt-auto flex items-end justify-between gap-4">
-        <div>
-          <p className="text-3xl font-black tracking-tight">{price}</p>
-          {included && !selected ? (
-            <p className="mt-1 text-sm font-semibold" style={{ color: "var(--scheme-surface-muted)" }}>Included in a selected bundle</p>
-          ) : null}
+      <div className="mt-auto flex items-end justify-between gap-4 pt-2">
+        <div className="min-h-[1.25rem] text-sm font-semibold" style={{ color: included && !selected ? "var(--scheme-panel-muted)" : "transparent" }}>
+          {included && !selected ? "Included in a selected bundle" : ""}
         </div>
         <span
-          className="inline-flex px-4 py-2 text-sm font-semibold"
+          className="inline-flex rounded-full px-4 py-2 text-sm font-semibold"
           style={{
-            backgroundColor: selected ? "var(--scheme-hero-chip)" : "var(--highlight-color)",
-            color: selected ? "var(--surface-text-color)" : "var(--org-color-text-primary)",
+            backgroundColor: selected ? "var(--highlight-color)" : "transparent",
+            color: selected ? "var(--org-color-text-primary)" : "var(--scheme-panel-text)",
+            outline: `1px solid ${selected ? "var(--highlight-color)" : "color-mix(in srgb, var(--scheme-panel-text) 22%, transparent)"}`,
           }}
         >
           {included && !selected ? "Included" : actionLabel}
@@ -206,16 +219,12 @@ function EventTicketingContent({
             <h2 className="mt-2 text-3xl font-black tracking-tight" style={{ color: "var(--scheme-surface-text)" }}>
               Choose the best way to attend
             </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-6" style={{ color: "var(--scheme-surface-muted)" }}>
-              Bundles are presented first so the best-value combinations are clear. Your basket keeps
-              the existing cheapest-combination logic and updates the checkout selection automatically.
-            </p>
           </div>
 
           {showStudentToggle ? (
             <label
               className="inline-flex items-center gap-3 px-4 py-3 text-sm font-semibold"
-              style={{ backgroundColor: "var(--scheme-surface-bg-soft)", color: "var(--scheme-surface-text)" }}
+              style={{ color: "var(--scheme-surface-text)" }}
             >
               <span>Student pricing</span>
               <button
@@ -256,6 +265,7 @@ function EventTicketingContent({
                     description={item.description}
                     price={formatPounds(getPriceInCents(item, pricingTier))}
                     priceName={getPriceName(item, pricingTier)}
+                    savingsLabel={undefined}
                     selected={selectedItemIds.has(item.ksuid)}
                     included={false}
                     actionLabel={selectedItemIds.has(item.ksuid) ? "Selected" : "Select"}
@@ -286,6 +296,7 @@ function EventTicketingContent({
                         includes={includedNames}
                         price={formatPounds(getPriceInCents(bundle, pricingTier))}
                         priceName={getPriceName(bundle, pricingTier)}
+                        savingsLabel={bundleSavings > 0 ? `Save ${formatPounds(bundleSavings)}` : undefined}
                         selected={isSelected}
                         included={false}
                         highlighted={bundle.ksuid === highlightBundleKsuid}
@@ -307,7 +318,7 @@ function EventTicketingContent({
           <div className="mt-12">
             <h3 className="text-xl font-black tracking-tight" style={{ color: "var(--scheme-surface-text)" }}>Single items</h3>
             <p className="mt-2 text-sm" style={{ color: "var(--scheme-surface-muted)" }}>
-              Prefer to build your own order? Add individual items below.
+              Prefer to build your own? Add individual items below.
             </p>
 
             <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -322,6 +333,7 @@ function EventTicketingContent({
                     description={item.description}
                     price={formatPounds(getPriceInCents(item, pricingTier))}
                     priceName={getPriceName(item, pricingTier)}
+                    savingsLabel={undefined}
                     selected={isSelected}
                     included={isIncluded}
                     disabled={isIncluded && !isSelected}
@@ -360,8 +372,8 @@ function EventTicketingContent({
                     <div>
                       <p className="text-base font-semibold" style={{ color: "var(--scheme-surface-text)" }}>{item.name}</p>
                       <p className="mt-1 text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--scheme-surface-muted)" }}>
-                        {item.entity_type === "BUNDLE" ? "Bundle" : "Item"} · {item.checkout_price_name}
-                      </p>
+                        {item.entity_type === "BUNDLE" ? "Bundle" : "Item"}
+                        {item.checkout_price_name !== "Default" && ` · ${item.checkout_price_name}`}                      </p>
                       {item.entity_type === "BUNDLE" && (item as BundleTypeExtended).includes?.length ? (
                         <p className="mt-2 text-sm" style={{ color: "var(--scheme-surface-muted)" }}>
                           Includes {(item as BundleTypeExtended).includes.length} ticket option
@@ -396,10 +408,6 @@ function EventTicketingContent({
 
             <div className="mt-8 space-y-4">
               <div className="p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)" }}>
-                <p className="text-sm" style={{ color: "var(--scheme-panel-muted)" }}>Selected options</p>
-                <p className="mt-1 text-3xl font-black">{lineItems.length}</p>
-              </div>
-              <div className="p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)" }}>
                 <p className="text-sm" style={{ color: "var(--scheme-panel-muted)" }}>Total price</p>
                 <p className="mt-1 text-4xl font-black">{formatPounds(checkoutTotal)}</p>
                 {savings > 0 ? (
@@ -420,9 +428,6 @@ function EventTicketingContent({
               className="mt-8 inline-flex w-full items-center justify-center rounded-2xl px-5 py-4 text-base font-semibold text-white shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
               style={{ backgroundColor: "var(--highlight-color)" }}
             />
-            <p className="mt-3 text-xs leading-5" style={{ color: "var(--scheme-panel-muted)" }}>
-              Secure checkout is handled by Dance Engine using the organisation&apos;s existing API flow.
-            </p>
           </div>
         </div>
       </section>

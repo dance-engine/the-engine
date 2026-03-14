@@ -3,7 +3,7 @@ import { BundleTypeExtended, ItemType } from '@dance-engine/schemas/bundle';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 import React from 'react';
 
-const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue, className, style, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, cartValue?: number, className?: string, style?: React.CSSProperties}) => {
+const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue, className, style, layout, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, cartValue?: number, className?: string, style?: React.CSSProperties, layout?: string}) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleClick = async () => {
@@ -23,6 +23,7 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
           couponCode: couponCode ? couponCode : false, // must be the actual coupon ID from Stripe
           priceId: priceId, // must be the actual product ID from Stripe
           cartValue: cartValue ? cartValue : undefined,
+          layout,
         }),
       });
 
@@ -62,7 +63,7 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   );
 };
 
-const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style}: 
+const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style, layout, disabled = false}: 
     {accountId?: string, 
       org?: OrganisationType, 
       label?: string, 
@@ -70,11 +71,13 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
       lineItems?: (ItemType | BundleTypeExtended)[], 
       cartValue?: number,
       className?: string, 
-      style?: React.CSSProperties}) => {
+      style?: React.CSSProperties,
+      layout?: string,
+      disabled?: boolean}) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleClick = async () => {
-    if (loading) return;
+    if (loading || disabled) return;
     setLoading(true);
 
     try {
@@ -84,6 +87,7 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
         priceId: priceId, // must be the actual product IDs from Stripe
         lineItems: lineItems, // must be the actual product IDs from Stripe
         cartValue: cartValue ? cartValue : undefined,
+        layout,
       });
       console.log("StripeMultiPurchaseButton body:", body);
 
@@ -126,7 +130,7 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
       onClick={handleClick}
       className={combinedClass}
       style={style}
-      disabled={loading}
+      disabled={loading || disabled}
     >
       {loading ? (label ? `${label}…` : 'Processing…') : (label || "Add to Cart")}
     </button>

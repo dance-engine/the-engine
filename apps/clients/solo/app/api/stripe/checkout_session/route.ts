@@ -6,7 +6,7 @@ import { NextResponse } from "next/server"; // for App Router
 import Stripe from "stripe";
 
 const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-06-30.basil", // check current supported version
+  apiVersion: "2025-08-27.basil",
 });
 
 const getUrlOfAccount = (accountId: string) => {
@@ -17,10 +17,15 @@ const getUrlOfAccount = (accountId: string) => {
   return accountUrls[accountId] || "https://danceengine.co.uk";
 }
 
+const getEventSuccessUrl = (baseUrl: string, eventKsuid?: string, layout?: string) =>
+  layout === "v2" && eventKsuid ? `${baseUrl}/${eventKsuid}/success` : `${baseUrl}/checkout/success`;
+
+const getEventCancelUrl = (baseUrl: string, eventKsuid?: string, layout?: string) =>
+  layout === "v2" && eventKsuid ? `${baseUrl}/${eventKsuid}?layout=v2` : `${baseUrl}/`;
 
 export async function POST(req: Request) {
   try {
-    const { couponCode, accountId, priceId, lineItems, cartValue, org } = await req.json();
+    const { couponCode, accountId, priceId, lineItems, cartValue, org, layout } = await req.json();
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
     console.log("IsAndreas", isAndreas, accountId)
     console.log("Received data:", { couponCode, accountId, lineItems, cartValue });
@@ -56,13 +61,13 @@ export async function POST(req: Request) {
     else { 
       console.log("Creating checkout session with line items:", lineItems);
       const checkoutSessionApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/:organisation/checkout/start`.replace(':organisation', org.organisation || 'unknown');
-      const line_items = lineItems.map((item: (ItemType | BundleTypeExtended)) => ({
+      const line_items = lineItems.map((item: (ItemType | BundleTypeExtended) & { checkout_price_id?: string }) => ({
             "ksuid": item.ksuid,
             "entity_type": item.entity_type,
             "name": item.name,
             "includes": item.entity_type == "BUNDLE" ? (item as BundleTypeExtended)?.includes || [] :   [],
             "event_ksuid": item.parent_event_ksuid,
-            "price_id": item.stripe_price_id,
+            "price_id": item.checkout_price_id || item.stripe_price_id,
             "quantity": 1
       }))
 
@@ -71,8 +76,16 @@ export async function POST(req: Request) {
       {
         "collect_customer_on_stripe": true,
         "coupon_code": couponCode || undefined,
-        "success_url": `${getUrlOfAccount(org.account_id || '')}/checkout/success`,
-        "cancel_url": `${getUrlOfAccount(org.account_id || '')}/`,
+        "success_url": getEventSuccessUrl(
+          getUrlOfAccount(org.account_id || ''),
+          line_items[0]?.event_ksuid,
+          layout,
+        ),
+        "cancel_url": getEventCancelUrl(
+          getUrlOfAccount(org.account_id || ''),
+          line_items[0]?.event_ksuid,
+          layout,
+        ),
         "application_fee_amount": isAndreas ? 0 : platformCharge,
         "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
         "line_items": line_items

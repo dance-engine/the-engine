@@ -1,3 +1,93 @@
+_OrganisationCommon: &OrganisationCommon
+  status:
+    type: string
+    enum:
+      - "i-am-teapot"
+      - "draft"
+      - "active"
+      - "setup"
+      - "suspended"
+      - "archived"
+    default: "draft"
+  ksuid:
+    type: string
+    description: "ID of the organisation"
+  organisation:
+    type: string
+    description: "Short slug used to represent the org"
+  name:
+    type: string
+    minLength: 2
+    description: "The name of the organisation."
+  account_id:
+    type: string
+    description: "The Stripe account ID associated with the organisation"
+  banner:
+    type: string
+    description: "URL to the banner image for the organisation"
+  banner_overlay:
+    type: string
+    description: "URL to the banner overlay image for the organisation"
+  logo:
+    type: string
+    description: "URL to the logo image for the organisation"
+  css_vars:
+    type: string
+    description: "CSS variables for the organisation used to customise SOLO templates"
+  description:
+    type: string
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time
+  version:
+    type: integer
+  history:
+    type: array
+    items:
+      type: object
+  logo_secondary_url:
+    type: string
+    description: "Secondary URL to the logo image for the organisation, used for dark mode or alternative themes"
+  logo_icon_url:
+    type: string
+    description: "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+  colour_primary:
+    type: string
+    description: "Primary colour for the organisation, used for theming and branding purposes"
+  colour_primary_dark:
+    type: string
+    description: "Darker shade of the primary colour for the organisation, used for hover states and accents"
+  colour_primary_light:
+    type: string
+    description: "Lighter shade of the primary colour for the organisation, used for backgrounds and highlights"
+  colour_secondary:
+    type: string
+    description: "Secondary colour for the organisation, used for theming and branding purposes"
+  colour_secondary_dark:
+    type: string
+    description: "Darker shade of the secondary colour for the organisation, used for hover states and accents"
+  colour_secondary_light:
+    type: string
+    description: "Lighter shade of the secondary colour for the organisation, used for backgrounds and highlights"
+  colour_background:
+    type: string
+    description: "Background colour for the organisation, used for theming and branding purposes"
+  colour_background_alt:
+    type: string
+    description: "Alternative background colour for the organisation, used for theming and branding purposes"
+  colour_text_primary:
+    type: string
+    description: "Text colour for the organisation, used for theming and branding purposes"
+  colour_text_secondary:
+    type: string
+    description: "Secondary text colour for the organisation, used for theming and branding purposes"
+  colour_text_inverted:
+    type: string
+    description: "Inverted text colour for the organisation, used for theming and branding purposes"
+
 OrganisationObject:
   name: "OrganisationObject"
   description: "Organisation object"
@@ -9,94 +99,21 @@ OrganisationObject:
         type: object
         required: ["name"]
         properties:
-          status:
-            type: string
-            enum:
-              - "i-am-teapot"
-              - "draft"
-              - "active"
-              - "setup"
-              - "suspended"
-              - "archived"
-            default: "draft"
-          ksuid: # TODO: Do we need this??
-            type: string
-            description: "ID of the organisation"
-          organisation:
-            type: string
-            description: "Short slug used to represent the org"
-          name:
-            type: string
-            minLength: 2
-            description: "The name of the organisation."
-          account_id:
-            type: string
-            description: "The Stripe account ID associated with the organisation"
-          banner: 
-            type: string
-            description: "URL to the banner image for the organisation"
-          banner_overlay:
-            type: string
-            description: "URL to the banner overlay image for the organisation"
-          logo:
-            type: string
-            description: "URL to the logo image for the organisation"
-          css_vars:
-            type: string
-            description: "CSS variables for the organisation used to customise SOLO templates"
-          description:
-            type: string
-          created_at:
-            type: string
-            format: date-time
-          updated_at:
-            type: string
-            format: date-time
-          version:
-            type: integer
-          history:
-            type: array
-            items:
-              type: object
-          logo_secondary_url:
-            type: string
-            description: "Secondary URL to the logo image for the organisation, used for dark mode or alternative themes"
-          logo_icon_url:
-            type: string
-            description: "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
-          colour_primary:
-            type: string
-            description: "Primary colour for the organisation, used for theming and branding purposes"
-          colour_primary_dark:
-            type: string
-            description: "Darker shade of the primary colour for the organisation, used for hover states and accents"
-          colour_primary_light:
-            type: string
-            description: "Lighter shade of the primary colour for the organisation, used for backgrounds and highlights"
-          colour_secondary:
-            type: string
-            description: "Secondary colour for the organisation, used for theming and branding purposes"
-          colour_secondary_dark:
-            type: string
-            description: "Darker shade of the secondary colour for the organisation, used for hover states and accents"
-          colour_secondary_light:
-            type: string
-            description: "Lighter shade of the secondary colour for the organisation, used for backgrounds and highlights"
-          colour_background:
-            type: string
-            description: "Background colour for the organisation, used for theming and branding purposes"
-          colour_background_alt:
-            type: string
-            description: "Alternative background colour for the organisation, used for theming and branding purposes"
-          colour_text_primary:
-            type: string
-            description: "Text colour for the organisation, used for theming and branding purposes"
-          colour_text_secondary:
-            type: string
-            description: "Secondary text colour for the organisation, used for theming and branding purposes"
-          colour_text_inverted:
-            type: string
-            description: "Inverted text colour for the organisation, used for theming and branding purposes"            
+          <<: *OrganisationCommon
+
+OrganisationObjectPublic:
+  name: "OrganisationObjectPublic"
+  description: "Organisation object for public use"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["name"]
+        properties:
+          <<: *OrganisationCommon
+
 OrganisationResponse:
   name: "OrganisationResponse"
   description: "Single organisation response object"
@@ -107,9 +124,23 @@ OrganisationResponse:
       schema:
         type: object
         properties:
-          organisation: 
+          organisation:
             $ref: "#/components/schemas/OrganisationObject"
-UpdateOrganisationRequest:          
+
+OrganisationResponsePublic:
+  name: "OrganisationResponsePublic"
+  description: "Single public organisation response object"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          organisation:
+            $ref: "#/components/schemas/OrganisationObjectPublic"
+
+UpdateOrganisationRequest:
   name: "UpdateOrganisationRequest"
   description: "Request model for updating an organisation"
   x-internal-group: "organisation"
@@ -122,47 +153,4 @@ UpdateOrganisationRequest:
         required: ["organisation"]
         properties:
           organisation:
-            $ref: "#/components/schemas/OrganisationObject"            
-OrganisationObjectPublic:
-  name: "OrganisationObjectPublic"
-  description: "Organisation object for public use"
-  x-internal-group: "organisation"
-  x-internal-path: "_pydantic/models"
-  content:
-    application/json:
-      schema:
-        type: object
-        required: ["name"]
-        properties:
-          organisation:
-            type: string
-            description: "Short slug used to represent the org"
-          name:
-            type: string
-            minLength: 2
-            description: "The name of the organisation."
-          account_id:
-            type: string
-            description: "The Stripe account ID associated with the organisation"  
-          banner: 
-            type: string
-            description: "URL to the banner image for the organisation"
-          banner_overlay:
-            type: string
-            description: "URL to the banner overlay image for the organisation"
-          logo:
-            type: string
-            description: "URL to the logo image for the organisation"
-          css_vars:
-            type: string
-            description: "CSS variables for the organisation used to customise SOLO templates"
-          description:
-            type: string
-          created_at:
-            type: string
-            format: date-time
-          updated_at:
-            type: string
-            format: date-time
-          version:
-            type: integer
+            $ref: "#/components/schemas/OrganisationObject"

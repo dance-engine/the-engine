@@ -19,13 +19,17 @@ Organisation:
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.GET} 
+        documentation: ${file(functions/organisation/sls.organisation.doc.yml):endpoints.Organisation.GET}
     - httpApi:
         path: /{organisation}/settings
         method: put
         authorizer:
           adminAuthorizer
-        documentation: ${file(functions/organisation/sls.organisation.doc.yml):Organisation.UPDATE}
+        documentation: ${file(functions/organisation/sls.organisation.doc.yml):endpoints.Organisation.UPDATE}
+    - httpApi:
+        path: /public/{organisation}/settings
+        method: get
+        documentation: ${file(functions/organisation/sls.organisation.doc.yml):endpoints.Organisation.GETpublic}
         
 EventbridgeOrganisation:
   runtime: python3.11

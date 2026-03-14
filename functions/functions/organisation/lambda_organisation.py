@@ -18,7 +18,7 @@ from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
-from _pydantic.models.organisation_models import OrganisationObject, OrganisationResponse, UpdateOrganisationRequest, Status
+from _pydantic.models.organisation_models import OrganisationObject, OrganisationResponse, OrganisationResponsePublic, UpdateOrganisationRequest, Status
 from _pydantic.models.models_extended import OrganisationModel
 
 logger = logging.getLogger()
@@ -108,6 +108,9 @@ def get_organisation_settings(organisationSlug: str, public: bool = False, actor
         logger.error(f"DynamoDB query failed to get settings for {organisationSlug}: {e}")
         raise Exception
 
+    if public:
+        return result.to_public()
+
     return OrganisationObject.model_validate(result)
 
 def lambda_handler(event, context):
@@ -125,7 +128,7 @@ def lambda_handler(event, context):
             return make_response(405, {"message": "Method not allowed."})
         # GET 
         elif http_method == "GET":
-            response_cls = OrganisationResponse #! not implemented public/private only private currently exists
+            response_cls = OrganisationResponsePublic if is_public else OrganisationResponse
 
             if not organisationSlug:
                 return make_response(404, {"message": "Missing organisation in request"})

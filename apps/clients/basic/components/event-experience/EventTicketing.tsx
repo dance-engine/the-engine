@@ -74,7 +74,7 @@ const TicketCard = ({
         ? "color-mix(in srgb, var(--scheme-panel-bg) 70%, grey)"
         : selected
         ? "color-mix(in srgb, var(--scheme-panel-bg) 88%, black)"
-        : "color-mix(in srgb, var(--scheme-panel-bg) 78%, black)",
+        : "color-mix(in srgb, var(--scheme-panel-bg) 100%, black)",
   
       color: disabled
         ? "color-mix(in srgb, var(--scheme-panel-text) 60%, grey)"
@@ -147,7 +147,7 @@ const TicketCard = ({
           className="inline-flex rounded-full px-4 py-2 text-sm font-semibold"
           style={{
             backgroundColor: selected ? "var(--highlight-color)" : "transparent",
-            color: selected ? "var(--org-color-text-primary)" : "var(--scheme-panel-text)",
+            color: selected ? "var(--scheme-action-text)" : "var(--scheme-panel-text)",
             outline: `1px solid ${selected ? "var(--highlight-color)" : "color-mix(in srgb, var(--scheme-panel-text) 22%, transparent)"}`,
           }}
         >
@@ -399,19 +399,19 @@ function EventTicketingContent({
 
           <div
             className="p-6"
-            style={{ backgroundColor: "var(--scheme-panel-bg)", color: "var(--scheme-panel-text)" }}
+            style={{ backgroundColor: "white", color: "black" }}
           >
-            <div className="flex items-center gap-3" style={{ color: "var(--scheme-panel-muted)" }}>
+            <div className="flex items-center gap-3" style={{ color: "black" }}>
               <TicketIcon className="h-5 w-5" />
               <p className="text-xs font-semibold uppercase tracking-[0.28em]">Ready to buy</p>
             </div>
 
             <div className="mt-8 space-y-4">
-              <div className="p-4" style={{ backgroundColor: "var(--scheme-panel-bg-soft)" }}>
-                <p className="text-sm" style={{ color: "var(--scheme-panel-muted)" }}>Total price</p>
+              <div className="p-4">
+                <p className="text-sm">Total price</p>
                 <p className="mt-1 text-4xl font-black">{formatPounds(checkoutTotal)}</p>
                 {savings > 0 ? (
-                  <p className="mt-2 text-sm font-semibold text-emerald-300">
+                  <p className="mt-2 text-sm font-semibold text-emerald-600">
                     You save {formatPounds(savings)} with this combination
                   </p>
                 ) : null}
@@ -425,8 +425,11 @@ function EventTicketingContent({
               cartValue={checkoutTotal}
               disabled={lineItems.length === 0}
               label={lineItems.length > 0 ? `Buy now · ${highlightedPassLabel}` : "Buy now"}
-              className="mt-8 inline-flex w-full items-center justify-center rounded-2xl px-5 py-4 text-base font-semibold text-white shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
-              style={{ backgroundColor: "var(--highlight-color)" }}
+              className="mt-8 inline-flex w-full items-center justify-center rounded-2xl px-5 py-4 text-base font-semibold shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+              style={{
+                backgroundColor: "var(--highlight-color)",
+                color: "var(--scheme-action-text)",
+              }}
             />
           </div>
         </div>

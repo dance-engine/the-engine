@@ -3,6 +3,7 @@
 import useSWR from 'swr';
 import dynamic from 'next/dynamic';
 import NextLink from 'next/link';
+import type { CSSProperties } from 'react';
 import { format } from 'date-fns';
 import { generateHTML } from '@tiptap/core';
 import Document from '@tiptap/extension-document';
@@ -27,7 +28,14 @@ import EventFooter from './EventFooter';
 import DevThemeDebug from './DevThemeDebug';
 
 const MapDisplay = dynamic(() => import('@/components/Map'), {
-  loading: () => <p className="flex h-[320px] items-center justify-center rounded-[1.75rem] bg-slate-200 text-slate-500">Map loading</p>,
+  loading: () => (
+    <p
+      className="flex h-[320px] items-center justify-center text-sm"
+      style={{ color: "var(--scheme-surface-muted)" }}
+    >
+      Map loading
+    </p>
+  ),
   ssr: false,
 });
 
@@ -44,7 +52,6 @@ const getHighlightBundleLabel = (event: EventModelType) => {
 export default function EventExperience({
   fallbackData,
   org,
-  theme,
   eventKsuid,
 }: {
   fallbackData: unknown;
@@ -59,22 +66,22 @@ export default function EventExperience({
   );
 
   if (isLoading || !eventKsuid) {
-    return <p className="px-4 py-16 text-sm text-white/70">Loading... {theme}</p>;
+    return <p className="px-4 py-16 text-sm" style={{ color: "var(--scheme-page-text-muted)" }}>Loading...</p>;
   }
 
   if (error) {
-    return <p className="px-4 py-16 text-sm text-white/70">Unable to load this event right now.</p>;
+    return <p className="px-4 py-16 text-sm" style={{ color: "var(--scheme-page-text-muted)" }}>Unable to load this event right now.</p>;
   }
 
   if (eventData?.events && eventData.events.length > 1) {
-    return <p className="px-4 py-16 text-sm text-white/70">Multiple events matched this URL.</p>;
+    return <p className="px-4 py-16 text-sm" style={{ color: "var(--scheme-page-text-muted)" }}>Multiple events matched this URL.</p>;
   }
 
   if (!eventData?.event) {
     return (
-      <div className="px-4 py-16 text-white">
+      <div className="px-4 py-16" style={{ color: "var(--scheme-page-text)" }}>
         <h1 className="text-xl font-semibold">Event Missing?</h1>
-        <p className="mt-3 text-sm text-white/72">
+        <p className="mt-3 text-sm" style={{ color: "var(--scheme-page-text-muted)" }}>
           No event was found for this URL. Try the{' '}
           <NextLink className="underline" href="/">
             main site
@@ -131,7 +138,18 @@ export default function EventExperience({
               </p>
               <h2 className="mt-2 text-3xl font-black tracking-tight">What you&apos;re booking</h2>
               <div
-                className="prose prose-slate mt-6 max-w-none prose-headings:font-black prose-a:text-[var(--highlight-color)] prose-strong:text-slate-950"
+                className="prose mt-6 max-w-none prose-headings:font-black"
+                style={
+                  {
+                    color: "var(--scheme-surface-text)",
+                    "--tw-prose-body": "var(--scheme-surface-text)",
+                    "--tw-prose-headings": "var(--scheme-prose-strong)",
+                    "--tw-prose-links": "var(--scheme-prose-links)",
+                    "--tw-prose-bold": "var(--scheme-prose-strong)",
+                    "--tw-prose-bullets": "var(--highlight-color)",
+                    "--tw-prose-counters": "var(--scheme-surface-muted)",
+                  } as CSSProperties
+                }
                 dangerouslySetInnerHTML={{ __html: eventDescription }}
               />
               <div className="mt-8 px-5 py-4">

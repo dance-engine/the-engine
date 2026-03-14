@@ -15,10 +15,10 @@ export default function EventFooter({
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
         <div className="flex flex-col gap-3 text-sm" style={{ color: "var(--scheme-panel-muted)" }}>
           <div className="flex gap-4">
-            <Link href="https://www.danceengine.co.uk/tos" className="transition hover:text-white">
+            <Link href="https://www.danceengine.co.uk/tos" className="transition hover:opacity-70">
               Terms of Service
             </Link>
-            <Link href="https://www.danceengine.co.uk/privacy" className="transition hover:text-white">
+            <Link href="https://www.danceengine.co.uk/privacy" className="transition hover:opacity-70">
               Privacy Policy
             </Link>
           </div>
@@ -41,7 +41,7 @@ export default function EventFooter({
 
         <div className="text-sm lg:text-right" style={{ color: "var(--scheme-panel-muted)" }}>
           {/* TODO Put in contact email of the organisation */}
-          <Link href="/" className="transition hover:text-white">
+          <Link href="/" className="transition hover:opacity-70">
             Contact {org.name}
           </Link>
         </div>

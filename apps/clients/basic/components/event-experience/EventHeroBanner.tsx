@@ -13,8 +13,8 @@ export default function EventHeroBanner({
 }) {
   const bannerImage = event.banner || org.banner || "";
   const heroLogo = theme.logoSecondaryUrl || theme.logoUrl;
-  const foregroundColour = bannerImage ? "var(--scheme-panel-text)" : "var(--scheme-page-text)";
-  const mutedColour = bannerImage ? "var(--scheme-panel-muted)" : "var(--scheme-page-text-muted)";
+  const foregroundColour = bannerImage ? "var(--scheme-hero-text)" : "var(--scheme-page-text)";
+  const mutedColour = bannerImage ? "var(--scheme-hero-muted)" : "var(--scheme-page-text-muted)";
 
   return (
     <section className="relative isolate overflow-hidden">
@@ -27,9 +27,7 @@ export default function EventHeroBanner({
       {bannerImage ? (
         <div
           className="absolute inset-0"
-          style={{
-            background: `linear-gradient(90deg, color-mix(in srgb, var(--org-color-primary-dark) 82%, transparent) 0%, color-mix(in srgb, var(--org-color-background) 46%, transparent) 55%, color-mix(in srgb, var(--org-color-primary-dark) 72%, transparent) 100%)`,
-          }}
+          style={{ background: "var(--scheme-hero-overlay)" }}
         />
       ) : null}
       <div

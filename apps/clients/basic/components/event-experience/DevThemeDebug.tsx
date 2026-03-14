@@ -1,20 +1,17 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { OrganisationTheme } from "@/lib/organisationTheme";
+import { buildOrganisationTheme, OrganisationTheme } from "@/lib/organisationTheme";
 
 type SchemeMode = "system" | "light" | "dark";
 
 const editableTokens = [
-  { label: "Primary", cssVar: "--org-color-primary", valueKey: "primary" },
-  { label: "Primary dark", cssVar: "--org-color-primary-dark", valueKey: "primaryDark" },
-  { label: "Primary light", cssVar: "--org-color-primary-light", valueKey: "primaryLight" },
-  { label: "Secondary", cssVar: "--org-color-secondary", valueKey: "secondary" },
-  { label: "Background", cssVar: "--org-color-background", valueKey: "background" },
-  { label: "Background alt", cssVar: "--org-color-background-alt", valueKey: "backgroundAlt" },
-  { label: "Text", cssVar: "--org-color-text-primary", valueKey: "textPrimary" },
-  { label: "Muted text", cssVar: "--org-color-text-secondary", valueKey: "textSecondary" },
-  { label: "Inverted text", cssVar: "--org-color-text-inverted", valueKey: "textInverted" },
+  { label: "Primary", valueKey: "primary" },
+  { label: "Secondary", valueKey: "secondary" },
+  { label: "Light background", valueKey: "backgroundLight" },
+  { label: "Dark background", valueKey: "backgroundDark" },
+  { label: "Light surface", valueKey: "surfaceLight" },
+  { label: "Dark surface", valueKey: "surfaceDark" },
 ] as const;
 
 export default function DevThemeDebug({ theme }: { theme: OrganisationTheme }) {
@@ -36,24 +33,19 @@ export default function DevThemeDebug({ theme }: { theme: OrganisationTheme }) {
 
   useEffect(() => {
     const root = document.documentElement;
-
-    editableTokens.forEach((token) => {
-      root.style.setProperty(token.cssVar, values[token.valueKey]);
-    });
-  }, [values]);
-
-  useEffect(() => {
-    const root = document.documentElement;
     return () => {
-      editableTokens.forEach((token) => {
-        root.style.removeProperty(token.cssVar);
-      });
       delete root.dataset.devColorScheme;
     };
   }, []);
 
+  const previewTheme = buildOrganisationTheme({
+    ...theme,
+    ...values,
+  });
+
   return (
     <div className="fixed right-4 top-4 z-50 w-[320px] max-w-[calc(100vw-2rem)]">
+      <style dangerouslySetInnerHTML={{ __html: previewTheme.cssText }} />
       <div className="rounded-2xl border border-black/10 bg-white/95 p-3 text-sm text-slate-900 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -96,7 +88,7 @@ export default function DevThemeDebug({ theme }: { theme: OrganisationTheme }) {
 
             <div className="grid gap-3">
               {editableTokens.map((token) => (
-                <label key={token.cssVar} className="grid grid-cols-[1fr_auto] items-center gap-3">
+                <label key={token.valueKey} className="grid grid-cols-[1fr_auto] items-center gap-3">
                   <span className="text-xs font-medium text-slate-600">{token.label}</span>
                   <div className="flex items-center gap-2">
                     <input

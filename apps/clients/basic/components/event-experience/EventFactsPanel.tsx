@@ -68,8 +68,12 @@ export default function EventFactsPanel({
           </p>
           <Link
             href="#ticket-options"
-            className="inline-flex items-center justify-center gap-3 border px-5 py-4 text-base font-semibold text-white transition"
-            style={{ backgroundColor: "var(--highlight-color)", borderColor: "var(--highlight-color)" }}
+            className="inline-flex items-center justify-center gap-3 border px-5 py-4 text-base font-semibold transition"
+            style={{
+              backgroundColor: "var(--highlight-color)",
+              borderColor: "var(--highlight-color)",
+              color: "var(--scheme-action-text)",
+            }}
           >
             <TicketIcon className="h-5 w-5" />
             {highlightedPassLabel}

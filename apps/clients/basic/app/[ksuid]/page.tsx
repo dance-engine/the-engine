@@ -14,7 +14,7 @@ const EventPage = async ({ params }: {params: Promise<{ ksuid: string }>}) => {
     next: { revalidate: 60 }  // 60s cache
   });
   const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/settings`
-  const orgs_res = await fetch(ORGS_API_URL, { cache: 'force-cache', next: { revalidate: 120, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
+  const orgs_res = await fetch(ORGS_API_URL, { next: { revalidate: 120, tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')] } });
   const orgs_data = await orgs_res.json() as { organisation: OrganisationType };
   console.log('Org settings data:', orgs_data);
   const org = orgs_data.organisation || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};

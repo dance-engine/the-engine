@@ -17,6 +17,11 @@ const getUrlOfAccount = (accountId: string) => {
   return accountUrls[accountId] || "https://danceengine.co.uk";
 }
 
+const getEventSuccessUrl = (baseUrl: string, eventKsuid?: string) =>
+  eventKsuid ? `${baseUrl}/${eventKsuid}/success` : `${baseUrl}/checkout/success`;
+
+const getEventCancelUrl = (baseUrl: string, eventKsuid?: string) =>
+  eventKsuid ? `${baseUrl}/${eventKsuid}` : `${baseUrl}/`;
 
 export async function POST(req: Request) {
   try {
@@ -71,8 +76,14 @@ export async function POST(req: Request) {
       {
         "collect_customer_on_stripe": true,
         "coupon_code": couponCode || undefined,
-        "success_url": `${getUrlOfAccount(org.account_id || '')}/checkout/success`,
-        "cancel_url": `${getUrlOfAccount(org.account_id || '')}/`,
+        "success_url": getEventSuccessUrl(
+          getUrlOfAccount(org.account_id || ''),
+          line_items[0]?.event_ksuid,
+        ),
+        "cancel_url": getEventCancelUrl(
+          getUrlOfAccount(org.account_id || ''),
+          line_items[0]?.event_ksuid,
+        ),
         "application_fee_amount": isAndreas ? 0 : platformCharge,
         "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
         "line_items": line_items

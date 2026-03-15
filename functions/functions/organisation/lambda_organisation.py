@@ -19,7 +19,7 @@ from _shared.helpers import make_response
 from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.organisation_models import OrganisationObject, OrganisationResponse, OrganisationResponsePublic, UpdateOrganisationRequest, Status
-from _pydantic.models.models_extended import OrganisationModel
+from _pydantic.models.models_extended import OrganisationModel, OrganisationThemeModel
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -51,7 +51,7 @@ def update_organisation(request_data: UpdateOrganisationRequest, organisation_sl
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
 
-    org_data = request_data.organisation
+    org_data: OrganisationObject = request_data.organisation
 
     try:
         org_model = OrganisationModel.model_validate({
@@ -60,7 +60,32 @@ def update_organisation(request_data: UpdateOrganisationRequest, organisation_sl
             "organisation": organisation_slug,
         })
 
+        theme_response = None
+        if org_data.theme:
+            theme_model = OrganisationThemeModel.model_validate({
+                **org_data.theme.model_dump(mode="json", exclude_unset=True),
+                "organisation": organisation_slug,
+                "updated_at": current_time
+            })
+            theme_response = theme_model.upsert(table, ["created_at"])
+
         org_response = org_model.upsert(table, ["organisation", "created_at"])
+
+        if (
+            (not org_response.success and org_response.error == "Version conflict")
+            or (theme_response is not None and not theme_response.success and theme_response.error == "Version conflict")
+        ):
+            return make_response(409, {
+                "message": "Version conflict",
+                "resource": org_model.PK,
+                "your_version": getattr(org_data, "version", None)
+            })
+
+        if not org_response.success:
+            raise RuntimeError(org_response.error or "Failed to upsert organisation")
+        if theme_response is not None and not theme_response.success:
+            raise RuntimeError(theme_response.error or "Failed to upsert organisation theme")
+
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.core", 
                                   resource_type=EventType.organisation,
@@ -100,7 +125,7 @@ def get_organisation_settings(organisationSlug: str, public: bool = False, actor
         result = blank_model.query_gsi(
             table=table,
             index_name="IDXinv", 
-            key_condition=Key('PK').eq(f'{blank_model.PK}') & Key('SK').eq(f'{blank_model.SK}'),
+            key_condition=Key('SK').eq(f'{blank_model.PK}'),
             assemble_entites=True
             )
         logger.info(f"Found settings for {organisationSlug}: {result}")

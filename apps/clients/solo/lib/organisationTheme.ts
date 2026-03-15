@@ -2,7 +2,7 @@ import { OrganisationType } from "@dance-engine/schemas/organisation";
 
 type RGB = { r: number; g: number; b: number };
 
-type OrganisationThemeSource = Partial<OrganisationTheme> & {
+type OrganisationThemeFields = Partial<OrganisationTheme> & {
   logo?: string;
   logo_secondary_url?: string;
   logo_icon_url?: string;
@@ -14,6 +14,11 @@ type OrganisationThemeSource = Partial<OrganisationTheme> & {
   colour_surface_dark?: string;
   colour_background?: string;
   colour_background_alt?: string;
+  css_vars?: string;
+};
+
+type OrganisationThemeSource = OrganisationThemeFields & {
+  theme?: OrganisationThemeFields;
 };
 
 export type OrganisationTheme = {
@@ -122,20 +127,26 @@ const deriveSurface = (background: string, accent: string) =>
     isDark(background) ? 0.06 : 0.04,
   );
 
+const getThemeFields = (source: OrganisationThemeSource): OrganisationThemeFields => ({
+  ...source,
+  ...source.theme,
+});
+
 const getThemeInputs = (source: OrganisationThemeSource): Omit<OrganisationTheme, "cssText"> => {
-  const primary = normalizeHex(source.primary || source.colour_primary) || defaults.primary;
-  const secondary = normalizeHex(source.secondary || source.colour_secondary) || defaults.secondary;
+  const themeFields = getThemeFields(source);
+  const primary = normalizeHex(themeFields.primary || themeFields.colour_primary) || defaults.primary;
+  const secondary = normalizeHex(themeFields.secondary || themeFields.colour_secondary) || defaults.secondary;
   const backgroundLight =
-    normalizeHex(source.backgroundLight || source.colour_background_light || source.colour_background_alt) ||
+    normalizeHex(themeFields.backgroundLight || themeFields.colour_background_light || themeFields.colour_background_alt) ||
     defaults.backgroundLight;
   const backgroundDark =
-    normalizeHex(source.backgroundDark || source.colour_background_dark || source.colour_background) ||
+    normalizeHex(themeFields.backgroundDark || themeFields.colour_background_dark || themeFields.colour_background) ||
     defaults.backgroundDark;
   const surfaceLight =
-    normalizeHex(source.surfaceLight || source.colour_surface_light) ||
+    normalizeHex(themeFields.surfaceLight || themeFields.colour_surface_light) ||
     deriveSurface(backgroundLight, primary);
   const surfaceDark =
-    normalizeHex(source.surfaceDark || source.colour_surface_dark) ||
+    normalizeHex(themeFields.surfaceDark || themeFields.colour_surface_dark) ||
     deriveSurface(backgroundDark, secondary);
 
   return {
@@ -263,4 +274,4 @@ ${buildSchemeCss({
 };
 
 export const getOrganisationTheme = (org: OrganisationType): OrganisationTheme =>
-  buildOrganisationTheme(org as OrganisationThemeSource);
+  buildOrganisationTheme(org as OrganisationType & OrganisationThemeSource);

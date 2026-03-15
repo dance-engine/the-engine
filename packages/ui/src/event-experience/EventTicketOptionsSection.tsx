@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle";
 import { EventModelType } from "@dance-engine/schemas/events";
-import { formatPounds, getPriceInCents, getPriceName, hasStudentPricing, PriceTier } from "@/lib/eventPricing";
+import {
+  formatPounds,
+  getPriceInCents,
+  getPriceName,
+  hasStudentPricing,
+  PriceTier,
+} from "./lib/eventPricing";
 import EventTicketCard from "./EventTicketCard";
 
 export default function EventTicketOptionsSection({
@@ -33,16 +39,24 @@ export default function EventTicketOptionsSection({
 }) {
   const hasBundleCards = orderedBundles.length > 0;
   const bundleFallbackAsCards = !hasBundleCards && items.length > 0;
-  const showStudentToggle = [...orderedBundles, ...items].some((entry) => hasStudentPricing(entry));
+  const showStudentToggle = [...orderedBundles, ...items].some((entry) =>
+    hasStudentPricing(entry),
+  );
 
   return (
     <section id="ticket-options" className="p-6">
       <div className="flex flex-col gap-4 pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em]" style={{ color: "var(--scheme-surface-muted)" }}>
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.28em]"
+            style={{ color: "var(--scheme-surface-muted)" }}
+          >
             Ticket options
           </p>
-          <h2 className="mt-2 text-3xl font-black tracking-tight" style={{ color: "var(--scheme-surface-text)" }}>
+          <h2
+            className="mt-2 text-3xl font-black tracking-tight"
+            style={{ color: "var(--scheme-surface-text)" }}
+          >
             Choose the best way to attend
           </h2>
         </div>
@@ -58,7 +72,11 @@ export default function EventTicketOptionsSection({
               aria-pressed={pricingTier === "student"}
               onClick={onTogglePricingTier}
               className={`relative h-7 w-12 rounded-full transition ${pricingTier === "student" ? "" : "bg-slate-300"}`}
-              style={pricingTier === "student" ? { backgroundColor: "var(--highlight-color)" } : undefined}
+              style={
+                pricingTier === "student"
+                  ? { backgroundColor: "var(--highlight-color)" }
+                  : undefined
+              }
             >
               <span
                 className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${pricingTier === "student" ? "left-6" : "left-1"}`}
@@ -70,15 +88,23 @@ export default function EventTicketOptionsSection({
 
       <div className="mt-8">
         <div className="mb-4 flex items-center justify-between gap-4">
-          <h3 className="text-xl font-black tracking-tight" style={{ color: "var(--scheme-surface-text)" }}>
+          <h3
+            className="text-xl font-black tracking-tight"
+            style={{ color: "var(--scheme-surface-text)" }}
+          >
             {bundleFallbackAsCards ? "Tickets" : "Bundles"}
           </h3>
-          <Link href="#checkout" className="text-sm font-semibold text-[var(--highlight-color)]">
+          <Link
+            href="#checkout"
+            className="text-sm font-semibold text-[var(--highlight-color)]"
+          >
             Jump to checkout
           </Link>
         </div>
 
-        <div className={`grid gap-5 ${highlightBundleKsuid ? "lg:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}>
+        <div
+          className={`grid gap-5 ${highlightBundleKsuid ? "lg:grid-cols-2" : "md:grid-cols-2 xl:grid-cols-3"}`}
+        >
           {bundleFallbackAsCards
             ? items.map((item) => (
                 <EventTicketCard
@@ -89,7 +115,9 @@ export default function EventTicketOptionsSection({
                   priceName={getPriceName(item, pricingTier)}
                   selected={selectedItemIds.has(item.ksuid)}
                   included={false}
-                  actionLabel={selectedItemIds.has(item.ksuid) ? "Selected" : "Select"}
+                  actionLabel={
+                    selectedItemIds.has(item.ksuid) ? "Selected" : "Select"
+                  }
                   onClick={() => onToggleItem(item)}
                 />
               ))
@@ -99,16 +127,23 @@ export default function EventTicketOptionsSection({
                   .filter((name): name is string => Boolean(name));
                 const isSelected = selectedBundleIds.has(bundle.ksuid);
                 const individualValue = bundle.includes.reduce(
-                  (sum, itemKsuid) => sum + getPriceInCents(event.items?.[itemKsuid], pricingTier),
+                  (sum, itemKsuid) =>
+                    sum +
+                    getPriceInCents(event.items?.[itemKsuid], pricingTier),
                   0,
                 );
-                const bundleSavings = Math.max(0, individualValue - getPriceInCents(bundle, pricingTier));
+                const bundleSavings = Math.max(
+                  0,
+                  individualValue - getPriceInCents(bundle, pricingTier),
+                );
 
                 return (
                   <div
                     key={bundle.ksuid}
                     className={`flex flex-col gap-3 ${
-                      bundle.ksuid === highlightBundleKsuid ? "md:col-span-2 lg:col-span-2" : ""
+                      bundle.ksuid === highlightBundleKsuid
+                        ? "md:col-span-2 lg:col-span-2"
+                        : ""
                     }`}
                   >
                     <EventTicketCard
@@ -117,7 +152,11 @@ export default function EventTicketOptionsSection({
                       includes={includedNames}
                       price={formatPounds(getPriceInCents(bundle, pricingTier))}
                       priceName={getPriceName(bundle, pricingTier)}
-                      savingsLabel={bundleSavings > 0 ? `Save ${formatPounds(bundleSavings)}` : undefined}
+                      savingsLabel={
+                        bundleSavings > 0
+                          ? `Save ${formatPounds(bundleSavings)}`
+                          : undefined
+                      }
                       selected={isSelected}
                       included={false}
                       highlighted={bundle.ksuid === highlightBundleKsuid}
@@ -125,8 +164,12 @@ export default function EventTicketOptionsSection({
                       onClick={() => onToggleBundle(bundle)}
                     />
                     {bundleSavings > 0 ? (
-                      <p className="px-2 text-sm font-semibold" style={{ color: "var(--scheme-surface-muted)" }}>
-                        Saves {formatPounds(bundleSavings)} compared with buying separately
+                      <p
+                        className="px-2 text-sm font-semibold"
+                        style={{ color: "var(--scheme-surface-muted)" }}
+                      >
+                        Saves {formatPounds(bundleSavings)} compared with buying
+                        separately
                       </p>
                     ) : null}
                   </div>
@@ -137,8 +180,16 @@ export default function EventTicketOptionsSection({
 
       {!bundleFallbackAsCards && items.length > 0 ? (
         <div className="mt-12">
-          <h3 className="text-xl font-black tracking-tight" style={{ color: "var(--scheme-surface-text)" }}>Single items</h3>
-          <p className="mt-2 text-sm" style={{ color: "var(--scheme-surface-muted)" }}>
+          <h3
+            className="text-xl font-black tracking-tight"
+            style={{ color: "var(--scheme-surface-text)" }}
+          >
+            Single items
+          </h3>
+          <p
+            className="mt-2 text-sm"
+            style={{ color: "var(--scheme-surface-muted)" }}
+          >
             Prefer to build your own? Add individual items below.
           </p>
 

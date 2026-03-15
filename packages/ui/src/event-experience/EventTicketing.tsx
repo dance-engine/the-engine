@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
 import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle";
 import { EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";
-import { PassSelectorProvider, usePassSelectorActions, usePassSelectorState } from "@/contexts/PassSelectorContext";
-import { getPriceInCents, getPriceName, getStripePriceId, PriceTier } from "@/lib/eventPricing";
+import {
+  PassSelectorProvider,
+  usePassSelectorActions,
+  usePassSelectorState,
+} from "./contexts/PassSelectorContext";
+import {
+  getPriceInCents,
+  getPriceName,
+  getStripePriceId,
+  PriceTier,
+} from "./lib/eventPricing";
 import EventCheckoutSection from "./EventCheckoutSection";
 import EventTicketOptionsSection from "./EventTicketOptionsSection";
 
@@ -20,7 +29,9 @@ const getHighlightBundleKsuid = (event: EventModelType) => {
 };
 
 const getAllItems = (event: EventModelType) =>
-  Object.values(event.items || {}).filter((item): item is ItemType => Boolean(item));
+  Object.values(event.items || {}).filter((item): item is ItemType =>
+    Boolean(item),
+  );
 
 const buildCheckoutItem = <T extends ItemType | BundleTypeExtended>(
   item: T,
@@ -44,16 +55,27 @@ function EventTicketingContent({
 
   const items = getAllItems(event);
   const highlightBundleKsuid = getHighlightBundleKsuid(event);
-  const highlightBundle = (event.bundles || []).find((bundle) => bundle.ksuid === highlightBundleKsuid);
+  const highlightBundle = (event.bundles || []).find(
+    (bundle) => bundle.ksuid === highlightBundleKsuid,
+  );
   const orderedBundles = highlightBundle
-    ? [highlightBundle, ...(event.bundles || []).filter((bundle) => bundle.ksuid !== highlightBundle.ksuid)]
+    ? [
+        highlightBundle,
+        ...(event.bundles || []).filter(
+          (bundle) => bundle.ksuid !== highlightBundle.ksuid,
+        ),
+      ]
     : event.bundles || [];
 
   const selectedBundleIds = new Set(
-    orderedBundles.filter((bundle) => selected.includes(bundle.ksuid)).map((bundle) => bundle.ksuid),
+    orderedBundles
+      .filter((bundle) => selected.includes(bundle.ksuid))
+      .map((bundle) => bundle.ksuid),
   );
   const selectedItemIds = new Set(
-    items.filter((item) => selected.includes(item.ksuid)).map((item) => item.ksuid),
+    items
+      .filter((item) => selected.includes(item.ksuid))
+      .map((item) => item.ksuid),
   );
   const includedItemIds = new Set(included.flat());
 
@@ -70,15 +92,24 @@ function EventTicketingContent({
     new Map(
       [
         ...items.filter((item) => selectedItemIds.has(item.ksuid)),
-        ...included.flatMap((group) =>
-          group.map((itemKsuid) => event.items?.[itemKsuid]).filter(Boolean) as ItemType[],
+        ...included.flatMap(
+          (group) =>
+            group
+              .map((itemKsuid) => event.items?.[itemKsuid])
+              .filter(Boolean) as ItemType[],
         ),
       ].map((item) => [item.ksuid, item]),
     ).values(),
   );
 
-  const checkoutTotal = lineItems.reduce((sum, item) => sum + (item.checkout_price || 0), 0);
-  const directPriceTotal = requestedItems.reduce((sum, item) => sum + getPriceInCents(item, pricingTier), 0);
+  const checkoutTotal = lineItems.reduce(
+    (sum, item) => sum + (item.checkout_price || 0),
+    0,
+  );
+  const directPriceTotal = requestedItems.reduce(
+    (sum, item) => sum + getPriceInCents(item, pricingTier),
+    0,
+  );
   const savings = Math.max(0, directPriceTotal - checkoutTotal);
   const highlightedPassLabel = highlightBundle?.name || "Tickets";
 
@@ -93,9 +124,13 @@ function EventTicketingContent({
         selectedItemIds={selectedItemIds}
         includedItemIds={includedItemIds}
         pricingTier={pricingTier}
-        onToggleBundle={(bundle: BundleTypeExtended) => toggleBundle(bundle, event.items || {})}
+        onToggleBundle={(bundle: BundleTypeExtended) =>
+          toggleBundle(bundle, event.items || {})
+        }
         onToggleItem={toggleItem}
-        onTogglePricingTier={() => setPricingTier(pricingTier === "student" ? "standard" : "student")}
+        onTogglePricingTier={() =>
+          setPricingTier(pricingTier === "student" ? "standard" : "student")
+        }
       />
 
       <EventCheckoutSection

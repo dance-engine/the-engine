@@ -4,7 +4,8 @@ export type PriceTier = "standard" | "student";
 
 export type PricedEntity = ItemType | BundleTypeExtended;
 
-const isStudentLabel = (label?: string) => label?.trim().toLowerCase() === "student";
+const isStudentLabel = (label?: string) =>
+  label?.trim().toLowerCase() === "student";
 
 export const hasStudentPricing = (entity?: Partial<PricedEntity> | null) =>
   Boolean(
@@ -53,4 +54,5 @@ export const getStripePriceId = (
   return entity.stripe_primary_price_id || entity.stripe_price_id;
 };
 
-export const formatPounds = (amountInPence: number) => `£${(amountInPence / 100).toFixed(2)}`;
+export const formatPounds = (amountInPence: number) =>
+  `£${(amountInPence / 100).toFixed(2)}`;

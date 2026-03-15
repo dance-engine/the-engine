@@ -41,7 +41,8 @@ const defaults = {
   backgroundDark: "#0f172a",
 };
 
-const clamp = (value: number, min = 0, max = 255) => Math.min(max, Math.max(min, Math.round(value)));
+const clamp = (value: number, min = 0, max = 255) =>
+  Math.min(max, Math.max(min, Math.round(value)));
 
 const normalizeHex = (value?: string) => {
   if (!value) return undefined;
@@ -107,7 +108,9 @@ const contrastRatio = (a: string, b: string) => {
 const isDark = (value: string) => luminance(value) < 0.42;
 
 const readableText = (background: string) =>
-  contrastRatio("#ffffff", background) >= contrastRatio("#0f172a", background) ? "#ffffff" : "#0f172a";
+  contrastRatio("#ffffff", background) >= contrastRatio("#0f172a", background)
+    ? "#ffffff"
+    : "#0f172a";
 
 const mutedText = (background: string, text: string) =>
   mix(text, background, isDark(background) ? 0.3 : 0.42);
@@ -122,29 +125,48 @@ const readableAccent = (accent: string, background: string) => {
 
 const deriveSurface = (background: string, accent: string) =>
   mix(
-    mix(background, isDark(background) ? "#ffffff" : "#000000", isDark(background) ? 0.08 : 0.04),
+    mix(
+      background,
+      isDark(background) ? "#ffffff" : "#000000",
+      isDark(background) ? 0.08 : 0.04,
+    ),
     accent,
     isDark(background) ? 0.06 : 0.04,
   );
 
-const getThemeFields = (source: OrganisationThemeSource): OrganisationThemeFields => ({
+const getThemeFields = (
+  source: OrganisationThemeSource,
+): OrganisationThemeFields => ({
   ...source,
   ...source.theme,
 });
 
-const getThemeInputs = (source: OrganisationThemeSource): Omit<OrganisationTheme, "cssText"> => {
+const getThemeInputs = (
+  source: OrganisationThemeSource,
+): Omit<OrganisationTheme, "cssText"> => {
   const themeFields = getThemeFields(source);
-  const primary = normalizeHex(themeFields.primary || themeFields.colour_primary) || defaults.primary;
-  const secondary = normalizeHex(themeFields.secondary || themeFields.colour_secondary) || defaults.secondary;
+  const primary =
+    normalizeHex(themeFields.primary || themeFields.colour_primary) ||
+    defaults.primary;
+  const secondary =
+    normalizeHex(themeFields.secondary || themeFields.colour_secondary) ||
+    defaults.secondary;
   const backgroundLight =
-    normalizeHex(themeFields.backgroundLight || themeFields.colour_background_light || themeFields.colour_background_alt) ||
-    defaults.backgroundLight;
+    normalizeHex(
+      themeFields.backgroundLight ||
+        themeFields.colour_background_light ||
+        themeFields.colour_background_alt,
+    ) || defaults.backgroundLight;
   const backgroundDark =
-    normalizeHex(themeFields.backgroundDark || themeFields.colour_background_dark || themeFields.colour_background) ||
-    defaults.backgroundDark;
+    normalizeHex(
+      themeFields.backgroundDark ||
+        themeFields.colour_background_dark ||
+        themeFields.colour_background,
+    ) || defaults.backgroundDark;
   const surfaceLight =
-    normalizeHex(themeFields.surfaceLight || themeFields.colour_surface_light) ||
-    deriveSurface(backgroundLight, primary);
+    normalizeHex(
+      themeFields.surfaceLight || themeFields.colour_surface_light,
+    ) || deriveSurface(backgroundLight, primary);
   const surfaceDark =
     normalizeHex(themeFields.surfaceDark || themeFields.colour_surface_dark) ||
     deriveSurface(backgroundDark, secondary);
@@ -157,8 +179,13 @@ const getThemeInputs = (source: OrganisationThemeSource): Omit<OrganisationTheme
     surfaceLight,
     surfaceDark,
     logoUrl: source.logoUrl || source.logo || source.logo_secondary_url,
-    logoSecondaryUrl: source.logoSecondaryUrl || source.logo_secondary_url || source.logo,
-    logoIconUrl: source.logoIconUrl || source.logo_icon_url || source.logo || source.logo_secondary_url,
+    logoSecondaryUrl:
+      source.logoSecondaryUrl || source.logo_secondary_url || source.logo,
+    logoIconUrl:
+      source.logoIconUrl ||
+      source.logo_icon_url ||
+      source.logo ||
+      source.logo_secondary_url,
   };
 };
 
@@ -185,8 +212,16 @@ const buildSchemeCss = ({
   const actionTextSubtle = mutedText(primary, actionText);
   const secondaryActionText = readableText(secondary);
   const linkColor = readableAccent(primary, surface);
-  const heroOverlayStart = mix(background, primary, isDark(background) ? 0.56 : 0.34);
-  const heroOverlayEnd = mix(background, secondary, isDark(background) ? 0.34 : 0.18);
+  const heroOverlayStart = mix(
+    background,
+    primary,
+    isDark(background) ? 0.56 : 0.34,
+  );
+  const heroOverlayEnd = mix(
+    background,
+    secondary,
+    isDark(background) ? 0.34 : 0.18,
+  );
 
   return `
       --scheme-page-bg-start: ${background};
@@ -220,7 +255,9 @@ const buildSchemeCss = ({
     `;
 };
 
-export const buildOrganisationTheme = (source: OrganisationThemeSource): OrganisationTheme => {
+export const buildOrganisationTheme = (
+  source: OrganisationThemeSource,
+): OrganisationTheme => {
   const theme = getThemeInputs(source);
 
   const cssText = `
@@ -273,5 +310,7 @@ ${buildSchemeCss({
   };
 };
 
-export const getOrganisationTheme = (org: OrganisationType): OrganisationTheme =>
+export const getOrganisationTheme = (
+  org: OrganisationType,
+): OrganisationTheme =>
   buildOrganisationTheme(org as OrganisationType & OrganisationThemeSource);

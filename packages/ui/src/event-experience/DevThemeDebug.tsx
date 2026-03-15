@@ -1,7 +1,10 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
-import { buildOrganisationTheme, OrganisationTheme } from "@/lib/organisationTheme";
+import {
+  buildOrganisationTheme,
+  OrganisationTheme,
+} from "./lib/organisationTheme";
 
 type SchemeMode = "system" | "light" | "dark";
 
@@ -18,7 +21,9 @@ export default function DevThemeDebug({ theme }: { theme: OrganisationTheme }) {
   const [open, setOpen] = useState(false);
   const [scheme, setScheme] = useState<SchemeMode>("system");
   const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(editableTokens.map((token) => [token.valueKey, theme[token.valueKey]])),
+    Object.fromEntries(
+      editableTokens.map((token) => [token.valueKey, theme[token.valueKey]]),
+    ),
   );
 
   useEffect(() => {
@@ -76,9 +81,15 @@ export default function DevThemeDebug({ theme }: { theme: OrganisationTheme }) {
                     type="button"
                     onClick={() => setScheme(mode)}
                     className={`rounded-xl px-3 py-2 text-xs font-semibold capitalize ${
-                      scheme === mode ? "text-white" : "bg-slate-100 text-slate-700"
+                      scheme === mode
+                        ? "text-white"
+                        : "bg-slate-100 text-slate-700"
                     }`}
-                    style={scheme === mode ? { backgroundColor: "var(--highlight-color)" } : undefined}
+                    style={
+                      scheme === mode
+                        ? { backgroundColor: "var(--highlight-color)" }
+                        : undefined
+                    }
                   >
                     {mode}
                   </button>
@@ -88,8 +99,13 @@ export default function DevThemeDebug({ theme }: { theme: OrganisationTheme }) {
 
             <div className="grid gap-3">
               {editableTokens.map((token) => (
-                <label key={token.valueKey} className="grid grid-cols-[1fr_auto] items-center gap-3">
-                  <span className="text-xs font-medium text-slate-600">{token.label}</span>
+                <label
+                  key={token.valueKey}
+                  className="grid grid-cols-[1fr_auto] items-center gap-3"
+                >
+                  <span className="text-xs font-medium text-slate-600">
+                    {token.label}
+                  </span>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"

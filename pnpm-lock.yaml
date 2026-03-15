@@ -97,6 +97,9 @@ importers:
       '@dance-engine/schemas':
         specifier: workspace:^
         version: link:../../../packages/schemas
+      '@dance-engine/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
       '@dance-engine/utils':
         specifier: workspace:^
         version: link:../../../packages/utils
@@ -358,12 +361,45 @@ importers:
       '@hookform/resolvers':
         specifier: ^4.1.3
         version: 4.1.3(react-hook-form@7.56.3(react@19.1.0))
+      '@tiptap/core':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/pm@2.12.0)
+      '@tiptap/extension-bold':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-bullet-list':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-document':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-hard-break':
+        specifier: ^3.10.4
+        version: 3.10.4(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
       '@tiptap/extension-heading':
         specifier: ^2.11.5
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-italic':
+        specifier: ^2.11.7
         version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
       '@tiptap/extension-link':
         specifier: ^3.3.0
         version: 3.3.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)
+      '@tiptap/extension-list-item':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-ordered-list':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-paragraph':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-strike':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
+      '@tiptap/extension-text':
+        specifier: ^2.11.7
+        version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))
       '@tiptap/react':
         specifier: ^2.11.5
         version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -394,6 +430,9 @@ importers:
       react-select:
         specifier: ^5.10.1
         version: 5.10.1(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      swr:
+        specifier: ^2.3.3
+        version: 2.3.3(react@19.1.0)
       zod:
         specifier: ^3.24.2
         version: 3.24.4

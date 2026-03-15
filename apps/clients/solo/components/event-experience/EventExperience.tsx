@@ -49,6 +49,24 @@ const getHighlightBundleLabel = (event: EventModelType) => {
   return event.bundles?.find((bundle) => bundle.ksuid === highlightBundleKsuid)?.name || 'Tickets';
 };
 
+const getDirectionsHref = (event: EventModelType) => {
+  const destination = typeof event.location?.lat === 'number' && typeof event.location?.lng === 'number'
+    ? `${event.location.lat},${event.location.lng}`
+    : event.location?.address || event.location?.name;
+
+  if (!destination) {
+    return undefined;
+  }
+
+  const encodedDestination = encodeURIComponent(destination);
+
+  if (typeof navigator !== 'undefined' && /iPad|iPhone|iPod|Macintosh/i.test(navigator.userAgent)) {
+    return `https://maps.apple.com/?daddr=${encodedDestination}`;
+  }
+
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodedDestination}`;
+};
+
 export default function EventExperience({
   fallbackData,
   org,
@@ -96,6 +114,7 @@ export default function EventExperience({
   const startDate = event.starts_at ? new Date(event.starts_at) : undefined;
   const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
   const highlightPassLabel = getHighlightBundleLabel(event);
+  const directionsHref = getDirectionsHref(event);
   const eventDescription = event.description
     ? generateHTML(JSON.parse(event.description), [
         Document,
@@ -166,7 +185,21 @@ export default function EventExperience({
               </div>
             </div>
 
-            <div className="p-3">
+            <div className="p-3" style={{ color: "var(--scheme-surface-text)" }}>
+              <div className="px-3 pb-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--scheme-surface-muted)" }}>
+                  Venue
+                </p>
+                <p className="mt-2 text-2xl font-black tracking-tight">
+                  {event.location?.name || "Venue TBC"}
+                </p>
+                {event.location?.address ? (
+                  <p className="mt-2 whitespace-pre-line text-sm leading-6" style={{ color: "var(--scheme-surface-muted)" }}>
+                    {event.location.address}
+                  </p>
+                ) : null}
+              </div>
+
               {typeof event.location?.lat === 'number' && typeof event.location?.lng === 'number' ? (
                 <MapDisplay lat={event.location.lat} lng={event.location.lng} />
               ) : (
@@ -177,6 +210,24 @@ export default function EventExperience({
                   Venue map unavailable
                 </div>
               )}
+
+              <div className="px-3 pt-5">
+                {directionsHref ? (
+                  <a
+                    href={directionsHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-semibold underline underline-offset-4"
+                    style={{ color: "var(--highlight-color)" }}
+                  >
+                    Get directions
+                  </a>
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--scheme-surface-muted)" }}>
+                    Directions will appear once a venue location is available.
+                  </p>
+                )}
+              </div>
             </div>
           </section>
         </main>

@@ -11,11 +11,11 @@ export default function EventFooter({
   theme: OrganisationTheme;
 }) {
   return (
-    <footer className="mt-20" style={{ color: "var(--scheme-panel-text)" }}>
+    <footer className="mt-20" style={{ color: "white", background: "#01164D" }}>
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
         <div
           className="flex flex-col gap-3 text-sm"
-          style={{ color: "var(--scheme-panel-muted)" }}
+          style={{ color: "white" }}
         >
           <div className="flex gap-4">
             <Link
@@ -36,7 +36,7 @@ export default function EventFooter({
         <div className="flex flex-col items-center gap-3 text-center">
           <p
             className="text-xs font-semibold uppercase tracking-[0.28em]"
-            style={{ color: "var(--scheme-panel-muted)" }}
+            style={{ color: "white" }}
           >
             Tickets powered by
           </p>
@@ -55,7 +55,7 @@ export default function EventFooter({
 
         <div
           className="text-sm lg:text-right"
-          style={{ color: "var(--scheme-panel-muted)" }}
+          style={{ color: "white" }}
         >
           <Link href="/" className="transition hover:opacity-70">
             Contact {org.name}

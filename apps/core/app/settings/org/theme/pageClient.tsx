@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import EventExperiencePreview from "@dance-engine/ui/EventExperiencePreview";
 import { useAuth } from "@clerk/nextjs";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import { labelFromSnake } from "@dance-engine/utils/textHelpers";
@@ -154,6 +155,31 @@ const ThemeColourField = ({
   </div>
 );
 
+const PreviewModeToggle = ({
+  value,
+  onChange,
+}: {
+  value: "light" | "dark";
+  onChange: (mode: "light" | "dark") => void;
+}) => (
+  <div className="sticky top-0 z-10 flex justify-end border-b border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div className="inline-flex rounded-md border border-gray-200 bg-gray-50 p-1">
+      {(["light", "dark"] as const).map((mode) => (
+        <button
+          key={mode}
+          type="button"
+          onClick={() => onChange(mode)}
+          className={`rounded px-3 py-1.5 text-sm font-semibold capitalize ${
+            value === mode ? "bg-dark-background text-white" : "text-gray-600"
+          }`}
+        >
+          {mode}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 const ThemePageClient = () => {
   const router = useRouter();
   const { activeOrg } = useOrgContext();
@@ -173,6 +199,7 @@ const ThemePageClient = () => {
   const [entity, setEntity] = useState<OrgEntity>({ ksuid: "" } as OrgEntity);
   const [themeData, setThemeData] = useState<ThemeFormValues>(blankTheme);
   const [isSaving, setIsSaving] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"light" | "dark">("light");
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -280,7 +307,7 @@ const ThemePageClient = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
         <section className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             {colourFields.map((field) => (
@@ -331,10 +358,9 @@ const ThemePageClient = () => {
           </form>
         </section>
 
-        <section className="min-h-[32rem] rounded-lg border border-gray-200 bg-white">
-          <div className="flex h-full items-center justify-center p-6 text-sm text-gray-400">
-            Preview panel coming next
-          </div>
+        <section className="min-h-[32rem] overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <PreviewModeToggle value={previewMode} onChange={setPreviewMode} />
+          <EventExperiencePreview theme={themeData} mode={previewMode} />
         </section>
       </div>
     </div>

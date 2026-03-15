@@ -11,6 +11,7 @@
     "./styles.css": "./src/styles.css",
     "./*": "./src/*.tsx",
     "./EventExperience": "./src/EventExperience.tsx",
+    "./EventExperiencePreview": "./src/EventExperiencePreview.tsx",
     "./EventSuccessExperience": "./src/EventSuccessExperience.tsx",
     "./LocationPicker": "./src/LocationPicker.tsx",
     "./Map": "./src/Map.tsx",

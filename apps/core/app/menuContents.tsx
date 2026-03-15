@@ -60,26 +60,26 @@ export const menuContents:MenuSection[] = [
 
     ] 
   },
-  { 
-    name: "Your Teams",
-    contents: [
-      { 
-        title: "Dance",
-        link: "/events", 
-        icon: AIcon
-      },
-      { 
-        title: "Engine",
-        link: "/secure", 
-        icon:  BIcon
-      },
-      { 
-        title: "Core",
-        link: "/secure", 
-        icon:  CIcon
-      },
-    ] 
-  },
+  // { 
+  //   name: "Your Teams",
+  //   contents: [
+  //     { 
+  //       title: "Dance",
+  //       link: "/events", 
+  //       icon: AIcon
+  //     },
+  //     { 
+  //       title: "Engine",
+  //       link: "/secure", 
+  //       icon:  BIcon
+  //     },
+  //     { 
+  //       title: "Core",
+  //       link: "/secure", 
+  //       icon:  CIcon
+  //     },
+  //   ] 
+  // },
   { 
     // name: "Bottom",
     position: "bottom",

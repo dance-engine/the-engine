@@ -76,16 +76,21 @@ const sampleOrg: OrganisationType = {
   status: "active",
 };
 
-const sampleEvent = {
+const sampleEvent: EventModelType = {
+  entity_type: "EVENT",
   ksuid: "preview-event",
   name: "Spring Social Weekend",
   description: sampleDescription,
   banner: "",
   starts_at: "2026-04-02T14:00:00.000Z",
   ends_at: "2026-04-02T23:30:00.000Z",
+  category: ["workshop", "party"],
+  capacity: 250,
+  status: "live",
   location: {
+    entity_type: "LOCATION",
     ksuid: "preview-location",
-    name: "Wellignton Rooms",
+    name: "Wellington Rooms",
     address: "Mount Pleasant\nLiverpool",
     lat: 53.4038,
     lng: 2.9706,
@@ -97,6 +102,7 @@ const sampleEvent = {
     {
       ksuid: "preview-full-pass",
       entity_type: "BUNDLE",
+      parent_event_ksuid: "preview-event",
       name: "Full Pass",
       description: "Best value access to the full event.",
       includes: ["preview-class", "preview-party"],
@@ -111,6 +117,7 @@ const sampleEvent = {
     "preview-class": {
       ksuid: "preview-class",
       entity_type: "ITEM",
+      parent_event_ksuid: "preview-event",
       name: "Workshop Ticket",
       description: "Access to the daytime workshops.",
       primary_price: 2800,
@@ -122,6 +129,7 @@ const sampleEvent = {
     "preview-party": {
       ksuid: "preview-party",
       entity_type: "ITEM",
+      parent_event_ksuid: "preview-event",
       name: "Party Ticket",
       description: "Entry to the evening social and performances.",
       primary_price: 1800,
@@ -131,7 +139,7 @@ const sampleEvent = {
       status: "live",
     },
   },
-} as EventModelType;
+};
 
 const getScopedThemeCss = (cssText: string) =>
   cssText.replaceAll(":root", PREVIEW_SCOPE);

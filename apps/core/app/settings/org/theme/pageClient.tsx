@@ -15,8 +15,6 @@ type OrgEntity = DanceEngineEntity & {
   [key: string]: unknown;
 };
 
-type ThemeFormValues = Record<string, string>;
-
 const colourFields = [
   "colour_primary",
   "colour_secondary",
@@ -25,6 +23,12 @@ const colourFields = [
   "colour_surface_light",
   "colour_surface_dark",
 ] as const;
+
+type ThemeColourFieldKey = (typeof colourFields)[number];
+
+type ThemeFormValues = Record<ThemeColourFieldKey, string> & {
+  css_vars: string;
+};
 
 const baseOrganisationFields = [
   "name",
@@ -66,8 +70,8 @@ const defaultPickerColour = "#000000";
 
 const isHexColour = (value: string) => /^#[0-9a-fA-F]{6}$/.test(value);
 
-const normalizeHex = (value: string) => {
-  const trimmed = value.trim();
+const normalizeHex = (value?: string) => {
+  const trimmed = value?.trim() ?? "";
   if (!trimmed) {
     return "";
   }
@@ -107,8 +111,9 @@ const buildThemePayload = (values: ThemeFormValues) => {
     }
   });
 
-  if (values.css_vars.trim()) {
-    payload.css_vars = values.css_vars;
+  const cssVars = values.css_vars?.trim() ?? "";
+  if (cssVars) {
+    payload.css_vars = cssVars;
   }
 
   return payload;

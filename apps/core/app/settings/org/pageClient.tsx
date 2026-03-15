@@ -28,7 +28,8 @@ type SectionConfig = {
   fields: string[];
   editable?: boolean;
   editLabel?: string;
-  comingSoon?: boolean;
+  href?: string;
+  linkLabel?: string;
 };
 
 const detailFields = [
@@ -83,9 +84,10 @@ const sections: SectionConfig[] = [
     key: "theme",
     title: "Theme",
     description:
-      "Theme tokens are stored separately and will get their own editor next.",
+      "Theme tokens are stored separately and edited on their own page.",
     fields: [...themeFields],
-    comingSoon: true,
+    href: "/settings/org/theme",
+    linkLabel: "Edit theme",
   },
   {
     key: "system",
@@ -252,10 +254,13 @@ const SettingsSection = ({
             {section.editLabel || "Edit"}
           </button>
         )
-      ) : section.comingSoon ? (
-        <span className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-600">
-          Theme editor coming soon
-        </span>
+      ) : section.href ? (
+        <Link
+          href={section.href}
+          className="rounded-md bg-dark-background px-3 py-2 text-sm font-semibold text-white hover:bg-dark-highlight"
+        >
+          {section.linkLabel || "Open"}
+        </Link>
       ) : null}
     </div>
 

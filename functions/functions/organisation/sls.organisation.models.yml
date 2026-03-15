@@ -1,3 +1,26 @@
+_OrganisationThemeCommon: &OrganisationThemeCommon
+  css_vars:
+    type: string
+    description: "CSS variables for the organisation theme, used to customise SOLO templates"
+  colour_primary:
+    type: string
+    description: "Primary colour for the organisation theme, used for branding and UI accents"
+  colour_secondary:
+    type: string
+    description: "Secondary colour for the organisation theme, used for supporting accents"
+  colour_background:
+    type: string
+    description: "Background colour for the organisation theme"
+  colour_background_alt:
+    type: string
+    description: "Alternative background colour for the organisation theme"
+  colour_surface_light:
+    type: string
+    description: "Light surface colour for the organisation theme"
+  colour_surface_dark:
+    type: string
+    description: "Dark surface colour for the organisation theme"
+
 _OrganisationCommon: &OrganisationCommon
   status:
     type: string
@@ -31,9 +54,8 @@ _OrganisationCommon: &OrganisationCommon
   logo:
     type: string
     description: "URL to the logo image for the organisation"
-  css_vars:
-    type: string
-    description: "CSS variables for the organisation used to customise SOLO templates"
+  theme:
+    $ref: "#/components/schemas/OrganisationThemeObject"
   description:
     type: string
   created_at:
@@ -54,24 +76,18 @@ _OrganisationCommon: &OrganisationCommon
   logo_icon_url:
     type: string
     description: "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
-  colour_primary:
-    type: string
-    description: "Primary colour for the organisation, used for theming and branding purposes"
-  colour_secondary:
-    type: string
-    description: "Secondary colour for the organisation, used for theming and branding purposes"
-  colour_background:
-    type: string
-    description: "Background colour for the organisation, used for theming and branding purposes"
-  colour_background_alt:
-    type: string
-    description: "Alternative background colour for the organisation, used for theming and branding purposes"
-  colour_surface_light:
-    type: string
-    description: "Light surface colour for the organisation, used for theming and branding purposes"
-  colour_surface_dark:
-    type: string
-    description: "Dark surface colour for the organisation, used for theming and branding purposes"
+
+OrganisationThemeObject:
+  name: "OrganisationThemeObject"
+  description: "Organisation theme object"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          <<: *OrganisationThemeCommon
 
 OrganisationObject:
   name: "OrganisationObject"

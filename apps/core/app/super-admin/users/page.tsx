@@ -165,7 +165,7 @@ export default async function SuperAdminUsersPage() {
             return (
               <li
                 key={listedUser.id}
-                className="flex flex-col gap-4 px-4 py-5 sm:px-6"
+                className="px-4 py-4 sm:px-6"
               >
                 <div className="flex items-start gap-4">
                   {profileImage ? (
@@ -181,8 +181,8 @@ export default async function SuperAdminUsersPage() {
                   )}
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
+                    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_auto] lg:items-start">
+                      <div className="min-w-0">
                         <h2 className="text-sm font-semibold text-gray-900 dark:text-dark-secondary">
                           {displayName}
                         </h2>
@@ -196,7 +196,23 @@ export default async function SuperAdminUsersPage() {
                         ) : null}
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
+                      <div>
+                        <dt className="text-xs font-medium text-gray-500 dark:text-primary-text">
+                          Organisations
+                        </dt>
+                        <dd className="mt-1 flex flex-wrap gap-2">
+                          {accessibleOrgs.map((org) => (
+                            <span
+                              key={`${listedUser.id}-${org}`}
+                              className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-dark-highlight dark:text-primary-text"
+                            >
+                              {org}
+                            </span>
+                          ))}
+                        </dd>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 lg:justify-end">
                         {listedUser.banned ? (
                           <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
                             Banned
@@ -215,50 +231,37 @@ export default async function SuperAdminUsersPage() {
                       </div>
                     </div>
 
-                    <dl className="mt-4 grid gap-3 text-sm text-gray-700 dark:text-primary-text sm:grid-cols-2 xl:grid-cols-4">
-                      <div>
-                        <dt className="font-medium text-gray-500 dark:text-primary-text">
-                          Organisations
-                        </dt>
-                        <dd className="mt-1 flex flex-wrap gap-2">
-                          {accessibleOrgs.map((org) => (
-                            <span
-                              key={`${listedUser.id}-${org}`}
-                              className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-dark-highlight dark:text-primary-text"
-                            >
-                              {org}
-                            </span>
-                          ))}
-                        </dd>
-                      </div>
-
-                      <div>
+                    <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm text-gray-700 dark:text-primary-text lg:grid-cols-2">
+                      <div className="grid grid-cols-[auto_1fr] gap-x-2">
                         <dt className="font-medium text-gray-500 dark:text-primary-text">
                           Joined
                         </dt>
-                        <dd className="mt-1">{formatTimestamp(listedUser.created_at)}</dd>
+                        <dd>{formatTimestamp(listedUser.created_at)}</dd>
                       </div>
 
-                      <div>
+                      <div className="grid grid-cols-[auto_1fr] gap-x-2">
                         <dt className="font-medium text-gray-500 dark:text-primary-text">
                           Last sign in
                         </dt>
-                        <dd className="mt-1">{formatTimestamp(listedUser.last_sign_in_at)}</dd>
+                        <dd>{formatTimestamp(listedUser.last_sign_in_at)}</dd>
                       </div>
 
-                      <div>
+                      {listedUser.public_metadata?.title ? (
+                        <div className="grid grid-cols-[auto_1fr] gap-x-2">
+                          <dt className="font-medium text-gray-500 dark:text-primary-text">
+                            Title
+                          </dt>
+                          <dd>{listedUser.public_metadata.title}</dd>
+                        </div>
+                      ) : null}
+
+                      <div className="grid grid-cols-[auto_1fr] gap-x-2">
                         <dt className="font-medium text-gray-500 dark:text-primary-text">
                           User ID
                         </dt>
-                        <dd className="mt-1 break-all text-xs">{listedUser.id}</dd>
+                        <dd className="break-all text-xs">{listedUser.id}</dd>
                       </div>
                     </dl>
-
-                    {listedUser.public_metadata?.title ? (
-                      <p className="mt-3 text-sm text-gray-600 dark:text-primary-text">
-                        Title: {listedUser.public_metadata.title}
-                      </p>
-                    ) : null}
                   </div>
                 </div>
               </li>

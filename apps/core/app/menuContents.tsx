@@ -105,11 +105,6 @@ export const getMenuContents = (isSuperAdmin = false): MenuSection[] => {
       name: "Super Admin",
       contents: [
         {
-          title: "Permissions",
-          link: "/user/profile/permissions",
-          icon: SuperAdminIcon
-        },
-        {
           title: "User Manager",
           link: "/super-admin/users",
           icon: SuperAdminIcon

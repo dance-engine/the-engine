@@ -23,7 +23,7 @@ import EventHeroBanner from "./EventHeroBanner";
 import EventTicketing from "./EventTicketing";
 import { getOrganisationTheme } from "./lib/organisationTheme";
 
-const PREVIEW_SCOPE = ".event-experience-preview-root";
+const PREVIEW_SCOPE = ".event-preview-root";
 
 const sampleDescription = JSON.stringify({
   type: "doc",
@@ -162,7 +162,7 @@ const getHighlightBundleLabel = (event: EventModelType) => {
   );
 };
 
-export default function EventExperiencePreview({
+export default function EventPreview({
   theme,
   mode,
 }: {
@@ -198,7 +198,7 @@ export default function EventExperiencePreview({
       <style dangerouslySetInnerHTML={{ __html: scopedCss }} />
       <div className="px-4 py-4">
         <div
-          className="event-experience-preview-root origin-top overflow-hidden rounded-2xl border border-gray-200 shadow-sm select-none"
+          className="event-preview-root origin-top overflow-hidden rounded-2xl border border-gray-200 shadow-sm select-none"
           data-dev-color-scheme={mode}
           style={{
             width: "128%",

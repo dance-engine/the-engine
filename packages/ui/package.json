@@ -10,8 +10,16 @@
   "exports": {
     "./styles.css": "./src/styles.css",
     "./*": "./src/*.tsx",
+    "./Event": "./src/event/Event.tsx",
+    "./EventPreview": "./src/event/EventPreview.tsx",
+    "./EventSuccess": "./src/EventSuccess.tsx",
     "./LocationPicker": "./src/LocationPicker.tsx",
+    "./Map": "./src/Map.tsx",
     "./MobileMenu": "./src/MobileMenu.tsx",
+    "./PassSelectorContext": "./src/PassSelectorContext.tsx",
+    "./StripePurchaseButton": "./src/StripePurchaseButton.tsx",
+    "./eventPricing": "./src/eventPricing.tsx",
+    "./organisationTheme": "./src/organisationTheme.tsx",
     "./types": "./src/types/index.ts"
   },
   "license": "MIT",

@@ -76,7 +76,7 @@ const getDirectionsHref = (event: EventModelType) => {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodedDestination}`;
 };
 
-export default function EventExperience({
+export default function Event({
   fallbackData,
   org,
   eventKsuid,

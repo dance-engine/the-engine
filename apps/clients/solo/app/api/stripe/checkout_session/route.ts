@@ -12,7 +12,8 @@ const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const getUrlOfAccount = (accountId: string) => {
   const accountUrls: Record<string, string> = {
     'acct_1RnpiyD1ZofqWwLa': 'https://iamrebel.co.uk',
-    'acct_1Rkp1ODIMY9TzhzF': "https://powerofwomansbk.co.uk"
+    'acct_1Rkp1ODIMY9TzhzF': "https://powerofwomansbk.co.uk",
+    'acct_1TACbkDnZQBrVCD7': "https://www.cubanydominican.com",
   }
   return accountUrls[accountId] || "https://danceengine.co.uk";
 }
@@ -66,13 +67,15 @@ export async function POST(req: Request) {
             "quantity": 1
       }))
 
+      const eventKsuid = lineItems[0]?.parent_event_ksuid || 'unknown';
+
       const requestBody = {
     "checkout": [
       {
         "collect_customer_on_stripe": true,
         "coupon_code": couponCode || undefined,
-        "success_url": `${getUrlOfAccount(org.account_id || '')}/checkout/success`,
-        "cancel_url": `${getUrlOfAccount(org.account_id || '')}/`,
+        "success_url": `${getUrlOfAccount(org.account_id || '')}/${eventKsuid}/success`,
+        "cancel_url": `${getUrlOfAccount(org.account_id || '')}/${eventKsuid}`,
         "application_fee_amount": isAndreas ? 0 : platformCharge,
         "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
         "line_items": line_items

@@ -1,4 +1,4 @@
-import StripePurchaseButton from '@/components/StripePurchaseButton';
+import StripePurchaseButton from '@the-engine/ui/StripePurchaseButton';
 
 export default function POWPayment({org}: {org: {account_id: string}}) {
   const inProd = process.env.NODE_ENV == 'development' ? false : true;

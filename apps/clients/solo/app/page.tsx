@@ -98,13 +98,23 @@ export default async function IndexPage() {
                 </div>
                 
         </div>
-        {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 
+        {
+          {
+            'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
+            'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+            'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+            'cuban-y-dominican': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+            'power-of-woman': <POWPayment org={org} />,
+          }[orgSlug] || <div className='hidden'>No custom hero for this org</div>
+        }
+
+        {/* {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 
           // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
           <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
         : orgSlug == 'rebel-sbk' ? 
           <div className='hidden'><RebelPayment org={org} /></div>
         :
-        (<POWPayment org={org} />)
+        (<POWPayment org={org} />) */}
 }
         
       </main>

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@source "../../../../packages/ui/src";
 
 @theme {
   --font-sans: var(--font-geist-sans);

@@ -2,7 +2,7 @@ from _pydantic.models.tickets_models import TicketObject as TicketBase
 from _pydantic.models.customers_models import CustomerObject as CustomerBase
 from _pydantic.models.bundles_models import BundleObject as BundleBase, BundleObjectPublic
 from _pydantic.models.items_models import ItemObject as ItemBase, ItemObjectPublic
-from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, Status as OrganisationStatus, OrganisationObjectPublic
+from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, OrganisationThemeObject as OrganisationThemeBase, Status as OrganisationStatus, OrganisationObjectPublic
 from _pydantic.models.events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
 from _pydantic.dynamodb import DynamoModel, HistoryModel
 from datetime import datetime, timezone
@@ -56,6 +56,12 @@ class OrganisationModel(OrganisationBase, DynamoModel):
     entity_type: Literal["ORGANISATION"] = "ORGANISATION"
 
     @property
+    def related_entities(self):
+        return {
+            "THEME": ("theme", "single", OrganisationThemeModel)
+        }
+
+    @property
     def PK(self): return f"ORG#{self.org_slug}"
 
     @property
@@ -66,6 +72,27 @@ class OrganisationModel(OrganisationBase, DynamoModel):
     
     def to_public(self) -> 'OrganisationObjectPublic':
         return OrganisationObjectPublic.model_validate(self.model_dump(include=OrganisationObjectPublic.model_fields.keys()))    
+
+class OrganisationThemeModel(OrganisationThemeBase, DynamoModel):
+    organisation: str
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    entity_type: Literal["THEME"] = "THEME"
+
+    @property
+    def PK(self): return f"THEME#{self.org_slug}"
+
+    @property
+    def SK(self): return f"ORG#{self.org_slug}"
+
+    @property
+    def gsi1PK(self): return f"ORG#{self.org_slug}"
+
+    @property
+    def gsi1SK(self): return f"THEME#{self.org_slug}"
+
+    @property
+    def org_slug(self): return self._slugify(self.organisation)
 
 class EventModel(EventBase, DynamoModel):
     organisation: str

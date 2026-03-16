@@ -18,7 +18,9 @@ const CustomPage = () => {
   const { isSignedIn, user, isLoaded } = useUser()
   const { activeOrg, switchOrg, availableOrgs
    } = useOrgContext()
-  const { data: summaryData, isLoading } = useClerkSWR(orgApiCall);
+  const publicMetadata = (user?.publicMetadata ?? {}) as Partial<UserPermissions>
+  const hasWildcardOrg = Object.prototype.hasOwnProperty.call(publicMetadata.organisations ?? {}, "*")
+  const { data: summaryData, isLoading } = useClerkSWR(hasWildcardOrg ? orgApiCall : null);
   
   if (!isLoaded) {
     return <div className="flex items-center gap-x-4 lg:gap-x-6">Loading User...</div>
@@ -30,11 +32,16 @@ const CustomPage = () => {
       <SignInButton ><button className="block px-3 py-1 text-gray-900" role="menuitem" tabIndex={-1} id="user-menu-item-1">Sign-in</button></SignInButton></div>
   }
 
-  if(isLoading) {
+  if(hasWildcardOrg && isLoading) {
     return <div className="flex items-center gap-x-4 lg:gap-x-6">Loading orgs...</div>
   }
 
-  const permissions = user?.publicMetadata && user?.publicMetadata.roles ? user?.publicMetadata as unknown as UserPermissions : {admin: [], roles: {}} as UserPermissions
+  const permissions: UserPermissions = {
+    admin: publicMetadata.admin ?? [],
+    roles: publicMetadata.roles ?? {},
+    title: publicMetadata.title,
+    organisations: publicMetadata.organisations ?? {},
+  }
   const sitesAdmind = permissions.organisations ? Object.keys(permissions.organisations) : []
   return (
     <div>
@@ -54,7 +61,7 @@ const CustomPage = () => {
                   })}
                 </ul>
               </div>
-              {active || site == "*" ? null : <button className="bg-cerise-on-light text-white text-sm rounded-md font-bold px-3 py-1" onClick={()=>{switchOrg(siteName)}}>Switch to {nameFromHypenated(siteName)}</button>}
+              {active || site == "*" ? null : <button className="bg-cerise-on-light text-white text-sm rounded-md font-bold px-3 py-1" onClick={()=>{switchOrg(site)}}>Switch to {nameFromHypenated(siteName)}</button>}
             </div>
         </div>
       })}

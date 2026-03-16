@@ -6,12 +6,10 @@ import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import { MenuProvider } from '@dance-engine/ui/menu/MenuContext';  // Adjust the import path
 import { MenuToggle } from '@dance-engine/ui/menu/MenuToggle'
-import MobileMenu from '@dance-engine/ui/menu/MobileMenu'
-import MainMenu from '@dance-engine/ui/menu/MainMenu'
 import ProfileControl from '@dance-engine/ui/ProfileControl'
-import { menuContents } from './menuContents'
 
 import MessengerRedirect from "./components/MessengerRedirect";
+import ProtectedMenus from "./components/ProtectedMenus";
 import { OrgProvider } from "@dance-engine/utils/OrgContext"
 
 const openSans = Open_Sans({
@@ -43,11 +41,8 @@ export default function ProtectedLayout({
       <div>
         
         {/* Mobile Menu */}
-        <MobileMenu menuContents={menuContents}/>
+        <ProtectedMenus />
 
-        {/* Normal menu */}
-        <MainMenu menuContents={menuContents}/>
-        
         {/* Content */}
         <div className="lg:pl-72">
           <header className="sticky top-0 z-40 flex h-16 shrink-0 dark:bg-uberdark-background bg-white items-center gap-x-4 border-b border-gray-200 shadow-sm \
@@ -85,5 +80,4 @@ export default function ProtectedLayout({
     </html>
   );
 }
-
 

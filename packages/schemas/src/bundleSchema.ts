@@ -28,7 +28,25 @@ export const bundleSchema = z.object({
 });
 
 // Generate TypeScript type from the schema
-export type ItemType = {name: string, status: string, ksuid: string, description: string, primary_price: number, primary_price_name: string, stripe_price_id?: string, parent_event_ksuid: string, event_slug?: string, entity_type: string };
+export type ItemType = {
+  name: string,
+  status: string,
+  ksuid: string,
+  description: string,
+  primary_price: number,
+  secondary_price?: number,
+  tertiary_price?: number,
+  primary_price_name: string,
+  secondary_price_name?: string,
+  tertiary_price_name?: string,
+  stripe_price_id?: string,
+  stripe_primary_price_id?: string,
+  stripe_secondary_price_id?: string,
+  stripe_tertiary_price_id?: string,
+  parent_event_ksuid: string,
+  event_slug?: string,
+  entity_type: string
+};
 export type BundleType = z.infer<typeof bundleSchema>;
 export type BundleTypeExtended = BundleType & {
     ksuid: string, 

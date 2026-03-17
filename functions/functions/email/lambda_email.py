@@ -119,7 +119,7 @@ def _send_ticket_email(ticket, event_details, organisation_settings: Organisatio
     template_params = {}
 
     try:
-        required_fields = ["colour_background", "logo"]
+        required_fields = ["logo"]
 
         if organisation_settings.org_slug == "rebel-sbk":
             tempalte_id = 2
@@ -135,7 +135,7 @@ def _send_ticket_email(ticket, event_details, organisation_settings: Organisatio
             
             tempalte_id = 2
             template_params = {
-                "brand_background_colour": organisation_settings.colour_background.strip("#"),
+                "brand_background_colour": getattr(organisation_settings, "colour_background", "#000").strip("#"),
                 "brand_logo_url": organisation_settings.logo
             }
     except Exception as e:

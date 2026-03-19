@@ -193,12 +193,27 @@ def eventbridge_handler(event, context):
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
 
     org_data = event.get("detail", {}).get("data", {}).get("organisation", {})
-    logger.info(j({"msg": "Update Organisation", "org_data": org_data}))
+    organisation_slug = event.get("detail", {}).get("organisation", {})
+    logger.info(j({"msg": "Update Organisation & Theme", "org_data": org_data}))
+
+    theme_data = org_data.get("theme")
+    if theme_data:
+        theme_model = OrganisationThemeModel.model_validate({
+            **theme_data,
+            "organisation": organisation_slug,
+            "updated_at": current_time,
+        })
+        theme_response = theme_model.upsert(core_table, ["created_at"])
+        if not theme_response.success:
+            raise RuntimeError(theme_response.error or "Failed to upsert organisation theme")
 
     org_model = OrganisationModel.model_validate({
         **org_data,
         "updated_at":current_time,
-        "organisation": event.get("detail", {}).get("organisation", {})
+        "organisation": organisation_slug
     })
-    org_model.upsert(core_table, ["organisation", "created_at"])
+    org_response = org_model.upsert(core_table, ["organisation", "created_at"])
+    if not org_response.success:
+        raise RuntimeError(org_response.error or "Failed to upsert organisation")
+
     return True

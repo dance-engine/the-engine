@@ -34,7 +34,7 @@ export default function EventTicketCard({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-[1.75rem] px-6 py-5 text-left transition ${
+      className={`group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-xl px-6 py-5 text-left transition ${
         disabled ? "cursor-default opacity-85" : "cursor-pointer hover:-translate-y-0.5"
       }`}
       style={{
@@ -107,7 +107,7 @@ export default function EventTicketCard({
               {includes.map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <span
-                    className="h-1.5 w-1.5 rounded-full"
+                    className="h-1.5 w-1.5 rounded-md"
                     style={{ backgroundColor: "var(--highlight-color)" }}
                   />
                   {item}
@@ -130,7 +130,7 @@ export default function EventTicketCard({
             {included && !selected ? "Included in a selected bundle" : ""}
           </div>
           <span
-            className="inline-flex rounded-full px-4 py-2 text-sm font-semibold"
+            className="inline-flex rounded-md px-4 py-2 text-sm font-semibold"
             style={{
               backgroundColor: selected
                 ? "var(--highlight-color)"

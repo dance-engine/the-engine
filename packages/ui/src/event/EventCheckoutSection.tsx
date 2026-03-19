@@ -138,7 +138,7 @@ export default function EventCheckoutSection({
                 ? `Buy now · ${highlightedPassLabel}`
                 : "Buy now"
             }
-            className="mt-8 inline-flex w-full cursor-pointer items-center justify-center rounded-2xl px-5 py-4 text-base font-semibold shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-8 inline-flex w-full cursor-pointer items-center justify-center rounded-lg px-5 py-4 text-base font-semibold shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
             style={{
               backgroundColor: "var(--highlight-color)",
               color: "var(--scheme-action-text)",

@@ -24,7 +24,7 @@ import { getOrganisationTheme } from "./lib/organisationTheme";
 import EventHeroBanner from "./EventHeroBanner";
 import EventFactsPanel from "./EventFactsPanel";
 import EventTicketing from "./EventTicketing";
-import EventFooter from "./EventFooter";
+// import EventFooter from "./EventFooter";
 import DevThemeDebug from "./DevThemeDebug";
 
 const MapDisplay = dynamic(() => import("../Map"), {
@@ -77,11 +77,9 @@ const getDirectionsHref = (event: EventModelType) => {
 };
 
 export default function Event({
-  fallbackData,
   org,
   eventKsuid,
 }: {
-  fallbackData: unknown;
   org: OrganisationType;
   eventKsuid: string;
 }) {
@@ -92,7 +90,6 @@ export default function Event({
   } = useSWR(
     `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org.organisation}/events/${eventKsuid}`,
     fetcher,
-    { fallbackData },
   );
 
   if (isLoading || !eventKsuid) {

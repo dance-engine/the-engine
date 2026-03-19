@@ -1,5 +1,5 @@
 import { ItemType } from "@dance-engine/schemas/bundle"
-import { usePassSelectorState, usePassSelectorActions } from '@the-engine/ui/PassSelectorContext';
+import { usePassSelectorState, usePassSelectorActions } from '@dance-engine/ui/PassSelectorContext';
 
 
 export default function ItemCard({itemData}: {itemData: ItemType}) {

@@ -115,7 +115,6 @@ export default async function IndexPage() {
           <div className='hidden'><RebelPayment org={org} /></div>
         :
         (<POWPayment org={org} />) */}
-}
         
       </main>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import EventExperiencePreview from "@dance-engine/ui/EventExperiencePreview";
+import EventPreview from "@dance-engine/ui/EventPreview";
 import { useAuth } from "@clerk/nextjs";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import { labelFromSnake } from "@dance-engine/utils/textHelpers";
@@ -365,7 +365,7 @@ const ThemePageClient = () => {
 
         <section className="min-h-[32rem] overflow-hidden rounded-lg border border-gray-200 bg-white">
           <PreviewModeToggle value={previewMode} onChange={setPreviewMode} />
-          <EventExperiencePreview theme={themeData} mode={previewMode} />
+          <EventPreview theme={themeData} mode={previewMode} />
         </section>
       </div>
     </div>

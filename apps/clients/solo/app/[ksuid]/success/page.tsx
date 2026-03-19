@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { format } from "date-fns/format";
 import type { OrganisationType } from "@dance-engine/schemas/organisation";
-import EventSuccessExperience from "@dance-engine/ui/EventSuccessExperience";
+import EventSuccess from "@dance-engine/ui/event/EventSuccess";
 
 const EventSuccessPage = async ({
   params,
@@ -36,7 +36,7 @@ const EventSuccessPage = async ({
   };
 
   return (
-    <EventSuccessExperience
+    <EventSuccess
       eventData={eventData}
       org={org}
       eventKsuid={ksuid}

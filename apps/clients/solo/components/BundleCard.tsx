@@ -1,7 +1,7 @@
 import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle"
 import { EventModelType } from "@dance-engine/schemas/events"
 import { Fragment } from "react"
-import { usePassSelectorState, usePassSelectorActions } from '@the-engine/ui/PassSelectorContext';
+import { usePassSelectorState, usePassSelectorActions } from '@dance-engine/ui/PassSelectorContext';
 
 export default function BundleCard({bundleData, event }: { bundleData: BundleTypeExtended, event: EventModelType }) {
 const { selected, included} = usePassSelectorState();

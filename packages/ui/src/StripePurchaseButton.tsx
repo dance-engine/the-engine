@@ -62,7 +62,7 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   );
 };
 
-const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style}: 
+const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style, disabled}: 
     {accountId?: string, 
       org?: OrganisationType, 
       label?: string, 
@@ -70,7 +70,8 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
       lineItems?: (ItemType | BundleTypeExtended)[], 
       cartValue?: number,
       className?: string, 
-      style?: React.CSSProperties}) => {
+  style?: React.CSSProperties,
+  disabled?: boolean}) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleClick = async () => {
@@ -126,7 +127,7 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
       onClick={handleClick}
       className={combinedClass}
       style={style}
-      disabled={loading}
+      disabled={loading || disabled}
     >
       {loading ? (label ? `${label}…` : 'Processing…') : (label || "Add to Cart")}
     </button>

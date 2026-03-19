@@ -131,7 +131,6 @@ export default function EventCheckoutSection({
             org={org}
             lineItems={lineItems}
             cartValue={checkoutTotal}
-            layout="v2"
             disabled={lineItems.length === 0}
             label={
               lineItems.length > 0

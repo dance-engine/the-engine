@@ -2,7 +2,13 @@ import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle";
 
 export type PriceTier = "standard" | "student";
 
-export type PricedEntity = ItemType | BundleTypeExtended;
+export type PricedEntity = (ItemType | BundleTypeExtended) & {
+  secondary_price?: number;
+  secondary_price_name?: string;
+  stripe_secondary_price_id?: string;
+  stripe_primary_price_id?: string;
+  stripe_price_id?: string;
+};
 
 const isStudentLabel = (label?: string) =>
   label?.trim().toLowerCase() === "student";
@@ -47,11 +53,25 @@ export const getStripePriceId = (
 ) => {
   if (!entity) return undefined;
 
+  const valueMap = entity as Record<string, unknown>;
+  const stripePriceId =
+    typeof valueMap.stripe_price_id === "string"
+      ? valueMap.stripe_price_id
+      : undefined;
+  const stripeSecondaryPriceId =
+    typeof valueMap.stripe_secondary_price_id === "string"
+      ? valueMap.stripe_secondary_price_id
+      : undefined;
+  const stripePrimaryPriceId =
+    typeof valueMap.stripe_primary_price_id === "string"
+      ? valueMap.stripe_primary_price_id
+      : undefined;
+
   if (tier === "student" && hasStudentPricing(entity)) {
-    return entity.stripe_secondary_price_id || entity.stripe_price_id;
+    return stripeSecondaryPriceId || stripePriceId;
   }
 
-  return entity.stripe_primary_price_id || entity.stripe_price_id;
+  return stripePrimaryPriceId || stripePriceId;
 };
 
 export const formatPounds = (amountInPence: number) =>

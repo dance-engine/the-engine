@@ -76,7 +76,7 @@ const sampleOrg: OrganisationType = {
   status: "active",
 };
 
-const sampleEvent: EventModelType = {
+const sampleEvent = {
   entity_type: "EVENT",
   ksuid: "preview-event",
   name: "Spring Social Weekend",
@@ -139,7 +139,7 @@ const sampleEvent: EventModelType = {
       status: "live",
     },
   },
-};
+} as EventModelType;
 
 const getScopedThemeCss = (cssText: string) =>
   cssText.replaceAll(":root", PREVIEW_SCOPE);

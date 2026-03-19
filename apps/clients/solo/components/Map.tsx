@@ -11,15 +11,15 @@ const customIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-const MapDisplay = ({ lat, lng }: {lat: number, lng: number}) => {
+const MapDisplay = ({ lat, lng, initialZoom = 18 }: {lat: number, lng: number, initialZoom?: number}) => {
   const [position, setPosition] = useState({ lat, lng } as L.LatLngLiteral);
 
-  const CenterMap = ({position}: {position: L.LatLngLiteral}) => {
+  const CenterMap = ({position, zoom}: {position: L.LatLngLiteral, zoom: number}) => {
     const map = useMap();
   
     useEffect(() => {
-      map.setView(position, map.getZoom(), { animate: true });
-    }, [position, map]);
+      map.setView(position, zoom, { animate: true });
+    }, [position, zoom, map]);
   
     return null;
   };
@@ -31,9 +31,9 @@ const MapDisplay = ({ lat, lng }: {lat: number, lng: number}) => {
 
   return (
     <div className="border p-[1px] rounded-md border-gray-300 bg-gray-200">
-      <MapContainer center={position} zoom={10} style={{ height: "300px", width: "100%" }}>
+      <MapContainer center={position} zoom={initialZoom} style={{ height: "300px", width: "100%" }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <CenterMap position={position} />
+        <CenterMap position={position} zoom={initialZoom} />
         <Marker
         position={position}
         draggable

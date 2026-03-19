@@ -303,7 +303,7 @@ export default function Event({
           </section>
         </main>
 
-        <EventFooter org={org} theme={organisationTheme} />
+        {/* <EventFooter org={org} theme={organisationTheme} /> */}
       </div>
     </div>
   );

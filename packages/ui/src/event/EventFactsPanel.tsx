@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { EventModelType } from "@dance-engine/schemas/events";
 import { CalendarIcon, MapPinIcon, TicketIcon } from "./Icons";
 
-const factCardClasses = "flex items-start gap-4 border p-5";
+const factCardClasses = "flex items-center gap-4 border p-5";
 
 export default function EventFactsPanel({
   event,
@@ -36,7 +36,7 @@ export default function EventFactsPanel({
             className={factCardClasses}
             style={{ borderColor: "transparent" }}
           >
-            <div className="p-3 text-[var(--highlight-color)]">
+            <div className="rounded-full bg-[var(--accent-color)] p-3 text-[var(--scheme-panel-text)]">
               <CalendarIcon className="h-8 w-8" />
             </div>
             <div>
@@ -55,7 +55,7 @@ export default function EventFactsPanel({
             className={factCardClasses}
             style={{ borderColor: "transparent" }}
           >
-            <div className="p-3 text-[var(--highlight-color)]">
+            <div className="rounded-full bg-[var(--accent-color)] p-3 text-[var(--scheme-panel-text)]">
               <MapPinIcon className="h-8 w-8" />
             </div>
             <div>
@@ -80,7 +80,7 @@ export default function EventFactsPanel({
           </div>
         </div>
 
-        <div className="flex flex-col justify-center gap-3 p-5">
+        <div className="flex flex-col justify-start gap-3 p-5">
           <p
             className="text-xs font-semibold uppercase tracking-[0.28em]"
             style={{ color: "var(--scheme-panel-muted)" }}
@@ -99,7 +99,7 @@ export default function EventFactsPanel({
             <TicketIcon className="h-5 w-5" />
             {highlightedPassLabel}
           </Link>
-          <Link
+          {/* <Link
             href="#checkout"
             className="inline-flex items-center justify-center border px-5 py-4 text-sm font-semibold transition"
             style={{
@@ -110,7 +110,7 @@ export default function EventFactsPanel({
             }}
           >
             Another button
-          </Link>
+          </Link> */}
         </div>
       </div>
     </section>

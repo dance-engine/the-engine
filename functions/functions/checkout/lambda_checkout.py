@@ -221,7 +221,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                     "ksuid": item.ksuid,
                     "entity_type": item.entity_type,
                     "name": item.name,
-                    "includes": item.includes,
+                    # "includes": item.includes,
                 }
             } for item in line_items
         ]

@@ -69,6 +69,7 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
             "organisation": organisation_slug,
         })
 
+        location_response = None
         if event_data.location:
             location_model = LocationModel.model_validate({
                 **event_data.location.model_dump(mode="json", exclude_unset=True),
@@ -77,12 +78,17 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                 "updated_at": current_time
             })
 
-        event_response = event_model.upsert(table, ["event_slug", "created_at"])
-        location_response = location_model.upsert(table, ["created_at"])
+        event_response = event_model.upsert(table, ["event_slug", "created_at"], explicit_fields_only=True)
+        if event_data.location:
+            location_response = location_model.upsert(table, ["created_at"], explicit_fields_only=True)
 
         if (
             (not event_response.success and event_response.error == "Version conflict")
-            or (not location_response.success and location_response.error == "Version conflict")
+            or (
+                location_response is not None
+                and not location_response.success
+                and location_response.error == "Version conflict"
+            )
         ):
             return make_response(409, {
                 "message": "Version conflict",
@@ -92,7 +98,7 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
 
         if not event_response.success:
             raise RuntimeError(event_response.error or "Failed to upsert event")
-        if not location_response.success:
+        if location_response is not None and not location_response.success:
             raise RuntimeError(location_response.error or "Failed to upsert location")
 
         trigger_eventbridge_event(eventbridge, 

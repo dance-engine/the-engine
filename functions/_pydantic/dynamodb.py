@@ -174,7 +174,7 @@ class DynamoModel(BaseModel):
         """
         return hasattr(self, "version")
 
-    def to_dynamo(self, exclude_keys=True) -> dict:
+    def to_dynamo(self, exclude_keys=True, exclude_unset: bool = False) -> dict:
         """
         Convert the instance to a DynamoDB-compatible dictionary.
 
@@ -190,7 +190,11 @@ class DynamoModel(BaseModel):
             A dictionary representation of the instance, formatted for 
             DynamoDB, with optional exclusion of specified keys.
         """
-        base = self.model_dump(mode="json", exclude_none=True)
+        base = self.model_dump(
+            mode="json",
+            exclude_none=True,
+            exclude_unset=exclude_unset,
+        )
 
         if exclude_keys:
             exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "related_entities", "PK", "SK"}
@@ -217,7 +221,8 @@ class DynamoModel(BaseModel):
                only_set_once: list = [], 
                condition_expression: str = None,
                extra_expression_attr_names: dict[str, str] | None = None, 
-               extra_expression_attr_values: dict[str, object] | None = None
+               extra_expression_attr_values: dict[str, object] | None = None,
+               explicit_fields_only: bool = False,
                ) -> UpsertResult:
         """
         Upserts an item into the DynamoDB table.
@@ -238,6 +243,10 @@ class DynamoModel(BaseModel):
         extra_expression_attr_values : dict[str, object], optional
             A dictionary of extra expression attribute values to include in the update expression.
             Default is None.
+        explicit_fields_only : bool, optional
+            When True, only fields explicitly provided on the Pydantic model are included
+            in the update expression. Defaults to False to preserve full-model upsert
+            behaviour for existing call sites.
 
         Returns
         -------
@@ -251,7 +260,7 @@ class DynamoModel(BaseModel):
         extra_expression_attr_names = dict(extra_expression_attr_names or {})
         extra_expression_attr_values = dict(extra_expression_attr_values or {})            
         
-        item = self.to_dynamo()
+        item = self.to_dynamo(exclude_unset=explicit_fields_only)
 
         if self.uses_versioning():
             incoming_version = item.get('version', 0)
@@ -481,9 +490,7 @@ class HistoryModel(DynamoModel):
     actor: Optional[str] = None  # Email or ID
     data: Optional[Dict[str, Any]] = None  # Snapshot or diff
     meta: Optional[Dict[str, Any]] = None  # Optional context
-    
-    @property
-    def entity_type(self): return "HISTORY"
+    entity_type: Literal["HISTORY"] = "HISTORY"
 
     @property
     def PK(self) -> str:
@@ -566,7 +573,8 @@ def transact_upsert(table,
                     add_fields: set[str] | None = None, 
                     extra_expression_attr_names: dict[str, str] | None = None, 
                     extra_expression_attr_values: dict[str, object] | None = None,
-                    version_override: bool = False
+                    version_override: bool = False,
+                    explicit_fields_only: bool = True,
                     ) -> TransactUpsertResult:
     MAX_BATCH_SIZE = 25 # DynamoDB's maximum batch size is 25 items (stricly enforced)
     client = table.meta.client
@@ -593,7 +601,10 @@ def transact_upsert(table,
             expression_attr_names = {}
             expression_attr_values = {}
 
-            item_dict = item.to_dynamo(exclude_keys=True)
+            item_dict = item.to_dynamo(
+                exclude_keys=True,
+                exclude_unset=explicit_fields_only,
+            )
 
             if item.uses_versioning() and not version_override:
                 incoming_version = item_dict.get('version', 0)
@@ -688,7 +699,10 @@ def transact_upsert(table,
                     normalised = "conditional_failed"
 
                     if (not version_override) and batch[i].uses_versioning():
-                        incoming_version = batch[i].to_dynamo(exclude_keys=True).get("version", 0)
+                        incoming_version = batch[i].to_dynamo(
+                            exclude_keys=True,
+                            exclude_unset=explicit_fields_only,
+                        ).get("version", 0)
                         old_version = None
                         if isinstance(old_item, dict):
                             old_version = old_item.get("version", None)

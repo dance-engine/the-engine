@@ -196,6 +196,10 @@ class DynamoModel(BaseModel):
             exclude_unset=exclude_unset,
         )
 
+        entity_type = getattr(self, "entity_type", None)
+        if entity_type is not None and "entity_type" not in base:
+            base["entity_type"] = entity_type
+
         if exclude_keys:
             exclude_props = {"__fields_set__", "model_fields_set", "model_extra", "related_entities", "PK", "SK"}
         else:

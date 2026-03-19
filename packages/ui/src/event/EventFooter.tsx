@@ -57,7 +57,7 @@ export default function EventFooter({
           className="text-sm lg:text-right"
           style={{ color: "white" }}
         >
-          <Link href="/" className="transition hover:opacity-70">
+          <Link href="/" className="cursor-pointer transition hover:opacity-70">
             Contact {org.name}
           </Link>
         </div>

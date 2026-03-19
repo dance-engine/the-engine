@@ -137,7 +137,7 @@ export default function Event({
           style={{ color: "var(--scheme-page-text-muted)" }}
         >
           No event was found for this URL. Try the{" "}
-          <NextLink className="underline" href="/">
+          <NextLink className="underline cursor-pointer" href="/">
             main site
           </NextLink>{" "}
           to find the current link.
@@ -285,7 +285,7 @@ export default function Event({
                     href={directionsHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm font-semibold underline underline-offset-4"
+                    className="cursor-pointer text-sm font-semibold underline underline-offset-4"
                     style={{ color: "var(--highlight-color)" }}
                   >
                     Get directions

@@ -71,7 +71,7 @@ export default function EventTicketOptionsSection({
               type="button"
               aria-pressed={pricingTier === "student"}
               onClick={onTogglePricingTier}
-              className={`relative h-7 w-12 rounded-full transition ${pricingTier === "student" ? "" : "bg-slate-300"}`}
+              className={`relative h-7 w-12 cursor-pointer rounded-full transition ${pricingTier === "student" ? "" : "bg-slate-300"}`}
               style={
                 pricingTier === "student"
                   ? { backgroundColor: "var(--highlight-color)" }

@@ -35,7 +35,7 @@ export default function EventTicketCard({
       onClick={onClick}
       disabled={disabled}
       className={`group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-[1.75rem] px-6 py-5 text-left transition ${
-        disabled ? "cursor-default opacity-85" : "hover:-translate-y-0.5"
+        disabled ? "cursor-default opacity-85" : "cursor-pointer hover:-translate-y-0.5"
       }`}
       style={{
         backgroundColor: disabled

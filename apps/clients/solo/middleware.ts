@@ -32,12 +32,9 @@ const domainToThemeMap = Object.entries(orgThemes).reduce<Record<string, string>
 
 
 export function middleware(request: NextRequest) {
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")?.[0]?.trim();
-  const hostHeader = request.headers.get("host")?.split(":")?.[0]?.trim();
   const nextHost = request.nextUrl.hostname;
-  const hostname = (forwardedHost || hostHeader || nextHost || "localhost")
-    .toLowerCase()
-    .replace(/\.$/, "");
+  const headerHost = request.headers.get("Host")?.split(':')?.[0] || 'localhost';
+  const hostname = nextHost === 'localhost' ? headerHost : nextHost;
   
   // Find org by domain; fallback to 'default-org'
   const org = domainToOrgMap[hostname] || 'default-org';

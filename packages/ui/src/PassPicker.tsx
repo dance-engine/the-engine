@@ -4,7 +4,7 @@ import BundleCard from "./BundleCard";
 import ItemCard from "./ItemCard";
 import { PassSelectorProvider } from "@/contexts/PassSelectorContext";
 import { CartProvider } from "@/contexts/CartContext";
-// import { usePassSelectorState } from '../contexts/PassSelectorContext';
+// import { usePassSelectorState } from '@the-engine/ui/PassSelectorContext';
 import PassDebug from "./PassDebug";
 import { EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";

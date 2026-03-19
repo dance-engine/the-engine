@@ -3,7 +3,10 @@ export type CheapestResult = {
   totalCost: number;
   chosenBundles: BundleTypeExtended[];
   chosenItems: { ksuid: string; primary_price: number }[];
-  debug?: string | number | Record<string, string | number | number[] | string[]>;
+  debug?:
+    | string
+    | number
+    | Record<string, string | number | number[] | string[]>;
 };
 /**
  * Find the cheapest combination of bundles and single items to cover the requested items.
@@ -12,12 +15,17 @@ export type CheapestResult = {
  */
 export function findCheapestCombination(
   items: ItemType[],
-  bundles: BundleTypeExtended[]
+  bundles: BundleTypeExtended[],
 ): CheapestResult {
   console.log("Calculating based on \nitems:", items, "\nbundles:", bundles);
 
   if (items.length === 0) {
-    return { totalCost: 0, chosenBundles: [], chosenItems: [], debug: "items empty" };
+    return {
+      totalCost: 0,
+      chosenBundles: [],
+      chosenItems: [],
+      debug: "items empty",
+    };
   }
 
   // Guard: for very large target sets, you may want a greedy fallback
@@ -32,8 +40,8 @@ export function findCheapestCombination(
 
   // Build "sets" you can buy: all bundles (intersected with target) + singleton items
   type BuyableSet =
-    | { kind: 'bundle'; idx: number; mask: number; cost: number }
-    | { kind: 'item'; idx: number; mask: number; cost: number };
+    | { kind: "bundle"; idx: number; mask: number; cost: number }
+    | { kind: "item"; idx: number; mask: number; cost: number };
 
   const sets: BuyableSet[] = [];
 
@@ -45,33 +53,34 @@ export function findCheapestCombination(
       if (bit !== undefined) mask |= 1 << bit;
     }
     if (mask !== 0) {
-      sets.push({ kind: 'bundle', idx: bi, mask, cost: b.primary_price });
+      sets.push({ kind: "bundle", idx: bi, mask, cost: b.primary_price });
     }
   });
 
   // Singletons (buy individual requested items)
   items.forEach((it, ii) => {
     const mask = 1 << ii;
-    sets.push({ kind: 'item', idx: ii, mask, cost: it.primary_price });
+    sets.push({ kind: "item", idx: ii, mask, cost: it.primary_price });
   });
 
   // Bitmask DP
   const N = 1 << items.length;
   const dp = new Array<number>(N).fill(Infinity);
-  const prev = new Array<number>(N).fill(-1);    // previous mask
-  const choice = new Array<number>(N).fill(-1);  // index into sets[]
+  const prev = new Array<number>(N).fill(-1); // previous mask
+  const choice = new Array<number>(N).fill(-1); // index into sets[]
 
   dp[0] = 0;
 
   for (let mask = 0; mask < N; mask++) {
-    const base = dp[mask];
+    const base = dp[mask] ?? Infinity;
     if (!isFinite(base)) continue;
 
     for (let s = 0; s < sets.length; s++) {
       const set = sets[s];
+      if (!set) continue;
       const nextMask = mask | set.mask;
       const cost = base + set.cost;
-      if (cost < dp[nextMask]) {
+      if (cost < (dp[nextMask] ?? Infinity)) {
         dp[nextMask] = cost;
         prev[nextMask] = mask;
         choice[nextMask] = s;
@@ -84,36 +93,38 @@ export function findCheapestCombination(
   const selectedItems: number[] = [];
 
   let cur = targetMask;
-  if (!isFinite(dp[cur])) {
+  if (!isFinite(dp[cur] ?? Infinity)) {
     // No exact cover (shouldn’t happen if singletons exist), return greedy
     return greedyFallback(items, bundles);
   }
 
   while (cur !== 0) {
-    const sIdx = choice[cur];
-    const p = prev[cur];
+    const sIdx = choice[cur] ?? -1;
+    const p = prev[cur] ?? -1;
     if (sIdx === -1 || p === -1) break; // safety
     const set = sets[sIdx];
-    if (set.kind === 'bundle') selectedBundles.push(set.idx);
+    if (!set) break;
+    if (set.kind === "bundle") selectedBundles.push(set.idx);
     else selectedItems.push(set.idx);
     cur = p;
   }
 
   // Build result
-  const chosenBundles = selectedBundles.map((bi) => {
-    const b = bundles[bi];
-    return { ...b };
-  });
+  const chosenBundles = selectedBundles
+    .map((bi) => bundles[bi])
+    .filter((bundle): bundle is BundleTypeExtended => Boolean(bundle));
 
-  const chosenItems = selectedItems.map((ii) => {
-    const it = items[ii];
-    return { ...it };
-  });
+  const chosenItems = selectedItems
+    .map((ii) => items[ii])
+    .filter((item): item is ItemType => Boolean(item));
 
   return {
-    totalCost: dp[targetMask],
+    totalCost: dp[targetMask] ?? 0,
     chosenBundles,
-    chosenItems,
+    chosenItems: chosenItems.map((item) => ({
+      ksuid: item.ksuid,
+      primary_price: item.primary_price ?? 0,
+    })),
     debug: {
       dp,
       prev,
@@ -122,27 +133,35 @@ export function findCheapestCombination(
   };
 }
 
-
-function greedyFallback(items: ItemType[], bundles: BundleTypeExtended[]): CheapestResult {
+function greedyFallback(
+  items: ItemType[],
+  bundles: BundleTypeExtended[],
+): CheapestResult {
   const indexByItem: Record<string, number> = {};
   items.forEach((it, i) => (indexByItem[it.ksuid] = i));
-  const uncovered = new Set(items.map(it => it.ksuid));
+  const uncovered = new Set(items.map((it) => it.ksuid));
 
   const chosenBundles: BundleTypeExtended[] = [];
   const chosenItems: ItemType[] = [];
 
   // Precompute bundle coverage over requested set
-  const bundleCover: { b: BundleTypeExtended; covers: Set<string> }[] = bundles.map(b => ({
-    b,
-    covers: new Set(b.includes.filter(id => id in indexByItem)),
-  })).filter(x => x.covers.size > 0);
+  const bundleCover: { b: BundleTypeExtended; covers: Set<string> }[] = bundles
+    .map((b) => ({
+      b,
+      covers: new Set(b.includes.filter((id) => id in indexByItem)),
+    }))
+    .filter((x) => x.covers.size > 0);
 
   while (uncovered.size > 0) {
     // Best bundle by cost per *newly* covered item
-    let bestBundle: { b: BundleTypeExtended; newCover: string[]; score: number } | null = null;
+    let bestBundle: {
+      b: BundleTypeExtended;
+      newCover: string[];
+      score: number;
+    } | null = null;
 
     for (const { b, covers } of bundleCover) {
-      const newly = [...covers].filter(id => uncovered.has(id));
+      const newly = [...covers].filter((id) => uncovered.has(id));
       if (newly.length === 0) continue;
       const score = b.primary_price / newly.length; // lower is better
       if (!bestBundle || score < bestBundle.score) {
@@ -154,14 +173,17 @@ function greedyFallback(items: ItemType[], bundles: BundleTypeExtended[]): Cheap
     let bestItem: ItemType | null = null;
     for (const it of items) {
       if (uncovered.has(it.ksuid)) {
-        if (!bestItem || it.primary_price < bestItem.primary_price) bestItem = it;
+        if (!bestItem || it.primary_price < bestItem.primary_price)
+          bestItem = it;
       }
     }
 
     // Decide: bundle vs best single
     const takeBundle =
       bestBundle &&
-      (!bestItem || bestBundle.b.primary_price / bestBundle.newCover.length <= bestItem.primary_price);
+      (!bestItem ||
+        bestBundle.b.primary_price / bestBundle.newCover.length <=
+          bestItem.primary_price);
 
     if (takeBundle && bestBundle) {
       chosenBundles.push(bestBundle.b);
@@ -181,7 +203,21 @@ function greedyFallback(items: ItemType[], bundles: BundleTypeExtended[]): Cheap
 
   return {
     totalCost,
-    chosenBundles: chosenBundles.map(b => ({ ksuid: b.ksuid, name: b.name, primary_price: b.primary_price } as BundleTypeExtended)),
-    chosenItems: chosenItems.map(it => ({ ksuid: it.ksuid, name: it.name, primary_price: it.primary_price } as ItemType)),
+    chosenBundles: chosenBundles.map(
+      (b) =>
+        ({
+          ksuid: b.ksuid,
+          name: b.name,
+          primary_price: b.primary_price,
+        }) as BundleTypeExtended,
+    ),
+    chosenItems: chosenItems.map(
+      (it) =>
+        ({
+          ksuid: it.ksuid,
+          name: it.name,
+          primary_price: it.primary_price,
+        }) as ItemType,
+    ),
   };
 }

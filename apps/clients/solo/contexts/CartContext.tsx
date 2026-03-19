@@ -1,8 +1,8 @@
 import { BundleTypeExtended, ItemType } from '@dance-engine/schemas/bundle';
 import { EventModelType } from '@dance-engine/schemas/events';
 import React, { createContext, useReducer, useCallback } from 'react';
-import { usePassSelectorState } from './PassSelectorContext';
-import { StripeMultiPurchaseButton } from '@/components/StripePurchaseButton';
+import { usePassSelectorState } from '@dance-engine/ui/PassSelectorContext';
+import { StripeMultiPurchaseButton } from '@dance-engine/ui/StripePurchaseButton';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 type CartSelectorState = { items: ItemType[] };
 

@@ -342,9 +342,8 @@
             "type": "string",
             "description": "URL to the logo image for the organisation"
           },
-          "css_vars": {
-            "type": "string",
-            "description": "CSS variables for the organisation used to customise SOLO templates"
+          "theme": {
+            "$ref": "#/components/schemas/OrganisationThemeObject"
           },
           "description": {
             "type": "string"
@@ -373,73 +372,6 @@
           "logo_icon_url": {
             "type": "string",
             "description": "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
-          },
-          "colour_primary": {
-            "type": "string",
-            "description": "Primary colour for the organisation, used for theming and branding purposes"
-          },
-          "colour_primary_dark": {
-            "type": "string",
-            "description": "Darker shade of the primary colour for the organisation, used for hover states and accents"
-          },
-          "colour_primary_light": {
-            "type": "string",
-            "description": "Lighter shade of the primary colour for the organisation, used for backgrounds and highlights"
-          },
-          "colour_secondary": {
-            "type": "string",
-            "description": "Secondary colour for the organisation, used for theming and branding purposes"
-          },
-          "colour_secondary_dark": {
-            "type": "string",
-            "description": "Darker shade of the secondary colour for the organisation, used for hover states and accents"
-          },
-          "colour_secondary_light": {
-            "type": "string",
-            "description": "Lighter shade of the secondary colour for the organisation, used for backgrounds and highlights"
-          },
-          "colour_background": {
-            "type": "string",
-            "description": "Background colour for the organisation, used for theming and branding purposes"
-          },
-          "colour_background_alt": {
-            "type": "string",
-            "description": "Alternative background colour for the organisation, used for theming and branding purposes"
-          },
-          "colour_text_primary": {
-            "type": "string",
-            "description": "Text colour for the organisation, used for theming and branding purposes"
-          },
-          "colour_text_secondary": {
-            "type": "string",
-            "description": "Secondary text colour for the organisation, used for theming and branding purposes"
-          },
-          "colour_text_inverted": {
-            "type": "string",
-            "description": "Inverted text colour for the organisation, used for theming and branding purposes"
-          }
-        },
-        "x-internal-group": "organisation",
-        "x-internal-path": "_pydantic/models"
-      },
-      "OrganisationResponse": {
-        "type": "object",
-        "properties": {
-          "organisation": {
-            "$ref": "#/components/schemas/OrganisationObject"
-          }
-        },
-        "x-internal-group": "organisation",
-        "x-internal-path": "_pydantic/models"
-      },
-      "UpdateOrganisationRequest": {
-        "type": "object",
-        "required": [
-          "organisation"
-        ],
-        "properties": {
-          "organisation": {
-            "$ref": "#/components/schemas/OrganisationObject"
           }
         },
         "x-internal-group": "organisation",
@@ -451,6 +383,22 @@
           "name"
         ],
         "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "i-am-teapot",
+              "draft",
+              "active",
+              "setup",
+              "suspended",
+              "archived"
+            ],
+            "default": "draft"
+          },
+          "ksuid": {
+            "type": "string",
+            "description": "ID of the organisation"
+          },
           "organisation": {
             "type": "string",
             "description": "Short slug used to represent the org"
@@ -476,9 +424,8 @@
             "type": "string",
             "description": "URL to the logo image for the organisation"
           },
-          "css_vars": {
-            "type": "string",
-            "description": "CSS variables for the organisation used to customise SOLO templates"
+          "theme": {
+            "$ref": "#/components/schemas/OrganisationThemeObject"
           },
           "description": {
             "type": "string"
@@ -493,6 +440,88 @@
           },
           "version": {
             "type": "integer"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "logo_secondary_url": {
+            "type": "string",
+            "description": "Secondary URL to the logo image for the organisation, used for dark mode or alternative themes"
+          },
+          "logo_icon_url": {
+            "type": "string",
+            "description": "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "OrganisationResponse": {
+        "type": "object",
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObject"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "OrganisationResponsePublic": {
+        "type": "object",
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObjectPublic"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "UpdateOrganisationRequest": {
+        "type": "object",
+        "required": [
+          "organisation"
+        ],
+        "properties": {
+          "organisation": {
+            "$ref": "#/components/schemas/OrganisationObject"
+          }
+        },
+        "x-internal-group": "organisation",
+        "x-internal-path": "_pydantic/models"
+      },
+      "OrganisationThemeObject": {
+        "type": "object",
+        "properties": {
+          "css_vars": {
+            "type": "string",
+            "description": "CSS variables for the organisation theme, used to customise SOLO templates"
+          },
+          "colour_primary": {
+            "type": "string",
+            "description": "Primary colour for the organisation theme, used for branding and UI accents"
+          },
+          "colour_secondary": {
+            "type": "string",
+            "description": "Secondary colour for the organisation theme, used for supporting accents"
+          },
+          "colour_background": {
+            "type": "string",
+            "description": "Background colour for the organisation theme"
+          },
+          "colour_background_alt": {
+            "type": "string",
+            "description": "Alternative background colour for the organisation theme"
+          },
+          "colour_surface_light": {
+            "type": "string",
+            "description": "Light surface colour for the organisation theme"
+          },
+          "colour_surface_dark": {
+            "type": "string",
+            "description": "Dark surface colour for the organisation theme"
           }
         },
         "x-internal-group": "organisation",
@@ -1586,7 +1615,7 @@
       "get": {
         "summary": "Get Single Ticket",
         "description": "Fetch details of a specific ticket by its KSUID.",
-        "operationId": "tickets-d23ffe7a-f936-444e-8cf3-b8a51bec88fd",
+        "operationId": "tickets-9301e109-7988-4d8e-be0f-51cf80d16099",
         "parameters": [
           {
             "name": "organisation",
@@ -1758,7 +1787,7 @@
       "post": {
         "summary": "Create Bundles",
         "description": "Creates a new bundle and stores it for the given event.",
-        "operationId": "bundles-e552308d-9241-4e1a-a39f-857a25deb5c7",
+        "operationId": "bundles-8ccbc3f0-b6f8-4fb8-8f26-66026b2a1287",
         "parameters": [
           {
             "name": "organisation",
@@ -1826,7 +1855,7 @@
       "put": {
         "summary": "Update Bundles",
         "description": "Update existing bundles for a given event.",
-        "operationId": "bundles-d24ea4c7-f0ec-45a7-a870-933c5f5cdbd7",
+        "operationId": "bundles-eefab071-15f3-4581-b0f4-ea1679319ef5",
         "parameters": [
           {
             "name": "organisation",
@@ -1892,7 +1921,7 @@
       "get": {
         "summary": "Get Single Bundle",
         "description": "Fetch details of a specific bundle by its KSUID.",
-        "operationId": "bundles-47f6f0e3-95e9-4452-b1f3-5514338c9c8c",
+        "operationId": "bundles-afd5e2b1-985e-4446-860c-b31f93663ec4",
         "parameters": [
           {
             "name": "organisation",
@@ -1959,7 +1988,7 @@
       "post": {
         "summary": "Publish Bundles",
         "description": "Publishes one or more draft bundles: validates includes, creates Stripe product/prices and sets status to live.",
-        "operationId": "bundles-86b8a34c-8887-4cd1-9872-b063b2a66d01",
+        "operationId": "bundles-5bf0c580-c860-4751-9f0c-f0cdc69c99d0",
         "parameters": [
           {
             "name": "organisation",
@@ -2022,7 +2051,7 @@
       "get": {
         "summary": "Public Get Bundles",
         "description": "Public endpoint to get a specific bundle by its KSUID.",
-        "operationId": "bundles-de9cd37b-5c9e-4257-8c48-12f0157a3811",
+        "operationId": "bundles-1310f539-91ec-449e-ba9f-0b0ef1ee7f60",
         "parameters": [
           {
             "name": "organisation",
@@ -2093,7 +2122,7 @@
       "get": {
         "summary": "Public Get All Bundles",
         "description": "Public endpoint to get all bundles for a given organisation and event.",
-        "operationId": "bundles-94bc0150-e70d-4731-bc33-9e000b33f6f1",
+        "operationId": "bundles-7b2a4292-477e-4e38-b4d5-99ece020320c",
         "parameters": [
           {
             "name": "organisation",
@@ -2211,7 +2240,7 @@
       "post": {
         "summary": "Create Item",
         "description": "Creates a new item and stores it for the given event.",
-        "operationId": "items-458bd840-8012-4c7a-9849-f4290313fc2d",
+        "operationId": "items-62aa9fd2-8982-485d-87f2-08fec2635db2",
         "parameters": [
           {
             "name": "organisation",
@@ -2279,7 +2308,7 @@
       "put": {
         "summary": "Update Items",
         "description": "Update existing items for a given event.",
-        "operationId": "items-64d7706c-3cdc-4cb6-acf1-d03f736a7d3c",
+        "operationId": "items-36d2ec9c-3cf7-464d-8ac8-a42c43e0c938",
         "parameters": [
           {
             "name": "organisation",
@@ -2345,7 +2374,7 @@
       "get": {
         "summary": "Get Single Item",
         "description": "Fetch details of a specific item by its KSUID.",
-        "operationId": "items-af0bb8a4-14b0-4b78-b642-382aad3ed6ce",
+        "operationId": "items-29dace5c-5369-4d30-894b-f39bf6248c14",
         "parameters": [
           {
             "name": "organisation",
@@ -2412,7 +2441,7 @@
       "post": {
         "summary": "Publish Items",
         "description": "Publishes one or more draft items: creates Stripe product/prices and sets status to live.",
-        "operationId": "items-db86e6ea-1256-4fc5-948d-5f9b40c842d2",
+        "operationId": "items-30d55051-ced0-483e-91e0-8fd95ebc5e9c",
         "parameters": [
           {
             "name": "organisation",
@@ -2475,7 +2504,7 @@
       "get": {
         "summary": "Public Get Item",
         "description": "Public endpoint to get a specific item by its KSUID.",
-        "operationId": "items-8a635194-d28c-462e-bd1b-fece21130838",
+        "operationId": "items-ee64a41c-3586-493f-88fa-8837fc374f1e",
         "parameters": [
           {
             "name": "organisation",
@@ -2546,7 +2575,7 @@
       "get": {
         "summary": "Public Get All Items",
         "description": "Public endpoint to get all items for a given organisation and event.",
-        "operationId": "items-17b3cf5c-ef8e-458b-99c2-e6ba64f37fab",
+        "operationId": "items-b5b52a2f-6706-4b7d-baae-776de75b1f8c",
         "parameters": [
           {
             "name": "organisation",
@@ -2638,7 +2667,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-e2a0d38c-38af-49ed-af62-c8e0da1edd0a",
+        "operationId": "organisations-ae1023cd-5399-4133-bc1f-70e34f6bd546",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -2674,7 +2703,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-990b9d60-1394-497d-9987-09d11528df07",
+        "operationId": "organisations-d4821d72-ac34-4c81-a618-12ce976fbd1a",
         "parameters": [],
         "tags": [
           "Public",
@@ -2752,7 +2781,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-68aa993e-a6ad-46a3-9689-0a8d66b4d630",
+        "operationId": "eventbridge-fc759a01-8e35-4ee2-8ff0-55c3a10f12d3",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -2824,7 +2853,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-7b97944a-6ecb-4bd1-a830-6aeb2a52f109",
+        "operationId": "events-d9728a1d-685e-425d-8239-cd43f75a6258",
         "parameters": [
           {
             "name": "organisation",
@@ -2881,7 +2910,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-5f97a254-5454-4d43-9c91-1ef4ebb46516",
+        "operationId": "events-fbd32ed4-3507-493f-85a1-615ceabc03b4",
         "parameters": [
           {
             "name": "organisation",
@@ -2937,7 +2966,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-2fa6c087-6c16-4783-befa-d9c5ba2d7162",
+        "operationId": "events-a41e4770-4742-4369-8d68-e602895cdf87",
         "parameters": [
           {
             "name": "organisation",
@@ -3001,7 +3030,7 @@
       "delete": {
         "summary": "Delete an Event",
         "description": "Permanently delete an event and its related entities. Requires super admin privileges.",
-        "operationId": "events-0e699c8e-1a66-455f-a803-575f9bb69c24",
+        "operationId": "events-2a449c58-6eec-4e6d-a915-b25f25104e3a",
         "parameters": [
           {
             "name": "organisation",
@@ -3067,7 +3096,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-79b2d62f-470e-476c-9d3b-a705b0f6096d",
+        "operationId": "events-2a47657c-483b-4559-8efd-3987ddc7c0e4",
         "parameters": [
           {
             "name": "organisation",
@@ -3129,7 +3158,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-b63f334d-bf14-4c26-863b-064ebfcc3a26",
+        "operationId": "events-bf412860-40cb-44aa-bb3d-c797bc6fcfb1",
         "parameters": [
           {
             "name": "organisation",
@@ -3228,7 +3257,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-553a6728-19c9-4c7f-9795-93d1bc2fdb2f",
+        "operationId": "presigned_url-1456a74e-2e2b-497e-a0a5-39b58c4a1e1f",
         "parameters": [],
         "tags": [
           "S3"
@@ -3311,7 +3340,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-cb4fa5a2-af2b-424e-a7bd-8950eeb0eafd",
+        "operationId": "customers-9e53b63d-597f-446e-add2-fe9ce460c3d8",
         "parameters": [
           {
             "name": "organisation",
@@ -3368,7 +3397,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their ksuid in a given organisation.",
-        "operationId": "customers-4af2aa50-c5cc-4410-9717-9b9207b86fb7",
+        "operationId": "customers-0224b81b-7d54-42f6-8639-b01551cac939",
         "parameters": [
           {
             "name": "organisation",
@@ -3424,7 +3453,7 @@
       "put": {
         "summary": "Update a Customer",
         "description": "Update an existing customer and its location",
-        "operationId": "customers-e54cd914-712f-497b-aa1a-f3ef71f715da",
+        "operationId": "customers-89725136-bf05-4871-87ec-ea442ccd1433",
         "parameters": [
           {
             "name": "organisation",
@@ -3486,60 +3515,9 @@
         }
       }
     },
-    "/{organisation}/customers/{ksuid}/tickets": {
-      "get": {
-        "summary": "Get All A Customer's tickets",
-        "description": "Returns a list of all of a customer's tickets for a given organisation.",
-        "operationId": "customers-4df12860-8135-4760-aaa4-c05906d3d407",
-        "parameters": [
-          {
-            "name": "organisation",
-            "in": "path",
-            "description": "Organisation slug",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/organisation"
-            }
-          },
-          {
-            "name": "ksuid",
-            "in": "path",
-            "description": "Unique customer ID (KSUID)",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ksuid"
-            }
-          }
-        ],
-        "tags": [
-          "Customers"
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns a list of all a customers tickets.",
-            "headers": {}
-          },
-          "404": {
-            "description": "No customers found.",
-            "headers": {}
-          },
-          "500": {
-            "description": "Internal server error.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "headers": {}
-          }
-        }
-      }
-    },
     "/{organisation}/settings": {
       "get": {
-        "summary": "Get Org Settings",
+        "summary": "Get Organisation Settings",
         "description": "Returns the settings for a given organisation.",
         "operationId": "organisation",
         "parameters": [
@@ -3569,7 +3547,7 @@
             "headers": {}
           },
           "404": {
-            "description": "No events found.",
+            "description": "Organisation not found.",
             "headers": {}
           },
           "500": {
@@ -3586,9 +3564,9 @@
         }
       },
       "put": {
-        "summary": "Update Organisatioon Settings",
-        "description": "Fetch details of a specific organisation by its slug.",
-        "operationId": "organisation-445ec3a4-c056-49fe-9b51-fc7ecc18f493",
+        "summary": "Update Organisation Settings",
+        "description": "Update settings for a specific organisation by its slug.",
+        "operationId": "organisation-0ff9057a-210d-4c48-94d5-5df899e56186",
         "parameters": [
           {
             "name": "organisation",
@@ -3632,6 +3610,59 @@
           },
           "409": {
             "description": "Version conflict.",
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {}
+          }
+        }
+      }
+    },
+    "/public/{organisation}/settings": {
+      "get": {
+        "summary": "Public Get Organisation Settings",
+        "description": "Public endpoint to get the settings for a given organisation.",
+        "operationId": "organisation-f7015b51-d108-4656-b7dd-0cd350bded68",
+        "parameters": [
+          {
+            "name": "organisation",
+            "in": "path",
+            "description": "Organisation slug",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/organisation"
+            }
+          }
+        ],
+        "tags": [
+          "Public",
+          "Organisation"
+        ],
+        "security": [
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns public organisation details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganisationResponsePublic"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Organisation not found.",
             "headers": {}
           },
           "500": {

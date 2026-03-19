@@ -25,7 +25,7 @@ import { EventResponseType } from '@dance-engine/schemas/events';
 
 // Legacy Code from site launches
 import RebelPayment from "../components/legacy/RebelPayment";
-import POWPayment from "../components/legacy/POWPayment";
+// import POWPayment from "../components/legacy/POWPayment";
 import Redirect from "../components/Redirect";
 
 

@@ -1,0 +1,31 @@
+{
+  "name": "scanner",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3004",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint --max-warnings 0",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.14.0",
+    "next": "15.2.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@dance-engine/eslint-config": "workspace:*",
+    "@dance-engine/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
+    "eslint": "^9.24.0",
+    "eslint-config-next": "15.2.0",
+    "tailwindcss": "^4.1.3",
+    "typescript": "5.7.3"
+  }
+}

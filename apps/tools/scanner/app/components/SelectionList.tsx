@@ -31,7 +31,7 @@ export default function SelectionList({
 }: SelectionListProps) {
   return (
     <section className="flex h-full min-h-0 justify-center">
-      <div className="flex h-full min-h-0 w-full max-w-xl flex-col justify-between text-2xl font-semibold text-primary-text-highlight">
+      <div className="flex h-full min-h-0 w-full max-w-4xl flex-col justify-between text-2xl font-semibold text-primary-text-highlight">
         <TopActionBar title={title} subtitle={subtitle} onBack={onBack} />
 
         <div className="flex-1">

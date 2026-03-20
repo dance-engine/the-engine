@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useEffect, useMemo, useState } from "react";
 import DataLoading from "./components/DataLoading";
@@ -520,6 +520,13 @@ function ScannerWorkspace() {
       <ScannerHeader
         selectedOrg={selectedOrgLabel}
         selectedEventName={selectedEventDetails?.name ?? null}
+        authAction={
+          <SignOutButton>
+            <button className="rounded-md border border-dark-outline bg-white/10 px-3 py-1.5 text-xs font-semibold text-primary-text transition hover:bg-white/20">
+              Sign out
+            </button>
+          </SignOutButton>
+        }
       />
       <div className="main-space h-full min-h-0">
         {viewMode === "orgs" ? (
@@ -548,7 +555,9 @@ function ScannerWorkspace() {
 
         {viewMode === "scanner" ? (
           <>
-            <section className="text-primary-text shadow-lg">
+            <section className="flex h-full min-h-0 justify-center">
+              <div className="flex h-full min-h-0 w-full max-w-4xl flex-col justify-between text-2xl font-semibold text-primary-text-highlight">
+
               <TopActionBar
                 title="Scanner"
                 onBack={navigation.backToEvents}
@@ -588,6 +597,7 @@ function ScannerWorkspace() {
                 >
                   Reset to Unused
                 </button>
+              </div>
               </div>
             </section>
 
@@ -671,16 +681,21 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen w-full flex-col gap-4">
       <SignedOut>
         <>
-          <ScannerHeader selectedOrg="" selectedEventName={null} />
+          <ScannerHeader
+            selectedOrg=""
+            selectedEventName={null}
+            authAction={
+              <SignInButton>
+                <button className="rounded-md border border-dark-outline bg-white/10 px-3 py-1.5 text-xs font-semibold text-primary-text transition hover:bg-white/20">
+                  Sign in
+                </button>
+              </SignInButton>
+            }
+          />
           <section className="bg-dark-background p-5 shadow-sm">
             <p className="mt-3 text-sm text-primary-text">
               This scanner only works for users with organisation permissions that include scanning or wildcard access.
             </p>
-            <SignInButton>
-              <button className="mt-4 rounded-lg bg-keppel-logo px-4 py-2 text-sm font-semibold text-white hover:bg-keppel-on-light">
-                Sign In
-              </button>
-            </SignInButton>
           </section>
         </>
       </SignedOut>

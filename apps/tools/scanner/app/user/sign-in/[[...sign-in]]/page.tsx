@@ -1,7 +1,7 @@
 import { SignIn } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import React from "react";
 
 type SigninPageProps = {
   searchParams?: Promise<{
@@ -36,11 +36,20 @@ export default async function SigninPage({ searchParams }: SigninPageProps) {
   }
 
   return (
-    <div className="flex h-full items-center justify-center">
-      <SignIn
-        fallbackRedirectUrl="/"
-        forceRedirectUrl={safeRedirectUrl ?? undefined}
+    <main className="relative flex min-h-screen items-center justify-center px-4 py-8">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-20"
+        style={{ background: "url('/circuits.jpg') top center / cover no-repeat" }}
       />
-    </div>
+
+      <section className="relative z-10 w-full max-w-md rounded-2xl border border-dark-outline/40 bg-white/95 p-5 shadow-xl backdrop-blur-sm sm:p-6">
+        <div className="mb-5 flex flex-col items-center gap-2 text-center">
+          <Image src="/dance-engine-logo-wide.png" alt="Dance Engine" width={196} height={40} priority />
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Scanner Sign In</p>
+        </div>
+
+        <SignIn fallbackRedirectUrl="/" forceRedirectUrl={safeRedirectUrl ?? undefined} />
+      </section>
+    </main>
   );
 }

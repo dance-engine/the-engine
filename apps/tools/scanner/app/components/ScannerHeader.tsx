@@ -1,22 +1,28 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import { FiChevronRight } from "react-icons/fi";
 
 type ScannerHeaderProps = {
   selectedOrg: string;
   selectedEventName: string | null;
+  authAction?: ReactNode;
 };
 
-export default function ScannerHeader({ selectedOrg, selectedEventName }: ScannerHeaderProps) {
+export default function ScannerHeader({ selectedOrg, selectedEventName, authAction }: ScannerHeaderProps) {
   return (
     <section className="bg-dark-background p-4 shadow-sm flex justify-center">
       <div className="w-full max-w-xl flex justify-between gap-3  font-semibold text-primary-text-highlight">
         <div className="flex gap-3 text-2xl">
-          <Image src="/dance-engine-sq.png" alt="Scanner Icon" width={36} height={36} />Scanner 
+          <Image src="/dance-engine-sq.png" alt="Scanner Icon" width={36} height={36} />Scanner
         </div>
-        <div className="flex items-center gap-1 text-right text-sm">
-          {selectedOrg ? <span>{selectedOrg}</span> : null}
-          {selectedOrg && selectedEventName ? <FiChevronRight className="h-4 w-4 shrink-0" /> : null}
-          {selectedEventName ? <span>{selectedEventName}</span> : null}
+
+        <div className="flex items-center gap-3">
+          {authAction ? <div className="shrink-0">{authAction}</div> : null}
+          <div className="flex items-center gap-1 text-right text-sm">
+            {selectedOrg ? <span>{selectedOrg}</span> : null}
+            {selectedOrg && selectedEventName ? <FiChevronRight className="h-4 w-4 shrink-0" /> : null}
+            {selectedEventName ? <span>{selectedEventName}</span> : null}
+          </div>
         </div>
       </div>
     </section>

@@ -35,7 +35,7 @@ export default function TopActionBar({
     "inline-flex items-center justify-center rounded-full border border-current/15 bg-white/10 p-1 transition-colors hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-current/30";
 
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex p-4 items-start bg-uberdark-background justify-between gap-3">
       <div className="flex min-w-0 items-center gap-3">
         {onBack ? (
           <button type="button" onClick={onBack} className={backButtonClassName}>

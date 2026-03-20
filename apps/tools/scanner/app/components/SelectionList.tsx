@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import DataLoading from "./DataLoading";
 import TopActionBar from "./TopActionBar";
 
 type SelectionItem = {
@@ -29,25 +30,24 @@ export default function SelectionList({
   onSelect,
 }: SelectionListProps) {
   return (
-    <section className="flex justify-center">
-      <div className="w-full max-w-xl justify-between gap-3 text-2xl font-semibold text-primary-text-highlight">
+    <section className="flex h-full min-h-0 justify-center">
+      <div className="flex h-full min-h-0 w-full max-w-xl flex-col justify-between text-2xl font-semibold text-primary-text-highlight">
         <TopActionBar title={title} subtitle={subtitle} onBack={onBack} />
 
-        <div className="mt-3 border-y border-white/15">
-          {loading ? <p className="text-sm text-slate-600">Loading...</p> : null}
+        <div className="flex-1">
+          {loading ? <DataLoading fullHeight={true}/> : null}
           {!loading && items.length === 0 ? (
-            emptyState ?? <p className="py-4 text-xl">{emptyLabel}</p>
-          ) : null}
-          {items.map((item) => (
+            emptyState ?? <p className="flex w-full justify-center h-full items-center text-xl">{emptyLabel}</p>
+          ) : items.map((item, index) => (
             <button
-              key={item.id}
+              key={`${item.id}-${index}`}
               type="button"
               onClick={() => onSelect(item.id)}
-              className="flex w-full items-start justify-between border-b border-white/15 px-1 py-3 text-left transition-colors last:border-b-0 hover:bg-white/5"
+              className="flex w-full cursor-pointer p-4 items-start justify-between border-b border-uberdark-background text-left transition-colors last:border-b-0 hover:bg-uberdark/5"
             >
               <div>
                 <p className="text-sm font-semibold text-primary-text-highlight">{item.label}</p>
-                {item.description ? <p className="mt-1 text-xs text-slate-300">{item.description}</p> : null}
+                {item.description ? <p className="mt-1 text-xs text-slate-300">{item.description} </p> : null}
               </div>
             </button>
           ))}

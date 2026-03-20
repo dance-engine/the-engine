@@ -1,21 +1,43 @@
 "use client";
 
 import { SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useEffect, useMemo, useState } from "react";
+import DataLoading from "./components/DataLoading";
+import FullPageWarning from "./components/FullPageWarning";
+import QrReader from "./components/QrReader";
 import ScannerHeader from "./components/ScannerHeader";
 import SelectionList from "./components/SelectionList";
 import TopActionBar from "./components/TopActionBar";
+import { createScannerNavigation } from "./lib/scannerNavigation";
 
 export const dynamic = "force-dynamic";
 
 const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+const apiBaseUrl = process.env.NEXT_PUBLIC_DANCE_ENGINE_API;
+const organisationsApiUrl = apiBaseUrl ? `${apiBaseUrl}/public/organisations` : null;
 
 type OrgPermissions = Record<string, string[]>;
 
 type ScannerEvent = {
   id: string;
   name: string;
-  startsAt: string;
+  startsAt: string | null;
+  endsAt: string | null;
+  status: string | null;
+};
+
+type EventsApiEvent = {
+  ksuid?: string;
+  name?: string;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  status?: string | null;
+};
+
+type PublicOrganisation = {
+  organisation?: string;
+  name?: string;
 };
 
 type TicketStatus = "used" | "unused";
@@ -48,11 +70,42 @@ const includesScanningPermission = (roles: string[] | undefined): boolean => {
   return roles.includes("superadmin") || roles.includes("scanning");
 };
 
+const formatOrgLabel = (org: string): string => {
+  if (org === "*") {
+    return "All Organisations";
+  }
+
+  return org
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+};
+
 const asMessage = (value: unknown, fallback: string): string => {
   if (typeof value === "string" && value.trim().length > 0) {
     return value;
   }
   return fallback;
+};
+
+const parseEventDate = (value: string | null | undefined): Date | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatEventDate = (value: string | null | undefined): string => {
+  const parsed = parseEventDate(value);
+  return parsed ? parsed.toLocaleString() : "Date TBC";
+};
+
+const isActiveScannerEvent = (event: EventsApiEvent): boolean => {
+  const status = event.status?.toLowerCase() ?? "";
+  return status === "live";
 };
 
 const requestJson = async <T,>(
@@ -123,13 +176,20 @@ function ScannerWorkspace() {
   const [viewMode, setViewMode] = useState<"orgs" | "events" | "scanner">("orgs");
   const [selectedOrg, setSelectedOrg] = useState<string>("");
   const [selectedEvent, setSelectedEvent] = useState<string>("");
-  const [events, setEvents] = useState<ScannerEvent[]>([]);
   const [qrInput, setQrInput] = useState<string>("");
   const [ticket, setTicket] = useState<TicketRecord | null>(null);
   const [notice, setNotice] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [loadingEvents, setLoadingEvents] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const navigation = createScannerNavigation({
+    setViewMode,
+    setSelectedOrg,
+    setSelectedEvent,
+    setQrInput,
+    setTicket,
+    setNotice,
+    setError,
+  });
 
   const orgPermissions = useMemo(() => {
     const metadata = (user?.publicMetadata ?? {}) as { organisations?: unknown };
@@ -145,7 +205,7 @@ function ScannerWorkspace() {
     return entries
       .filter(([org, roles]) => org !== "*" && includesScanningPermission(roles))
       .map(([org]) => org)
-      .sort((a, b) => a.localeCompare(b));
+      .sort((left, right) => left.localeCompare(right));
   }, [orgPermissions]);
 
   const hasGlobalScanning = useMemo(
@@ -155,10 +215,46 @@ function ScannerWorkspace() {
 
   const canScan = hasGlobalScanning || allowedOrgs.length > 0;
 
+  const {
+    data: organisationsResponse,
+    error: organisationsError,
+    isLoading: loadingOrganisations,
+  } = useClerkSWR(hasGlobalScanning && organisationsApiUrl ? organisationsApiUrl : null, {
+    suspense: false,
+  });
+
+  const wildcardOrganisations = useMemo(() => {
+    if (!organisationsResponse || typeof organisationsResponse !== "object") {
+      return [] as Array<{ id: string; label: string }>;
+    }
+
+    const organisations = (organisationsResponse as { organisations?: unknown }).organisations;
+    if (!Array.isArray(organisations)) {
+      return [] as Array<{ id: string; label: string }>;
+    }
+
+    return organisations
+      .map((item) => item as PublicOrganisation)
+      .map((item) => {
+        const orgSlug = item.organisation?.trim() ?? "";
+        if (!orgSlug) {
+          return null;
+        }
+
+        return {
+          id: orgSlug,
+          label: item.name?.trim() || formatOrgLabel(orgSlug),
+        };
+      })
+      .filter((item): item is { id: string; label: string } => Boolean(item))
+      .sort((left, right) => left.label.localeCompare(right.label));
+  }, [organisationsResponse]);
+
   useEffect(() => {
     if (!isLoaded || !canScan || selectedOrg) {
       return;
     }
+
     if (!hasGlobalScanning && allowedOrgs.length === 1) {
       const firstOrg = allowedOrgs.at(0);
       if (firstOrg) {
@@ -167,49 +263,89 @@ function ScannerWorkspace() {
       }
       return;
     }
+
     setViewMode("orgs");
   }, [allowedOrgs, canScan, hasGlobalScanning, isLoaded, selectedOrg]);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      if (!selectedOrg) {
-        setEvents([]);
-        setSelectedEvent("");
-        return;
-      }
+  const eventsApiUrl = useMemo(() => {
+    if (!selectedOrg || !apiBaseUrl) {
+      return null;
+    }
 
-      setEvents([]);
-      setSelectedEvent("");
-      setLoadingEvents(true);
-      setError("");
-      const result = await requestJson<{ events?: ScannerEvent[]; msg?: string }>(
-        `/api/mock/scanner/events?orgId=${encodeURIComponent(selectedOrg)}`,
-      );
-      setLoadingEvents(false);
-
-      if (!result.ok || !result.data || !Array.isArray(result.data.events)) {
-        setEvents([]);
-        setSelectedEvent("");
-        setError(result.message);
-        return;
-      }
-
-      const fetchedEvents = result.data.events;
-      setEvents(fetchedEvents);
-    };
-
-    fetchEvents();
+    return `${apiBaseUrl}/{org}/events`.replace(
+      "/{org}",
+      `/${selectedOrg}`,
+    );
   }, [selectedOrg]);
 
-  const runTicketAction = async (action: "check" | "mark-used" | "reset-unused") => {
+  const {
+    data: eventResponse,
+    error: eventsError,
+    isLoading: loadingEvents,
+  } = useClerkSWR(
+    viewMode === "events" || viewMode === "scanner" ? eventsApiUrl : null,
+    { suspense: false },
+  );
+
+  const events = useMemo<ScannerEvent[]>(() => {
+    if (!eventResponse || typeof eventResponse !== "object") {
+      return [];
+    }
+
+    const maybeEvents = (eventResponse as { events?: unknown }).events;
+    if (!Array.isArray(maybeEvents)) {
+      return [];
+    }
+
+    return maybeEvents
+      .map((event) => event as EventsApiEvent)
+      .filter((event) => Boolean(event.ksuid?.trim()) && Boolean(event.name?.trim()))
+      .filter((event) => isActiveScannerEvent(event))
+      .map((event) => ({
+        id: event.ksuid!.trim(),
+        name: event.name!.trim(),
+        startsAt: event.starts_at ?? null,
+        endsAt: event.ends_at ?? null,
+        status: event.status ?? null,
+      }))
+      .sort((left, right) => {
+        const leftDate = parseEventDate(left.startsAt);
+        const rightDate = parseEventDate(right.startsAt);
+
+        if (!leftDate && !rightDate) {
+          return left.name.localeCompare(right.name);
+        }
+        if (!leftDate) {
+          return 1;
+        }
+        if (!rightDate) {
+          return -1;
+        }
+        return leftDate.getTime() - rightDate.getTime();
+      });
+  }, [eventResponse]);
+
+  const runTicketAction = async (
+    action: "check" | "mark-used" | "reset-unused",
+    qrCodeOverride?: string,
+  ) => {
     if (!selectedOrg || !selectedEvent) {
       setError("Choose an organisation and an event first.");
       return;
     }
 
-    if (!qrInput.trim()) {
+    const qrCode = (qrCodeOverride ?? qrInput).trim();
+    if (!qrCode) {
       setError("Scan or enter a QR code first.");
       return;
+    }
+
+    if (qrCode !== qrInput) {
+      setQrInput(qrCode);
+    }
+
+    if (action === "check") {
+      setTicket(null);
     }
 
     setSubmitting(true);
@@ -229,7 +365,7 @@ function ScannerWorkspace() {
       body: JSON.stringify({
         orgId: selectedOrg,
         eventId: selectedEvent,
-        qrCode: qrInput.trim(),
+        qrCode,
       }),
     });
     setSubmitting(false);
@@ -243,31 +379,109 @@ function ScannerWorkspace() {
     setNotice(asMessage(result.data.msg, "Ticket updated."));
   };
 
+  const handleQrDetected = async (value: string) => {
+    setQrInput(value);
+    setError("");
+    setNotice("QR captured. Checking ticket...");
+    await runTicketAction("check", value);
+  };
+
   const selectedEventDetails = useMemo(
     () => events.find((event) => event.id === selectedEvent) ?? null,
     [events, selectedEvent],
   );
 
+  const selectedOrgLabel = useMemo(
+    () => (selectedOrg ? formatOrgLabel(selectedOrg) : ""),
+    [selectedOrg],
+  );
+
   const orgItems = useMemo(() => {
-    const items = allowedOrgs.map((org) => ({ id: org, label: org }));
     if (hasGlobalScanning) {
-      return [{ id: "*", label: "All Organisations (*)" }, ...items];
+      return wildcardOrganisations;
     }
-    return items;
-  }, [allowedOrgs, hasGlobalScanning]);
+
+    return allowedOrgs.map((org) => ({ id: org, label: formatOrgLabel(org) }));
+  }, [allowedOrgs, hasGlobalScanning, wildcardOrganisations]);
+
+  const orgsEmptyState = useMemo(() => {
+    if (loadingOrganisations) {
+      return null;
+    }
+
+    if (organisationsError instanceof CorsError) {
+      return (
+        <FullPageWarning
+          title="Could not reach organisations API"
+          description="This looks like a CORS or network issue while loading organisations."
+        />
+      );
+    }
+
+    if (organisationsError) {
+      return (
+        <FullPageWarning
+          title="Failed to load organisations"
+          description="The organisations request returned an error."
+        />
+      );
+    }
+
+    if (hasGlobalScanning ) {
+      return (
+        <FullPageWarning
+          title="No organisations found"
+          description="Your account has wildcard access, but no organisations were returned."
+        />
+      );
+    }
+
+    return null;
+  }, [hasGlobalScanning, loadingOrganisations, organisationsError]);
 
   const eventItems = useMemo(
     () =>
       events.map((event) => ({
         id: event.id,
         label: event.name,
-        description: new Date(event.startsAt).toLocaleString(),
+        description: formatEventDate(event.startsAt),
       })),
     [events],
   );
 
+  const eventsEmptyState = useMemo(() => {
+    if (loadingEvents) {
+      return null;
+    }
+
+    if (eventsError instanceof CorsError) {
+      return (
+        <FullPageWarning
+          title="Could not reach events API"
+          description="This looks like a CORS or network issue while loading events."
+        />
+      );
+    }
+
+    if (eventsError || true) {
+      return (
+        <FullPageWarning
+          title="Failed to load events"
+          description="The event list request returned an error."
+        />
+      );
+    }
+
+    return (
+      <FullPageWarning
+        title="No events found"
+        description="There are no scannable events for this organisation yet."
+      />
+    );
+  }, [eventsError, loadingEvents]);
+
   if (!isLoaded) {
-    return <p className="text-base text-slate-600">Loading your scanner workspace...</p>;
+    return <DataLoading message="Loading your scanner workspace..." tone="light" fullHeight />;
   }
 
   if (!canScan) {
@@ -302,173 +516,138 @@ function ScannerWorkspace() {
   }
 
   return (
-    <div className="grid gap-3">
+    <div className="grid h-full min-h-0 grid-rows-[auto_1fr]">
       <ScannerHeader
-        selectedOrg={selectedOrg}
+        selectedOrg={selectedOrgLabel}
         selectedEventName={selectedEventDetails?.name ?? null}
       />
-      <div className="main-space px-3">
-      {viewMode === "orgs" ? (
-        <SelectionList
-          title="Choose Organisation"
-          items={orgItems}
-          onSelect={(orgId) => {
-            setSelectedOrg(orgId);
-            setSelectedEvent("");
-            setQrInput("");
-            setTicket(null);
-            setNotice("");
-            setError("");
-            setViewMode("events");
-          }}
-        />
-      ) : null}
+      <div className="main-space h-full min-h-0">
+        {viewMode === "orgs" ? (
+          <SelectionList
+            title="Choose Organisation"
+            items={orgItems}
+            loading={hasGlobalScanning ? loadingOrganisations : false}
+            emptyState={orgsEmptyState}
+            emptyLabel="No organisations found"
+            onSelect={(orgId) => navigation.selectOrganisation(orgId)}
+          />
+        ) : null}
 
-      {viewMode === "events" ? (
-        <SelectionList
-          title="Choose Event"
-          subtitle={selectedOrg === "*" ? "All organisations" : selectedOrg}
-          onBack={() => {
-            setSelectedOrg("");
-            setSelectedEvent("");
-            setQrInput("");
-            setTicket(null);
-            setNotice("");
-            setError("");
-            setViewMode("orgs");
-          }}
-          items={eventItems}
-          loading={loadingEvents}
-          emptyLabel="No events found"
-          emptyState={
-            <div className="py-6 text-center">
-              <p className="text-xl font-semibold text-primary-text-highlight">No events found</p>
-              <p className="mt-1 text-xs text-slate-300">
-                There are no scannable events for this organisation yet.
-              </p>
-            </div>
-          }
-          onSelect={(eventId) => {
-            setSelectedEvent(eventId);
-            setQrInput("");
-            setTicket(null);
-            setNotice("");
-            setError("");
-            setViewMode("scanner");
-          }}
-        />
-      ) : null}
+        {viewMode === "events" ? (
+          <SelectionList
+            title="Choose Event"
+            subtitle={selectedOrgLabel}
+            onBack={navigation.backToOrganisations}
+            items={eventItems}
+            loading={loadingEvents}
+            emptyLabel="No events found"
+            emptyState={eventsEmptyState}
+            onSelect={(eventId) => navigation.selectEvent(eventId)}
+          />
+        ) : null}
 
-      {viewMode === "scanner" ? (
-        <>
-          <section className="rounded-2xl border border-dark-outline bg-dark-background p-4 text-primary-text shadow-lg">
-            <TopActionBar
-              title="Scanner"
-              onBack={() => {
-                setSelectedEvent("");
-                setQrInput("");
-                setTicket(null);
-                setNotice("");
-                setError("");
-                setViewMode("events");
-              }}
-              action={
+        {viewMode === "scanner" ? (
+          <>
+            <section className="text-primary-text shadow-lg">
+              <TopActionBar
+                title="Scanner"
+                onBack={navigation.backToEvents}
+              />
+
+              <div className="">
+                <QrReader
+                  active={!submitting && !ticket}
+                  onDetected={(value) => {
+                    void handleQrDetected(value);
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 p-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setQrInput(`TKT-${Math.floor(Math.random() * 9000 + 1000)}`);
-                    setNotice("Demo QR captured.");
-                    setError("");
-                  }}
-                  className="rounded-lg border border-keppel-logo px-2.5 py-1.5 text-xs font-semibold text-keppel-logo hover:bg-keppel-logo hover:text-white"
+                  onClick={() => runTicketAction("check")}
+                  disabled={submitting}
+                  className="rounded-lg bg-keppel-logo px-3 py-2 text-sm font-semibold text-white hover:bg-keppel-on-light disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Simulate
+                  Check
                 </button>
-              }
-            />
-
-            <label className="mt-3 grid gap-2 text-sm">
-              QR Payload
-              <input
-                value={qrInput}
-                onChange={(event) => setQrInput(event.target.value)}
-                placeholder="Example: TKT-4821"
-                className="rounded-xl border border-dark-outline bg-uberdark-background px-3 py-2 text-primary-text placeholder:text-slate-400"
-              />
-            </label>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => runTicketAction("check")}
-                disabled={submitting}
-                className="rounded-lg bg-keppel-logo px-3 py-2 text-sm font-semibold text-white hover:bg-keppel-on-light disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Check
-              </button>
-              <button
-                type="button"
-                onClick={() => runTicketAction("mark-used")}
-                disabled={submitting || !ticket}
-                className="rounded-lg bg-cerise-logo px-3 py-2 text-sm font-semibold text-white hover:bg-cerise-on-light disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Mark Used
-              </button>
-              <button
-                type="button"
-                onClick={() => runTicketAction("reset-unused")}
-                disabled={submitting || !ticket}
-                className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Reset to Unused
-              </button>
-            </div>
-          </section>
-
-          {error ? (
-            <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>
-          ) : null}
-          {notice ? (
-            <p className="rounded-xl border border-keppel-logo/40 bg-keppel-logo/10 px-4 py-3 text-sm text-keppel-on-light">
-              {notice}
-            </p>
-          ) : null}
-
-          {ticket ? (
-            <section className="rounded-2xl border border-dark-outline bg-white/90 p-4 shadow-sm">
-              <h2 className="text-base font-semibold text-dark-background">Ticket Result</h2>
-              <div className="mt-3 grid gap-2 text-sm text-slate-700">
-                <p>
-                  <span className="font-semibold">Attendee:</span> {ticket.attendeeName}
-                </p>
-                <p>
-                  <span className="font-semibold">Ticket:</span> {ticket.ticketId}
-                </p>
-                <p>
-                  <span className="font-semibold">Event:</span> {ticket.eventName}
-                </p>
-                <p>
-                  <span className="font-semibold">Scanned At:</span>{" "}
-                  {new Date(ticket.scannedAt).toLocaleString()}
-                </p>
-                <p>
-                  <span className="font-semibold">Status:</span>{" "}
-                  <span
-                    className={
-                      ticket.status === "used"
-                        ? "rounded-full bg-cerise-logo px-3 py-1 text-xs font-bold uppercase text-white"
-                        : "rounded-full bg-keppel-logo px-3 py-1 text-xs font-bold uppercase text-white"
-                    }
-                  >
-                    {ticket.status}
-                  </span>
-                </p>
+                <button
+                  type="button"
+                  onClick={() => runTicketAction("mark-used")}
+                  disabled={submitting || !ticket}
+                  className="rounded-lg bg-cerise-logo px-3 py-2 text-sm font-semibold text-white hover:bg-cerise-on-light disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Mark Used
+                </button>
+                <button
+                  type="button"
+                  onClick={() => runTicketAction("reset-unused")}
+                  disabled={submitting || !ticket}
+                  className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Reset to Unused
+                </button>
               </div>
             </section>
-          ) : null}
-        </>
-      ) : null}
 
+            {error ? (
+              <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>
+            ) : null}
+            {notice ? (
+              <p className="rounded-xl border border-keppel-logo/40 bg-keppel-logo/10 px-4 py-3 text-sm text-keppel-on-light">
+                {notice}
+              </p>
+            ) : null}
+
+            {ticket ? (
+              <section className="rounded-2xl border border-dark-outline bg-white/90 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-base font-semibold text-dark-background">Ticket Result</h2>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTicket(null);
+                      setQrInput("");
+                      setNotice("");
+                      setError("");
+                    }}
+                    className="rounded-lg border border-dark-outline px-3 py-1.5 text-xs font-semibold text-dark-background hover:bg-slate-100"
+                  >
+                    Scan Next
+                  </button>
+                </div>
+                <div className="mt-3 grid gap-2 text-sm text-slate-700">
+                  <p>
+                    <span className="font-semibold">Attendee:</span> {ticket.attendeeName}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Ticket:</span> {ticket.ticketId}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Event:</span> {ticket.eventName}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Scanned At:</span>{" "}
+                    {new Date(ticket.scannedAt).toLocaleString()}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Status:</span>{" "}
+                    <span
+                      className={
+                        ticket.status === "used"
+                          ? "rounded-full bg-cerise-logo px-3 py-1 text-xs font-bold uppercase text-white"
+                          : "rounded-full bg-keppel-logo px-3 py-1 text-xs font-bold uppercase text-white"
+                      }
+                    >
+                      {ticket.status}
+                    </span>
+                  </p>
+                </div>
+              </section>
+            ) : null}
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -490,19 +669,18 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full flex-col gap-4">
-
       <SignedOut>
         <>
           <ScannerHeader selectedOrg="" selectedEventName={null} />
           <section className="bg-dark-background p-5 shadow-sm">
-          <p className="mt-3 text-sm text-primary-text">
-            This scanner only works for users with organisation permissions that include scanning or wildcard access.
-          </p>
-          <SignInButton>
-            <button className="mt-4 rounded-lg bg-keppel-logo px-4 py-2 text-sm font-semibold text-white hover:bg-keppel-on-light">
-              Sign In
-            </button>
-          </SignInButton>
+            <p className="mt-3 text-sm text-primary-text">
+              This scanner only works for users with organisation permissions that include scanning or wildcard access.
+            </p>
+            <SignInButton>
+              <button className="mt-4 rounded-lg bg-keppel-logo px-4 py-2 text-sm font-semibold text-white hover:bg-keppel-on-light">
+                Sign In
+              </button>
+            </SignInButton>
           </section>
         </>
       </SignedOut>

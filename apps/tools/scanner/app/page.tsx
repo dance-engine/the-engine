@@ -10,58 +10,21 @@ import ScannerHeader from "./components/ScannerHeader";
 import SelectionList from "./components/SelectionList";
 import TopActionBar from "./components/TopActionBar";
 import { createScannerNavigation } from "./lib/scannerNavigation";
+import type {
+  ApiErrorPayload,
+  ApiResult,
+  EventsApiEvent,
+  OrgPermissions,
+  PublicOrganisation,
+  ScannerEvent,
+  TicketRecord,
+} from "./types/scanner";
 
 export const dynamic = "force-dynamic";
 
 const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 const apiBaseUrl = process.env.NEXT_PUBLIC_DANCE_ENGINE_API;
 const organisationsApiUrl = apiBaseUrl ? `${apiBaseUrl}/public/organisations` : null;
-
-type OrgPermissions = Record<string, string[]>;
-
-type ScannerEvent = {
-  id: string;
-  name: string;
-  startsAt: string | null;
-  endsAt: string | null;
-  status: string | null;
-};
-
-type EventsApiEvent = {
-  ksuid?: string;
-  name?: string;
-  starts_at?: string | null;
-  ends_at?: string | null;
-  status?: string | null;
-};
-
-type PublicOrganisation = {
-  organisation?: string;
-  name?: string;
-};
-
-type TicketStatus = "used" | "unused";
-
-type TicketRecord = {
-  ticketId: string;
-  attendeeName: string;
-  status: TicketStatus;
-  eventId: string;
-  eventName: string;
-  qrCode: string;
-  scannedAt: string;
-};
-
-type ApiResult<T> = {
-  ok: boolean;
-  status: number;
-  data: T | null;
-  message: string;
-};
-
-type ApiErrorPayload = {
-  msg?: unknown;
-};
 
 const includesScanningPermission = (roles: string[] | undefined): boolean => {
   if (!Array.isArray(roles)) {

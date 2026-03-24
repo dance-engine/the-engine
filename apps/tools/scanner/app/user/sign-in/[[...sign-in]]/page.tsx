@@ -42,12 +42,7 @@ export default async function SigninPage({ searchParams }: SigninPageProps) {
         style={{ background: "url('/circuits.jpg') top center / cover no-repeat" }}
       />
 
-      <section className="relative z-10 w-full max-w-md rounded-2xl border border-dark-outline/40 bg-white/95 p-5 shadow-xl backdrop-blur-sm sm:p-6">
-        <div className="mb-5 flex flex-col items-center gap-2 text-center">
-          <Image src="/dance-engine-logo-wide.png" alt="Dance Engine" width={196} height={40} priority />
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Scanner Sign In</p>
-        </div>
-
+      <section className="relative z-10 w-full max-w-md rounded-2xl   p-5 shadow-xl backdrop-blur-sm sm:p-6">
         <SignIn fallbackRedirectUrl="/" forceRedirectUrl={safeRedirectUrl ?? undefined} />
       </section>
     </main>

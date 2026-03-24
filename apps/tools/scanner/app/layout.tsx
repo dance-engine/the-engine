@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { shadesOfPurple } from "@clerk/themes";
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -24,7 +25,19 @@ export default function RootLayout({
     <html lang="en" className={`${openSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-base-background text-black">
         {publishableKey ? (
-          <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>
+          <ClerkProvider
+            publishableKey={publishableKey}
+            appearance={{
+              baseTheme: [shadesOfPurple],
+              variables: {
+                colorBackground: "#01164d",
+                colorTextOnPrimaryBackground: "white",
+                colorPrimary: "#FC27A7",
+              },
+            }}
+          >
+            {children}
+          </ClerkProvider>
         ) : (
           children
         )}

@@ -20,22 +20,8 @@ UploadProcessor:
           source:
             - prefix: "dance-engine."
           detail-type:
-            - prefix: "Upsert"
-    - eventBridge:
-        pattern:
-          source:
-            - prefix: "dance-engine."
-          detail-type:
-            - prefix: "Update"
-    - eventBridge:
-        pattern:
-          source:
-            - prefix: "dance-engine."
-          detail-type:
-            - prefix: "Create"
-    - eventBridge:
-        pattern:
-          source:
-            - prefix: "dance-engine."
-          detail-type:
-            - prefix: "organisation.updated" 
+            - prefix: "event."
+            - prefix: "customer."
+            - prefix: "organisation."
+            - prefix: "item."
+            - prefix: "bundle."

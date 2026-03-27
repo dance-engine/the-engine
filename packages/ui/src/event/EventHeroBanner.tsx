@@ -13,6 +13,7 @@ export default function EventHeroBanner({
 }) {
   const bannerImage = event.banner || org.banner || "";
   const heroLogo = theme.logoSecondaryUrl || theme.logoUrl;
+  const legacyHero = org.organisation === "rebel-sbk";
   const foregroundColour = bannerImage
     ? "var(--scheme-hero-text)"
     : "var(--scheme-page-text)";
@@ -24,11 +25,11 @@ export default function EventHeroBanner({
     <section className="relative isolate overflow-hidden">
       {bannerImage ? (
         <div
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-center bg-cover"
           style={{ backgroundImage: `url(${bannerImage})` }}
         />
       ) : null}
-      {bannerImage ? (
+      {bannerImage && !legacyHero ? (
         <div
           className="absolute inset-0"
           style={{ background: "var(--scheme-hero-overlay)" }}
@@ -42,7 +43,7 @@ export default function EventHeroBanner({
         }`}
       >
         <div className="flex w-full items-end justify-between gap-8">
-          <div className="max-w-3xl" style={{ color: foregroundColour }}>
+          {!legacyHero ? <div className="max-w-3xl" style={{ color: foregroundColour }}>
             <p
               className="mb-2 text-sm font-semibold tracking-tight sm:text-base"
               style={{ color: mutedColour }}
@@ -52,9 +53,9 @@ export default function EventHeroBanner({
             <h1 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
               {event.name}
             </h1>
-          </div>
+          </div> : null }
 
-          {heroLogo ? (
+          {heroLogo && /^https\:\/\//.test(heroLogo) ? (
             <div className="hidden w-full max-w-[200px] shrink-0 justify-end md:flex lg:max-w-[240px]">
               <img
                 src={heroLogo}

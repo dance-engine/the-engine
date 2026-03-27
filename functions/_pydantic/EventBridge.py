@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 from enum import Enum
@@ -6,28 +5,6 @@ from typing import Optional, Dict, Any
 from botocore.client import BaseClient
 
 from pydantic import BaseModel, Field, EmailStr, model_validator #! This means all eventbridge events need models even if they dont deal with Pydantic Entities, I think it's too tightly coupled, can we pass in Pydantic if needed 
-
-from _shared.DecimalEncoder import DecimalEncoder
-from _shared.helpers import deprecated
-
-@deprecated("Use trigger_eventbridge_event instead")
-def triggerEBEvent(eventBridgeClient, source = "core", detail_type = "General", detail = {}):
-    """
-    DEPRECATED: Use trigger_eventbridge_event instead.
-    """
-    logger = logging.getLogger()
-    logger.info(f"Trigger Event Bus: \n{source} \n {detail_type} \n {detail}")
-    eventBridgeClient.put_events(
-        Entries=[
-            {
-                # 'Detail': '{ "message": "Hello, EventBridge!" }',
-                'Detail': json.dumps(detail, cls=DecimalEncoder),
-                'DetailType': detail_type,
-                'Source': f"dance-engine.{source}",
-            },
-        ]
-    )
-    return True
 
 class EventType(str, Enum):
     event = "event"

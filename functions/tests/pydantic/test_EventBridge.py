@@ -6,7 +6,6 @@ import json
 from pydantic import ValidationError
 
 from _pydantic.EventBridge import (
-    triggerEBEvent,
     trigger_eventbridge_event,
     EventBridgeEventDetail,
     EventBridgeEvent,

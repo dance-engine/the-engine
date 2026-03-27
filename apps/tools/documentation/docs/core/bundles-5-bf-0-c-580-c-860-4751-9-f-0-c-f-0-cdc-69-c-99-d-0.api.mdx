@@ -1,0 +1,71 @@
+---
+id: bundles-5-bf-0-c-580-c-860-4751-9-f-0-c-f-0-cdc-69-c-99-d-0
+title: "Publish Bundles"
+description: "Publishes one or more draft bundles: validates includes, creates Stripe product/prices and sets status to live."
+sidebar_label: "Publish Bundles"
+hide_title: true
+hide_table_of_contents: true
+api: eJzFVU1v20YQ/SuDOSUAJdFGnMa82bELqC0Qwx/oQRXi1XIkrU3uMrNL2SrB/17MkrJkSykKX8oTyZ198/neNJiT12yqYJzFDK/qWWH8kjw4S+AYSscEOat5gFlt84J8BitVmFwF8mCsLuqcfAKaKf65CWwqgopdXuswqtho8qBsDp6CBx9UqD0EB4VZ0RATdBWxEu/jHDPsfQxOZvNUn3xJB/rL53Tw6ZeTo8HpPNWDeapz/flUn57mKSZYKVYlBWKP2aRBq0rCDB0vlDU+omKCRhKrVFhi8ibbbzuG4It6gQky/agNU45Z4JoS9HpJpcKswbCuBN0HNlYsgwnFnru2TV7ioBXZ8K8BXIpF9Cy1Hl+8y3/npm2nCQa1kErgeVdGnHZ45MO5y9cC8tp/byf9qLrOv4pgrgpPCWpng7jIGlRVVRgdUx09eMFo9iN0swfS4RXSZNNZCaliaXow5OXS5mB7XzGr9V6t/jA+gJv3Ywi/39yNL95EbgKVfr9Ubdsm+DwwNhBbVQwW7OpqO2z46jD2KcPv1TpXNhg9Kl1Ohd+pd8+RvnbXXX3FSSsZ+8pZ36VznB79vOR91JSDr7Um7+d1UayFEUtSeZzoRhA/paf7IDeupA0f4YmYwLrQ0fQAwvHxf0Xog1KzgvZxTtJ0H2fc1w088YoYiNnxobuHYui0IkqHMHCuTEH528ttgiWFpRN5qJwPkfaxR6Nml3rtqIlMaEd9WqPtYHjSNZuwjiqhC+LH7w9PAbPJVFizOb2RQe5at2PzNurf/rwF431NOczW8FUMh3C7JAjukSyUtQ8wo4005mAshCXB/Vkdlo7N3zHYe+hSBOVBwTkpJu4AhnDnif0LTqU4jr1gBMULCrCbdZTWpVpRNNgQDtgVBB9ouBgmcK/y0tj7j8IVFUdN5DmQDmJI3tWsyQ//Eq3sibMMocJee+R7FgPEpH/51XGpQlcLUTwUKbjeCs3lsyor4coOuycbNk5bUcS5izztKXWhrCa4tAtjCc6uxnvkl/qeXY1h7hh2jTHBFbHvjNJhOjzCNoljUqooTr0U95yF8xfKv8Jvthr3P6zAvuiBnsOoKpSxkkPNhcTVjfoEszdLLdssl62IbcZ9muBSeJJNsGlmytMdF20rv3/UxMKBaYIrxUZoHhmRGy/vW8X/aXE+XPcT9hEOLc+DmWxU3Yqmr1RRyxcm+Ejrve2ZvDOYA4v0HbH0m1QmtKNnrE539rVzO7gVhO3dvYUogvKiV1ffbm6lR/3ylVWCGbJ6kuWonjrfLqYWZSf+a7BQdlGrhdh2mPL8A+JEWT8=
+sidebar_class_name: "post api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Publish Bundles"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/{organisation}/{event}/bundles/publish"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Publishes one or more draft bundles: validates includes, creates Stripe product/prices and sets status to live.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Bundles to publish","required":false,"content":{"application/json":{"schema":{"type":"object","required":["bundles"],"properties":{"bundles":{"type":"array","description":"List of bundle KSUIDs to publish","items":{"type":"string"}}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"PublishBundlesRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"Bundles published successfully.","headers":{}},"409":{"description":"Some bundles were not draft.","headers":{}},"422":{"description":"Some bundles were not publishable.","headers":{}},"500":{"description":"Internal server error.","headers":{}},"502":{"description":"Stripe creation failed.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

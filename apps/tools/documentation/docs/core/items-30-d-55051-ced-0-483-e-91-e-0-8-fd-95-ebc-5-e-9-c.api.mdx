@@ -1,0 +1,71 @@
+---
+id: items-30-d-55051-ced-0-483-e-91-e-0-8-fd-95-ebc-5-e-9-c
+title: "Publish Items"
+description: "Publishes one or more draft items: creates Stripe product/prices and sets status to live."
+sidebar_label: "Publish Items"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vdtu2zgQ/ZXBPLWAfElaA43e0iYLeHeBBrlgH7xGQ0tji4lEqkPKiSvo3xdDyXd3UQSon2RpeObCc87UmJJLWJdeW4Mx3lSzXLuMHFhDYBkKywQpq7kH7alwMSRMypODO8+6JCjZplXiByXrhBwok4Ij78B55SsH3kKul9THCG1JrCTPOMUYA1rvwzAdjYajs15C6bD38dMH6l2c0bD3aZ5ejGiWjOgiwQhLxaogT+wwntRoVEEYo+WFMtoFTIxQSwOl8hlGB1193QkEl1cLjJDpe6WZUow9VxShSzIqFMY1+lUp6M6zNhLptc+P0jVNtKmDlmT8/xZwLREhs8x0fPWm/G2applG6NVCJoFjGSJOWzRy/rNNVwKxnz1EyU2U7e3uZZ+r3FGEiTVe4OMaVVnmOgltDp6cINTH1dnZEyV+D2nS3qmUU7Jcttfk5Ej7entWMavV0Yz+1s6DnQeawV93D+Org5oPYboBNU0T4WtPG09sVN5bsK3KNcFw71O4mxi/latUGa+TQWFTyt3OjDv+h4ndtjOVBI306UprXNvR+fDsZ2Pu6qUUXJUk5Ny8yvOV8D8jlQYG14L3cXhxDHFnC2p1Bi/EBMb6Vnwnzp+f/9r5riA1y+kYZTQcnmikmxc44iUxELPlU2dPVdC6QjAJUdtc6ZzSw8NNhAX5zIoRlNb5IPFwN4N6V2bNoA6sbwahqcGWDI6SirVfBT9IcuLnb08vHuPJVPSx/nontG2vbCfmsOY//7kH7VxFKcxW8EUC+3CfEXj7TAaKynmYEWiT5FVKKWgDPiN4vKx8Zln/CKU+QtsgKAcKPpNi4hagDw+O2G1wSsWB6ILhFS/Iw27PwUIztaQQsJYXsM0J3lF/0Y/gUaWFNo/vRR8qkExs2FPiJZCcrTgh1/9XXLETS+Z9iZ3LyP9ZKBCj7uEPy4Xy7SzE21CEf7s1letXVZSikI2aJ2v9TRtxvrkNyuxkdKVMQnBtFtoQXN6Mj8Qu0728GcPcMuwGY4RLYtcGDfvD/hk2UaBIoYIRdZbb6RTGncj30Outm/3WhdaN1tOrH5S50kZqrTiXClo6TzA+WFLxZll0la8pPY0wEyXEE6zrmXL0wHnTyOvvFbHwfBrhUrEWIQfWp9rJ89bDfzqEd7cdi97DqVV4so+1Vxtx6qXKK/mHET7T6mgXRm8s5sRafEMt3V4UHrYSDNNpv31p0/buBWF79mjFiWlsHOnm6929KKNbprIkMEZWL7Lu1Eub24bWgrWEdzXmyiwqtZDYFlN+/wEhbTzx
+sidebar_class_name: "post api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Publish Items"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/{organisation}/{event}/items/publish"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Publishes one or more draft items: creates Stripe product/prices and sets status to live.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Items to publish","required":false,"content":{"application/json":{"schema":{"type":"object","required":["items"],"properties":{"items":{"type":"array","description":"List of item KSUIDs to publish","items":{"type":"string"}}},"x-internal-group":"items","x-internal-path":"_pydantic/models","title":"PublishItemsRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"Items published successfully.","headers":{}},"409":{"description":"Some items were not draft.","headers":{}},"422":{"description":"Some items were not publishable.","headers":{}},"500":{"description":"Internal server error.","headers":{}},"502":{"description":"Stripe creation failed.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

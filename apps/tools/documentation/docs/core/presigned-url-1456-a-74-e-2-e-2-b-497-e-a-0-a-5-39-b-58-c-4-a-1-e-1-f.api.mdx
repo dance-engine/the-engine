@@ -1,0 +1,71 @@
+---
+id: presigned-url-1456-a-74-e-2-e-2-b-497-e-a-0-a-5-39-b-58-c-4-a-1-e-1-f
+title: "Generate Presigned Download URL"
+description: "Generates a presigned GET URL to allow users to download a file from S3."
+sidebar_label: "Generate Presigned Download URL"
+hide_title: true
+hide_table_of_contents: true
+api: eJytVU1v20gM/SsETy0gO9/brW5pkwbp7qJB4mAPTlDTEi1PMppROaOkXsP/fcGRHX8kvdUnWSLfkG/eI+dYcijENNF4hzlesGOhyAEIGuFgKsclXJwP4Pb6b4geyFr/DG1gCfq39M/OeiqBYGIsw0R8DTdHfczQN4pkvLssMccXsO+t2N7B8ckf9OGYe4d8OO4df/zAPdqnk97Rx/HJn8UxHfDBBDNsSKjmyBIwH95nGKnSJ7w5wvsMhX+0HOInX84wn+808kWreamu5EjGBuySjHCJ+YRs4AwL7yK7qAjUNNYUqea9h6AwcwzFlGvSpzhrGHP04wcu4hbSEKlIx2aoJPzFMy2vEWUgGg4Ju4tY44QoxlWYIbu2VoyL84GmbbdxmtJAc/rwTxsijBlGdxp8hyOYeOl4X3WqxPNPqhurZyjkYl3UG4dvn3ZzBI88S6hxyh3yxiVvg4NCe6nImUC/am4b/9tGNATbVvDOp29kM3A+QmmEi2hnKrASxrNUhqrP+soU77cLqO0EF4sMo4ldt0vtXq2kdras+7oTCi4WGi4cGu9Cdy2H+/uvtfMCsBaQql84tuI40TBlKpMs5wp5/BbKpXsia0owrmkjeIHahGBc1dH6yLPXOCdv40QWRxYCyxMLsIiX3dxFhjXHqU9W8yEm88Qp5rhXLWnpvViw14rFDAMXrZg4w3w4x8KyPH5/eI7qtMX9+uuNGqAjayNmt8iv/w7AhNB2t/ZZA/swmKp8HtlBvVSucYVtS1ZS0tWOTts49WL+S5IYQdcSkI6fT0zC0gH04TZNnBVOQxLBTxJGJKlYCd7QFrkSpvTEKWBlVBBvGd5xv+pnMKKyNm70Ps20ouAQoBEfuYgayMG3UnDo36mpl6KextgobYkQzHGcCsRs+fDFS02x4yLpUkfI9XpGna+Eux4GyaAb/kTAXUt1Ks/QuIlPBluK/YxcwXDuKuMYTq8uX3lNyT+9ukxm3gzGDJ9YQhe039/vHyi8aqamZGFH9aabYO2Gsw037J43Xw/S37lEltRH/hn3GkvGabEq33y+FPgQfyHw+wyn6oR8iPP5mALfil0s9PWPlmXWbZQnEkNjZXR4v1hZKhniMV3I566p3kDr0HDbaj2vNoU65sWAV99u9FrHy8VU+1JzhJ51a9Az5pjWo2YnX6V3c7TkqpYqje0w9fc/c9WcLA==
+sidebar_class_name: "post api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Generate Presigned Download URL"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/generate-presigned-url"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Generates a presigned GET URL to allow users to download a file from S3.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"File download details","required":false,"content":{"application/json":{"schema":{"type":"object","required":["action","fileKey"],"properties":{"action":{"type":"string","enum":["GET"],"description":"Action type. Must be `\"GET\"` for file download.","example":"GET"},"fileKey":{"type":"string","description":"S3 key for the file to download.","example":" "},"organisation":{"type":"string","description":"Organisation slug (optional, not directly used by the GET logic).","example":"mlf"}},"title":"GeneratePresignedDownloadRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Presigned download URL returned.","headers":{}},"400":{"description":"Invalid input or missing file key.","headers":{}},"500":{"description":"Internal server error.","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

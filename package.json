@@ -9,9 +9,9 @@
     "check-types": "turbo run check-types",
     "build-json": "cd functions && pnpm build-json",
     "build-models": "cd functions && pnpm build-models",
-    "build-docs": "cd apps/apidocs && pnpm build-docusaurus-openapi",
+    "build-docs": "cd apps/tools/documentation && pnpm build-docusaurus-openapi",
     "update-schema": "pnpm build-json && pnpm build-models && pnpm build-docs",
-    "build-openapi-docs": "cd functions && pnpm build-json && cd ../apps/apidocs && pnpm build-docusaurus-openapi"
+    "build-openapi-docs": "cd functions && pnpm build-json && cd ../apps/tools/documentation && pnpm build-docusaurus-openapi"
   },
   "devDependencies": {
     "@types/node": "^22.19.15",

@@ -6,13 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import DataLoading from "./components/DataLoading";
 import FullPageWarning from "./components/FullPageWarning";
 import QrReader from "./components/QrReader";
+import ScannerActionOverlay from "./components/ScannerActionOverlay";
 import ScannerHeader from "./components/ScannerHeader";
 import SelectionList from "./components/SelectionList";
 import TopActionBar from "./components/TopActionBar";
 import { createScannerNavigation } from "./lib/scannerNavigation";
 import type {
-  ApiErrorPayload,
-  ApiResult,
   EventsApiEvent,
   OrgPermissions,
   PublicOrganisation,
@@ -25,6 +24,19 @@ export const dynamic = "force-dynamic";
 const hasClerkKey = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 const apiBaseUrl = process.env.NEXT_PUBLIC_DANCE_ENGINE_API;
 const organisationsApiUrl = apiBaseUrl ? `${apiBaseUrl}/public/organisations` : null;
+
+/**
+ * Scanner JWT claim mapping.
+ * Keep this as the single source of truth for payload field names.
+ */
+const SCANNER_JWT_CLAIMS = {
+  organization: "o",
+  issuer: "iss",
+  eventKsuid: "e",
+  ticketKsuid: "sub",
+} as const;
+
+const SCANNER_JWT_EXPECTED_ISSUER = "DANCEENGINE";
 
 const includesScanningPermission = (roles: string[] | undefined): boolean => {
   if (!Array.isArray(roles)) {
@@ -71,67 +83,62 @@ const isActiveScannerEvent = (event: EventsApiEvent): boolean => {
   return status === "live";
 };
 
-const requestJson = async <T,>(
-  input: RequestInfo,
-  init?: RequestInit,
-): Promise<ApiResult<T>> => {
+const decodeBase64UrlToString = (value: string): string => {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+};
+
+const decodeJwt = (
+  token: string,
+): { header: Record<string, unknown>; payload: Record<string, unknown> } | null => {
   try {
-    const response = await fetch(input, init);
-    const rawBody = await response.text();
-
-    if (!rawBody) {
-      if (!response.ok) {
-        return {
-          ok: false,
-          status: response.status,
-          data: null,
-          message: `Request failed (${response.status}) with an empty body.`,
-        };
-      }
-      return {
-        ok: false,
-        status: response.status,
-        data: null,
-        message: "Request succeeded but the response body was empty.",
-      };
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      return null;
     }
 
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(rawBody);
-    } catch {
-      return {
-        ok: false,
-        status: response.status,
-        data: null,
-        message: "Response body was not valid JSON.",
-      };
+    const headerPart = parts[0];
+    const payloadPart = parts[1];
+    if (!headerPart || !payloadPart) {
+      return null;
     }
 
-    if (!response.ok) {
-      const payload = parsed as ApiErrorPayload;
-      return {
-        ok: false,
-        status: response.status,
-        data: null,
-        message: asMessage(payload.msg, `Request failed (${response.status}).`),
-      };
-    }
+    const headerRaw = decodeBase64UrlToString(headerPart);
+    const payloadRaw = decodeBase64UrlToString(payloadPart);
+    const header = JSON.parse(headerRaw) as Record<string, unknown>;
+    const payload = JSON.parse(payloadRaw) as Record<string, unknown>;
 
-    return {
-      ok: true,
-      status: response.status,
-      data: parsed as T,
-      message: "OK",
-    };
+    return { header, payload };
   } catch {
-    return {
-      ok: false,
-      status: 0,
-      data: null,
-      message: "Network error while contacting scanner API.",
-    };
+    return null;
   }
+};
+
+const getFirstString = (
+  source: Record<string, unknown>,
+  keys: string[],
+): string | null => {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return null;
+};
+
+const getMappedJwtString = (
+  payload: Record<string, unknown>,
+  claim: keyof typeof SCANNER_JWT_CLAIMS,
+): string | null => {
+  const raw = payload[SCANNER_JWT_CLAIMS[claim]];
+  if (typeof raw === "string" && raw.trim().length > 0) {
+    return raw.trim();
+  }
+  return null;
 };
 
 function ScannerWorkspace() {
@@ -291,23 +298,24 @@ function ScannerWorkspace() {
   const runTicketAction = async (
     action: "check" | "mark-used" | "reset-unused",
     qrCodeOverride?: string,
-  ) => {
+    options?: { resetTicketOnCheck?: boolean },
+  ): Promise<boolean> => {
     if (!selectedOrg || !selectedEvent) {
       setError("Choose an organisation and an event first.");
-      return;
+      return false;
     }
 
     const qrCode = (qrCodeOverride ?? qrInput).trim();
     if (!qrCode) {
       setError("Scan or enter a QR code first.");
-      return;
+      return false;
     }
 
     if (qrCode !== qrInput) {
       setQrInput(qrCode);
     }
 
-    if (action === "check") {
+    if (action === "check" && options?.resetTicketOnCheck) {
       setTicket(null);
     }
 
@@ -315,38 +323,98 @@ function ScannerWorkspace() {
     setError("");
     setNotice("");
 
-    const endpoint =
-      action === "check"
-        ? "/api/mock/scanner/check"
-        : action === "mark-used"
-          ? "/api/mock/scanner/mark-used"
-          : "/api/mock/scanner/reset-unused";
-
-    const result = await requestJson<{ ticket?: TicketRecord; msg?: string }>(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orgId: selectedOrg,
-        eventId: selectedEvent,
-        qrCode,
-      }),
-    });
-    setSubmitting(false);
-
-    if (!result.ok || !result.data || !result.data.ticket) {
-      setError(result.message);
-      return;
+    if (action !== "check") {
+      setSubmitting(false);
+      setNotice(
+        action === "mark-used"
+          ? "Marked as used locally. Verification will happen via API later."
+          : "Reset to unused locally. Verification will happen via API later.",
+      );
+      return true;
     }
 
-    setTicket(result.data.ticket);
-    setNotice(asMessage(result.data.msg, "Ticket updated."));
+    const decoded = decodeJwt(qrCode);
+    setSubmitting(false);
+
+    if (!decoded) {
+      setError("Scanned code is not a readable JWT payload.");
+      return false;
+    }
+
+    const jwtIssuer = getMappedJwtString(decoded.payload, "issuer");
+    if (jwtIssuer !== SCANNER_JWT_EXPECTED_ISSUER) {
+      setError(
+        `Invalid token issuer. Expected ${SCANNER_JWT_EXPECTED_ISSUER}, received ${jwtIssuer ?? "missing"}.`,
+      );
+      return false;
+    }
+
+    const statusRaw = getFirstString(decoded.payload, ["status", "ticket_status"]);
+    const status = statusRaw === "used" || statusRaw === "unused" ? statusRaw : "unused";
+
+    const jwtOrg = getMappedJwtString(decoded.payload, "organization");
+    const orgMismatch = Boolean(jwtOrg && jwtOrg !== selectedOrg);
+
+    const mappedTicket: TicketRecord = {
+      ticketId: getMappedJwtString(decoded.payload, "ticketKsuid") ?? qrCode,
+      attendeeName:
+        getFirstString(decoded.payload, ["attendeeName", "attendee_name", "name", "holderName"]) ??
+        "Unknown attendee",
+      status,
+      eventId: getMappedJwtString(decoded.payload, "eventKsuid") ?? selectedEvent,
+      eventName:
+        getFirstString(decoded.payload, ["eventName", "event_name"]) ??
+        selectedEventDetails?.name ??
+        "Unknown event",
+      qrCode,
+      scannedAt: new Date().toISOString(),
+      jwtHeader: decoded.header,
+      jwtPayload: decoded.payload,
+      jwtOrg,
+      orgMismatch,
+    };
+
+    setTicket(mappedTicket);
+    setNotice("JWT decoded locally. Signature is not verified in scanner yet.");
+    return true;
+
+    // API flow intentionally disabled while local JWT inspection is being tested.
+    // Restore this block when server-side verification is ready.
+    // const endpoint =
+    //   action === "check"
+    //     ? "/api/mock/scanner/check"
+    //     : action === "mark-used"
+    //       ? "/api/mock/scanner/mark-used"
+    //       : "/api/mock/scanner/reset-unused";
+    //
+    // const result = await requestJson<{ ticket?: TicketRecord; msg?: string }>(endpoint, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     orgId: selectedOrg,
+    //     eventId: selectedEvent,
+    //     qrCode,
+    //   }),
+    // });
   };
 
   const handleQrDetected = async (value: string) => {
     setQrInput(value);
     setError("");
     setNotice("QR captured. Checking ticket...");
-    await runTicketAction("check", value);
+    await runTicketAction("check", value, { resetTicketOnCheck: true });
+  };
+
+  const clearScannedTicket = () => {
+    setTicket(null);
+    setQrInput("");
+  };
+
+  const handleOverlayAction = async (action: "check" | "mark-used" | "reset-unused") => {
+    const success = await runTicketAction(action);
+    if (success) {
+      clearScannedTicket();
+    }
   };
 
   const selectedEventDetails = useMemo(
@@ -458,12 +526,15 @@ function ScannerWorkspace() {
           <span className="mx-1 rounded bg-red-100 px-2 py-1 font-mono text-xs">superadmin</span>
           access.
         </p>
-        <details className="mt-4 rounded-xl border border-red-200 bg-white/70 p-3">
-          <summary className="cursor-pointer text-sm font-semibold">Debug permissions + orgs</summary>
-          <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">
+        <details className="mt-4 group">
+          <summary className="inline-flex cursor-pointer list-none items-center rounded-md border border-red-300 bg-white px-2.5 py-1 text-xs font-semibold text-red-800 hover:bg-red-100">
+            Debug
+          </summary>
+          <pre className="mt-3 overflow-x-auto rounded-lg border border-red-200 bg-slate-900 p-3 text-xs text-slate-100">
 {JSON.stringify(
   {
     userId: user?.id ?? null,
+    selectedOrg: selectedOrg || null,
     orgPermissions,
     allowedOrgs,
     hasGlobalScanning,
@@ -535,34 +606,23 @@ function ScannerWorkspace() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 p-2">
-                <button
-                  type="button"
-                  onClick={() => runTicketAction("check")}
-                  disabled={submitting}
-                  className="rounded-lg bg-keppel-logo px-3 py-2 text-sm font-semibold text-white hover:bg-keppel-on-light disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Check
-                </button>
-                <button
-                  type="button"
-                  onClick={() => runTicketAction("mark-used")}
-                  disabled={submitting || !ticket}
-                  className="rounded-lg bg-cerise-logo px-3 py-2 text-sm font-semibold text-white hover:bg-cerise-on-light disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Mark Used
-                </button>
-                <button
-                  type="button"
-                  onClick={() => runTicketAction("reset-unused")}
-                  disabled={submitting || !ticket}
-                  className="col-span-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Reset to Unused
-                </button>
-              </div>
               </div>
             </section>
+
+            <ScannerActionOverlay
+              open={Boolean(ticket)}
+              ticket={ticket}
+              submitting={submitting}
+              selectedOrg={selectedOrg}
+              onAction={(action) => {
+                void handleOverlayAction(action);
+              }}
+              onScanNext={() => {
+                clearScannedTicket();
+                setNotice("");
+                setError("");
+              }}
+            />
 
             {error ? (
               <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>
@@ -571,53 +631,6 @@ function ScannerWorkspace() {
               <p className="rounded-xl border border-keppel-logo/40 bg-keppel-logo/10 px-4 py-3 text-sm text-keppel-on-light">
                 {notice}
               </p>
-            ) : null}
-
-            {ticket ? (
-              <section className="rounded-2xl border border-dark-outline bg-white/90 p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-base font-semibold text-dark-background">Ticket Result</h2>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTicket(null);
-                      setQrInput("");
-                      setNotice("");
-                      setError("");
-                    }}
-                    className="rounded-lg border border-dark-outline px-3 py-1.5 text-xs font-semibold text-dark-background hover:bg-slate-100"
-                  >
-                    Scan Next
-                  </button>
-                </div>
-                <div className="mt-3 grid gap-2 text-sm text-slate-700">
-                  <p>
-                    <span className="font-semibold">Attendee:</span> {ticket.attendeeName}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Ticket:</span> {ticket.ticketId}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Event:</span> {ticket.eventName}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Scanned At:</span>{" "}
-                    {new Date(ticket.scannedAt).toLocaleString()}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Status:</span>{" "}
-                    <span
-                      className={
-                        ticket.status === "used"
-                          ? "rounded-full bg-cerise-logo px-3 py-1 text-xs font-bold uppercase text-white"
-                          : "rounded-full bg-keppel-logo px-3 py-1 text-xs font-bold uppercase text-white"
-                      }
-                    >
-                      {ticket.status}
-                    </span>
-                  </p>
-                </div>
-              </section>
             ) : null}
           </>
         ) : null}

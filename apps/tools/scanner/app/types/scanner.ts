@@ -31,6 +31,12 @@ export type TicketRecord = {
   eventName: string;
   qrCode: string;
   scannedAt: string;
+  jwtHeader?: Record<string, unknown>;
+  jwtPayload?: Record<string, unknown>;
+  /** Slug extracted from the JWT payload for the organisation this ticket belongs to. */
+  jwtOrg?: string | null;
+  /** True when the JWT org does not match the currently selected organisation. */
+  orgMismatch?: boolean;
 };
 
 export type ApiResult<T> = {

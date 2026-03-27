@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { shadesOfPurple } from "@clerk/themes";
 import { Open_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -28,11 +27,24 @@ export default function RootLayout({
           <ClerkProvider
             publishableKey={publishableKey}
             appearance={{
-              baseTheme: [shadesOfPurple],
               variables: {
                 colorBackground: "#01164d",
                 colorTextOnPrimaryBackground: "white",
                 colorPrimary: "#FC27A7",
+                colorText: "white",
+                colorTextSecondary: "#c0c8e8",
+                colorInputText: "white",
+                colorInputBackground: "#0a2166",
+              },
+              elements: {
+                socialButtonsBlockButton: {
+                  backgroundColor: "#0a2166",
+                  color: "white",
+                  borderColor: "#2a4080",
+                },
+                socialButtonsBlockButtonText: {
+                  color: "white",
+                },
               },
             }}
           >

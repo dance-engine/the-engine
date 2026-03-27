@@ -2,6 +2,7 @@ Checkout:
   runtime: python3.11
   handler: functions/checkout/lambda_checkout.lambda_handler
   name: "${sls:stage}-${self:service}-checkout"
+  timeout: 29
   package:
     patterns:
       - '!**/**'
@@ -26,6 +27,7 @@ EventbridgeCheckout:
   runtime: python3.11
   handler: functions/checkout/lambda_checkout.eventbridge_handler
   name: "${sls:stage}-${self:service}-eventbridge-checkout"
+  timeout: 29
   package:
     patterns:
       - '!**/**'

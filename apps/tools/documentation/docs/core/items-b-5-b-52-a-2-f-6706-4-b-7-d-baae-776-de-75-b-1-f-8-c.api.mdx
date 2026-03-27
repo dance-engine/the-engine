@@ -1,0 +1,71 @@
+---
+id: items-b-5-b-52-a-2-f-6706-4-b-7-d-baae-776-de-75-b-1-f-8-c
+title: "Public Get All Items"
+description: "Public endpoint to get all items for a given organisation and event."
+sidebar_label: "Public Get All Items"
+hide_title: true
+hide_table_of_contents: true
+api: eJytV01v2zgQ/SsDXrYFZDsNmmbhS5HdZgsvFtugTdFD1kgocWyxoUiWH05dQ/99MZTk2paQtGlOlknOm+F7Q85wwwT6wkkbpNFsyi5irmQBqIU1UgcIBpYYgCsFMmDlYWEccFjKFWowbsm19JxsgWsBuEIdxixjxqJLwzPBpixZjvKT/OSYHy9Gr06PXo1e5qdilHOOo9PTVwJPT/IXi98LljHLHa8woPNserVhmlfIpmzXFcuYpFgtDyXLDjbwbjcmr+KSZczhlygdCjYNLmLGfFFixdl0w8LaEroPTmpaGWRQPXd1nW3jSDu8N4BzWpE8g3Ewe/Mo/42bup5nLPAlMdEqwzI2IzbZPGMei+hkWBNPtNKht0Z79IR8fHREP/uxnYGSPoBZNGKSUoXRgXxNN4xbq2SR9jz57Mlg0w/V5J+xIAasI5GDbNwlvJ1l3Dm+Jp4Oxrfm3zm5aridH0Le+ihFn6Q6a7UYmNjb7cC8DzxEP0Q86lhRKMLxBYWn5ApZxrgrSrlCQSkdg+ABBZvXxJqKle4T/Po1idhg61jl6MitM3c/utQ6WXG3vrZOFtg3umimIU2TjqHEpCVIDRa1Ju4GYD0WRot7gD90C34aOpBi9yBftvM/DbxHxXWn+T74v7xKkHaXl+9gO8rvE/AAnN9nYwhwf9sP4IU9DobgpBZyJUXkSq2vbXRFyT3yXA2AfjJRCVibCEreIlg0ViFd1J0ZhFJ6MBpk+M2DudPfHebGKOS6OQtOWmzDbw7agZ+SB5/Ecqgo86Exga3JEM9b1B3tHoWeKg3NP6xt4/NQ4l/z+gMp0Po9yIRfc/twpmwZNiIW4WfdbY0GkFEHGdbXzXjv9qwz9nUkdUCnuRotnYm2K+1sbypVxSm7tmvBdZDFpDICld+pblTB3qVC0Ba1+qnR/5E+vG/L4a6PErlIncWG/r08etknL5VX0CbAwkRNRO0bnQwV1lkbHnh0K3SAzhn3hOW1Qu/5crjoJV/DgnWUnNOSjo8+E3XGKgyloV5ticl7w/LEJu4mm91+qJ5sUntSTzp5ukbkA+2mCbhQ6G6vP9+FPld/f7oE6X1EAfka/qSFY7ik3De3qKGKPkCOIHWhokBBVYJS+eYshtI4+S0FcQPNBoB74PAHcoeuARjDR4/Ob3Esd6GrOoE76mZ7fWvJV9iel6YrAWcUwjMcL8cZ3HBRSX3znO5YXhToPR2kgAWdLIfeRFegH/+3c8+WIVjWNnrp3k0Bsqz9+Mu4ioeGiySU1AuTJGwFe8N1gXCul1IjnF3Mel0m8XV2MUv3xu5ilrEVOt8sOhofjV+kUmp8qHjKuLaPbfv8txjgTCmYtUoeNFDb7H2qd0FLT8CvYWIVl6kSRafIWZNzV8x2je70oOmfbpvvrgMujQ9kstnk3ONHp+qahr9EdNQVzzO24k42ZfRqw4T09C3YdMGVx3u2++x9mwjPYehBMbiNrvPV1PeuuIr0j2XsFte9F0X2yGAGHhePiKV9Xcy310Bip5k7Kwq0Yceqd23RU2N7Xbw9v6Q2OZJ02xtImzSQdR/Tq3ld1/8DPEgJiA==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Public Get All Items"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/public/{organisation}/{event}/items"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Public endpoint to get all items for a given organisation and event.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"A list of items.","content":{"application/json":{"schema":{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"status":{"type":"string","enum":["draft","live","archived","outdated"]},"column":{"description":"??","type":"number"},"row":{"description":"??","type":"number"},"primary_price":{"description":"Primary price of the item in pennies","type":"number"},"secondary_price":{"description":"Secondary price of the item in pennies","type":"number"},"tertiary_price":{"description":"Tertiary price of the item in pennies","type":"number"},"primary_price_name":{"description":"Name of primary price","type":"string"},"secondary_price_name":{"description":"Name of secondary price","type":"string"},"tertiary_price_name":{"description":"Name of tertiary price","type":"string"},"individually_purchaseable":{"description":"Would you like people to purchase this on it's own","type":"boolean"},"stripe_price_id":{"description":"Whats the related stripe price_id","type":"string"},"stripe_primary_price_id":{"description":"Whats the related stripe price_id for the primary price","type":"string"},"stripe_secondary_price_id":{"description":"Whats the related stripe price_id for the secondary price","type":"string"},"stripe_tertiary_price_id":{"description":"Whats the related stripe price_id for the tertiary price","type":"string"},"stripe_product_id":{"description":"Whats the related stripe product_id","type":"string"},"entity_type":{"type":"string"}},"x-internal-group":"items","x-internal-path":"_pydantic/models","title":"ItemObjectPublic"}}},"x-internal-group":"items","x-internal-path":"_pydantic/models","title":"ItemListResponsePublic"}}},"headers":{}},"404":{"description":"Items not found","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

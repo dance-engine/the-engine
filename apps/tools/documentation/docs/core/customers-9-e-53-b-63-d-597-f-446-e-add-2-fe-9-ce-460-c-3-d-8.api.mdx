@@ -1,0 +1,71 @@
+---
+id: customers-9-e-53-b-63-d-597-f-446-e-add-2-fe-9-ce-460-c-3-d-8
+title: "Create Customer"
+description: "Creates a new customer record under a specific organisation."
+sidebar_label: "Create Customer"
+hide_title: true
+hide_table_of_contents: true
+api: eJytVttu4zYQ/RVinnYB2fFuLm38ls2mQIoCCZJs++AGG5oaW0wkUjscJXEF/XsxlGzLl24WbfUkkjNnhnM5wxpSDIZsydY7GMM5oWYMSiuHL8pUgX2BpAiNp1RVLkVSWoUSjZ1ZozzNtbNBi/YQEvAlUlxcpjCGpXoYnOLx4fTkMB0cn/40GxwdneBAp+nHwQxPDR6djMxh+jMkUGrSBTJSgPGkBqcLhDH0jUACVvwsNWeQbDl/1RNUIa/mkADht8oSpjBmqjCBYDIsNIxr4EUp6IHJOpFky/mOuaa5T4D1XByC8+V94L4FxsCffLoQtK0wLgOXImubhw1HZjoPmIDxjtGxKOuyzK2JFg8egyDUu4766SMa3kCarEIsHpUk4WeLQbRWJ28gxCDvaD+Fyqb7orR5z8vPys8UZ7gqFWiSLm9v6d5lqERyG2EoEFhom/8YRhTdC1Jm3v2AI9ciplxVTJHUzNMu0NT6t2FuM0+senvKk5paPyddZov9wGzNE3LogWsivdjB/s0Gjlds5ZUOwRurGVP1YjnbAk7AMhZhN/NNk8AzUrBtiXWH1jHOJXNNAq8DWZHT+WBOvir7XQwbx7EDx/C1XKTasTUHhU8xVvqykZZNcLU2/r/CR6paGrlp2xGaRuwQhtK70Nbyx9GH73SoiTCpCpUxGMKsyvOFhDBDnUYiqgXwaDTaxbh0zzq3qbKurHiPyumuyu9t9JXxbpZbw7uWjvdbasOiAtIzkkIiHxP9r0lks90LDEHP9/SKtKLY2nPSrFNxISI3XcwhZqB/qSaBAjnzMhNKH6L5Nr0HdZ9tm4N+MQQ0FVlexFFgcqSnr48vDOPJvXDy8vRWbtgx3lpmO36//nGnbAgVpmq6UOciOFRCHuyf0KmiCqymqKwzeZWiZDS21MNZxZkn+1d070G1l1Ja5uMn1ITUAgzVl4AUVjilJl4yEmuaI29MSqVdqjL9jFFgScaKfI7qHQ7nw0Q96LSw7uG9Yq90LExVkmc0UqqEwVdkMAz/lIHY5SVjLqEbcLKeRgch6X5+8VRobmMRkyc1crMeYhevuihz3B4d3SBYk143lFfrjqnXGx3rrjcie/bnbMd5k1oSueKjkThl3ayl2q6yPmtnUF24uXWozq4v906As+vLSK99Yeghw2g4Gn6IE8EHLnRsje4eLYuoJR1s49frDvuvb6MuTYyvfFDm2jpxqKI45dp2mMB4661j+i+OTFpnPIG6nuqAXyhvGtn+ViFJk0gsNVk9lcBNakhtkP/1g+MfL/bupivB92rfE2qv48tx5WRYPeu8khUk8ISLnTfU/YoPomOtyHlrfnAnQGuIHRZrkqXGmTFY8ndl73tMc311eyfV1z3QZH7AGEi/yANIv7Tu+hiOSB9xr4Zcu3kVuRBaTPn+BiLP4c8=
+sidebar_class_name: "post api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Create Customer"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/{organisation}/customers"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Creates a new customer record under a specific organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"description":"Customer details","required":false,"content":{"application/json":{"schema":{"type":"object","required":["customer"],"properties":{"customer":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string","description":"ID of the customer"},"name":{"type":"string","description":"The name of the customer."},"email":{"type":"string","description":"The email of the customer."},"phone":{"type":"string","description":"Phone number for the customer."},"bio":{"type":"string","description":"Short description or biography for the customer."},"tickets":{"type":"array","description":"List of tickets associated with the customer.","items":{"type":"object"}},"version":{"type":"integer"}},"x-internal-group":"customers","x-internal-path":"_pydantic/models","title":"CustomerObject"}},"x-internal-group":"customers","x-internal-path":"_pydantic/models","title":"CreateCustomerRequest"}}}}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"201":{"description":"Customer created successfully.","headers":{}},"400":{"description":"Invalid input","headers":{}},"409":{"description":"Version conflict.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

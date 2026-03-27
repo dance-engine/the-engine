@@ -1,0 +1,71 @@
+---
+id: organisations
+title: "GET organisations"
+description: "Handle GET requests for /organisations"
+sidebar_label: "GET organisations"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1V1Fv20YM/ivEPW2A42TF+uK3tMk6F9lS1An60AUOfaKla053Ko9y6hn+7wMlObVcd3YK9EmyRfL7SH3kUSuTUbLsKnExmJH5E0PmCd5c3gDT55qSJJhHhtPIOQaXUO2SGZhYETc/xpkZmd2nFTKWJMTJjD7eDYxgrnfmumd3NzBMqYohUTKjlXlxdqaXPqNJbS0lDWpjEAqiJlhV3tkmzOmnpHYrk2xBJeqdLCtSUrNPZEXZsLIV16L0uX41R2ZcmoFxQmXaF0YL4pgyTSRgScq/HzoJSr3tm4RdyM3AUKhL9XMnWJ4IYRU1YsY41ytacQsyA5NI6kqvdaooZJTpQ7aFW1CmcBnNsfZiRp3remAeUu2yfZD9Mo4vIM5BCoLt/DVA7/fBOJMiskDydQ51ogwkAlPFlCjIJrxGbQq0J1rpwhWFXAozerEb+6YgUL99TIcaFK2NdZDpMQlrsImwqwg6NxhfAKYUrUOhDB6dFHsLMsMQiA8j3L6/0vQ1ROsCrsScmn75ftxpXBB7XP5I/M71AI6PeXxWdHU4EFMK6r3P7/SWTWm6QN7bAn3415MJLJAdzjylvbDQYA6eZGbrJLF0iWByfXUNQmXlUSgpPRt9rHlasSuRjyjtu9YQWr/D8GowYwyZCzlgyOB2rKqiINvwiWwM2VEEJhvTZ1FIdVVFlobEN+gztA85xzoc0RyvnmwP4++FmKKXwzDnXogD6nCD2Y9BpprnaGnqXV4cgXilZtA5/RBQhvxwGOcC+eE5MOuB+XLiQlMOf6J1qHaOTdOzqFAnpJlWywyDOHtaxoy8noLixCux7aP0RkGu25Zc71DdzUQzZtIJOMW9BZ1HLrE5YlDoRFxbpbrKnu2zIE59DppfTqwPC5ck9lrlwAG87kbb1zab1uyf02rHj7ytnlM9gFYfIgNuCbp5s2kzcKfOxnAcoS0a6gRdmTanXkPtf0i5AJVHSwkeC2IChFSi93o8MCRXVt7NHWVdigkCkS4SP1mCG/X9ZJh05ZK875bGFq0gzJpFc6W/fj97+e0O+RdJETP4Owqcex8fm72q7/dy3+457kjChHhBDJfMkXdc1wNTNuHNyOTUHIltRt+szIlszU6WZvRxZawnfph+ehRdkNd3X59ObKurUc9ml9nbDzfgUqopg9kSXqvhEHTlkfhAAco6CcwIXLC+zlrRqJzuz2spIrt/G1L30CYCmADhFSETtwGGcJuI01OcClk2+hTknKQ/5fRILLBtCtjsycDRE/xCw3w4gHvMShfuf1XlY7PRQ8VRyOoqxpRizZbS8B9VR9c+hUizC9t29zCzhqAZdDd/bGbO2w83jbpdmLd7T6ebCwyW4DLkLhCcvxvvXRHP342bZts2Nlujy5wNz4a/aZdXMUmJzTRrl1ujX0m7L3ln9j59sxz/ZdVlL/RFTiuPrtm/usHSSuvjzjfM3cAUMamSzGo1w0S37Ndr/ftzTTpi9RNss2w1ettIuJHiAy31rLaWKpXvAn3djOPdbyxV6ZPU31xq0f8Dl8AJag==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"GET organisations"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/organisations"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Handle GET requests for /organisations
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Success","content":{"application/json":{"schema":{"type":"object","properties":{"organisations":{"type":"array","items":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["i-am-teapot","draft","active","setup","suspended","archived"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the organisation"},"organisation":{"type":"string","description":"Short slug used to represent the org"},"name":{"type":"string","minLength":2,"description":"The name of the organisation."},"account_id":{"type":"string","description":"The Stripe account ID associated with the organisation"},"banner":{"type":"string","description":"URL to the banner image for the organisation"},"banner_overlay":{"type":"string","description":"URL to the banner overlay image for the organisation"},"logo":{"type":"string","description":"URL to the logo image for the organisation"},"theme":{"type":"object","properties":{"css_vars":{"type":"string","description":"CSS variables for the organisation theme, used to customise SOLO templates"},"colour_primary":{"type":"string","description":"Primary colour for the organisation theme, used for branding and UI accents"},"colour_secondary":{"type":"string","description":"Secondary colour for the organisation theme, used for supporting accents"},"colour_background":{"type":"string","description":"Background colour for the organisation theme"},"colour_background_alt":{"type":"string","description":"Alternative background colour for the organisation theme"},"colour_surface_light":{"type":"string","description":"Light surface colour for the organisation theme"},"colour_surface_dark":{"type":"string","description":"Dark surface colour for the organisation theme"}},"x-internal-group":"organisation","x-internal-path":"_pydantic/models","title":"OrganisationThemeObject"},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"history":{"type":"array","items":{"type":"object"}},"logo_secondary_url":{"type":"string","description":"Secondary URL to the logo image for the organisation, used for dark mode or alternative themes"},"logo_icon_url":{"type":"string","description":"URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"}},"x-internal-group":"organisation","x-internal-path":"_pydantic/models","title":"OrganisationObject"}}},"x-internal-group":"organisation","x-internal-path":"_pydantic/models","title":"OrganisationsListResponse"}}},"headers":{}},"405":{"description":"Method Not Allowed","headers":{}},"500":{"description":"Internal Server Error","headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

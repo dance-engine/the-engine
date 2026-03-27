@@ -49,7 +49,7 @@ const config: Config = {
         docsPluginId: "classic", // configured for preset-classic
         config: {
           core: {
-            specPath: "../../functions/openapi.json",
+            specPath: "../../../functions/openapi.json",
             outputDir: "docs/core",
             sidebarOptions: {
               groupPathsBy: "tag",

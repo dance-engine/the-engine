@@ -14,6 +14,7 @@ const getUrlOfAccount = (accountId: string) => {
     'acct_1RnpiyD1ZofqWwLa': 'https://iamrebel.co.uk',
     'acct_1Rkp1ODIMY9TzhzF': "https://powerofwomansbk.co.uk",
     'acct_1TACbkDnZQBrVCD7': "https://www.cubanydominican.com",
+    'acct_1RT4baRWBoTdG7OY': "http://localhost:3003" // default URL if accountId is missing or doesn't match
   }
   return accountUrls[accountId] || "https://danceengine.co.uk";
 }

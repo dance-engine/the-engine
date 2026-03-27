@@ -24,7 +24,32 @@ export default function RootLayout({
     <html lang="en" className={`${openSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-base-background text-black">
         {publishableKey ? (
-          <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>
+          <ClerkProvider
+            publishableKey={publishableKey}
+            appearance={{
+              variables: {
+                colorBackground: "#01164d",
+                colorTextOnPrimaryBackground: "white",
+                colorPrimary: "#FC27A7",
+                colorText: "white",
+                colorTextSecondary: "#c0c8e8",
+                colorInputText: "white",
+                colorInputBackground: "#0a2166",
+              },
+              elements: {
+                socialButtonsBlockButton: {
+                  backgroundColor: "#0a2166",
+                  color: "white",
+                  borderColor: "#2a4080",
+                },
+                socialButtonsBlockButtonText: {
+                  color: "white",
+                },
+              },
+            }}
+          >
+            {children}
+          </ClerkProvider>
         ) : (
           children
         )}

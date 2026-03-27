@@ -20,8 +20,8 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
-    "apps/apidocs#build": {
-      "inputs": ["../../functions/openapi.json"]
+    "apps/tools/documentation#build": {
+      "inputs": ["../../../functions/openapi.json"]
     },    
     "dev": {
       "cache": false,

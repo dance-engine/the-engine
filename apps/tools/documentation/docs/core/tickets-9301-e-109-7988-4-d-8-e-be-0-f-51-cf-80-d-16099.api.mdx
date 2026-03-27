@@ -1,0 +1,71 @@
+---
+id: tickets-9301-e-109-7988-4-d-8-e-be-0-f-51-cf-80-d-16099
+title: "Get Single Ticket"
+description: "Fetch details of a specific ticket by its KSUID."
+sidebar_label: "Get Single Ticket"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vttu20YQ/ZXBPMUAdXHrtDbf3NoJnBZN4Avy4AryijsS1yZ36d2hbJfgvxdDUrIsKXYqNE8SubNzzlx4ZirUFBJvCjbOYowfiJMUNLEyWQA3BQWhoMRMTQJskjtimDyB4QB/XFydnfQxQleQV3L9TGOMrVHoHf083Kf94VHv16PDw96BPqTehIbT3vv9ZHo41Pu/DI+OMMJCeZUTkw8YX1doVU4Yo/MzZU1ovGKERpgVilOM1uh+XjGEkJUzjNDTfWk8aYzZlxRhSFLKFcYV8lMh3gN7Y8WSDWcbcHUdLXnQnCy/SuBULBpkcB7OTnbCb2FWge9CafSrwFfW3Je0qMnZCbxrCrK3E4EWrq5HEbKaSSnwsq0jjsRfKJwNFMTFT8Oh/Lwkc05cehtAQWYCQ+IsK2ONnQGnC47SKnIgocYVqqLITNKkfHAbxEu1SdRNbimRAhReuoxNy6HrsRVD5b16knwx5eFtB228WxKyNcdGk2UzNeRh6vxKSFhHXcHe8vSXykm+ps27Y2fH3Zvv88IOJgSFN5ZJg7NrPpMysMvJjylXJnvb56mYLagtLsND6sA92LDu3JNi0mO1lezU+VxOUCumHpucNtAuTU6BVV7AQ0qr1OFBBejcC1JZ6B+JlKnA0GEInLFJVmr6npbqSNTrgH9K57spNPbQOdTwYDhdyyI9Fspq0uP/gNo18jdRBeEt5DrCx560jbcq6828K4tnwcYXh43kxDgunrSybJJB7jRlYUUyWn343NH6Eb4ltPNOelqElJRuJkUlTwfDg00laq+CdQxTV1rR0Je33m/Tr7OOGwTyc/JA3jv/PwpWTiGo2RadkG4QrC0n9XM+TsXk26moI8yJUyfjd0YNepviQbU62epB1QyaetCVZVA1OlhjhIGS0ht+aoZwkpG/G98+MMbXI5kJi9MLCbeNaMVmPZmfvl6CCaEkLavC72LYh0vpQ3dHFvIysCjYsk9N+3XeHJecOm/+acjeQBshKJkqv5Hy5FsHfbgK5MPST6H88gtg5WfEsBo1KKshVXNqDBajEbzLCN5Rf9aP4Ebp3NibPZFWlSQUAhTeMSUisJ6CK31Cof+3rCJdkVLmArvJKs+ThiBG3Z8PC3369PWyqaSxU9dOrraiJ8omBKd2ZizB8ZezTflKm/fNwFk1xgjn5ENrNOwP+/vSQ4ULnKumJbsF4iMxXBg7ywjaT2IdoXru7V2Wvi4PTI88KDJlbCPavhk4bfddY7y2xsWLdepZFuJ2Eo8iTF2QfsOqmqhAVz6ra3l9X5KXrhxFOFfeqImk77pCbYL81xhPVRboleDenXc134Nt2+LWQBZibEWK5yor5QkjvKOnjXUx2pHMls1xBy7d6rgriVe2yB3IdGvkaKlPTanas+MkoYJXbm3oqSjNUsc+nsqH8y+tvlkK
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Single Ticket"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/{event}/tickets/{ksuid}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Fetch details of a specific ticket by its KSUID.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}},{"name":"ksuid","in":"path","description":"Unique ticket ID (KSUID)","required":true,"schema":{"type":"string","title":"ksuid"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list containing the ticket.","content":{"application/json":{"schema":{"type":"object","properties":{"tickets":{"type":"array","items":{"type":"object","properties":{"ksuid":{"type":"string","description":"Unique identifier for the ticket"},"name":{"type":"string","description":"Name of the ticket"},"name_on_ticket":{"type":"string","description":"Name to be printed on the ticket"},"customer_email":{"type":"string","description":"Email of the customer who owns the ticket"},"created_at":{"type":"string","format":"date-time","description":"Timestamp when the ticket was created"},"updated_at":{"type":"string","format":"date-time","description":"Timestamp when the ticket was last updated"},"includes":{"type":"array","items":{"type":"string"},"description":"List of items included with the ticket"},"expanded_includes":{"type":"array","items":{"type":"object"},"description":"List of the items included with the ticket"}},"x-internal-group":"tickets","x-internal-path":"_pydantic/models","title":"TicketObject"}}},"x-internal-group":"tickets","x-internal-path":"_pydantic/models","title":"TicketListResponse"}}},"headers":{}},"404":{"description":"Ticket not found","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

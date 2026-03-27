@@ -1,0 +1,71 @@
+---
+id: bundles-1310-f-539-91-ec-449-e-ba-9-f-0-b-0-ef-1-ee-7-f-60
+title: "Public Get Bundles"
+description: "Public endpoint to get a specific bundle by its KSUID."
+sidebar_label: "Public Get Bundles"
+hide_title: true
+hide_table_of_contents: true
+api: eJy9V9tu4zYQ/RWCTwlAX9LNtojekiZduAW6wSbBPqSGQ0tjm4lEasmhd11B/14MKcs3IWm9bZ98ITlzeOZwLhXPwKVWlaiM5gm/9dNcpQx0VhqlkaFhc0AmmSshVTOVsqnXWQ5sumIKHfvt7mF03eeCmxKsJCOjjCc8bnK9s3dnw9n7dxe9izNIe+fnF9CbyotZbzgdwuwM4KfZj0MueCmtLADBOp48VlzLAnjCjZ1LrVywygVXhK+UuOBiD/THrY3M5X7OBbfwxSsLGU/QehDcpQsoJE8qjquSrDu0StNOVJgfuKtr0eKAJWh8FcAN7QiembFsdH2U/+hm2/GL8yp71fGDVl88rGMyumYnISCnRwGI7up6LDjKOYWikQMX/CoGlI8Fd5B6q3BFoaK9FlxptANHtn8YDuljF+X9ooVops+QIgkmNRrpwknFZVnmKg3ED54dHakO4caTJBZLWkMVHUa7Xfs2BDxGQsf7Z+OFDxipRROAjoWdi3WsO5ToXRfLoH1BUDIrZwQvV0vggkubLtQSKMzGYyYRMj6uCakqpF1NSqtSOKT0Ni6zsMzMjOGGY6VZCVrTJcUahvbFFGxACKnR2Sum79YbjjCORO4rtu+b9SNM7xAyWQdo1/zvsghGy212Nsa2wrRLwhvm3C4jXQZ3L/6GPdxhocscLSg9n9AryHy3vne17EwBuKDjh7KsBf/WUxrBapn35tb4cpOj+c5iyDIJn5SrTGpU6aAwGeRuK0vETHBLyO8adB8jpCB/q0poSIhva5eCzwuJLgTdQk5iZ/EIa490Rau1uqWAo6yzmbFh/W2FRJ/7Qvk+r39DSI3fPT19n9u39dYybDKf4j911x7qsKx0mvsMtlOitFauqKwhFB2pkuQKGhWuJnHh/9BzlHBT7v4LB5+aKtm6qAVfgMxCz1PRr/Ph+SHr8TDTBtnMeE0U755631VwRw065sAuwTKw1th/segW4Jycd1fI4Ks7aGtGbmjLmpBDKmrBKZcZaiTnELxHkgdlIG9Qbbdq9aAKnVM9aOIzqEJdr/mmVaFEVUToaQ72ZfL8FQ9Z+/XzPVPOeciou/2ZNvYZ9S5oXkCzwjtkUypTQdEZ1St6Dk+XHhfGqj8DnCcWr8KkY5JdgbRgo4E+e3BgXWunlBbXFRClpTZ7+15M6owt5BKaNxebGWZNDuwE+vO+YE8yK5R+OqUuXaYpOEePESGl12nBGW9TcP0/9OZhLhBL3jSD9HsaAHLRfPnF2EJi5CKETOmZCcFsQnctdQrsRs+VBnZ5OzroSImvy9tRyD3bm7ngS7Aubhr2h/2zUOeMw0IG7TU9bzOAfABkV+172+u6WhUfP640dCB8w0GZS6UJjbc5mY9qe+TluvlN9iaRZD0RbDJCEnvJseAL45BOV9VUOniweV3T3188WGqZx4IvpVVySnQ+VjxTjr5nPJnJ3MErdz351GjglHUNPJ03WmdcTfl2KXNPv7jgL7A6mHjEkWA6hp8jsDTTz7EgXhmEjgDTTELjNjGFUMW1yzSFErdOHSRSGoraBPbh5p66fE+SanOiNuEPsf6SPI7ruv4LQIppyw==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Public Get Bundles"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/public/{organisation}/{event}/bundles/{ksuid}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Public endpoint to get a specific bundle by its KSUID.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}},{"name":"ksuid","in":"path","description":"Unique bundle ID (KSUID)","required":true,"schema":{"type":"string","title":"ksuid"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"The bundle object.","content":{"application/json":{"schema":{"type":"object","properties":{"bundle":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"status":{"type":"string","enum":["draft","live","archived","outdated"]},"primary_price":{"description":"Primary price of the bundle in pennies","type":"number"},"secondary_price":{"description":"Secondary price of the bundle in pennies","type":"number"},"tertiary_price":{"description":"Tertiary price of the bundle in pennies","type":"number"},"primary_price_name":{"description":"Name of primary price","type":"string"},"secondary_price_name":{"description":"Name of secondary price","type":"string"},"tertiary_price_name":{"description":"Name of tertiary price","type":"string"},"pricing_schedule":{"type":"object","properties":{"something":{"type":"string"}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"BundlePriceScheduleObject"},"stripe_price_id":{"description":"Whats the related stripe price_id","type":"string"},"stripe_primary_price_id":{"description":"Whats the related stripe price_id for the primary price","type":"string"},"stripe_secondary_price_id":{"description":"Whats the related stripe price_id for the secondary price","type":"string"},"stripe_tertiary_price_id":{"description":"Whats the related stripe price_id for the tertiary price","type":"string"},"stripe_product_id":{"description":"Whats the related stripe product_id","type":"string"},"includes":{"type":"array","items":{"type":"string"}},"entity_type":{"type":"string"}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"BundleObjectPublic"}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"BundleResponsePublic"}}},"headers":{}},"404":{"description":"Bundle not found","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

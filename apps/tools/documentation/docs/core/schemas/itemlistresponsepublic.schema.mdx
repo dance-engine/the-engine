@@ -1,0 +1,33 @@
+---
+id: itemlistresponsepublic
+title: "ItemListResponsePublic"
+description: ""
+sidebar_label: "ItemListResponsePublic"
+hide_title: true
+hide_table_of_contents: true
+schema: true
+sample: {"items":[{"ksuid":"string","name":"string","description":"string","status":"draft","column":0,"row":0,"primary_price":0,"secondary_price":0,"tertiary_price":0,"primary_price_name":"string","secondary_price_name":"string","tertiary_price_name":"string","individually_purchaseable":true,"stripe_price_id":"string","stripe_primary_price_id":"string","stripe_secondary_price_id":"string","stripe_tertiary_price_id":"string","stripe_product_id":"string","entity_type":"string"}]}
+custom_edit_url: null
+---
+
+import Schema from "@theme/Schema";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"ItemListResponsePublic"}
+>
+</Heading>
+
+
+
+
+
+<Schema
+  schema={{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"status":{"type":"string","enum":["draft","live","archived","outdated"]},"column":{"description":"??","type":"number"},"row":{"description":"??","type":"number"},"primary_price":{"description":"Primary price of the item in pennies","type":"number"},"secondary_price":{"description":"Secondary price of the item in pennies","type":"number"},"tertiary_price":{"description":"Tertiary price of the item in pennies","type":"number"},"primary_price_name":{"description":"Name of primary price","type":"string"},"secondary_price_name":{"description":"Name of secondary price","type":"string"},"tertiary_price_name":{"description":"Name of tertiary price","type":"string"},"individually_purchaseable":{"description":"Would you like people to purchase this on it's own","type":"boolean"},"stripe_price_id":{"description":"Whats the related stripe price_id","type":"string"},"stripe_primary_price_id":{"description":"Whats the related stripe price_id for the primary price","type":"string"},"stripe_secondary_price_id":{"description":"Whats the related stripe price_id for the secondary price","type":"string"},"stripe_tertiary_price_id":{"description":"Whats the related stripe price_id for the tertiary price","type":"string"},"stripe_product_id":{"description":"Whats the related stripe product_id","type":"string"},"entity_type":{"type":"string"}},"x-internal-group":"items","x-internal-path":"_pydantic/models","title":"ItemObjectPublic"}}},"x-internal-group":"items","x-internal-path":"_pydantic/models","title":"ItemListResponsePublic"}}
+  schemaType={"response"}
+>
+  
+</Schema>
+            

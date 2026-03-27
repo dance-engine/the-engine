@@ -1,0 +1,71 @@
+---
+id: tickets
+title: "Get All Tickets"
+description: "Returns a list of all tickets for a given organisation and event."
+sidebar_label: "Get All Tickets"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vk1v20YQ/SuDPSUALblFeuHNbdzAQZEUroIcXEMecUfi2uQuPTuUrBL878WQlCxLSpwYyUkkd3bemw+9mcZYihm7SlzwJjWXJDX7CAiFiwJhDlgUIC67I4kwDwwIC7ckD4EX6F1EvQjoLdCSvIxMYkJF3H2+sCY1w12TmAoZSxLiaNKrxngsyaRm149JjFMWFUpukj1qH3cBY1EvTGKY7mvHZE0qXFNiYpZTiSZtjKwr9R6FnVdLcVIcwLVtsuXR0f8qgXO16JAhMFy8fRF+D9O214kRXGgmzGTI0LX6i1XwkaK6+PX0VH++o0Ca/Sx4UYi0MVhVhcu6UMe3Ua83hwzD7JYyDbxiLZy4HnxTtkdDZMa1JkiojM87uIu1s8cy8TSeT97d1wTOkhc3d8Rdk0lOQ0ymTYYKPefpA5ak+Ti8Ow1+Onz5Ni8SYEZQsfNCFoLf85nVUUJJPKUSXfG8z3M121DbXIZVHiCsfNx3zoRCdopHyc4Dl3piLAqdiCvpAG3iSoqCZQWrnHapwwojDO4Vqa7sz0QqMAoMGArnfFbUlr6lpQYS7T7gX0PLd/YwOLSwcpLvZZEeKvSW7PQ7UIdG/iKqIjyH3Cbm4UTbhj0WJwsOdfVEA3cOO41JzbRaW/TisnEZLBVxRyt6Yfg40PoZvjW0y0FzeoSc0HYK3ejbm9M3hxL0IewMhNpbVZ2n1347plwXAzmIxEtiIObAP1CxSooRF0eEQttBsY6ctI8JOVeTL+eiTUxJkgcdaQvq0Pscj5vdkdKOm07h2/FjXSJlNTtZd1MvK4jvprcrMenVtU6Bzek/GmYfyY7NfhLff56Ai7EmC7M1/KGGI5hoA4Y78lDWUVS6tg3q+r/lzVkteWD3X0fyBvrIAHWO/E7IxL2DEXyKxHHrp0Letr4gL0gO536OS+oMNsMQOBQEr2i0GCVwg7Z0/ua1aipmGcUIFQehTJWVKYaaM4qjf3X2D8XJRSozzFJ9n3UETTI8/LkRpvefJ10FnZ+HfmT1lXyLPiM49wvnCc7+vjjUrbz73k2aXWOTmCVx7I1OR6ejX7R3qhClxK4Vh1XhHQmcFQVMtiV+4r957Ogfsk8NaRF6kHFVoPOdeHM3ePomvDLp3hqVbtYZeVwu8hC160zTzDDSJy7aVj/f18Tam9eJWSI7nGkSrxpjXdRna9I5FpG+EuSry6Hyr+HYknaU/0aLvSrxEota30xi7mh9sKUlLyRzZGF7AZdhY7veCkKXnf7sLMuokp1bBwKmf/GtcLw71479H2h2+34=
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get All Tickets"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/{event}/tickets"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a list of all tickets for a given organisation and event.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list of all tickets.","content":{"application/json":{"schema":{"type":"object","properties":{"tickets":{"type":"array","items":{"type":"object","properties":{"ksuid":{"type":"string","description":"Unique identifier for the ticket"},"name":{"type":"string","description":"Name of the ticket"},"name_on_ticket":{"type":"string","description":"Name to be printed on the ticket"},"customer_email":{"type":"string","description":"Email of the customer who owns the ticket"},"created_at":{"type":"string","format":"date-time","description":"Timestamp when the ticket was created"},"updated_at":{"type":"string","format":"date-time","description":"Timestamp when the ticket was last updated"},"includes":{"type":"array","items":{"type":"string"},"description":"List of items included with the ticket"},"expanded_includes":{"type":"array","items":{"type":"object"},"description":"List of the items included with the ticket"}},"x-internal-group":"tickets","x-internal-path":"_pydantic/models","title":"TicketObject"}}},"x-internal-group":"tickets","x-internal-path":"_pydantic/models","title":"TicketListResponse"}}},"headers":{}},"404":{"description":"No tickets found.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

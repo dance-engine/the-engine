@@ -1,0 +1,71 @@
+---
+id: customers
+title: "Get All Customers"
+description: "Returns a list of all customers for a given organisation."
+sidebar_label: "Get All Customers"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1VsGO20YM/RWCpwRQbLdIL7q5m23gomgWmwQ5uEZ2LHGlWUszCody4hr694KSbMu20qRoe7JH4jxyHvneaI8phYRtJdY7jPGepGYXwEBhg4B/BFMUkNRBfEkc4NEzGMjslhx4zoyzwejWCUboK+J2sUgxxuMejLAybEoSXcTLPTpTEsY43I8RWs1fGckxuijqzSAQQlFnGCHTp9oypRgL1xRhSHIqDcZ7lF2l6EHYOo0UK8VVuqZZRSgm04Lw5ljqSoFD5V2goFg/zmb68484UioS74Sc6F5TVYVN2qzTp6AA++ti/fqJElGmWFkU26U/cXgKNcxmp3QJlWEM4sTMsmN6dQm7CbVNx6g6P+filZ5NcjqeDZuob9639r7LCTTyEmGiEFQaW3wfRhs6ClLl3n1HIXcaBq4u18Tt9F4Bra3/Nszb3LPA4Bl4hrX1GZsq340Di002JGO9O8f+rZ+iPh5MCD6xRiiFz1byC+Cvdr5pItwSB9vNWP/SOqFMO9dE+OWFrtiZ4kXGvq4uVDp43cowxo/VLjVObDItfUpFGKjpoJk3h+T/E76Sc99LssuSk0k7Sejq5ezltUJ/92eWVbtUeTvf+NOYtBd9gRCIt8RAzJ7/Q0GXFILJRsZWVaG5Rt40J1JuNeTrbDQRliS5V/vNqM3e8TzdD82vmQ67Eiip2cqudeakIN58fPosGC9XapGHt2/1gL0pnWIu6fv1wzuwIdSUwnoHNxo4AZWx+A05KOsgsCawLinqlFKwrh3uh3ktuWf7Z1veA3RnAqMW+zMZJu4AJvA+aEcPOJVhOXiDGM5Izu4kMC6F3GypDTjYIrAvCJ7RJJtE8GDS0rqH5yAeTJJQCFCxF0pUfEzB15xQmPyh91Pfllykwv6+0fW6LRCj/s8vnksjHRdt76x77Pyl7+Er4xKCW5dZRzC/W4za3vxu0XrKMBgH8sbZZDb5obVBH6Q07RD21+prEpgXBdwMmnyWYX+a5n913/eECH2RaVUY67Semltn7wZvifHFJZ8Mr9rcBx003O/XJtB7LppGH3+qiXUcVxFuDVuzVt6We0xt0P8pxo+mCPQ3p3p23zf7OYx9O4wWfrBopwa9NUWtK4xwQ7urj4fVUXhtYV3IPEmoksHmK6NQQR0F+vpW5+MvD5pRNw==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get All Customers"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/customers"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a list of all customers for a given organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list of all customers.","content":{"application/json":{"schema":{"type":"object","properties":{"customers":{"type":"array","items":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string","description":"ID of the customer"},"name":{"type":"string","description":"The name of the customer."},"email":{"type":"string","description":"The email of the customer."},"phone":{"type":"string","description":"Phone number for the customer."},"bio":{"type":"string","description":"Short description or biography for the customer."},"tickets":{"type":"array","description":"List of tickets associated with the customer.","items":{"type":"object"}},"version":{"type":"integer"}},"x-internal-group":"customers","x-internal-path":"_pydantic/models","title":"CustomerObject"}}},"x-internal-group":"customers","x-internal-path":"_pydantic/models","title":"CustomerListResponse"}}},"headers":{}},"404":{"description":"No customers found.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

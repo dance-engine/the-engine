@@ -1,0 +1,71 @@
+---
+id: bundles-7-b-2-a-4292-477-e-4-e-38-b-4-d-5-99-ece-020320-c
+title: "Public Get All Bundles"
+description: "Public endpoint to get all bundles for a given organisation and event."
+sidebar_label: "Public Get All Bundles"
+hide_title: true
+hide_table_of_contents: true
+api: eJy9V21v2zYQ/isEP7WA/DLXRRd9c9asyDCsQZuiHzLDocSzzUQiVfLo1TP034ejJFu2hKRzu33SC8nnHj53vDvuuASXWlWgMprH/MYnmUoZaFkYpZGhYStAJrKMJV7LDBxbGssEW6kNaGbsSmjlBK1mQksGG9A45BE3Bdjw+1rymNdrB2+SiZhOLiaD6Zs3MJjCq58HyVS+HlxcQArjyfjVZJzyiBfCihwQrOPx3Y5rkQOPedsYj7givoXANY9ONvG+zcplfsUjbuGLVxYkj9F6iLhL15ALHu84bgtCd2iVppmoMOuYK8tozyPs8UkCVzQjWGbGsuu3Z9mvzJTlPOIoVqRE7R0e8ctKTz6PuIPUW4VbUormWnCF0Q4cYU/GY3ocs5uxTDlkZtm4lPyVGo1kL95xURSZSsO+Rw+Oluy6dE3yACmpUFhyNarKYI3YmiisFVtSCyF3fQAHZe4qheenoI/OK9mVqoxqj/QMHO24Z9yhQO/65Aftc6IirVgSvUxtgEdc2HStNiAptD1KgSD5vCSmKhd2uyisSqGr9U01zMIwSY5rqGVnSrMCtKZNRg0N7fMEbGAIqdHyCeiPzYQzwJHEfQL7th4/A/pIkEXjoGP4P0QeQIu2OgewlpuORXgGzh0r0gd4vPFn8PBIhT44GlB6taDjIX0Gzx8QZ3LANS3vhmUZ8a8DpRGsFtlgZY0vDrmTHw2GtBPzRbGVQqNKR7mRkLlW+qhSxA0x/1ize19RCuFvVQG1CNXZOpbg81qgC063kFGws2oJ2y/p89YetRUBZ6GHIkPjz0dIZfM0UL7P6jcEUm33JJ6+z+zz8bZX2Eif4r81t1/Ug6x0mnn5TZm7Fa6gUeF2UQ38H/FchXBdB8v/wsLvyuGHuoa27axByNCQ7OhrOp52pa+rMtMG2dJ4TUIfL3vdV4+va4rMgd2AZWCtsT+wJufgnFj118lgq991jSxXNKVRpKtFGXHKaIbavBUE65XSoyKoN9q1G6lytAt9TTk6OKnpYChN5RXlNAP7uHj4C7tq/fb5linnPEiWbNkvNHHIbun0mEfQLPcOWUJFKsSzpGpFh+F+5nFtrPo70Lhn1RaYcEywSxAWbAUwZJ8cWLfHKYTFpv6hsNQMd5retdhAfeKqVoZZkwF7AcPVMGL3QuZK37+kXlqkKThHRxEhpbNpwRlvU3DDP/XhWK4RC173iPSdBII8ql9+NTYXWGkRXKX00gQn1i57K3QK7EqvlAY2u7nuNKik1+zmOmSe9mQe8Q1YV00aD8fDn0KVMw5zEWKuboHra8I7QDbLMna59+VJ37WP4B93saglQviKoyITShNDbzMyV0XeHS+aPjk+uTPETe+eHBrotXFIi3a7RDj4ZLOypN9fPFhqqucR3wirRELK3u24VI7eJY+XInPwxJZffKjD4SXru5H0bqRJvZoS70Zknr54xB9h27mSRGeS6bmdnMGlvp7M9+kgqFONzdIUCmyt6qQvuqns08a7q1vqsD05b5+JtAk/ouYlvpuXZfkPcV0jtg==
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Public Get All Bundles"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/public/{organisation}/{event}/bundles"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Public endpoint to get all bundles for a given organisation and event.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}},{"name":"event","in":"path","description":"Event slug or ID","required":true,"schema":{"type":"string","title":"event"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"A list of bundles.","content":{"application/json":{"schema":{"type":"object","properties":{"bundles":{"type":"array","items":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"status":{"type":"string","enum":["draft","live","archived","outdated"]},"primary_price":{"description":"Primary price of the bundle in pennies","type":"number"},"secondary_price":{"description":"Secondary price of the bundle in pennies","type":"number"},"tertiary_price":{"description":"Tertiary price of the bundle in pennies","type":"number"},"primary_price_name":{"description":"Name of primary price","type":"string"},"secondary_price_name":{"description":"Name of secondary price","type":"string"},"tertiary_price_name":{"description":"Name of tertiary price","type":"string"},"pricing_schedule":{"type":"object","properties":{"something":{"type":"string"}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"BundlePriceScheduleObject"},"stripe_price_id":{"description":"Whats the related stripe price_id","type":"string"},"stripe_primary_price_id":{"description":"Whats the related stripe price_id for the primary price","type":"string"},"stripe_secondary_price_id":{"description":"Whats the related stripe price_id for the secondary price","type":"string"},"stripe_tertiary_price_id":{"description":"Whats the related stripe price_id for the tertiary price","type":"string"},"stripe_product_id":{"description":"Whats the related stripe product_id","type":"string"},"includes":{"type":"array","items":{"type":"string"}},"entity_type":{"type":"string"}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"BundleObjectPublic"}}},"x-internal-group":"bundles","x-internal-path":"_pydantic/models","title":"BundleListResponsePublic"}}},"headers":{}},"404":{"description":"Bundles not found","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

@@ -1,0 +1,33 @@
+---
+id: generatepresigneduploadrequest
+title: "GeneratePresignedUploadRequest"
+description: ""
+sidebar_label: "GeneratePresignedUploadRequest"
+hide_title: true
+hide_table_of_contents: true
+schema: true
+sample: {"action":"POST","fieldName":" ","fileType":"image/jpeg","organisation":"mlf"}
+custom_edit_url: null
+---
+
+import Schema from "@theme/Schema";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"GeneratePresignedUploadRequest"}
+>
+</Heading>
+
+
+
+
+
+<Schema
+  schema={{"type":"object","required":["action","fieldName","fileType"],"properties":{"action":{"type":"string","enum":["POST"],"description":"Action type. Must be `\"POST\"` for file upload.","example":"POST"},"fieldName":{"type":"string","description":"(used to generate S3 key path).","example":" "},"fileType":{"type":"string","description":"MIME type of the file being uploaded.","example":"image/jpeg"},"organisation":{"type":"string","description":"Organisation slug (usually injected from path parameter, but can also be set manually).","example":"mlf"}},"title":"GeneratePresignedUploadRequest"}}
+  schemaType={"response"}
+>
+  
+</Schema>
+            

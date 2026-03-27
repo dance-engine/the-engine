@@ -1,0 +1,71 @@
+---
+id: events
+title: "Get All Events"
+description: "Returns a list of all events for a given organisation."
+sidebar_label: "Get All Events"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vktv2zgQ/isETy2gOG7RveiW3WaLFMGm6KbowWskY3EsMaFIdThy6zX034uhbEd+pJsU3ZNNcebjzDfPlTYYC7IN2+B1rj8it+SjAuVsZBXmCpxTuEDPUc0DKVClXaBXgUrwNoLojXSmQ4OUDhdG57pX0JlugKBGRoo6n6y0hxp1rofKOtNWXm6AK53tmXM1EFTRtaXONOGX1hIanTO1mOlYVFiDzleal42gRybrRZItu4Pnum6aaYZSDNLnvZ1TQY1N8BGjAL0ej+Xn6dQIA0XwjJ5FEZrG2SK9d3oXRXt1aGaY3WHBwhEJeWz7t9fUPcgBESyFJcY6HtN/IGTSEzzdx4wM3MZjFKFva9EzBHPBcnaBOtNARWUXaCSwLRtgNIJqcA6tY52v5btM38fWmmPIu+RdvBXCuMKeMNGcgfdI/6161jQIFBVw0ufQ7ECpBkoUvD63DtFq6y/Rl1zp/PU+9nWFSvR2EEeCFhmI4w3wMch5oBoSDcB4wrZOBqA3z1MogLEMtHxCsA8CVgRfEkapsa+B7mMVmr7cWNQLB+nKYcEtoZ526bkGCsvD56xnLJF6lmwt0K86yagarLe+vPmBTpKLSJImxxC3yTKW4LT1DOkmBvcE4Z0Y7VMgjhBKRj6L67Yxz9ZZIMVdGwa+u9AX+M9V5CNl82gad5kGY1LAj925Hbd6stN3Xx753mX624m4Qh7cSUmhbYY9e3CXmnKub5qlAc+2OK2DQRcHvfVyTcNV73uX6cpGflpSr/kSe/avnqAya71x+CylX+l4Gh1X/xvypY38cT2TevwKwaQ5upLTm/GbwxH1V3gY1a03MpV2tX47Ntgu1qapVMykkCjQL5xoNcYoPfpY4qa3jtx0AzpE5HEqukzXyFWQtaPE9HrP8OlqOPe7020wIhYtpZ42WenCId3f3H1lnU+mshpsbv8W73oHBjL73L3/fK1sjC0aNVuqP0RwpK7TmLpHr+o2spqhsr5wrUGjrE9z5vas5SqQ/TfZdqt6hxTIdvE7AiH1ACP1KSLFLY70982sYqASeWcRU+CNqmCBSWDThRQFh+oFjspRpm7B1NbfvlQcFBQFxqgaCowFiyDG0FKBcfSP7GXrmFTMMltSuOU8SwbqbP3nz03vfP/5uq9lPw8ppOsAvgVfoDr3pfWozj5cHEx44evsw0XaL4fCetCC9Xg0Hr2SlGlC5BpSBq7XyXfI6sw5db6J8N4A2ebxz6+3ayoYv/Fp48D6NFPICXyfbxOd7621uF0uqxAlv/RqNYOIn8h1nXz+0qL0yck00wsgCzOha7LSxkb5b3Q+BxfxB/68+LiO8Ut1bFU+avWmWXpplQtwrZx0pu9xebArT7fFlgzrRc6KAhseKB80B6mjbVG+O5e0+A7U3khD
+sidebar_class_name: "get api-method"
+info_path: docs/core/dance-engine-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get All Events"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/{organisation}/events"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a list of all events for a given organisation.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organisation","in":"path","description":"Organisation slug","required":true,"schema":{"type":"string","title":"organisation"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Returns a list of all events.","content":{"application/json":{"schema":{"type":"object","properties":{"events":{"type":"array","items":{"type":"object","required":["name"],"properties":{"status":{"type":"string","enum":["draft","live","archived","outdated"],"default":"draft"},"ksuid":{"type":"string","description":"ID of the event"},"banner":{"type":"string","description":"Appears at the top of the event page"},"name":{"type":"string","minLength":2,"description":"The name of the event."},"starts_at":{"type":"string","format":"date-time"},"ends_at":{"type":"string","format":"date-time"},"category":{"type":"array","items":{"type":"string","enum":["congress","workshop","party","class","lecture"]}},"capacity":{"type":"integer","minimum":1},"remaining_capacity":{"type":"integer"},"reserved":{"type":"integer","default":0},"number_sold":{"type":"integer","default":0},"description":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"},"version":{"type":"integer"},"location":{"type":"object","required":["name"],"properties":{"ksuid":{"type":"string"},"name":{"type":"string"},"address":{"type":"string"},"lat":{"type":"number"},"lng":{"type":"number"}},"x-internal-group":"events","x-internal-path":"_pydantic/models","title":"LocationObject"},"history":{"type":"array","items":{"type":"object"}},"items":{"type":"array","items":{"type":"object"}},"bundles":{"type":"array","items":{"type":"object"}}},"x-internal-group":"events","x-internal-path":"_pydantic/models","title":"EventObject"}}},"x-internal-group":"events","x-internal-path":"_pydantic/models","title":"EventListResponse"}}},"headers":{}},"404":{"description":"No events found.","headers":{}},"500":{"description":"Internal server error.","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string"},"error":{"type":"string"}},"title":"ErrorResponse"}}},"headers":{}}}}
+>
+  
+</StatusCodes>
+
+
+      

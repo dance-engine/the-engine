@@ -16,7 +16,7 @@ from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
-from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, DeleteEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from _pydantic.models.models_extended import EventModel, LocationModel
@@ -288,7 +288,14 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str, actor
         if not location_response.success:
             raise RuntimeError(location_response.error or "Failed to upsert location")
 
-        triggerEBEvent(eventbridge, "events", "UpsertEvent", event_response)
+        trigger_eventbridge_event(eventbridge,
+                      source="dance-engine.core",
+                      resource_type=EventType.event,
+                      action=Action.created,
+                      organisation=organisation_slug,
+                      resource_id=event_model.PK,
+                      data=request_data.model_dump(mode="json"),
+                      meta={"accountId": actor})
         return make_response(201, {
             "message": "Event created successfully.",
             "event": event_model.model_dump_json(),

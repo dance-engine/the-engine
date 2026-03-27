@@ -16,7 +16,7 @@ from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName
 from _shared.helpers import make_response
-from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, triggerEBEvent # pydantic layer
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.customers_models import CreateCustomerRequest, UpdateCustomerRequest, CustomerListResponse
 from _pydantic.models.models_extended import CustomerModel

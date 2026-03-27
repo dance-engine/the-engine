@@ -16,7 +16,7 @@ from _shared.parser import parse_event, validate_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
-from _pydantic.EventBridge import triggerEBEvent, trigger_eventbridge_event, EventType, Action # pydantic layer
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.organisation_models import OrganisationObject, OrganisationResponse, OrganisationResponsePublic, UpdateOrganisationRequest, Status
 from _pydantic.models.models_extended import OrganisationModel, OrganisationThemeModel

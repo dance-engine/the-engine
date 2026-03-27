@@ -1,3 +1,5 @@
+Some of the documentatrion is built using openapi.json
+
 # Website
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.

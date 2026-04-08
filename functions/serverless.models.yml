@@ -52,8 +52,8 @@ models:
   - ${file(functions/customers/sls.customers.models.yml):UpdateCustomerRequest}
   - ${file(functions/customers/sls.customers.models.yml):CustomerListResponse}
 
-  - ${file(functions/tickets/sls.tickets.models.yml):TicketObject}
-  - ${file(functions/tickets/sls.tickets.models.yml):TicketListResponse}
+  - ${file(functions/tickets/api/sls.tickets.models.yml):TicketObject}
+  - ${file(functions/tickets/api/sls.tickets.models.yml):TicketListResponse}
 
   - ${file(functions/email/sls.email.models.yml):SendTicketEmailRequest}
 

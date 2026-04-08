@@ -16,7 +16,7 @@ resources:
         MessageRetentionPeriod: 345600
         ReceiveMessageWaitTimeSeconds: 20
         RedrivePolicy:
-          deadLetterTargetArn: !GetAtt TicketEmailDLQ.Arn
+          deadLetterTargetArn: !GetAtt EmailDLQ.Arn
           maxReceiveCount: 5
         Tags:
           - Key: DanceEngineVersion
@@ -37,7 +37,7 @@ resources:
         MessageRetentionPeriod: 345600
         ReceiveMessageWaitTimeSeconds: 20
         RedrivePolicy:
-          deadLetterTargetArn: !GetAtt TicketEmailDLQ.Arn
+          deadLetterTargetArn: !GetAtt FulfillmentDLQ.Arn
           maxReceiveCount: 5
         Tags:
           - Key: DanceEngineVersion
@@ -62,7 +62,7 @@ resources:
     FulfillmentQueueRule:
       Type: AWS::Events::Rule
       Properties:
-        Name: "${sls:stage}-${self:service}-ticket-email"
+        Name: "${sls:stage}-${self:service}-fulfillment-rule"
         Description: "Routes checkout.completed events to the fulfillment queue"
         EventPattern:
           source:

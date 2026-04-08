@@ -151,7 +151,9 @@ resources:
     EmailQueue: ${file(serverless.resource.yaml):resources.Resources.EmailQueue}
     FulfillmentDLQ: ${file(serverless.resource.yaml):resources.Resources.FulfillmentDLQ}
     FulfillmentQueue: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueue}
-                
+    FulfillmentQueuePolicy: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueuePolicy}
+    FulfillmentQueueRule: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueueRule}
+
 #######################
 # Layers
 #######################

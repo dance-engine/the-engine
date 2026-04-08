@@ -21,10 +21,10 @@ Tickets:
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(functions/tickets/sls.tickets.doc.yml):endpoints.Tickets.GETall}
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.GETall}
     - httpApi:
         path: /{organisation}/{event}/tickets/{ksuid}
         method: get
         authorizer:
           adminAuthorizer
-        documentation: ${file(functions/tickets/sls.tickets.doc.yml):endpoints.Tickets.GETone}
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.GETone}

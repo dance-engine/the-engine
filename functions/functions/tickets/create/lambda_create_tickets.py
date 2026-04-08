@@ -236,12 +236,12 @@ def lambda_handler(event, context):
 
         parsed_message = parse_event(event.get("Records", [])[0].get("body"))
 
-        type = parsed_message.get("detail", {}).get("type")
+        type = parsed_message.get("detail-type")
         organisationSlug = parsed_message.get("detail", {}).get("organisation")
 
         if type == "checkout.completed":
             logger.info("Handling checkout.completed event.")
-            validated_request = EventBridgeEvent(**event)
+            validated_request = EventBridgeEvent(**parsed_message)
 
             return create_ticket(validated_request, organisationSlug)
         else:

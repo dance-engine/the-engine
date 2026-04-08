@@ -1,0 +1,24 @@
+CreateTickets:
+  runtime: python3.11
+  handler: functions/tickets/create/lambda_create_tickets.lambda_handler
+  name: "${sls:stage}-${self:service}-create-tickets"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/tickets/create/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
+  environment:
+      STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      TICKET_QR_JWT_SECRET: ${ssm:/danceengine/${sls:stage}/jwt_secret}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+      - !Ref AuthLambdaLayer
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - FulfillmentQueue
+            - Arn

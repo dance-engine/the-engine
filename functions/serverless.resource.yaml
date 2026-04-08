@@ -1,5 +1,47 @@
 resources:
   Resources:
+    EmailDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-email-dlq"
+        MessageRetentionPeriod: 1209600
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
+    EmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-email"
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 345600
+        ReceiveMessageWaitTimeSeconds: 20
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt TicketEmailDLQ.Arn
+          maxReceiveCount: 5
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2  
+    FulfillmentDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-fulfillment-dlq"
+        MessageRetentionPeriod: 1209600
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
+    FulfillmentQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-fulfillment"
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 345600
+        ReceiveMessageWaitTimeSeconds: 20
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt TicketEmailDLQ.Arn
+          maxReceiveCount: 5
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2  
     CoreDanceEngineTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Delete

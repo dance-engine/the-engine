@@ -117,7 +117,16 @@ provider:
             - events:PutEvents
           Resource:
             - arn:aws:events:eu-west-1:717279731911:event-bus/default
-
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+            - sqs:ChangeMessageVisibility
+          Resource:
+            - Fn::GetAtt: [EmailQueue, Arn]
+            - Fn::GetAtt: [FulfillmentQueue, Arn]
   httpApi:
     cors: true
     authorizers:
@@ -138,6 +147,10 @@ resources:
     ConfigBucket: ${file(serverless.resource.yaml):resources.Resources.ConfigBucket}
     DeployOrgRole: ${file(serverless.privileged.yaml):resources.Resources.DeployOrgRole}
     CoreDanceEngineTable: ${file(serverless.resource.yaml):resources.Resources.CoreDanceEngineTable}
+    EmailDLQ: ${file(serverless.resource.yaml):resources.Resources.EmailDLQ}
+    EmailQueue: ${file(serverless.resource.yaml):resources.Resources.EmailQueue}
+    FulfillmentDLQ: ${file(serverless.resource.yaml):resources.Resources.FulfillmentDLQ}
+    FulfillmentQueue: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueue}
                 
 #######################
 # Layers

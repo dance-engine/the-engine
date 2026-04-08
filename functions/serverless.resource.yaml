@@ -41,7 +41,38 @@ resources:
           maxReceiveCount: 5
         Tags:
           - Key: DanceEngineVersion
-            Value: v2  
+            Value: v2
+    FulfillmentQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref FulfillmentQueue
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowEventBridgeToSendFulfillmentMessages
+              Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt FulfillmentQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !GetAtt FulfillmentQueueRule.Arn
+    FulfillmentQueueRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: "${sls:stage}-${self:service}-ticket-email"
+        Description: "Routes checkout.completed events to the fulfillment queue"
+        EventPattern:
+          source:
+            - ${param:default_event_bus_source}
+          detail-type:
+            - "checkout.completed"
+        State: ENABLED
+        Targets:
+          - Arn: !GetAtt FulfillmentQueue.Arn
+            Id: FulfillmentQueueTarget
     CoreDanceEngineTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Delete

@@ -228,7 +228,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                     "ksuid": item.ksuid,
                     "entity_type": item.entity_type,
                     "name": item.name,
-                    # "includes": item.includes,
+                    "includes": json.dumps(item.includes or []),
                 }
             } for item in line_items
         ]
@@ -399,7 +399,7 @@ def completed(stripe_event: dict):
                 "ksuid": it.get("metadata", {}).get("ksuid"),
                 "entity_type":  it.get("metadata", {}).get("entity_type"),
                 "name":  it.get("metadata", {}).get("name"),
-                "includes": it.get("metadata", {}).get("includes")
+                "includes": json.loads(it.get("metadata", {}).get("includes", "[]")),
             } for it in stripe_checkout.get("line_items", {}).get("data", [])
         ]
 

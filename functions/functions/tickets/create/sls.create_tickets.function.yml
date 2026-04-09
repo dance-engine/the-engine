@@ -6,7 +6,7 @@ CreateTickets:
     patterns:
       - '!**/**'
       - "functions/tickets/create/**"
-      - "functions/shared/**"
+      - "functions/tickets/shared/**"
       - "_pydantic/**" # this requires the pydantic layer also
       - "_shared/**"
   environment:

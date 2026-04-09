@@ -16,6 +16,7 @@ class EventType(str, Enum):
     ticket = "ticket"
 
 class Action(str, Enum):
+    requested = "requested"
     created = "created"
     updated = "updated"
     deleted = "deleted"

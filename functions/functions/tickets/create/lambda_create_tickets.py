@@ -20,6 +20,7 @@ from _shared.helpers import make_response
 from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent, EventBridgeEventDetail # pydantic layer
 from _pydantic.dynamodb import transact_upsert # pydantic layer
+from shared_tickets import create_email_job
 
 ## logger setup
 logger = logging.getLogger()
@@ -200,7 +201,10 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
                                   resource_id=ticket_model.PK,
                                   data={
                                       "ticket": ticket_model.model_dump(mode="json"), 
-                                      "child_items": [ci.model_dump(mode="json") for ci in child_items]},
+                                      "child_items": [ci.model_dump(mode="json") for ci in child_items],
+                                      "notifications": {
+                                            "email_job": create_email_job(ticket_model, organisation_slug, data.get("session_id"), actor)
+                                      }},
                                   meta={"accountId":actor})
         
         if customer_model in result.successful:

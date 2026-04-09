@@ -5,6 +5,7 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import sys
 import requests
+import smtplib
 
 ## installed packages
 from boto3.dynamodb.conditions import Key
@@ -30,6 +31,7 @@ db = boto3.resource("dynamodb")
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'BREVO_API_KEY' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+MAILDEV_IP = os.environ.get('MAILDEV_IP', "localhost")
 
 def _default_branding_params():
     return {
@@ -56,6 +58,58 @@ def get_organisation_settings(organisationSlug: str) -> OrganisationModel:
         raise Exception
 
     return OrganisationModel.model_validate(result)
+
+def _render_tempalte_preview(request: EmailJob):
+    logger.info(f"Rendering template preview for template_id: {request.template} with params: {request.params}")
+
+    organisation_settings = get_organisation_settings(request.organisation)
+    branding_params = {"css_vars": getattr(organisation_settings, "css_vars", _default_branding_params())}
+
+    try:
+        template_params = {**request.params, **branding_params}
+
+        try:
+            url = "https://api.brevo.com/v3/smtp/template/preview"
+            headers = {
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "email": "root@engine.dance",
+                "templateId": request.template.value,
+                "params": template_params,
+            }
+
+            response = requests.post(url, headers=headers, json=payload)         
+            return response
+        except Exception as e:
+            logger.error("Exception when calling Brevo API: %s\n", e)
+            return e
+    except Exception as e:
+        logger.error("Unexpected error occured: %s\n", e)
+        return e    
+
+def _send_email_preview(request: EmailJob, html_content):
+    '''    
+    Send email in preview mode
+    '''    
+
+    port = 1025
+    smtp_server = MAILDEV_IP
+    login = "987p6absdkjl"
+    password = "875sadv&oa8s7td"
+
+    # Send the email using smtplib
+    try:
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.login(login, password)
+            server.sendmail("ticketing@danceengine.co.uk", request.recipient.email, html_content)
+        logger.info("Email sent successfully in preview")
+        return "Preview Success"
+    except Exception as e:
+        logger.error("Failed to send email in preview: %s", e)
+        return e
+
 
 def send_email(request: EmailJob):
     logger.info(f"Sending email with details: {request}")
@@ -97,6 +151,8 @@ def lambda_handler(event, context):
         logger.info("Triggered by SQS")
         parsed_message = parse_event(event.get("Records", [])[0].get("body"))
         send_email(EmailJob.model_validate(parsed_message))
+        if STAGE_NAME == "preview":
+            _send_email_preview(EmailJob.model_validate(parsed_message), _render_tempalte_preview(EmailJob.model_validate(parsed_message)).get("html", ""))
         return 
     
     else:

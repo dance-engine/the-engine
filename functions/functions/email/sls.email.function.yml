@@ -12,6 +12,7 @@ Email:
       STAGE_NAME: ${sls:stage}
       BREVO_API_KEY: ${ssm:/danceengine/brevo/api_key}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      MAILDEV_IP: "3.252.90.200"
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer

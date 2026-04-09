@@ -108,6 +108,42 @@ def get_existing_ticket_for_request(table, idempotency_key: str, organisation_sl
     ticket = get_single_ticket(table, organisation_slug, event_ksuid, ticket_request.ticket_ksuid)
     return ticket_request, ticket
 
+def _normalise_entity_type(entity_type: str | None) -> str:
+    return (entity_type or "").strip().lower()
+
+def _build_ticket_name(line_items: list[dict]) -> str:
+    bundle_names = []
+    item_names = []
+    other_names = []
+
+    for line_item in line_items or []:
+        name = (line_item.get("name") or "").strip()
+        if not name:
+            continue
+
+        entity_type = _normalise_entity_type(line_item.get("entity_type"))
+        if entity_type == "bundle":
+            bundle_names.append(name)
+        elif entity_type == "item":
+            item_names.append(name)
+        else:
+            other_names.append(name)
+
+    if bundle_names:
+        bundle_label = " and ".join(bundle_names)
+        if item_names:
+            return f"{bundle_label} with {', '.join(item_names)}"
+        return bundle_label
+
+    if item_names:
+        return ", ".join(item_names)
+
+    if other_names:
+        return ", ".join(other_names)
+
+    return "Ticket"
+    
+
 def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Creating ticket: {request_data}")
     event_detail: EventBridgeEventDetail = request_data.detail
@@ -151,20 +187,13 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
                 "created_at": current_time,
                 "updated_at": current_time,
                 "name": it.get("name"),
-                "includes": it.get("includes", []) if it.get("type") == "bundle" else []
+                "includes": it.get("includes", []) if _normalise_entity_type(it.get("entity_type")) == "bundle" else []
             }) for it in data.get("line_items", [])
         ]
 
         ticket_includes = [f"{it.PK}" for it in child_items]
 
-        ticket_name = ""
-        bundle_names = [it.get("name") for it in data.get("line_items", []) if it.get("entity_type") == "bundle"]
-        item_names = [it.get("name") for it in data.get("line_items", []) if it.get("entity_type") == "item"]
-
-        if bundle_names:
-            ticket_name = " and ".join(bundle_names) + " with " + ", ".join(item_names) if item_names else " and ".join(bundle_names)
-        else:
-            ticket_name = ", ".join(item_names)
+        ticket_name = _build_ticket_name(data.get("line_items", []))
 
         logger.info(f"Determined ticket name: {ticket_name}")
 

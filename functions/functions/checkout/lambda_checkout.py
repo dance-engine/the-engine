@@ -213,6 +213,13 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                 "customer_email": checkout.email
             }
 
+        payment_intent_data = {
+            "application_fee_amount": checkout.application_fee_amount if checkout.application_fee_amount else 0
+        }
+        if checkout.email:
+            # Ask Stripe to send its own payment receipt to the checkout email when available.
+            payment_intent_data["receipt_email"] = checkout.email
+
         stripe_line_items = [
             {
                 "quantity": item.quantity or 1,
@@ -232,9 +239,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             mode="payment",
             payment_method_types=["card"],
             line_items=stripe_line_items,
-            payment_intent_data={
-                "application_fee_amount": checkout.application_fee_amount if checkout.application_fee_amount else 0
-            },
+            payment_intent_data=payment_intent_data,
             success_url=checkout.success_url,
             cancel_url=checkout.cancel_url,
             expires_at=expires_at,
@@ -356,7 +361,7 @@ def completed(stripe_event: dict):
 
         try:
             stripe.api_key = STRIPE_API_KEY
-            stripe_checkout = stripe.checkout.Session.retrieve(session_id, expand=["line_items"], stripe_account = detail.get("account"),)
+            stripe_checkout = stripe.checkout.Session.retrieve(session_id, expand=["line_items", "payment_intent"], stripe_account = detail.get("account"),)
             logger.info("Retrieved Stripe checkout session: %s", stripe_checkout)
         except (stripe.error.InvalidRequestError, stripe.error.APIConnectionError) as e:
             logger.error("Failed to retrieve Stripe checkout session: %s", str(e))
@@ -402,10 +407,18 @@ def completed(stripe_event: dict):
 
         data = {
             "session_id": session_id,
+            "payment_provider": "stripe",
+            "payment_reference": stripe_checkout.get("payment_intent", {}).get("id"),
             "event_ksuid": event_ksuid,
             "line_items": line_items,
             "customer_email": stripe_checkout.get("customer_email") or stripe_checkout.get("customer_details", {}).get("email"),
             "name_on_ticket":  name_on_ticket,
+            "source_sale_type": "checkout"
+        }
+
+        meta =  {
+            "idempotency_key": f"checkout:{session_id}",
+            "occurred_at": current_time,
         }
 
         # Put an EventBridge event out to say a ticket has been sold
@@ -415,7 +428,8 @@ def completed(stripe_event: dict):
                             action=Action.completed,
                             organisation=organisation_slug,
                             resource_id=session_id,
-                            data=data)
+                            data=data,
+                            meta=meta)
 
         return make_response(200, {"message": "Checkout session completed successfully."})
 

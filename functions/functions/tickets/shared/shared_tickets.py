@@ -11,6 +11,33 @@ from _pydantic.email_models import EmailTemplates, EmailJob, EmailRecipient, Job
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
+def get_single_ticket(table, organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
+    blank_model = TicketModel(ksuid=ticketId, parent_event_ksuid=eventId, name="blank", organisation=organisationSlug, name_on_ticket="blank", customer_email="blank", email="blank", includes=[])
+
+    try:
+        ticket = blank_model.query_gsi(
+            index_name="gsi2",
+            table=table, 
+            key_condition=Key("gsi2PK").eq(f'{blank_model.gsi2PK}'), 
+            assemble_entites=True
+        )
+        logger.info(f"Found ticket for {organisationSlug}: {ticket}")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error(f"Ticket not found for {organisationSlug}: {e}")
+            return None
+        else:
+            raise
+    except ValueError as e:
+        logger.error(f"Ticket not found for {organisationSlug}: {e}")
+        return None
+    
+    except Exception as e:
+        logger.error(f"DynamoDB query failed to get ticket for {organisationSlug}: {e}")
+        raise Exception
+    
+    return ticket if ticket else None
+
 def get_single_event(organisationSlug: str, eventId: str, table):
     logger.info(f"Getting event for {organisationSlug}")
     blank_model = EventModel(ksuid=eventId, name="blank", organisation=organisationSlug)

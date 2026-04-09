@@ -22,7 +22,7 @@ from _shared.helpers import make_response
 from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel, TicketCreationIdempotencyModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent, EventBridgeEventDetail # pydantic layer
 from _pydantic.dynamodb import transact_upsert # pydantic layer
-from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket
+from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket, _build_ticket_name, _normalise_entity_type
 
 ## logger setup
 logger = logging.getLogger()
@@ -107,42 +107,6 @@ def get_existing_ticket_for_request(table, idempotency_key: str, organisation_sl
 
     ticket = get_single_ticket(table, organisation_slug, event_ksuid, ticket_request.ticket_ksuid)
     return ticket_request, ticket
-
-def _normalise_entity_type(entity_type: str | None) -> str:
-    return (entity_type or "").strip().lower()
-
-def _build_ticket_name(line_items: list[dict]) -> str:
-    bundle_names = []
-    item_names = []
-    other_names = []
-
-    for line_item in line_items or []:
-        name = (line_item.get("name") or "").strip()
-        if not name:
-            continue
-
-        entity_type = _normalise_entity_type(line_item.get("entity_type"))
-        if entity_type == "bundle":
-            bundle_names.append(name)
-        elif entity_type == "item":
-            item_names.append(name)
-        else:
-            other_names.append(name)
-
-    if bundle_names:
-        bundle_label = " and ".join(bundle_names)
-        if item_names:
-            return f"{bundle_label} with {', '.join(item_names)}"
-        return bundle_label
-
-    if item_names:
-        return ", ".join(item_names)
-
-    if other_names:
-        return ", ".join(other_names)
-
-    return "Ticket"
-    
 
 def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Creating ticket: {request_data}")

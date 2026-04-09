@@ -11,6 +11,41 @@ from _pydantic.email_models import EmailTemplates, EmailJob, EmailRecipient, Job
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
+def _normalise_entity_type(entity_type: str | None) -> str:
+    return (entity_type or "").strip().lower()
+
+def _build_ticket_name(line_items: list[dict]) -> str:
+    bundle_names = []
+    item_names = []
+    other_names = []
+
+    for line_item in line_items or []:
+        name = (line_item.get("name") or "").strip()
+        if not name:
+            continue
+
+        entity_type = _normalise_entity_type(line_item.get("entity_type"))
+        if entity_type == "bundle":
+            bundle_names.append(name)
+        elif entity_type == "item":
+            item_names.append(name)
+        else:
+            other_names.append(name)
+
+    if bundle_names:
+        bundle_label = " and ".join(bundle_names)
+        if item_names:
+            return f"{bundle_label} with {', '.join(item_names)}"
+        return bundle_label
+
+    if item_names:
+        return ", ".join(item_names)
+
+    if other_names:
+        return ", ".join(other_names)
+
+    return "Ticket"
+
 def get_single_ticket(table, organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
     blank_model = TicketModel(ksuid=ticketId, parent_event_ksuid=eventId, name="blank", organisation=organisationSlug, name_on_ticket="blank", customer_email="blank", email="blank", includes=[])
 

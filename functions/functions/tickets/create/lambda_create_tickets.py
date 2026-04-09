@@ -5,11 +5,13 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import traceback
 import sys
+import hashlib
 from datetime import datetime, timezone
 
 ## installed packages
 from pydantic import ValidationError # layer: pydantic
 from ksuid import KsuidMs # layer: utils
+from boto3.dynamodb.conditions import Key
 import jwt
 
 ## custom scripts
@@ -17,10 +19,10 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel
+from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel, TicketCreationIdempotencyModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent, EventBridgeEventDetail # pydantic layer
 from _pydantic.dynamodb import transact_upsert # pydantic layer
-from functions.tickets.shared.shared_tickets import create_email_job
+from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket
 
 ## logger setup
 logger = logging.getLogger()
@@ -53,6 +55,59 @@ def mint_qr_token(ticket) -> str:
 
     return jwt.encode(payload, TICKET_QR_JWT_SECRET, algorithm="HS256")
 
+def build_ticket_creation_key(request_data: EventBridgeEvent) -> str:
+    event_detail: EventBridgeEventDetail = request_data.detail
+    data = event_detail.data or {}
+    meta = event_detail.meta or {}
+
+    explicit_key = (
+        data.get("ticket_creation_key")
+        or data.get("idempotency_key")
+        or meta.get("ticket_creation_key")
+        or meta.get("idempotency_key")
+    )
+    if explicit_key:
+        return str(explicit_key)
+
+    session_id = data.get("session_id")
+    if session_id:
+        return f"checkout:{session_id}"
+
+    if event_detail.resource_id:
+        return f"{event_detail.resource_type.value}:{event_detail.action.value}:{event_detail.resource_id}"
+
+    # last resort 
+    fallback = json.dumps(
+        {
+            "organisation": event_detail.organisation,
+            "event_ksuid": data.get("event_ksuid"),
+            "customer_email": data.get("customer_email"),
+            "name_on_ticket": data.get("name_on_ticket"),
+            "line_items": data.get("line_items", []),
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return f"payload:{hashlib.sha256(fallback.encode('utf-8')).hexdigest()}"
+
+def get_ticket_request_record(table, idempotency_key: str):
+    response = table.get_item(
+        Key={
+            "PK": f"TICKETCREATIONIDEMPOTENCY#{idempotency_key}",
+            "SK": f"TICKETCREATIONIDEMPOTENCY#{idempotency_key}",
+        }
+    )
+    item = response.get("Item")
+    return TicketCreationIdempotencyModel.model_validate(item) if item else None
+
+def get_existing_ticket_for_request(table, idempotency_key: str, organisation_slug: str, event_ksuid: str):
+    ticket_request = get_ticket_request_record(table, idempotency_key)
+    if ticket_request is None:
+        return None, None
+
+    ticket = get_single_ticket(table, organisation_slug, event_ksuid, ticket_request.ticket_ksuid)
+    return ticket_request, ticket
+
 def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor: str = "unknown"):
     logger.info(f"Creating ticket: {request_data}")
     event_detail: EventBridgeEventDetail = request_data.detail
@@ -67,6 +122,8 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
 
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
+    idempotency_key = build_ticket_creation_key(request_data)
+    logger.info(f"Ticket creation idempotency key: {idempotency_key}")
 
     # What information is in the meta?
     # Where am I getting all of the ticket info from?
@@ -125,6 +182,17 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         
         ticket_model.qr_token = mint_qr_token(ticket_model)
 
+        ticket_creation_idempotency_model = TicketCreationIdempotencyModel.model_validate({
+            "idempotency_key": idempotency_key,
+            "organisation": organisation_slug,
+            "parent_event_ksuid": data.get("event_ksuid"),
+            "ticket_ksuid": ticket_ksuid,
+            "source_resource_type": event_detail.resource_type.value if event_detail.resource_type else None,
+            "source_resource_id": event_detail.resource_id,
+            "created_at": current_time,
+            "updated_at": current_time,
+        })
+
         customer_model = CustomerModel.model_validate({
             "ksuid": str(KsuidMs()),
             "email": data.get("customer_email"),
@@ -145,7 +213,7 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
     
     try:
         result = transact_upsert(table=table, 
-                                 items = child_items + [ticket_model],
+                                 items = [ticket_creation_idempotency_model] + child_items + [ticket_model],
                                  only_set_once=["created_at", "ksuid"],
                                  condition_expression="attribute_not_exists(PK)")
         
@@ -157,6 +225,16 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
         result.failed.extend(customer_result.failed)
         
         logger.info(f"Transact upsert result: {result}")
+
+        if result.failed and ticket_creation_idempotency_model in result.failed:
+            logger.info(f"Ticket create request already processed for key {idempotency_key}, returning existing ticket {ticket_ksuid}")
+            existing_request, existing_ticket = get_existing_ticket_for_request(table, idempotency_key, organisation_slug, data.get("event_ksuid"))            
+            return make_response(200, {
+                "message": "Ticket already created for this request.",
+                "ticket": existing_ticket.model_dump(mode="json"),
+                "idempotency_key": idempotency_key,
+            })
+
 
         if result.failed and not result.successful and len(result.failed) > 0:
             return make_response(400, {

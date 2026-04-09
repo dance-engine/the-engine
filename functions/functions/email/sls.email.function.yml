@@ -17,15 +17,8 @@ Email:
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
       - !Ref BrevoLambdaLayer
   events:
-    - eventBridge:
-        pattern:
-          source:
-            - ${param:default_event_bus_source}        
-          detail-type:
-            - prefix: "ticket.created"
-    - httpApi:
-        path: /{organisation}/{event}/email/send/ticket
-        method: post
-        authorizer:
-          adminAuthorizer
-        documentation: ${file(functions/email/sls.email.doc.yml):endpoints.Email.POST}        
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - EmailQueue
+            - Arn

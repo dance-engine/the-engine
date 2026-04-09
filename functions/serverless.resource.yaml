@@ -73,6 +73,44 @@ resources:
         Targets:
           - Arn: !GetAtt FulfillmentQueue.Arn
             Id: FulfillmentQueueTarget
+    EmailQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref EmailQueue
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowEventBridgeToSendEmailMessages
+              Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt EmailQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !GetAtt TicketCreatedEmailQueueRule.Arn
+    TicketCreatedEmailQueueRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: "${sls:stage}-${self:service}-ticket-created-email-rule"
+        Description: "Routes ticket.created notification email jobs to the email queue"
+        EventPattern:
+          source:
+            - ${param:default_event_bus_source}
+          detail-type:
+            - "ticket.created"
+          detail:
+            data:
+              notifications:
+                email_job:
+                  job_type:
+                    - "send_ticket_email"
+        State: ENABLED
+        Targets:
+          - Arn: !GetAtt EmailQueue.Arn
+            Id: EmailQueueTarget
+            InputPath: "$.detail.data.notifications.email_job"
     CoreDanceEngineTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Delete

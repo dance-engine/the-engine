@@ -6,6 +6,8 @@ import logging
 import sys
 import requests
 import smtplib
+import traceback
+from email.message import EmailMessage
 
 ## installed packages
 from boto3.dynamodb.conditions import Key
@@ -80,8 +82,8 @@ def _render_tempalte_preview(request: EmailJob):
                 "params": template_params,
             }
 
-            response = requests.post(url, headers=headers, json=payload)         
-            return response
+            response = requests.post(url, headers=headers, json=payload)
+            return response.json()
         except Exception as e:
             logger.error("Exception when calling Brevo API: %s\n", e)
             return e
@@ -89,7 +91,7 @@ def _render_tempalte_preview(request: EmailJob):
         logger.error("Unexpected error occured: %s\n", e)
         return e    
 
-def _send_email_preview(request: EmailJob, html_content):
+def _send_email_preview(request: EmailJob, html_content, subject):
     '''    
     Send email in preview mode
     '''    
@@ -99,15 +101,23 @@ def _send_email_preview(request: EmailJob, html_content):
     login = "987p6absdkjl"
     password = "875sadv&oa8s7td"
 
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = "ticketing@danceengine.co.uk"
+    message["To"] = request.recipient.email
+    message.set_content("HTML preview attached. Open this email in an HTML-capable client.")
+    message.add_alternative(html_content, subtype="html", charset="utf-8")
+
     # Send the email using smtplib
     try:
         with smtplib.SMTP(smtp_server, port) as server:
             server.login(login, password)
-            server.sendmail("ticketing@danceengine.co.uk", request.recipient.email, html_content)
+            server.send_message(message)
         logger.info("Email sent successfully in preview")
         return "Preview Success"
     except Exception as e:
         logger.error("Failed to send email in preview: %s", e)
+        logger.error(f"{traceback.format_exc()}")
         return e
 
 
@@ -152,7 +162,8 @@ def lambda_handler(event, context):
         parsed_message = parse_event(event.get("Records", [])[0].get("body"))
         send_email(EmailJob.model_validate(parsed_message))
         if STAGE_NAME == "preview":
-            _send_email_preview(EmailJob.model_validate(parsed_message), _render_tempalte_preview(EmailJob.model_validate(parsed_message)).get("html", ""))
+            preview_content = _render_tempalte_preview(EmailJob.model_validate(parsed_message))
+            _send_email_preview(EmailJob.model_validate(parsed_message), preview_content.get("html", ""), preview_content.get("subject", "Email Preview"))
         return 
     
     else:

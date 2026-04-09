@@ -34,8 +34,8 @@ def get_single_event(organisationSlug: str, eventId: str, table):
 
     return [result]
 
-def create_email_job(ticket: TicketModel, organisation_slug: str, checkout_id: str, actor: str):
-    event_details: EventModel = get_single_event(organisation_slug, ticket.parent_event_ksuid)[0]
+def create_email_job(table, ticket: TicketModel, organisation_slug: str, checkout_id: str, actor: str):
+    event_details: EventModel = get_single_event(organisation_slug, ticket.parent_event_ksuid, table)[0]
 
     logger.info(f"Preparing email send request for ticket {ticket.PK} of event {event_details.name} to be sent to {ticket.customer_email} with QR token {ticket.qr_token}")
     template_params = {

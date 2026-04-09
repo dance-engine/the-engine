@@ -71,3 +71,46 @@ SendTicketEmailRequest:
             type: array
             items:
               type: string
+BulkImportTicketsRequest:
+  name: "BulkImportTicketsRequest"
+  description: "Request model for bulk importing tickets"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["tickets"]
+        properties:
+          preview:
+            type: boolean
+            description: "When true, return the tickets that would be created without creating them."
+          tickets:
+            type: array
+            items:
+              type: object
+              required: ["customer_email", "name_on_ticket", "line_items"]
+              properties:
+                customer_email:
+                  type: string
+                name_on_ticket:
+                  type: string
+                ticket_creation_key:
+                  type: string
+                line_items:
+                  type: array
+                  items:
+                    type: object
+                    required: ["ksuid", "entity_type", "name"]
+                    properties:
+                      ksuid:
+                        type: string
+                      entity_type:
+                        type: string
+                      name:
+                        type: string
+                      includes:
+                        type: array
+                        items:
+                          type: string

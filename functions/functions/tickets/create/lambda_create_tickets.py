@@ -315,17 +315,25 @@ def lambda_handler(event, context):
 
     if event.get("Records") and event.get("Records", [])[0].get("eventSource") == "aws:sqs":
         logger.info("Triggered by SQS")
+        batch_failures = []
 
-        parsed_message = parse_event(event.get("Records", [])[0].get("body"))
+        for record in event.get("Records", []):
+            try:
+                parsed_message = parse_event(record.get("body"))
+                type = parsed_message.get("detail-type")
+                organisationSlug = parsed_message.get("detail", {}).get("organisation")
 
-        type = parsed_message.get("detail-type")
-        organisationSlug = parsed_message.get("detail", {}).get("organisation")
+                if type == "checkout.completed":
+                    logger.info("Handling checkout.completed event.")
+                    validated_request = EventBridgeEvent(**parsed_message)
+                    response = create_ticket(validated_request, organisationSlug)
+                    status_code = response.get("statusCode", 500)
+                    if status_code >= 500:
+                        batch_failures.append({"itemIdentifier": record.get("messageId")})
+                else:
+                    logger.warning(f"Received event type I can not currently process: {type}")
+            except Exception:
+                logger.error("Failed processing SQS record\n%s", traceback.format_exc())
+                batch_failures.append({"itemIdentifier": record.get("messageId")})
 
-        if type == "checkout.completed":
-            logger.info("Handling checkout.completed event.")
-            validated_request = EventBridgeEvent(**parsed_message)
-
-            return create_ticket(validated_request, organisationSlug)
-        else:
-            logger.warning(f"Received event type I can not currently process: {type}")
-            return make_response(400, {"message": f"Unhandled event type: {type}"})    
+        return {"batchItemFailures": batch_failures}

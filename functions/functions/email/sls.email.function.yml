@@ -16,6 +16,7 @@ Email:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
       - !Ref BrevoLambdaLayer
+      - !Ref StripeLambdaLayer # only for the requests module
   events:
     - sqs:
         arn:

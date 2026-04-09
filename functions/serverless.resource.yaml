@@ -63,12 +63,13 @@ resources:
       Type: AWS::Events::Rule
       Properties:
         Name: "${sls:stage}-${self:service}-fulfillment-rule"
-        Description: "Routes checkout.completed events to the fulfillment queue"
+        Description: "Routes ticket fulfillment requests to the fulfillment queue"
         EventPattern:
           source:
             - ${param:default_event_bus_source}
           detail-type:
             - "checkout.completed"
+            - "ticket.requested"
         State: ENABLED
         Targets:
           - Arn: !GetAtt FulfillmentQueue.Arn

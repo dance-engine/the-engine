@@ -65,8 +65,9 @@ def _render_tempalte_preview(request: EmailJob):
     logger.info(f"Rendering template preview for template_id: {request.template} with params: {request.params}")
 
     organisation_settings = get_organisation_settings(request.organisation)
-    branding_params = {"css_vars": getattr(organisation_settings, "css_vars", _default_branding_params())}
-
+    branding_params = {"css_vars": getattr(organisation_settings, "css_vars", _default_branding_params()), 
+                       "brand_name": getattr(organisation_settings, "name", "Dance Engine Ticketing"),
+                       "brand_logo_url": organisation_settings.logo}
     try:
         template_params = {**request.params, **branding_params}
 
@@ -125,7 +126,9 @@ def send_email(request: EmailJob):
     logger.info(f"Sending email with details: {request}")
 
     organisation_settings = get_organisation_settings(request.organisation)
-    branding_params = {"css_vars": getattr(organisation_settings, "css_vars", _default_branding_params())}
+    branding_params = {"css_vars": getattr(organisation_settings, "css_vars", _default_branding_params()), 
+                       "brand_name": getattr(organisation_settings, "name", "Dance Engine Ticketing"),
+                       "brand_logo_url": organisation_settings.logo}
 
     try:
         template_params = {**request.params, **branding_params}

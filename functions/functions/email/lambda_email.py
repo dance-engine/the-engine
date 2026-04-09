@@ -61,7 +61,7 @@ def send_email(request: EmailJob):
     logger.info(f"Sending email with details: {request}")
 
     organisation_settings = get_organisation_settings(request.organisation)
-    branding_params = {"css_vars": organisation_settings.css_vars} if organisation_settings.css_vars else _default_branding_params()    
+    branding_params = {"css_vars": getattr(organisation_settings, "css_vars", _default_branding_params())}
 
     try:
         template_params = {**request.params, **branding_params}

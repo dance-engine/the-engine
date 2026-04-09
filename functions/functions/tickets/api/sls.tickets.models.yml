@@ -51,4 +51,20 @@ TicketListResponse:
           tickets:
             type: array
             items:
-              $ref: "#/components/schemas/TicketObject" 
+              $ref: "#/components/schemas/TicketObject"
+SendTicketEmailRequest:
+  name: "SendTicketEmailRequest"
+  description: "Request model for sending tickets"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["tickets"]
+        properties:
+          tickets:
+            type: array
+            items:
+              type: string

@@ -5,6 +5,7 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import traceback
 import sys
+from datetime import datetime, timezone
 
 ## installed packages
 from pydantic import ValidationError # layer: pydantic
@@ -16,8 +17,10 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
-from _pydantic.models.tickets_models import TicketListResponse
+from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
+from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest
 from _pydantic.models.models_extended import TicketModel
+from functions.tickets.shared.shared_tickets import create_email_job
 
 ## logger setup
 logger = logging.getLogger()
@@ -85,6 +88,85 @@ def get_tickets(organisationSlug: str,  eventId: str, public: bool = False, acto
 
     return tickets
 
+def send_tickets(request_data: SendTicketEmailRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Request to resend tickets for {organisationSlug}:{eventId} from {TABLE_NAME}")
+
+    ticket_ids = request_data.tickets or []
+    if len(ticket_ids) == 0:
+        return make_response(400, {"message": "No tickets provided."})
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    missing_tickets = []
+    failed_tickets = []
+    queued_tickets = []
+
+    for ticket_id in ticket_ids:
+        ticket = get_single_ticket(organisationSlug, eventId, ticket_id, actor=actor)
+
+        if ticket is None:
+            missing_tickets.append(ticket_id)
+            continue
+
+        try:
+            email_job = create_email_job(
+                table,
+                ticket,
+                organisationSlug,
+                f"resend:{ticket.ksuid}:{current_time}",
+                actor,
+            )
+
+            queued = trigger_eventbridge_event(
+                eventbridge,
+                source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview",
+                resource_type=EventType.ticket,
+                action=Action.updated,
+                organisation=organisationSlug,
+                resource_id=ticket.PK,
+                data={
+                    "ticket": ticket.model_dump(mode="json"),
+                    "notifications": {
+                        "email_job": email_job.model_dump(mode="json")
+                    },
+                },
+                meta={
+                    "accountId": actor,
+                    "reason": "ticket_email_resend",
+                },
+            )
+
+            if not queued:
+                failed_tickets.append(ticket_id)
+                continue
+
+            queued_tickets.append(ticket_id)
+        except Exception as e:
+            logger.error("Failed to queue resend for ticket %s: %s", ticket_id, str(e))
+            logger.error(traceback.format_exc())
+            failed_tickets.append(ticket_id)
+
+    if missing_tickets and not queued_tickets and not failed_tickets:
+        return make_response(404, {
+            "message": "Ticket(s) not found.",
+            "missing_tickets": missing_tickets
+        })
+
+    if failed_tickets and not queued_tickets:
+        return make_response(500, {
+            "message": "Failed to queue ticket email resend.",
+            "failed_tickets": failed_tickets,
+            "missing_tickets": missing_tickets
+        })
+
+    return make_response(201, {
+        "message": "Ticket send requested successfully.",
+        "requested_tickets": queued_tickets,
+        "failed_tickets": failed_tickets,
+        "missing_tickets": missing_tickets
+    })
+
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
 
@@ -109,7 +191,12 @@ def lambda_handler(event, context):
                 return make_response(404, {"message": "Ticket(s) not found."})
             
             resposne = response_cls(tickets=tickets)
-            return make_response(200, resposne.model_dump(mode="json", exclude_none=True))        
+            return make_response(200, resposne.model_dump(mode="json", exclude_none=True))
+        elif http_method == "POST":
+            validated_request = SendTicketEmailRequest(**parsed_event)
+            return send_tickets(validated_request, organisationSlug, eventId, actor)
+        else:
+            return make_response(405, {"message": "Method not allowed."})
     else:
         # no longer process events from eventbridge
         logger.info("Triggered by EventBridge")

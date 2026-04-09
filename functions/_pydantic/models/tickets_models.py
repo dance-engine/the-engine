@@ -35,3 +35,7 @@ class TicketObject(BaseModel):
 
 class TicketListResponse(BaseModel):
     tickets: Optional[List[TicketObject]] = None
+
+
+class SendTicketEmailRequest(BaseModel):
+    tickets: List[str]

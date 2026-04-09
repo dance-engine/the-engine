@@ -6,6 +6,7 @@ Tickets:
     patterns:
       - '!**/**'
       - "functions/tickets/api/**"
+      - "functions/tickets/shared/**"
       - "_pydantic/**" # this requires the pydantic layer also
       - "_shared/**"
   environment:
@@ -28,3 +29,9 @@ Tickets:
         authorizer:
           adminAuthorizer
         documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.GETone}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/send
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.Send}

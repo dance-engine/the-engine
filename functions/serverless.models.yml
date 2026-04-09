@@ -54,6 +54,7 @@ models:
 
   - ${file(functions/tickets/api/sls.tickets.models.yml):TicketObject}
   - ${file(functions/tickets/api/sls.tickets.models.yml):TicketListResponse}
+  - ${file(functions/tickets/api/sls.tickets.models.yml):SendTicketEmailRequest}
 
   - name: "ErrorResponse"
     description: "Error response model"

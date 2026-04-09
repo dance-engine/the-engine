@@ -94,12 +94,10 @@ resources:
       Type: AWS::Events::Rule
       Properties:
         Name: "${sls:stage}-${self:service}-ticket-created-email-rule"
-        Description: "Routes ticket.created notification email jobs to the email queue"
+        Description: "Routes ticket notification email jobs to the email queue"
         EventPattern:
           source:
             - ${param:default_event_bus_source}
-          detail-type:
-            - "ticket.created"
           detail:
             data:
               notifications:

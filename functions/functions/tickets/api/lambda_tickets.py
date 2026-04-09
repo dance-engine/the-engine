@@ -5,6 +5,7 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import traceback
 import sys
+import hashlib
 from datetime import datetime, timezone
 
 ## installed packages
@@ -18,9 +19,9 @@ from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
-from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest
+from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest
 from _pydantic.models.models_extended import TicketModel
-from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket
+from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name
 
 ## logger setup
 logger = logging.getLogger()
@@ -34,6 +35,41 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+
+def _build_bulk_import_ticket_creation_key(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> str:
+    explicit_key = ticket_data.get("ticket_creation_key")
+    if explicit_key:
+        return str(explicit_key)
+
+    fallback = json.dumps(
+        {
+            "organisation": organisation_slug,
+            "event_ksuid": event_id,
+            "index": index,
+            "customer_email": ticket_data.get("customer_email"),
+            "name_on_ticket": ticket_data.get("name_on_ticket"),
+            "line_items": ticket_data.get("line_items", []),
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return f"bulk_import:{hashlib.sha256(fallback.encode('utf-8')).hexdigest()}"
+
+def _build_bulk_import_ticket_payload(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> dict:
+    line_items = ticket_data.get("line_items", [])
+    ticket_creation_key = _build_bulk_import_ticket_creation_key(ticket_data, organisation_slug, event_id, index)
+
+    return {
+        "ticket_creation_key": ticket_creation_key,
+        "event_ksuid": event_id,
+        "customer_email": ticket_data.get("customer_email"),
+        "name_on_ticket": ticket_data.get("name_on_ticket"),
+        "line_items": line_items,
+        "source_sale_type": "bulk_import",
+        "payment_provider": None,
+        "payment_reference": None,
+        "ticket_name_preview": _build_ticket_name(line_items),
+    }
     
 def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
@@ -144,6 +180,54 @@ def send_tickets(request_data: SendTicketEmailRequest, organisationSlug: str, ev
         "missing_tickets": missing_tickets
     })
 
+def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    ticket_payloads = [
+        _build_bulk_import_ticket_payload(ticket.model_dump(mode="json"), organisationSlug, eventId, index)
+        for index, ticket in enumerate(request_data.tickets)
+    ]
+
+    if request_data.preview:
+        return make_response(200, {
+            "preview": True,
+            "tickets": ticket_payloads,
+        })
+
+    requested_tickets = []
+    failed_tickets = []
+
+    for payload in ticket_payloads:
+        queued = trigger_eventbridge_event(
+            eventbridge,
+            source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview",
+            resource_type=EventType.ticket,
+            action=Action.requested,
+            organisation=organisationSlug,
+            resource_id=payload["ticket_creation_key"],
+            data=payload,
+            meta={
+                "accountId": actor,
+                "requested_at": current_time,
+            },
+        )
+
+        if queued:
+            requested_tickets.append(payload["ticket_creation_key"])
+        else:
+            failed_tickets.append(payload["ticket_creation_key"])
+
+    if failed_tickets and not requested_tickets:
+        return make_response(500, {
+            "message": "Failed to request ticket import.",
+            "failed_tickets": failed_tickets,
+        })
+
+    return make_response(201, {
+        "message": "Ticket import requested successfully.",
+        "requested_tickets": requested_tickets,
+        "failed_tickets": failed_tickets,
+    })
+
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
 
@@ -158,6 +242,7 @@ def lambda_handler(event, context):
         eventId          = event.get("pathParameters", {}).get("event")
         is_public        = event.get("rawPath", "").startswith("/public")
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
+        raw_path         = event.get("rawPath", "")
 
         if http_method == "GET":
             logger.info(f"{organisationSlug}:{eventId}:{ticketId} - Getting ticket(s)")
@@ -170,8 +255,13 @@ def lambda_handler(event, context):
             resposne = response_cls(tickets=tickets)
             return make_response(200, resposne.model_dump(mode="json", exclude_none=True))
         elif http_method == "POST":
-            validated_request = SendTicketEmailRequest(**parsed_event)
-            return send_tickets(validated_request, organisationSlug, eventId, actor)
+            if raw_path.endswith("/tickets/send"):
+                validated_request = SendTicketEmailRequest(**parsed_event)
+                return send_tickets(validated_request, organisationSlug, eventId, actor)
+            if raw_path.endswith("/tickets/import"):
+                validated_request = BulkImportTicketsRequest(**parsed_event)
+                return import_tickets(validated_request, organisationSlug, eventId, actor)
+            return make_response(404, {"message": "Unknown tickets action."})
         else:
             return make_response(405, {"message": "Method not allowed."})
     else:

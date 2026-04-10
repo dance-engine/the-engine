@@ -85,7 +85,10 @@ BulkImportTicketsRequest:
         properties:
           preview:
             type: boolean
-            description: "When true, return the tickets that would be created without creating them."
+            description: "When true, return the tickets that would be created together with validation, conflict and duplicate information."
+          parent_event_ksuid:
+            type: string
+            description: "KSUID of the parent event for which the tickets are being imported. This is required if the event has variations."
           tickets:
             type: array
             items:

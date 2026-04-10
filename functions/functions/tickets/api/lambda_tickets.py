@@ -5,7 +5,6 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import traceback
 import sys
-import hashlib
 from datetime import datetime, timezone
 
 ## installed packages
@@ -20,8 +19,8 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
 from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest
-from _pydantic.models.models_extended import TicketModel
-from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name
+from _pydantic.models.models_extended import TicketModel, EventModel
+from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name, get_single_event as _get_single_event, build_ticket_creation_key, get_ticket_request_record
 
 ## logger setup
 logger = logging.getLogger()
@@ -36,28 +35,15 @@ eventbridge = boto3.client('events')
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 
-def _build_bulk_import_ticket_creation_key(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> str:
-    explicit_key = ticket_data.get("ticket_creation_key")
-    if explicit_key:
-        return str(explicit_key)
-
-    fallback = json.dumps(
-        {
-            "organisation": organisation_slug,
-            "event_ksuid": event_id,
-            "index": index,
-            "customer_email": ticket_data.get("customer_email"),
-            "name_on_ticket": ticket_data.get("name_on_ticket"),
-            "line_items": ticket_data.get("line_items", []),
-        },
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return f"bulk_import:{hashlib.sha256(fallback.encode('utf-8')).hexdigest()}"
-
-def _build_bulk_import_ticket_payload(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> dict:
+def _build_bulk_import_ticket(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> dict:
     line_items = ticket_data.get("line_items", [])
-    ticket_creation_key = _build_bulk_import_ticket_creation_key(ticket_data, organisation_slug, event_id, index)
+    ticket_creation_key = build_ticket_creation_key(
+        ticket_data=ticket_data,
+        organisation_slug=organisation_slug,
+        event_ksuid=event_id,
+        fallback_prefix="bulk_import",
+        index=index,
+    )
 
     return {
         "ticket_creation_key": ticket_creation_key,
@@ -70,6 +56,30 @@ def _build_bulk_import_ticket_payload(ticket_data: dict, organisation_slug: str,
         "payment_reference": None,
         "ticket_name_preview": _build_ticket_name(line_items),
     }
+
+def _line_item_lookup(event_model: EventModel | None) -> dict[str, dict]:
+    line_item_lookup = {}
+
+    if not event_model:
+        return line_item_lookup
+
+    for item in getattr(event_model, "items", []) or []:
+        line_item_lookup[item.ksuid] = {
+            "ksuid": item.ksuid,
+            "entity_type": getattr(item, "entity_type", "ITEM"),
+            "name": item.name,
+            "status": getattr(item, "status", None),
+        }
+
+    for bundle in getattr(event_model, "bundles", []) or []:
+        line_item_lookup[bundle.ksuid] = {
+            "ksuid": bundle.ksuid,
+            "entity_type": getattr(bundle, "entity_type", "BUNDLE"),
+            "name": bundle.name,
+            "status": getattr(bundle, "status", None),
+        }
+
+    return line_item_lookup
     
 def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
@@ -181,51 +191,145 @@ def send_tickets(request_data: SendTicketEmailRequest, organisationSlug: str, ev
     })
 
 def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    # 1. Prepare each potential import ticket payload with creation key for future idempotency
+    #   - If not preview, push events to eventbridge 
+    # 2. Check the event exists
+    # 3. Check that each ticket references valid line items for this event
+    # 4. Check for duplicates based on idempotency key
+    # 5. Check for potential duplicates based on customer email, name on ticket
+    # 6. Return preview
+    
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Bulk ticket import request received for {organisationSlug}:{eventId} with preview={request_data.preview}")
+
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    ticket_payloads = [
-        _build_bulk_import_ticket_payload(ticket.model_dump(mode="json"), organisationSlug, eventId, index)
+
+    ## 1. 
+
+    ticket_requests = [
+        _build_bulk_import_ticket(ticket.model_dump(mode="json"), organisationSlug, eventId, index)
         for index, ticket in enumerate(request_data.tickets)
     ]
 
-    if request_data.preview:
-        return make_response(200, {
-            "preview": True,
-            "tickets": ticket_payloads,
-        })
+    # Send tickets if not preview mode
+    if not request_data.preview:
+        requested_tickets = []
+        failed_tickets = []
 
-    requested_tickets = []
-    failed_tickets = []
+        for payload in ticket_requests:
+            queued = trigger_eventbridge_event(
+                eventbridge,
+                source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview",
+                resource_type=EventType.ticket,
+                action=Action.requested,
+                organisation=organisationSlug,
+                resource_id=payload["ticket_creation_key"],
+                data=payload,
+                meta={
+                    "accountId": actor,
+                    "requested_at": current_time,
+                },
+            )
 
-    for payload in ticket_payloads:
-        queued = trigger_eventbridge_event(
-            eventbridge,
-            source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview",
-            resource_type=EventType.ticket,
-            action=Action.requested,
-            organisation=organisationSlug,
-            resource_id=payload["ticket_creation_key"],
-            data=payload,
-            meta={
-                "accountId": actor,
-                "requested_at": current_time,
-            },
-        )
+            if queued:
+                requested_tickets.append(payload["ticket_creation_key"])
+            else:
+                failed_tickets.append(payload["ticket_creation_key"])
 
-        if queued:
-            requested_tickets.append(payload["ticket_creation_key"])
-        else:
-            failed_tickets.append(payload["ticket_creation_key"])
+        if failed_tickets and not requested_tickets:
+            return make_response(500, {
+                "message": "Failed to request ticket import.",
+                "failed_tickets": failed_tickets,
+            })
 
-    if failed_tickets and not requested_tickets:
-        return make_response(500, {
-            "message": "Failed to request ticket import.",
+        return make_response(201, {
+            "message": "Ticket import requested successfully.",
+            "requested_tickets": requested_tickets,
             "failed_tickets": failed_tickets,
         })
+    
+    ## 2. 
+    event_data = _get_single_event(organisationSlug, eventId, table)
 
-    return make_response(201, {
-        "message": "Ticket import requested successfully.",
-        "requested_tickets": requested_tickets,
-        "failed_tickets": failed_tickets,
+    if not event_data:
+        return make_response(404, {
+            "message": "Event not found.",
+            "preview": True,
+            "event_id": eventId,
+        })
+    
+    ## 3. 
+    available_line_items = _line_item_lookup(event_data)
+    existing_tickets = get_tickets(organisationSlug, eventId, actor="bulk_import_preview") or []
+    analysed_tickets = []
+
+    for index, ticket_request in enumerate(ticket_requests):
+        issues = []
+        duplicate = False
+        potential_duplicate = False
+
+        for line_item in ticket_request.get("line_items", []):
+            if line_item.get('ksuid') not in available_line_items:
+                issues.append({
+                    "type": "missing_line_item",
+                    "message": "The referenced line item does not exist on this event.",
+                    "line_item": line_item,
+                })
+
+        # 4.
+        idempotency_record = get_ticket_request_record(table, ticket_request["ticket_creation_key"])
+        if idempotency_record:
+            duplicate = True
+            issues.append({
+                "type": "existing_ticket_creation_key",
+                "message": "A ticket creation request already exists for this ticket_creation_key.",
+                "ticket_creation_key": ticket_request["ticket_creation_key"],
+            })
+        
+        # 5. 
+        for existing_ticket in existing_tickets:
+            existing_email = (existing_ticket.customer_email or "").strip().lower()
+            existing_name_on_ticket = (existing_ticket.name_on_ticket or "").strip().lower()
+
+            if payload.get("customer_email") == existing_email and payload.get("name_on_ticket") == existing_name_on_ticket:
+                duplicate = True
+                issues.append({
+                    "type": "exact_existing_ticket_match",
+                    "message": "An existing ticket already matches this customer email and name.",
+                    "existing_ticket": existing_ticket,
+                })
+                continue
+
+            if payload.get("customer_email") == existing_email:
+                potential_duplicate = True
+                issues.append({
+                    "type": "matching_customer_email",
+                    "message": "An existing ticket has the same customer email.",
+                    "existing_ticket": existing_ticket
+                })
+
+            if payload.get("name_on_ticket") == existing_name_on_ticket:
+                potential_duplicate = True
+                issues.append({
+                    "type": "matching_name_on_ticket",
+                    "message": "An existing ticket has the same name on ticket.",
+                    "existing_ticket": existing_ticket
+                })
+
+        analysed_tickets.append({
+            "index": index,
+            "ticket": ticket_request,
+            "issues": issues,
+            "duplicate": duplicate,
+            "potential_duplicate": potential_duplicate,
+        })
+
+    logger.info(f"Returning bulk ticket import preview for {organisationSlug}:{eventId} with {len(analysed_tickets)} analysed tickets")
+    return make_response(200, {
+        "preview": request_data.preview,
+        "event": event_data.model_dump(mode="json", exclude_none=True),
+        "tickets": analysed_tickets,
     })
 
 def lambda_handler(event, context):

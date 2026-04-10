@@ -1,15 +1,75 @@
+import hashlib
+import json
 import logging
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from pydantic import ValidationError # layer: pydantic
-from _pydantic.models.models_extended import TicketModel, EventModel
+from _pydantic.models.models_extended import TicketModel, EventModel, TicketCreationIdempotencyModel
 from _pydantic.email_models import EmailTemplates, EmailJob, EmailRecipient, JobTypes # pydantic layer
 
 ## logger setup
 logger = logging.getLogger()
 logger.setLevel("INFO")
+
+def get_ticket_request_record(table, idempotency_key: str):
+    response = table.get_item(
+        Key={
+            "PK": f"TICKETCREATIONIDEMPOTENCY#{idempotency_key}",
+            "SK": f"TICKETCREATIONIDEMPOTENCY#{idempotency_key}",
+        }
+    )
+    item = response.get("Item")
+    return TicketCreationIdempotencyModel.model_validate(item) if item else None
+
+
+def build_ticket_creation_key(
+    ticket_data: dict | None = None,
+    organisation_slug: str | None = None,
+    event_ksuid: str | None = None,
+    meta: dict | None = None,
+    resource_type: str | None = None,
+    action: str | None = None,
+    resource_id: str | None = None,
+    fallback_prefix: str = "payload",
+    index: int | None = None,
+) -> str:
+    ticket_data = ticket_data or {}
+    meta = meta or {}
+
+    explicit_key = (
+        ticket_data.get("ticket_creation_key")
+        or ticket_data.get("idempotency_key")
+        or meta.get("ticket_creation_key")
+        or meta.get("idempotency_key")
+    )
+    if explicit_key:
+        return str(explicit_key)
+
+    session_id = ticket_data.get("session_id") or meta.get("session_id")
+    if session_id:
+        return f"checkout:{session_id}"
+
+    if resource_id and resource_type and action:
+        return f"{resource_type}:{action}:{resource_id}"
+
+    fallback_payload = {
+        "organisation": organisation_slug,
+        "event_ksuid": event_ksuid or ticket_data.get("event_ksuid"),
+        "customer_email": ticket_data.get("customer_email"),
+        "name_on_ticket": ticket_data.get("name_on_ticket"),
+        "line_items": ticket_data.get("line_items", []),
+    }
+    if index is not None:
+        fallback_payload["index"] = index
+
+    fallback = json.dumps(
+        fallback_payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return f"{fallback_prefix}:{hashlib.sha256(fallback.encode('utf-8')).hexdigest()}"
 
 def _normalise_entity_type(entity_type: str | None) -> str:
     return (entity_type or "").strip().lower()

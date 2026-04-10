@@ -5,7 +5,6 @@ import boto3 # not a python library but is included in lambda without need to in
 import logging
 import traceback
 import sys
-import hashlib
 from datetime import datetime, timezone
 
 ## installed packages
@@ -22,7 +21,7 @@ from _shared.helpers import make_response
 from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel, TicketCreationIdempotencyModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent, EventBridgeEventDetail # pydantic layer
 from _pydantic.dynamodb import transact_upsert # pydantic layer
-from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket, _build_ticket_name, _normalise_entity_type
+from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket, _build_ticket_name, _normalise_entity_type, build_ticket_creation_key, get_ticket_request_record
 
 ## logger setup
 logger = logging.getLogger()
@@ -55,51 +54,6 @@ def mint_qr_token(ticket) -> str:
 
     return jwt.encode(payload, TICKET_QR_JWT_SECRET, algorithm="HS256")
 
-def build_ticket_creation_key(request_data: EventBridgeEvent) -> str:
-    event_detail: EventBridgeEventDetail = request_data.detail
-    data = event_detail.data or {}
-    meta = event_detail.meta or {}
-
-    explicit_key = (
-        data.get("ticket_creation_key")
-        or data.get("idempotency_key")
-        or meta.get("ticket_creation_key")
-        or meta.get("idempotency_key")
-    )
-    if explicit_key:
-        return str(explicit_key)
-
-    session_id = data.get("session_id")
-    if session_id:
-        return f"checkout:{session_id}"
-
-    if event_detail.resource_id:
-        return f"{event_detail.resource_type.value}:{event_detail.action.value}:{event_detail.resource_id}"
-
-    # last resort 
-    fallback = json.dumps(
-        {
-            "organisation": event_detail.organisation,
-            "event_ksuid": data.get("event_ksuid"),
-            "customer_email": data.get("customer_email"),
-            "name_on_ticket": data.get("name_on_ticket"),
-            "line_items": data.get("line_items", []),
-        },
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return f"payload:{hashlib.sha256(fallback.encode('utf-8')).hexdigest()}"
-
-def get_ticket_request_record(table, idempotency_key: str):
-    response = table.get_item(
-        Key={
-            "PK": f"TICKETCREATIONIDEMPOTENCY#{idempotency_key}",
-            "SK": f"TICKETCREATIONIDEMPOTENCY#{idempotency_key}",
-        }
-    )
-    item = response.get("Item")
-    return TicketCreationIdempotencyModel.model_validate(item) if item else None
-
 def get_existing_ticket_for_request(table, idempotency_key: str, organisation_slug: str, event_ksuid: str):
     ticket_request = get_ticket_request_record(table, idempotency_key)
     if ticket_request is None:
@@ -122,7 +76,15 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
 
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
-    idempotency_key = build_ticket_creation_key(request_data)
+    idempotency_key = build_ticket_creation_key(
+        ticket_data=data,
+        organisation_slug=event_detail.organisation,
+        event_ksuid=data.get("event_ksuid"),
+        meta=event_detail.meta,
+        resource_type=event_detail.resource_type.value if event_detail.resource_type else None,
+        action=event_detail.action.value if event_detail.action else None,
+        resource_id=event_detail.resource_id,
+    )
     logger.info(f"Ticket creation idempotency key: {idempotency_key}")
 
     # What information is in the meta?

@@ -92,7 +92,7 @@ endpoints:
             application/json: "ErrorResponse"
     Import:
       summary: "Import Tickets"
-      description: "Requests bulk creation of tickets for an event. Set preview=true to return the tickets that would be created without creating them."
+      description: "Requests bulk creation of tickets for an event. Set preview=true to validate the event, the referenced line items and likely duplicate tickets, and return the tickets that would be created without creating them."
       tags:
         - Tickets
       pathParams:
@@ -105,13 +105,13 @@ endpoints:
           schema:
             type: string
       requestBody:
-        description: "Bulk ticket import request. Set preview=true to preview without creating tickets."
+        description: "Bulk ticket import request. Set preview=true to preview with validation, conflict and duplicate information without creating tickets."
       requestModels:
         application/json: "BulkImportTicketsRequest"
       methodResponses:
         - statusCode: 200
           responseBody:
-            description: Preview of tickets that would be created.
+            description: Preview of tickets that would be created, including validation results and duplicate checks.
         - statusCode: 201
           responseBody:
             description: Ticket import requested successfully.

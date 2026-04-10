@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, Any
@@ -53,6 +54,25 @@ class EventBridgeEvent(BaseModel):
         return values    
 
 
+DEFAULT_CORE_SOURCE = "dance-engine.core"
+PREVIEW_CORE_SOURCE = "dance-engine.core.preview"
+
+def _resolve_stage_scoped_source(source: str) -> str:
+    """
+    Normalise internal core sources so every event published through this helper
+    uses the stage-specific EventBridge source on the shared default bus.
+    """
+
+    stage_name = (os.environ.get("STAGE_NAME") or "").strip().lower()
+
+    if source == PREVIEW_CORE_SOURCE:
+        return PREVIEW_CORE_SOURCE
+
+    if stage_name == "preview":
+        return PREVIEW_CORE_SOURCE
+
+    return DEFAULT_CORE_SOURCE
+
 def trigger_eventbridge_event(
     client: BaseClient,
     *,
@@ -89,7 +109,7 @@ def trigger_eventbridge_event(
 
     try:
         event = EventBridgeEvent(
-            source=source,
+            source=_resolve_stage_scoped_source(source),
             detail=EventBridgeEventDetail(
                 timestamp=timestamp or datetime.utcnow(),
                 organisation=organisation,

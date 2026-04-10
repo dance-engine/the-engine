@@ -163,10 +163,11 @@ def lambda_handler(event, context):
     if event.get("Records") and event.get("Records", [])[0].get("eventSource") == "aws:sqs":
         logger.info("Triggered by SQS")
         parsed_message = parse_event(event.get("Records", [])[0].get("body"))
-        send_email(EmailJob.model_validate(parsed_message))
         if STAGE_NAME == "preview":
             preview_content = _render_tempalte_preview(EmailJob.model_validate(parsed_message))
             _send_email_preview(EmailJob.model_validate(parsed_message), preview_content.get("html", ""), preview_content.get("subject", "Email Preview"))
+        else:
+            send_email(EmailJob.model_validate(parsed_message))
         return 
     
     else:

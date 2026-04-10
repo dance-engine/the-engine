@@ -117,3 +117,17 @@ BulkImportTicketsRequest:
                         type: array
                         items:
                           type: string
+UpdateTicketRequest:          
+  name: "UpdateTicketRequest"
+  description: "Request model for updating a ticket"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["ticket"]
+        properties:
+          ticket:
+            $ref: "#/components/schemas/TicketObject"

@@ -1,0 +1,119 @@
+TicketObject:
+  name: "TicketObject"
+  description: "Model representing a ticket object"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          ksuid:
+            type: string
+            description: "Unique identifier for the ticket"
+          name:
+            type: string
+            description: "Name of the ticket"
+          name_on_ticket:
+            type: string
+            description: "Name to be printed on the ticket"
+          customer_email:
+            type: string
+            description: "Email of the customer who owns the ticket"
+          created_at:
+            type: string
+            format: date-time
+            description: "Timestamp when the ticket was created"
+          updated_at:
+            type: string
+            format: date-time
+            description: "Timestamp when the ticket was last updated"
+          includes:
+            type: array
+            items:
+              type: string
+            description: "List of items included with the ticket"
+          expanded_includes:
+            type: array
+            items:
+              type: object
+            description: "List of the items included with the ticket"
+          creation_idempotency:
+            type: object
+            description: "Idempotency record for the ticket creation request"
+TicketListResponse:
+  name: "TicketListResponse"
+  description: "Response model for a list of tickets"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          tickets:
+            type: array
+            items:
+              $ref: "#/components/schemas/TicketObject"
+SendTicketEmailRequest:
+  name: "SendTicketEmailRequest"
+  description: "Request model for sending tickets"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["tickets"]
+        properties:
+          tickets:
+            type: array
+            items:
+              type: string
+BulkImportTicketsRequest:
+  name: "BulkImportTicketsRequest"
+  description: "Request model for bulk importing tickets"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["tickets"]
+        properties:
+          preview:
+            type: boolean
+            description: "When true, return the tickets that would be created together with validation, conflict and duplicate information."
+          parent_event_ksuid:
+            type: string
+            description: "KSUID of the parent event for which the tickets are being imported. This is required if the event has variations."
+          tickets:
+            type: array
+            items:
+              type: object
+              required: ["customer_email", "name_on_ticket", "line_items"]
+              properties:
+                customer_email:
+                  type: string
+                name_on_ticket:
+                  type: string
+                ticket_creation_key:
+                  type: string
+                line_items:
+                  type: array
+                  items:
+                    type: object
+                    required: ["ksuid", "entity_type", "name"]
+                    properties:
+                      ksuid:
+                        type: string
+                      entity_type:
+                        type: string
+                      name:
+                        type: string
+                      includes:
+                        type: array
+                        items:
+                          type: string

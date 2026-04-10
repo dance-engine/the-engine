@@ -1,0 +1,43 @@
+Tickets:
+  runtime: python3.11
+  handler: functions/tickets/api/lambda_tickets.lambda_handler
+  name: "${sls:stage}-${self:service}-tickets"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/tickets/api/**"
+      - "functions/tickets/shared/**"
+      - "_pydantic/**" # this requires the pydantic layer also
+      - "_shared/**"
+  environment:
+      STAGE_NAME: ${sls:stage}
+      ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+  layers:
+      - !Ref UtilsLambdaLayer
+      - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
+      - !Ref AuthLambdaLayer
+  events:
+    - httpApi:
+        path: /{organisation}/{event}/tickets
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.GETall}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.GETone}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/send
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.Send}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/import
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.Import}

@@ -117,7 +117,16 @@ provider:
             - events:PutEvents
           Resource:
             - arn:aws:events:eu-west-1:717279731911:event-bus/default
-
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+            - sqs:ChangeMessageVisibility
+          Resource:
+            - Fn::GetAtt: [EmailQueue, Arn]
+            - Fn::GetAtt: [FulfillmentQueue, Arn]
   httpApi:
     cors: true
     authorizers:
@@ -138,7 +147,15 @@ resources:
     ConfigBucket: ${file(serverless.resource.yaml):resources.Resources.ConfigBucket}
     DeployOrgRole: ${file(serverless.privileged.yaml):resources.Resources.DeployOrgRole}
     CoreDanceEngineTable: ${file(serverless.resource.yaml):resources.Resources.CoreDanceEngineTable}
-                
+    EmailDLQ: ${file(serverless.resource.yaml):resources.Resources.EmailDLQ}
+    EmailQueue: ${file(serverless.resource.yaml):resources.Resources.EmailQueue}
+    FulfillmentDLQ: ${file(serverless.resource.yaml):resources.Resources.FulfillmentDLQ}
+    FulfillmentQueue: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueue}
+    FulfillmentQueuePolicy: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueuePolicy}
+    FulfillmentQueueRule: ${file(serverless.resource.yaml):resources.Resources.FulfillmentQueueRule}
+    EmailQueuePolicy: ${file(serverless.resource.yaml):resources.Resources.EmailQueuePolicy}
+    TicketCreatedEmailQueueRule: ${file(serverless.resource.yaml):resources.Resources.TicketCreatedEmailQueueRule}
+
 #######################
 # Layers
 #######################
@@ -166,7 +183,8 @@ layers:
 
 functions:
   Email: ${file(functions/email/sls.email.function.yml):Email}
-  Tickets: ${file(functions/tickets/sls.tickets.function.yml):Tickets}
+  CreateTickets: ${file(functions/tickets/create/sls.create_tickets.function.yml):CreateTickets}
+  Tickets: ${file(functions/tickets/api/sls.tickets.function.yml):Tickets}
   EventbridgeCheckout: ${file(functions/checkout/sls.checkout.function.yml):EventbridgeCheckout}
   Checkout: ${file(functions/checkout/sls.checkout.function.yml):Checkout}
   Bundles: ${file(functions/bundles/sls.bundles.function.yml):Bundles}

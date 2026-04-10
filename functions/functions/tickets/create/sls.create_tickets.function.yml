@@ -1,27 +1,26 @@
-Email:
+CreateTickets:
   runtime: python3.11
-  handler: functions/email/lambda_email.lambda_handler
-  name: "${sls:stage}-${self:service}-email"
+  handler: functions/tickets/create/lambda_create_tickets.lambda_handler
+  name: "${sls:stage}-${self:service}-create-tickets"
   package:
     patterns:
       - '!**/**'
-      - "functions/email/**"
+      - "functions/tickets/create/**"
+      - "functions/tickets/shared/**"
       - "_pydantic/**" # this requires the pydantic layer also
       - "_shared/**"
   environment:
       STAGE_NAME: ${sls:stage}
-      BREVO_API_KEY: ${ssm:/danceengine/brevo/api_key}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
-      MAILDEV_IP: "3.252.90.200"
+      TICKET_QR_JWT_SECRET: ${ssm:/danceengine/${sls:stage}/jwt_secret}
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
-      - !Ref BrevoLambdaLayer
-      - !Ref StripeLambdaLayer # only for the requests module
+      - !Ref AuthLambdaLayer
   events:
     - sqs:
         arn:
           Fn::GetAtt:
-            - EmailQueue
+            - FulfillmentQueue
             - Arn
         functionResponseType: ReportBatchItemFailures

@@ -1,5 +1,115 @@
 resources:
   Resources:
+    EmailDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-email-dlq"
+        MessageRetentionPeriod: 1209600
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
+    EmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-email"
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 345600
+        ReceiveMessageWaitTimeSeconds: 20
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt EmailDLQ.Arn
+          maxReceiveCount: 5
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2  
+    FulfillmentDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-fulfillment-dlq"
+        MessageRetentionPeriod: 1209600
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
+    FulfillmentQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: "${sls:stage}-${self:service}-fulfillment"
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 345600
+        ReceiveMessageWaitTimeSeconds: 20
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt FulfillmentDLQ.Arn
+          maxReceiveCount: 5
+        Tags:
+          - Key: DanceEngineVersion
+            Value: v2
+    FulfillmentQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref FulfillmentQueue
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowEventBridgeToSendFulfillmentMessages
+              Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt FulfillmentQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !GetAtt FulfillmentQueueRule.Arn
+    FulfillmentQueueRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: "${sls:stage}-${self:service}-fulfillment-rule"
+        Description: "Routes ticket fulfillment requests to the fulfillment queue"
+        EventPattern:
+          source:
+            - ${param:default_event_bus_source}
+          detail-type:
+            - "checkout.completed"
+            - "ticket.requested"
+        State: ENABLED
+        Targets:
+          - Arn: !GetAtt FulfillmentQueue.Arn
+            Id: FulfillmentQueueTarget
+    EmailQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref EmailQueue
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowEventBridgeToSendEmailMessages
+              Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt EmailQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !GetAtt TicketCreatedEmailQueueRule.Arn
+    TicketCreatedEmailQueueRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: "${sls:stage}-${self:service}-ticket-created-email-rule"
+        Description: "Routes ticket notification email jobs to the email queue"
+        EventPattern:
+          source:
+            - ${param:default_event_bus_source}
+          detail:
+            data:
+              notifications:
+                email_job:
+                  job_type:
+                    - "send_ticket_email"
+        State: ENABLED
+        Targets:
+          - Arn: !GetAtt EmailQueue.Arn
+            Id: EmailQueueTarget
+            InputPath: "$.detail.data.notifications.email_job"
     CoreDanceEngineTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Delete

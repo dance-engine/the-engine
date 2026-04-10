@@ -200,7 +200,8 @@ class TicketModel(TicketBase, DynamoModel):
     @property
     def related_entities(self):
         return {
-            "TICKETCHILD": ("expanded_includes", "list", TicketChildModel)
+            "TICKETCHILD": ("expanded_includes", "list", TicketChildModel),
+            "TICKETCREATIONIDEMPOTENCY": ("creation_idempotency", "single", TicketCreationIdempotencyModel),
             }
 
     @property
@@ -255,6 +256,35 @@ class TicketChildModel(DynamoModel):
 
     @property
     def name_slug(self): return self._slugify(self.name)
+
+class TicketCreationIdempotencyModel(DynamoModel):
+    idempotency_key: str
+    organisation: str
+    parent_event_ksuid: str
+    ticket_ksuid: str
+    source_resource_type: Optional[str] = None
+    source_resource_id: Optional[str] = None
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    entity_type: Literal["TICKETCREATIONIDEMPOTENCY"] = "TICKETCREATIONIDEMPOTENCY"
+
+    @property
+    def PK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
+
+    @property
+    def SK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
+
+    @property
+    def gsi1PK(self): return None
+
+    @property
+    def gsi1SK(self): return None
+
+    @property
+    def gsi2PK(self): return f"TICKET#{self.ticket_ksuid}"
+
+    @property
+    def gsi2SK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
 
 class CustomerModel(CustomerBase, DynamoModel):
     organisation: str

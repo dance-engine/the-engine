@@ -236,7 +236,14 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
                                       "ticket": ticket_model.model_dump(mode="json"), 
                                       "child_items": [ci.model_dump(mode="json") for ci in child_items],
                                       "notifications": {
-                                            "email_job": create_email_job(table, ticket_model, organisation_slug, data.get("session_id"), actor)
+                                            "email_job": create_email_job(
+                                                table,
+                                                ticket_model,
+                                                organisation_slug,
+                                                data.get("session_id"),
+                                                actor,
+                                                send_reason="new_sale",
+                                            )
                                       }},
                                   meta={"accountId":actor})
         

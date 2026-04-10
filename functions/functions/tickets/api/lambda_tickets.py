@@ -139,6 +139,7 @@ def send_tickets(request_data: SendTicketEmailRequest, organisationSlug: str, ev
                 organisationSlug,
                 f"resend:{ticket.ksuid}:{current_time}",
                 actor,
+                send_reason="ticket_email_resend",
             )
 
             queued = trigger_eventbridge_event(

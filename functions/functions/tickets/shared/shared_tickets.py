@@ -156,7 +156,14 @@ def get_single_event(organisationSlug: str, eventId: str, table):
 
     return [result]
 
-def create_email_job(table, ticket: TicketModel, organisation_slug: str, checkout_id: str, actor: str):
+def create_email_job(
+    table,
+    ticket: TicketModel,
+    organisation_slug: str,
+    idempotency_suffix: str,
+    actor: str,
+    send_reason: str = "new_sale",
+):
     event_details: EventModel = get_single_event(organisation_slug, ticket.parent_event_ksuid, table)[0]
 
     logger.info(f"Preparing email send request for ticket {ticket.PK} of event {event_details.name} to be sent to {ticket.customer_email} with QR token {ticket.qr_token}")
@@ -180,13 +187,13 @@ def create_email_job(table, ticket: TicketModel, organisation_slug: str, checkou
             job_id=f"send_ticket_email:{ticket.PK}",
             organisation=organisation_slug,
             template=EmailTemplates.ticket_dynamic,
-            send_reason="new_sale",
+            send_reason=send_reason,
             recipient=EmailRecipient(
                 email=ticket.customer_email,
                 name=ticket.name_on_ticket
             ),
-            idempotency_key=f"ticket:create:checkout:{checkout_id}",
-            correlation_id=f"checkout:{checkout_id}",
+            idempotency_key=f"ticket_email:{send_reason}:{idempotency_suffix}",
+            correlation_id=f"ticket_email:{send_reason}:{idempotency_suffix}",
             params=template_params
         )
         logger.info("EmailJob created successfully")

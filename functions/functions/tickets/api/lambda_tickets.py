@@ -250,7 +250,7 @@ def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str
         })
     
     ## 2. 
-    event_data = _get_single_event(organisationSlug, eventId, table)
+    event_data = _get_single_event(organisationSlug, eventId, table)[0]
 
     if not event_data:
         return make_response(404, {
@@ -292,29 +292,29 @@ def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str
             existing_email = (existing_ticket.customer_email or "").strip().lower()
             existing_name_on_ticket = (existing_ticket.name_on_ticket or "").strip().lower()
 
-            if payload.get("customer_email") == existing_email and payload.get("name_on_ticket") == existing_name_on_ticket:
+            if ticket_request.get("customer_email") == existing_email and ticket_request.get("name_on_ticket") == existing_name_on_ticket:
                 duplicate = True
                 issues.append({
                     "type": "exact_existing_ticket_match",
                     "message": "An existing ticket already matches this customer email and name.",
-                    "existing_ticket": existing_ticket,
+                    "existing_ticket": existing_ticket.model_dump(mode="json", exclude_none=True),
                 })
                 continue
 
-            if payload.get("customer_email") == existing_email:
+            if ticket_request.get("customer_email") == existing_email:
                 potential_duplicate = True
                 issues.append({
                     "type": "matching_customer_email",
                     "message": "An existing ticket has the same customer email.",
-                    "existing_ticket": existing_ticket
+                    "existing_ticket": existing_ticket.model_dump(mode="json", exclude_none=True)
                 })
 
-            if payload.get("name_on_ticket") == existing_name_on_ticket:
+            if ticket_request.get("name_on_ticket") == existing_name_on_ticket:
                 potential_duplicate = True
                 issues.append({
                     "type": "matching_name_on_ticket",
                     "message": "An existing ticket has the same name on ticket.",
-                    "existing_ticket": existing_ticket
+                    "existing_ticket": existing_ticket.model_dump(mode="json", exclude_none=True)
                 })
 
         analysed_tickets.append({
@@ -326,6 +326,8 @@ def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str
         })
 
     logger.info(f"Returning bulk ticket import preview for {organisationSlug}:{eventId} with {len(analysed_tickets)} analysed tickets")
+    logger.info(f"Analysed tickets: {analysed_tickets}")
+    logger.info(f"Analysed tickets: {json.dumps(analysed_tickets, indent=2, cls=DecimalEncoder)}")
     return make_response(200, {
         "preview": request_data.preview,
         "event": event_data.model_dump(mode="json", exclude_none=True),

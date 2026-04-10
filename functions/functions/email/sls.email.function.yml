@@ -24,3 +24,4 @@ Email:
           Fn::GetAtt:
             - EmailQueue
             - Arn
+        functionResponseType: ReportBatchItemFailures

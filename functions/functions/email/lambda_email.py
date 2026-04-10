@@ -156,19 +156,57 @@ def send_email(request: EmailJob):
         logger.error("Unexpected error occured: %s\n", e)
         return e
 
+def process_email_job(request: EmailJob):
+    logger.info("Processing email job %s for organisation %s", request.job_id, request.organisation)
+
+    if STAGE_NAME == "preview":
+        preview_content = _render_tempalte_preview(request)
+        if isinstance(preview_content, Exception):
+            logger.error("Template preview generation failed for job %s: %s", request.job_id, str(preview_content))
+            return preview_content
+
+        preview_send_result = _send_email_preview(
+            request,
+            preview_content.get("html", ""),
+            preview_content.get("subject", "Email Preview"),
+        )
+        return preview_send_result
+
+    return send_email(request)
+
+def is_retryable_email_result(result) -> bool:
+    if isinstance(result, Exception):
+        return True
+
+    if isinstance(result, requests.Response):
+        return result.status_code >= 500
+
+    return False
+
 def lambda_handler(event, context):
 
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
 
     if event.get("Records") and event.get("Records", [])[0].get("eventSource") == "aws:sqs":
         logger.info("Triggered by SQS")
-        parsed_message = parse_event(event.get("Records", [])[0].get("body"))
-        if STAGE_NAME == "preview":
-            preview_content = _render_tempalte_preview(EmailJob.model_validate(parsed_message))
-            _send_email_preview(EmailJob.model_validate(parsed_message), preview_content.get("html", ""), preview_content.get("subject", "Email Preview"))
-        else:
-            send_email(EmailJob.model_validate(parsed_message))
-        return 
+        batch_failures = []
+
+        for record in event.get("Records", []):
+            try:
+                parsed_message = parse_event(record.get("body"))
+                validated_request = EmailJob.model_validate(parsed_message)
+                result = process_email_job(validated_request)
+
+                if is_retryable_email_result(result):
+                    logger.error("Email job failed for record %s with retryable result: %s", record.get("messageId"), str(result))
+                    batch_failures.append({"itemIdentifier": record.get("messageId")})
+                else:
+                    logger.info("Email job completed for record %s", record.get("messageId"))
+            except Exception:
+                logger.error("Failed processing SQS email record\n%s", traceback.format_exc())
+                batch_failures.append({"itemIdentifier": record.get("messageId")})
+
+        return {"batchItemFailures": batch_failures}
     
     else:
         logger.info("Received EventBridge event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))

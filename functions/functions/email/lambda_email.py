@@ -7,6 +7,7 @@ import sys
 import requests
 import smtplib
 import traceback
+import uuid
 from email.message import EmailMessage
 
 ## installed packages
@@ -40,6 +41,12 @@ def _default_branding_params():
         "brand_background_colour": "000",
         "brand_logo_url": ""
     }
+
+def _build_brevo_idempotency_key(idempotency_key: str) -> str:
+    """
+    Brevo expects the idempotency key in UUID format.
+    """
+    return str(uuid.uuid5(uuid.UUID("7b85d969-417b-4fbf-a11d-95b22d808923"), idempotency_key))
 
 def get_organisation_settings(organisationSlug: str) -> OrganisationModel:
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -135,6 +142,8 @@ def send_email(request: EmailJob):
 
         try:
             logger.info("Attempting to send email via Brevo")
+            brevo_idempotency_key = _build_brevo_idempotency_key(request.idempotency_key)
+            logger.info(f"Using Brevo idempotency key {brevo_idempotency_key} for email job {request.job_id}")
 
             url = "https://api.brevo.com/v3/smtp/email"
             headers = {
@@ -145,9 +154,23 @@ def send_email(request: EmailJob):
                 "to": [{"email": request.recipient.email, "name": request.recipient.name}],
                 "templateId": request.template.value,
                 "params": template_params,
+                "headers": {
+                    "Idempotency-Key": brevo_idempotency_key
+                },
             }
 
-            response = requests.post(url, headers=headers, json=payload)         
+            response = requests.post(url, headers=headers, json=payload)
+
+            if response.status_code >= 400:
+                logger.warning(f"Brevo email send returned status {response.status_code} for job {request.job_id}: {response.text}")
+                try:
+                    response_json = response.json()
+                except ValueError:
+                    response_json = {}
+
+                if response_json.get("code") == "duplicate_parameter":
+                    logger.info(f"Brevo suppressed duplicate email send for job {request.job_id} using idempotency key {brevo_idempotency_key}")
+
             return response
         except Exception as e:
             logger.error("Exception when calling Brevo API: %s\n", e)

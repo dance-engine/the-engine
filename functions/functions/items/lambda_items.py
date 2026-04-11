@@ -40,6 +40,8 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyEr
 # setup stripe key
 stripe.api_key = STRIPE_API_KEY
 
+PUBLIC_ITEM_STATUSES = {Status.live, Status.sold_out}
+
 ## write here the code which is called from the handler
 def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = False, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
@@ -62,7 +64,7 @@ def get_one(organisationSlug: str,  eventId: str,  itemId: str, public: bool = F
         logger.error(f"DynamoDB query failed to get item ({itemId}) for {eventId} of {organisationSlug}: {e}")
         raise Exception
     
-    if public and getattr(result, "status", None) != Status.live:
+    if public and getattr(result, "status", None) not in PUBLIC_ITEM_STATUSES:
         return None    
 
     return result.to_public() if public else result
@@ -89,7 +91,7 @@ def get_all(organisationSlug: str,  eventId: str, public: bool = False, actor: s
         items = [items]
 
     if public:
-        items = [i for i in items if getattr(i, "status", None) == Status.live]
+        items = [i for i in items if getattr(i, "status", None) in PUBLIC_ITEM_STATUSES]
 
     return [i.to_public() if public else i for i in items]
 

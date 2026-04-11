@@ -26,6 +26,8 @@ from _pydantic.models.bundles_models import Status as BundleStatus
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
+PUBLIC_ITEM_STATUSES = {ItemStatus.live, ItemStatus.sold_out}
+
 db = boto3.resource("dynamodb")
 eventbridge = boto3.client('events')
 
@@ -224,7 +226,7 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
     if public:
         if getattr(result, "status", None) != Status.live:
             return None
-        result.items = [i for i in result.items if getattr(i, "status", None) == ItemStatus.live] if result.items else []
+        result.items = [i for i in result.items if getattr(i, "status", None) in PUBLIC_ITEM_STATUSES] if result.items else []
         result.bundles = [b for b in result.bundles if getattr(b, "status", None) == BundleStatus.live] if result.bundles else []
 
     if not result:

@@ -17,8 +17,9 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
+from _pydantic.dynamodb import transact_upsert
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
-from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest
+from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, UpdateTicketRequest
 from _pydantic.models.models_extended import TicketModel, EventModel
 from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name, get_single_event as _get_single_event, build_ticket_creation_key, get_ticket_request_record
 
@@ -335,6 +336,60 @@ def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str
         "tickets": analysed_tickets,
     })
 
+def update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    logger.info(f"Update Ticket: {request_data}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Updating ticket for {eventId} of {organisationSlug} into {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    try:
+        ticket_model = TicketModel.model_validate({
+                **request_data.ticket.model_dump(mode="json", exclude_unset=True),
+                "organisation": organisationSlug,
+                "parent_event_ksuid": eventId,
+                "updated_at": current_time
+            })
+
+        response = ticket_model.upsert(table, ["created_at", "ticket_creation_key", "ksuid", "qr_token"], explicit_fields_only=True)
+
+        if not response.success:
+            raise RuntimeError(response.error or "Failed to upsert ticket")
+        
+        trigger_eventbridge_event(eventbridge, 
+                            source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview", 
+                                  resource_type=EventType.event,
+                                  action=Action.updated,
+                                  organisation=organisationSlug,
+                                  resource_id=ticket_model.PK,
+                                  data=request_data.model_dump(mode="json"),
+                                  meta={"accountId":actor})
+        return make_response(201, {
+            "message": "Event updated successfully.",
+            "ticket": ticket_model.model_dump(mode="json"),
+        })        
+
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})    
+
+
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
 
@@ -360,7 +415,7 @@ def lambda_handler(event, context):
                 return make_response(404, {"message": "Ticket(s) not found."})
             
             resposne = response_cls(tickets=tickets)
-            return make_response(200, resposne.model_dump(mode="json", exclude_none=True))
+            return make_response(200, resposne.model_dump(mode="json"))
         elif http_method == "POST":
             if raw_path.endswith("/tickets/send"):
                 validated_request = SendTicketEmailRequest(**parsed_event)
@@ -369,6 +424,9 @@ def lambda_handler(event, context):
                 validated_request = BulkImportTicketsRequest(**parsed_event)
                 return import_tickets(validated_request, organisationSlug, eventId, actor)
             return make_response(404, {"message": "Unknown tickets action."})
+        elif http_method == "PUT":
+            validated_request = UpdateTicketRequest(**parsed_event)
+            return update(validated_request, organisationSlug, eventId, actor)        
         else:
             return make_response(405, {"message": "Method not allowed."})
     else:

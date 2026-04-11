@@ -18,6 +18,7 @@ sys.path.append(os.path.dirname(__file__))
 from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
+from _pydantic.models.tickets_models import TicketStatus, AdmissionStatus, FinancialStatus
 from _pydantic.models.models_extended import TicketModel, TicketChildModel, CustomerModel, TicketCreationIdempotencyModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action, EventBridgeEvent, EventBridgeEventDetail # pydantic layer
 from _pydantic.dynamodb import transact_upsert # pydantic layer
@@ -125,14 +126,17 @@ def create_ticket(request_data: EventBridgeEvent, organisation_slug: str, actor:
 
         ticket_model = TicketModel.model_validate({
             "ksuid": ticket_ksuid,
-            "organisation": organisation_slug,
-            "parent_event_ksuid": data.get("event_ksuid"),
+            "name": ticket_name,
+            "name_on_ticket": data.get("name_on_ticket"),
+            "customer_email": data.get("customer_email"),
             "created_at": current_time,
             "updated_at": current_time,
-            "customer_email": data.get("customer_email"),
-            "name_on_ticket": data.get("name_on_ticket"),
-            "name": ticket_name,
-            "includes": ticket_includes
+            "includes": ticket_includes,
+            "ticket_status": TicketStatus.active,
+            "financial_status": FinancialStatus.paid,
+            "admission_status": AdmissionStatus.not_checked_in,
+            "organisation": organisation_slug,
+            "parent_event_ksuid": data.get("event_ksuid"),
             })
         
         ticket_model.qr_token = mint_qr_token(ticket_model)

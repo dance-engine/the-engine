@@ -41,3 +41,9 @@ Tickets:
         authorizer:
           adminAuthorizer
         documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.Import}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}
+        method: put
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.PUT}

@@ -38,9 +38,43 @@ TicketObject:
             items:
               type: object
             description: "List of the items included with the ticket"
-          creation_idempotency:
-            type: object
-            description: "Idempotency record for the ticket creation request"
+          ticket_status:
+            type: string
+            enum:
+              - "active"
+              - "void"
+              - "used"
+            description: "Status of the ticket"
+          financial_status:
+            type: string
+            enum:
+              - "paid"
+              - "unpaid"
+              - "partially_refunded"
+              - "refunded"
+              - "comp"
+            description: "Financial status of the ticket"
+          admission_status:
+            type: string
+            enum:
+              - "checked_in"
+              - "not_checked_in"
+              - "denied"
+            default: "not_checked_in"
+            description: "Admission status of the ticket"
+          qr_token:
+            type: string
+            description: "QR token for the ticket"
+          checked_in_at:
+            type: string
+            format: date-time
+            description: "Timestamp when the ticket was checked in"
+          checked_in_by:
+            type: string
+            description: "Identifier of the user who checked in the ticket"
+          check_in_count:
+            type: integer
+            description: "Number of times the ticket has been checked in"         
 TicketListResponse:
   name: "TicketListResponse"
   description: "Response model for a list of tickets"
@@ -117,3 +151,17 @@ BulkImportTicketsRequest:
                         type: array
                         items:
                           type: string
+UpdateTicketRequest:          
+  name: "UpdateTicketRequest"
+  description: "Request model for updating a ticket"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["ticket"]
+        properties:
+          ticket:
+            $ref: "#/components/schemas/TicketObject"

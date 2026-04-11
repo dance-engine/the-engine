@@ -179,6 +179,35 @@ class LocationModel(LocationBase, DynamoModel):
     @property
     def org_slug(self): return self._slugify(self.organisation)
 
+class TicketCreationIdempotencyModel(DynamoModel):
+    idempotency_key: str
+    organisation: str
+    parent_event_ksuid: str
+    ticket_ksuid: str
+    source_resource_type: Optional[str] = None
+    source_resource_id: Optional[str] = None
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    entity_type: Literal["TICKETCREATIONIDEMPOTENCY"] = "TICKETCREATIONIDEMPOTENCY"
+
+    @property
+    def PK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
+
+    @property
+    def SK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
+
+    @property
+    def gsi1PK(self): return None
+
+    @property
+    def gsi1SK(self): return None
+
+    @property
+    def gsi2PK(self): return f"TICKET#{self.ticket_ksuid}"
+
+    @property
+    def gsi2SK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
+
 class TicketModel(TicketBase, DynamoModel):
     """
     Tickets not yet created through an api call but by consumption of eventbridge event form checkout complete.
@@ -195,7 +224,8 @@ class TicketModel(TicketBase, DynamoModel):
     name: str
     includes: list[str] = []
     qr_token: Optional[str] = None
-    entity_type: Literal["TICKET"] = "TICKET"    
+    entity_type: Literal["TICKET"] = "TICKET"
+    creation_idempotency: Optional[TicketCreationIdempotencyModel] = None
 
     @property
     def related_entities(self):
@@ -256,35 +286,6 @@ class TicketChildModel(DynamoModel):
 
     @property
     def name_slug(self): return self._slugify(self.name)
-
-class TicketCreationIdempotencyModel(DynamoModel):
-    idempotency_key: str
-    organisation: str
-    parent_event_ksuid: str
-    ticket_ksuid: str
-    source_resource_type: Optional[str] = None
-    source_resource_id: Optional[str] = None
-    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-    entity_type: Literal["TICKETCREATIONIDEMPOTENCY"] = "TICKETCREATIONIDEMPOTENCY"
-
-    @property
-    def PK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
-
-    @property
-    def SK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
-
-    @property
-    def gsi1PK(self): return None
-
-    @property
-    def gsi1SK(self): return None
-
-    @property
-    def gsi2PK(self): return f"TICKET#{self.ticket_ksuid}"
-
-    @property
-    def gsi2SK(self): return f"TICKETCREATIONIDEMPOTENCY#{self.idempotency_key}"
 
 class CustomerModel(CustomerBase, DynamoModel):
     organisation: str

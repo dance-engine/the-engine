@@ -38,9 +38,6 @@ TicketObject:
             items:
               type: object
             description: "List of the items included with the ticket"
-          creation_idempotency:
-            type: object
-            description: "Idempotency record for the ticket creation request"
           ticket_status:
             type: string
             enum:

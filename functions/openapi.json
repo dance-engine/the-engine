@@ -597,7 +597,8 @@
               "draft",
               "live",
               "archived",
-              "outdated"
+              "outdated",
+              "sold_out"
             ]
           },
           "column": {
@@ -687,7 +688,8 @@
               "draft",
               "live",
               "archived",
-              "outdated"
+              "outdated",
+              "sold_out"
             ]
           },
           "column": {

@@ -26,6 +26,7 @@ _ItemCommon: &_ItemCommon
       - "live"
       - "archived"
       - "outdated"
+      - "sold_out"
   column:
     description: "??"
     type: number

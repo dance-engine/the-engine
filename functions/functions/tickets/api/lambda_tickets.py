@@ -415,7 +415,7 @@ def lambda_handler(event, context):
                 return make_response(404, {"message": "Ticket(s) not found."})
             
             resposne = response_cls(tickets=tickets)
-            return make_response(200, resposne.model_dump(mode="json", exclude_none=True))
+            return make_response(200, resposne.model_dump(mode="json"))
         elif http_method == "POST":
             if raw_path.endswith("/tickets/send"):
                 validated_request = SendTicketEmailRequest(**parsed_event)

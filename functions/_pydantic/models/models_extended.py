@@ -1,4 +1,4 @@
-from _pydantic.models.tickets_models import TicketObject as TicketBase
+from _pydantic.models.tickets_models import TicketObject as TicketBase, TicketStatus, FinancialStatus as TicketFinancialStatus, AdmissionStatus as TicketAdmissionStatus
 from _pydantic.models.customers_models import CustomerObject as CustomerBase
 from _pydantic.models.bundles_models import BundleObject as BundleBase, BundleObjectPublic
 from _pydantic.models.items_models import ItemObject as ItemBase, ItemObjectPublic
@@ -224,7 +224,11 @@ class TicketModel(TicketBase, DynamoModel):
     qr_token: Optional[str] = None
     entity_type: Literal["TICKET"] = "TICKET"
     creation_idempotency: Optional[TicketCreationIdempotencyModel] = None
-    check_in_count: Optional[int] = Field(0) # override and set default to 0 
+    # Set some explicit defaults for compatibility with older tickets
+    check_in_count: Optional[int] = Field(0)
+    ticket_status: TicketStatus = Field(TicketStatus.active)
+    financial_status: TicketFinancialStatus = Field(TicketFinancialStatus.paid)
+    admission_status: TicketAdmissionStatus = Field(TicketAdmissionStatus.not_checked_in)
 
     @property
     def related_entities(self):

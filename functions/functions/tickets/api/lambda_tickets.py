@@ -426,7 +426,7 @@ def lambda_handler(event, context):
             return make_response(404, {"message": "Unknown tickets action."})
         elif http_method == "PUT":
             validated_request = UpdateTicketRequest(**parsed_event)
-            return update(validated_request, organisationSlug, actor)        
+            return update(validated_request, organisationSlug, eventId, actor)        
         else:
             return make_response(405, {"message": "Method not allowed."})
     else:

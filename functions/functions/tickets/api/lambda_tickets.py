@@ -520,7 +520,7 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
         logger.info(f"Ticket use failed conditional check for {organisationSlug}:{eventId} by {actor}. Ticket ID={ticketId}. Reason: {str(e)}")
         return make_response(400, {
             "message": "Ticket cannot be used.",
-            "reason": "Ticket may already be used or checked in, or does not exist.",
+            "reason": "Ticket may already be used or checked in.",
         })
     except ValidationError as e:
         logger.error("Validation error: %s", str(e))

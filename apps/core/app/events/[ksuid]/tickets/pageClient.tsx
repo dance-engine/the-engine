@@ -67,6 +67,8 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}
           parentEntityName="event"
+          showEditAction={false}
+          showDeleteAction={false}
         />
       </div>
     </div>

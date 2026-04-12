@@ -25,6 +25,18 @@ Tickets:
           adminAuthorizer        
         documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.ValidateTicketJwt}
     - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}/use
+        method: post
+        authorizer:
+          adminAuthorizer        
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.UseTicket}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}/unuse
+        method: post
+        authorizer:
+          adminAuthorizer        
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.UnuseTicket}
+    - httpApi:
         path: /{organisation}/{event}/tickets
         method: get
         authorizer:

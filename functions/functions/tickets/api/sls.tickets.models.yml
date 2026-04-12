@@ -199,3 +199,18 @@ ValidateTicketJwtResponse:
           reason:
             type: string
             description: "If the ticket JWT is not valid, this field may contain a reason for the invalidity."
+TicketAdmissionRequest:
+  name: "TicketAdmissionRequest"
+  description: "Request model for ticket admission updates"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["customer_email"]
+        properties:
+          customer_email:
+            type: string
+            description: "Email of the customer who owns the ticket. Required to address the ticket record directly."

@@ -45,6 +45,97 @@ endpoints:
             description: Internal server error.
           responseModels:
             application/json: "ErrorResponse"
+    UseTicket:
+      summary: "Use a Ticket"
+      description: "Marks a ticket as used and checked in. This should be used when a ticket is scanned for entry to an event."
+      tags:
+        - Tickets
+      security:
+        - {}
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique ticket ID (KSUID)
+          schema:
+            type: string
+      requestBody:
+        description: "Ticket admission update request."
+      requestModels:
+        application/json: "TicketAdmissionRequest"
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Ticket marked as used successfully.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 404
+          responseBody:
+            description: Ticket not found.
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 409
+          responseBody:
+            description: Ticket could not be marked as used because it is not in a valid state for check-in.
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
+    UnuseTicket:
+      summary: "Unuse a Ticket"
+      description: "Marks a ticket as unused and not checked in. This can be used to undo a mistaken scan or check-in."
+      tags:
+        - Tickets
+      security:
+        - {}
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+        - name: ksuid
+          description: Unique ticket ID (KSUID)
+          schema:
+            type: string
+      requestBody:
+        description: "Ticket admission update request."
+      requestModels:
+        application/json: "TicketAdmissionRequest"
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Ticket marked as unused successfully.
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 404
+          responseBody:
+            description: Ticket not found.
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
     GETall:
       summary: "Get All Tickets"
       description: "Returns a list of all tickets for a given organisation and event."

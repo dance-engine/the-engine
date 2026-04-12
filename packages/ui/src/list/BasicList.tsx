@@ -8,6 +8,7 @@ import DestructiveButton from '../general/DestructiveButton'
 import { MdModeEdit, MdDeleteOutline } from "react-icons/md";
 import { LuPackage } from "react-icons/lu";
 import { useAuth } from '@clerk/nextjs'
+import { IoTicketOutline } from "react-icons/io5";
 
 const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({
   entity,
@@ -98,6 +99,12 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                                 <Link href={`/${entityTypeSlug}/${record.ksuid}/bundles`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
                                   <LuPackage className='h-5 w-5'></LuPackage>
                                   <span className="sr-only">Manage Bundles for {String(record.name)}</span>
+                                </Link>
+                              )}
+                              {entity === "EVENT" && (
+                                <Link href={`/${entityTypeSlug}/${record.ksuid}/tickets`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
+                                  <IoTicketOutline className='h-5 w-5'></IoTicketOutline>
+                                  <span className="sr-only">Manage Tickets for {String(record.name)}</span>
                                 </Link>
                               )}
                               {rowActions?.(record)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton, SignOutButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, SignedIn, SignedOut, useAuth, useUser } from "@clerk/nextjs";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useEffect, useMemo, useState } from "react";
 import DataLoading from "./components/DataLoading";
@@ -17,6 +17,7 @@ import type {
   PublicOrganisation,
   ScannerEvent,
   TicketRecord,
+  ApiErrorPayload,
 } from "./types/scanner";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,40 @@ const SCANNER_JWT_CLAIMS = {
 } as const;
 
 const SCANNER_JWT_EXPECTED_ISSUER = "DANCEENGINE";
+
+type TicketApiObject = {
+  ksuid?: string;
+  name?: string | null;
+  name_on_ticket?: string | null;
+  customer_email?: string | null;
+  ticket_status?: string | null;
+  qr_token?: string | null;
+  checked_in_at?: string | null;
+};
+
+type ValidateTicketResponse = {
+  valid?: boolean;
+  ticket?: TicketApiObject | null;
+  reason?: string | null;
+};
+
+type TicketMutationResponse = {
+  message?: string;
+  reason?: string;
+  ticket?: TicketApiObject | null;
+};
+
+class ScannerApiError extends Error {
+  status: number;
+  data: unknown;
+
+  constructor(message: string, status: number, data: unknown) {
+    super(message);
+    this.name = "ScannerApiError";
+    this.status = status;
+    this.data = data;
+  }
+}
 
 const includesScanningPermission = (roles: string[] | undefined): boolean => {
   if (!Array.isArray(roles)) {
@@ -61,6 +96,19 @@ const asMessage = (value: unknown, fallback: string): string => {
   if (typeof value === "string" && value.trim().length > 0) {
     return value;
   }
+  return fallback;
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof ScannerApiError) {
+    const payload = error.data as ApiErrorPayload | null;
+    return asMessage(payload?.message ?? payload?.reason ?? payload?.msg, error.message || fallback);
+  }
+
+  if (error instanceof Error) {
+    return error.message || fallback;
+  }
+
   return fallback;
 };
 
@@ -141,7 +189,16 @@ const getMappedJwtString = (
   return null;
 };
 
+const mapApiTicketStatus = (ticket: TicketApiObject | null | undefined): "used" | "unused" => {
+  if (!ticket) {
+    return "unused";
+  }
+
+  return ticket.ticket_status === "used" ? "used" : "unused";
+};
+
 function ScannerWorkspace() {
+  const { getToken } = useAuth();
   const { user, isLoaded } = useUser();
   const [viewMode, setViewMode] = useState<"orgs" | "events" | "scanner">("orgs");
   const [selectedOrg, setSelectedOrg] = useState<string>("");
@@ -160,6 +217,41 @@ function ScannerWorkspace() {
     setNotice,
     setError,
   });
+
+  const scannerFetchJson = async (url: string, config?: RequestInit): Promise<unknown> => {
+    const token = await getToken();
+    const headers = {
+      ...(config?.headers ?? {}),
+      Authorization: `Bearer ${token}`,
+    };
+
+    try {
+      const response = await fetch(url, { ...config, headers });
+      const contentType = response.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json") ? await response.json() : null;
+
+      if (!response.ok) {
+        throw new ScannerApiError(
+          asMessage(
+            (data as ApiErrorPayload | null)?.message ??
+              (data as ApiErrorPayload | null)?.reason ??
+              (data as ApiErrorPayload | null)?.msg,
+            `Bad status: ${response.status}`,
+          ),
+          response.status,
+          data,
+        );
+      }
+
+      return data;
+    } catch (requestError) {
+      if (requestError instanceof TypeError && /NetworkError/.test(requestError.message)) {
+        throw new CorsError();
+      }
+
+      throw requestError;
+    }
+  };
 
   const orgPermissions = useMemo(() => {
     const metadata = (user?.publicMetadata ?? {}) as { organisations?: unknown };
@@ -322,80 +414,107 @@ function ScannerWorkspace() {
     setSubmitting(true);
     setError("");
     setNotice("");
+    try {
+      const decoded = decodeJwt(qrCode);
 
-    if (action !== "check") {
-      setSubmitting(false);
+      if (!decoded) {
+        setError("Scanned code is not a readable JWT payload.");
+        return false;
+      }
+
+      const jwtIssuer = getMappedJwtString(decoded.payload, "issuer");
+      if (jwtIssuer !== SCANNER_JWT_EXPECTED_ISSUER) {
+        setError(
+          `Invalid token issuer. Expected ${SCANNER_JWT_EXPECTED_ISSUER}, received ${jwtIssuer ?? "missing"}.`,
+        );
+        return false;
+      }
+
+      const ticketKsuid = getMappedJwtString(decoded.payload, "ticketKsuid");
+      if (!ticketKsuid || !apiBaseUrl) {
+        setError(
+          !apiBaseUrl
+            ? "Scanner API base URL is not configured."
+            : "Scanned token is missing a ticket KSUID.",
+        );
+        return false;
+      }
+
+      const jwtOrg = getMappedJwtString(decoded.payload, "organization");
+      const orgMismatch = Boolean(jwtOrg && jwtOrg !== selectedOrg);
+
+      if (action === "check") {
+        const endpoint = `${apiBaseUrl}/${selectedOrg}/${selectedEvent}/tickets/${ticketKsuid}/validate`;
+        const result = await scannerFetchJson(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            qr_token: qrCode,
+          }),
+        }) as ValidateTicketResponse | null;
+
+        if (!result?.valid || !result.ticket) {
+          setError(asMessage(result?.reason, "Ticket validation failed."));
+          return false;
+        }
+
+        const mappedTicket: TicketRecord = {
+          ticketId: result.ticket.ksuid?.trim() || ticketKsuid,
+          attendeeName:
+            result.ticket.name_on_ticket?.trim() ||
+            result.ticket.name?.trim() ||
+            getFirstString(decoded.payload, ["attendeeName", "attendee_name", "name", "holderName"]) ||
+            result.ticket.customer_email?.trim() ||
+            "Unknown attendee",
+          customerEmail: result.ticket.customer_email?.trim() || null,
+          status: mapApiTicketStatus(result.ticket),
+          eventId: getMappedJwtString(decoded.payload, "eventKsuid") ?? selectedEvent,
+          eventName: selectedEventDetails?.name ?? "Unknown event",
+          qrCode,
+          scannedAt: new Date().toISOString(),
+          jwtHeader: decoded.header,
+          jwtPayload: decoded.payload,
+          jwtOrg,
+          orgMismatch,
+        };
+
+        setTicket(mappedTicket);
+        setNotice("JWT decoded locally. Signature is not verified in scanner yet.");
+        return true;
+      }
+
+      const customerEmail = ticket?.customerEmail?.trim();
+      if (!customerEmail) {
+        setError("Validated ticket is missing a customer email.");
+        return false;
+      }
+
+      const endpoint = `${apiBaseUrl}/${selectedOrg}/${selectedEvent}/tickets/${ticketKsuid}/${action === "mark-used" ? "use" : "unuse"}`;
+      const result = await scannerFetchJson(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_email: customerEmail,
+        }),
+      }) as TicketMutationResponse | null;
+
       setNotice(
         action === "mark-used"
           ? "Marked as used locally. Verification will happen via API later."
           : "Reset to unused locally. Verification will happen via API later.",
       );
       return true;
-    }
-
-    const decoded = decodeJwt(qrCode);
-    setSubmitting(false);
-
-    if (!decoded) {
-      setError("Scanned code is not a readable JWT payload.");
-      return false;
-    }
-
-    const jwtIssuer = getMappedJwtString(decoded.payload, "issuer");
-    if (jwtIssuer !== SCANNER_JWT_EXPECTED_ISSUER) {
+    } catch (actionError) {
       setError(
-        `Invalid token issuer. Expected ${SCANNER_JWT_EXPECTED_ISSUER}, received ${jwtIssuer ?? "missing"}.`,
+        getApiErrorMessage(
+          actionError,
+          action === "check" ? "Ticket validation failed." : "Ticket update failed.",
+        ),
       );
       return false;
+    } finally {
+      setSubmitting(false);
     }
-
-    const statusRaw = getFirstString(decoded.payload, ["status", "ticket_status"]);
-    const status = statusRaw === "used" || statusRaw === "unused" ? statusRaw : "unused";
-
-    const jwtOrg = getMappedJwtString(decoded.payload, "organization");
-    const orgMismatch = Boolean(jwtOrg && jwtOrg !== selectedOrg);
-
-    const mappedTicket: TicketRecord = {
-      ticketId: getMappedJwtString(decoded.payload, "ticketKsuid") ?? qrCode,
-      attendeeName:
-        getFirstString(decoded.payload, ["attendeeName", "attendee_name", "name", "holderName"]) ??
-        "Unknown attendee",
-      status,
-      eventId: getMappedJwtString(decoded.payload, "eventKsuid") ?? selectedEvent,
-      eventName:
-        getFirstString(decoded.payload, ["eventName", "event_name"]) ??
-        selectedEventDetails?.name ??
-        "Unknown event",
-      qrCode,
-      scannedAt: new Date().toISOString(),
-      jwtHeader: decoded.header,
-      jwtPayload: decoded.payload,
-      jwtOrg,
-      orgMismatch,
-    };
-
-    setTicket(mappedTicket);
-    setNotice("JWT decoded locally. Signature is not verified in scanner yet.");
-    return true;
-
-    // API flow intentionally disabled while local JWT inspection is being tested.
-    // Restore this block when server-side verification is ready.
-    // const endpoint =
-    //   action === "check"
-    //     ? "/api/mock/scanner/check"
-    //     : action === "mark-used"
-    //       ? "/api/mock/scanner/mark-used"
-    //       : "/api/mock/scanner/reset-unused";
-    //
-    // const result = await requestJson<{ ticket?: TicketRecord; msg?: string }>(endpoint, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     orgId: selectedOrg,
-    //     eventId: selectedEvent,
-    //     qrCode,
-    //   }),
-    // });
   };
 
   const handleQrDetected = async (value: string) => {

@@ -6,6 +6,7 @@ import logging
 import traceback
 import sys
 from datetime import datetime, timezone
+import jwt
 
 ## installed packages
 from pydantic import ValidationError # layer: pydantic
@@ -19,7 +20,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.dynamodb import transact_upsert
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
-from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, UpdateTicketRequest
+from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, UpdateTicketRequest, ValidateTicketJwtRequest, ValidateTicketJwtResponse, TicketAdmissionRequest, TicketStatus, AdmissionStatus
 from _pydantic.models.models_extended import TicketModel, EventModel
 from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name, get_single_event as _get_single_event, build_ticket_creation_key, get_ticket_request_record
 
@@ -35,6 +36,7 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+TICKET_QR_JWT_SECRET = os.environ.get('TICKET_QR_JWT_SECRET') or (_ for _ in ()).throw(KeyError("Environment variable 'TICKET_QR_JWT_SECRET' not found"))
 
 def _build_bulk_import_ticket(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> dict:
     line_items = ticket_data.get("line_items", [])
@@ -336,7 +338,11 @@ def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str
         "tickets": analysed_tickets,
     })
 
-def update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+def _update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: str, actor: str = "unknown", 
+            only_set_once: list[str] | None = None, 
+            condition_expression: str = None,
+            extra_expression_attr_names: dict[str, str] | None = None, 
+            extra_expression_attr_values: dict[str, object] | None = None,):
     logger.info(f"Update Ticket: {request_data}")
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
@@ -354,7 +360,7 @@ def update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: st
                 "updated_at": current_time
             })
 
-        response = ticket_model.upsert(table, ["created_at", "ticket_creation_key", "ksuid", "qr_token"], explicit_fields_only=True)
+        response = ticket_model.upsert(table, only_set_once, explicit_fields_only=True, condition_expression=condition_expression, extra_expression_attr_names=extra_expression_attr_names, extra_expression_attr_values=extra_expression_attr_values)
 
         if not response.success:
             raise RuntimeError(response.error or "Failed to upsert ticket")
@@ -387,8 +393,171 @@ def update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: st
     except Exception as e:
         logger.error("Unexpected error: %s", str(e))
         logger.error(traceback.format_exc())
-        return make_response(500, {"message": "Something went wrong."})    
+        return make_response(500, {"message": "Something went wrong."})
+    
+def update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    return _update(request_data, 
+                   organisationSlug=organisationSlug, 
+                   eventId=eventId, 
+                   actor=actor,
+                   only_set_once=["created_at", "ticket_creation_key", "ksuid", "qr_token"])
 
+def validate_jwt(request: ValidateTicketJwtRequest, ticketId:str, organisationSlug: str, eventId: str, actor: str) -> bool:
+        # 1. check validity of token itself by decoding
+        # 2. get the ticket it is referencing
+        # 3. check ticket_status is 'active'
+        # 4. check admission_status is not 'admitted'
+    # 5. check if valid for this event 
+    # 6. return valid or not with reason if not valid
+    token = request.qr_token
+
+    if not token:
+        return make_response(400, {"message": "No token provided."})
+    
+    try:
+        decoded = jwt.decode(
+            token,
+            TICKET_QR_JWT_SECRET,
+            algorithms=["HS256"],
+            audience="1",
+            issuer="DANCEENGINE",
+        )
+    except jwt.InvalidTokenError as e:
+        logger.info(f"Invalid ticket JWT for {organisationSlug}:{eventId} by {actor}: {str(e)}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Invalid token."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    if decoded.get("o") != organisationSlug or decoded.get("e") != eventId:
+        logger.info(f"Ticket JWT scope mismatch for {organisationSlug}:{eventId} by {actor}. Token organisation={decoded.get('o')} event={decoded.get('e')}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Token organisation and/or event do not match request."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    if not decoded.get('sub') or decoded.get('sub') != ticketId:
+        logger.info(f"Ticket JWT ticket ID mismatch for {organisationSlug}:{eventId} by {actor}. Token ticket ID={decoded.get('sub')}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Token ticket ID does not match request."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    ticket = get_single_ticket(organisationSlug, eventId, ticketId, actor=actor)
+    if ticket is None:
+        logger.info(f"Ticket not found for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Ticket not found."})
+        return make_response(404, response.model_dump(mode="json"))
+
+    if ticket.admission_status == AdmissionStatus.checked_in or ticket.admission_status == AdmissionStatus.denied:
+        logger.info(f"Ticket with invalid admission status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} admission_status={ticket.admission_status}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": f"Ticket has already been {ticket.admission_status.value}."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    if ticket.ticket_status != TicketStatus.active:
+        logger.info(f"Ticket with non-active status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} status={ticket.ticket_status}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket is not active."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    #TODO do something to check if it is valid for this event 
+
+    if ticket.admission_status == AdmissionStatus.not_checked_in and ticket.ticket_status == TicketStatus.active and ticket.parent_event_ksuid == eventId:
+        logger.info(f"Valid ticket JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')}")
+        response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": None})
+        return make_response(200, response.model_dump(mode="json"))
+
+def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisationSlug: str, eventId: str, actor: str):
+    logger.info(f"Update Ticket: {request_data}")
+
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Updating ticket for {eventId} of {organisationSlug} into {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    logger.info(f"Current Time: {current_time}")
+
+    try:
+        ticket_model = TicketModel.model_validate({
+                "ksuid": ticketId,
+                "customer_email": request_data.customer_email,
+
+                "organisation": organisationSlug,
+                "parent_event_ksuid": eventId,
+
+                "admission_status": AdmissionStatus.checked_in,
+                "ticket_status": TicketStatus.used,
+                "checked_in_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace('+00:00', 'Z'),
+                "checked_in_by": actor,
+
+                "name": "ishouldnothavethisvalue", # to satisfy validation will not be actualyl changed to this
+                "name_on_ticket": "ishouldnothavethisvalue", # to satisfy validation will not be actualyl changed to this
+            })
+
+        response = ticket_model.upsert(table, 
+                                       explicit_fields_only=True, 
+                                       only_set_once=["created_at", "ticket_creation_key", "ksuid", "qr_token", "name", "name_on_ticket"], 
+                                       condition_expression=(
+                                            "#ticket_status = :active_status AND "
+                                            "#admission_status = :not_checked_in_status"
+                                        ), 
+                                       extra_expression_attr_names={
+                                            "#ticket_status": "ticket_status",
+                                            "#admission_status": "admission_status"
+                                       }, 
+                                       extra_expression_attr_values={
+                                           ":active_status": TicketStatus.active.value,
+                                           ":not_checked_in_status": AdmissionStatus.not_checked_in.value,
+                                       }
+                                    )
+        
+        trigger_eventbridge_event(eventbridge, 
+                            source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview", 
+                                  resource_type=EventType.event,
+                                  action=Action.updated,
+                                  organisation=organisationSlug,
+                                  resource_id=ticket_model.PK,
+                                  data=request_data.model_dump(mode="json"),
+                                  meta={"accountId":actor})
+        return make_response(201, {
+            "message": "Event updated successfully.",
+            "ticket": ticket_model.model_dump(mode="json"),
+        })        
+    except table.meta.client.exceptions.ConditionalCheckFailedException as e:
+        logger.info(f"Ticket use failed conditional check for {organisationSlug}:{eventId} by {actor}. Ticket ID={ticketId}. Reason: {str(e)}")
+        return make_response(400, {
+            "message": "Ticket cannot be used.",
+            "reason": "Ticket may already be used or checked in.",
+        })
+    except ValidationError as e:
+        logger.error("Validation error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid update request",
+            "error": str(e)
+        })
+    except Exception as e:
+        logger.error("Unexpected error: %s", str(e))
+        logger.error(traceback.format_exc())
+        return make_response(500, {"message": "Something went wrong."})
+
+def unuse_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisationSlug: str, eventId: str, actor: str):
+    ticket = {
+        "ksuid": ticketId,
+        "customer_email": request_data.customer_email,
+
+        "organisation": organisationSlug,
+        "parent_event_ksuid": eventId,
+
+        "admission_status": AdmissionStatus.not_checked_in,
+        "ticket_status": TicketStatus.active,
+        "checked_in_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace('+00:00', 'Z'),
+        "checked_in_by": actor,
+
+        "name": "ishouldnothavethisvalue", # to satisfy validation will not be actualyl changed to this
+        "name_on_ticket": "ishouldnothavethisvalue", # to satisfy validation will not be actualyl changed to this
+    }
+
+    validated_request = UpdateTicketRequest(ticket=TicketModel(**ticket))
+    return _update(validated_request, organisationSlug, eventId, actor,only_set_once=["created_at", "ticket_creation_key", "ksuid", "qr_token", "name", "name_on_ticket"])
 
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
@@ -417,12 +586,21 @@ def lambda_handler(event, context):
             resposne = response_cls(tickets=tickets)
             return make_response(200, resposne.model_dump(mode="json"))
         elif http_method == "POST":
+            if raw_path.endswith("/validate"):
+                validated_request = ValidateTicketJwtRequest(**parsed_event)
+                return validate_jwt(validated_request, ticketId, organisationSlug, eventId, actor)
             if raw_path.endswith("/tickets/send"):
                 validated_request = SendTicketEmailRequest(**parsed_event)
                 return send_tickets(validated_request, organisationSlug, eventId, actor)
             if raw_path.endswith("/tickets/import"):
                 validated_request = BulkImportTicketsRequest(**parsed_event)
                 return import_tickets(validated_request, organisationSlug, eventId, actor)
+            if raw_path.endswith("/use"):
+                validated_request = TicketAdmissionRequest(**parsed_event)
+                return use_ticket(validated_request, ticketId, organisationSlug, eventId, actor)
+            if raw_path.endswith("/unuse"):
+                validated_request = TicketAdmissionRequest(**parsed_event)
+                return unuse_ticket(validated_request, ticketId, organisationSlug, eventId, actor)
             return make_response(404, {"message": "Unknown tickets action."})
         elif http_method == "PUT":
             validated_request = UpdateTicketRequest(**parsed_event)

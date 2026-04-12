@@ -12,11 +12,30 @@ Tickets:
   environment:
       STAGE_NAME: ${sls:stage}
       ORG_TABLE_NAME_TEMPLATE: ${self:custom.dynamodb_table_format}
+      TICKET_QR_JWT_SECRET: ${ssm:/danceengine/${sls:stage}/jwt_secret}
   layers:
       - !Ref UtilsLambdaLayer
       - !Ref PydanticLambdaLayer # uncomment if you need pydantic layer
       - !Ref AuthLambdaLayer
   events:
+    - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}/validate
+        method: post
+        authorizer:
+          adminAuthorizer        
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.ValidateTicketJwt}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}/use
+        method: post
+        authorizer:
+          adminAuthorizer        
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.UseTicket}
+    - httpApi:
+        path: /{organisation}/{event}/tickets/{ksuid}/unuse
+        method: post
+        authorizer:
+          adminAuthorizer        
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.UnuseTicket}
     - httpApi:
         path: /{organisation}/{event}/tickets
         method: get

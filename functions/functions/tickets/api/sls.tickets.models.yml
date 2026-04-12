@@ -165,3 +165,52 @@ UpdateTicketRequest:
         properties:
           ticket:
             $ref: "#/components/schemas/TicketObject"
+ValidateTicketJwtRequest:
+  name: "ValidateTicketJwtRequest"
+  description: "Request model for validating a ticket JWT"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["qr_token"]
+        properties:
+          qr_token:
+            type: string
+            description: "JWT minted for the ticket QR code."
+ValidateTicketJwtResponse:
+  name: "ValidateTicketJwtResponse"
+  description: "Response model for ticket JWT validation"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["valid"]
+        properties:
+          valid:
+            type: boolean
+            description: "Whether the provided ticket JWT is valid."
+          ticket:
+            $ref: "#/components/schemas/TicketObject"
+          reason:
+            type: string
+            description: "If the ticket JWT is not valid, this field may contain a reason for the invalidity."
+TicketAdmissionRequest:
+  name: "TicketAdmissionRequest"
+  description: "Request model for ticket admission updates"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["customer_email"]
+        properties:
+          customer_email:
+            type: string
+            description: "Email of the customer who owns the ticket. Required to address the ticket record directly."

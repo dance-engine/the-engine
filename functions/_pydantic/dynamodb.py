@@ -397,7 +397,7 @@ class DynamoModel(BaseModel):
                     error="Version conflict"
                 )
                 # raise VersionConflictError(self, expression_attr_values.get(":incoming_version"))
-            raise
+            raise table.meta.client.exceptions.ConditionalCheckFailedException
         except Exception as e:
             logger.error(traceback.format_exc())
             return UpsertResult(

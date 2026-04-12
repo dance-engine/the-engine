@@ -26,6 +26,7 @@ export type TicketStatus = "used" | "unused";
 export type TicketRecord = {
   ticketId: string;
   attendeeName: string;
+  customerEmail?: string | null;
   status: TicketStatus;
   eventId: string;
   eventName: string;
@@ -47,5 +48,7 @@ export type ApiResult<T> = {
 };
 
 export type ApiErrorPayload = {
+  message?: unknown;
   msg?: unknown;
+  reason?: unknown;
 };

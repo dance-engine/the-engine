@@ -19,8 +19,10 @@ Tickets:
       - !Ref AuthLambdaLayer
   events:
     - httpApi:
-        path: /public/{organisation}/{event}/tickets/validate
+        path: /{organisation}/{event}/tickets/{ksuid}/validate
         method: post
+        authorizer:
+          adminAuthorizer        
         documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.ValidateTicketJwt}
     - httpApi:
         path: /{organisation}/{event}/tickets

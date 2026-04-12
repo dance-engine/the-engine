@@ -16,6 +16,10 @@ endpoints:
           description: Event slug or ID
           schema:
             type: string
+        - name: ksuid
+          description: Unique ticket ID (KSUID)
+          schema:
+            type: string            
       requestBody:
         description: "Ticket JWT validation request."
       requestModels:

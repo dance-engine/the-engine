@@ -6,6 +6,7 @@ import logging
 import traceback
 import sys
 from datetime import datetime, timezone
+import jwt
 
 ## installed packages
 from pydantic import ValidationError # layer: pydantic
@@ -19,7 +20,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.dynamodb import transact_upsert
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
-from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, UpdateTicketRequest
+from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, UpdateTicketRequest, ValidateTicketJwtRequest, ValidateTicketJwtResponse, TicketStatus, AdmissionStatus
 from _pydantic.models.models_extended import TicketModel, EventModel
 from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name, get_single_event as _get_single_event, build_ticket_creation_key, get_ticket_request_record
 
@@ -35,6 +36,7 @@ eventbridge = boto3.client('events')
 # will throw an error if the env variable does not exist
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
+TICKET_QR_JWT_SECRET = os.environ.get('TICKET_QR_JWT_SECRET') or (_ for _ in ()).throw(KeyError("Environment variable 'TICKET_QR_JWT_SECRET' not found"))
 
 def _build_bulk_import_ticket(ticket_data: dict, organisation_slug: str, event_id: str, index: int) -> dict:
     line_items = ticket_data.get("line_items", [])
@@ -389,6 +391,63 @@ def update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: st
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})    
 
+def validate_jwt(request: ValidateTicketJwtRequest, ticketId:str, organisationSlug: str, eventId: str, actor: str) -> bool:
+        # 1. check validity of token itself by decoding
+        # 2. get the ticket it is referencing
+        # 3. check ticket_status is 'active'
+        # 4. check admission_status is not 'admitted'
+    # 5. check if valid for this event 
+    # 6. return valid or not with reason if not valid
+    token = request.qr_token
+
+    if not token:
+        return make_response(400, {"message": "No token provided."})
+    
+    try:
+        decoded = jwt.decode(
+            token,
+            TICKET_QR_JWT_SECRET,
+            algorithms=["HS256"],
+            audience="1",
+            issuer="DANCEENGINE",
+        )
+    except jwt.InvalidTokenError as e:
+        logger.info(f"Invalid ticket JWT for {organisationSlug}:{eventId} by {actor}: {str(e)}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Invalid token."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    if decoded.get("o") != organisationSlug or decoded.get("e") != eventId:
+        logger.info(f"Ticket JWT scope mismatch for {organisationSlug}:{eventId} by {actor}. Token organisation={decoded.get('o')} event={decoded.get('e')}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Token organisation and/or event do not match request."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    if not decoded.get('sub') or decoded.get('sub') != ticketId:
+        logger.info(f"Ticket JWT ticket ID mismatch for {organisationSlug}:{eventId} by {actor}. Token ticket ID={decoded.get('sub')}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Token ticket ID does not match request."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    ticket = get_single_ticket(organisationSlug, eventId, ticketId, actor=actor)
+    if ticket is None:
+        logger.info(f"Ticket not found for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Ticket not found."})
+        return make_response(404, response.model_dump(mode="json"))
+    
+    if ticket.ticket_status != TicketStatus.active:
+        logger.info(f"Ticket with non-active status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} status={ticket.ticket_status}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket is not active."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    if ticket.admission_status == AdmissionStatus.checked_in or ticket.admission_status == AdmissionStatus.denied:
+        logger.info(f"Ticket with invalid admission status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} admission_status={ticket.admission_status}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": f"Ticket has already been {ticket.admission_status}."})
+        return make_response(400, response.model_dump(mode="json"))
+    
+    #TODO do something to check if it is valid for this event 
+
+    if ticket.admission_status == AdmissionStatus.not_checked_in and ticket.ticket_status == TicketStatus.active and ticket.parent_event_ksuid == eventId:
+        logger.info(f"Valid ticket JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')}")
+        response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": None})
+        return make_response(200, response.model_dump(mode="json"))
 
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
@@ -417,8 +476,10 @@ def lambda_handler(event, context):
             resposne = response_cls(tickets=tickets)
             return make_response(200, resposne.model_dump(mode="json"))
         elif http_method == "POST":
-            if raw_path.endswith("/tickets/validate"):
-                return make_response(500, {"message": "Not yet implemented."})
+            if raw_path.endswith("/validate"):
+                validated_request = ValidateTicketJwtRequest(**parsed_event)
+                return validate_jwt(validated_request, ticketId, organisationSlug, eventId, actor)
+                return make_response(ValidateTicketJwtResponse(**response).model_dump(mode="json"))
             if raw_path.endswith("/tickets/send"):
                 validated_request = SendTicketEmailRequest(**parsed_event)
                 return send_tickets(validated_request, organisationSlug, eventId, actor)

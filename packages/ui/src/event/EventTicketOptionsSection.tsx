@@ -59,7 +59,7 @@ export default function EventTicketOptionsSection({
           >
             Choose the best way to attend
           </h2>
-        </div>
+        </div>       
 
         {showStudentToggle ? (
           <label
@@ -119,6 +119,7 @@ export default function EventTicketOptionsSection({
                     selectedItemIds.has(item.ksuid) ? "Selected" : "Select"
                   }
                   onClick={() => onToggleItem(item)}
+                  disabled={item.status !== "live"}
                 />
               ))
             : orderedBundles.map((bundle) => {

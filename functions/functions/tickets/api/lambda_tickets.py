@@ -417,6 +417,8 @@ def lambda_handler(event, context):
             resposne = response_cls(tickets=tickets)
             return make_response(200, resposne.model_dump(mode="json"))
         elif http_method == "POST":
+            if raw_path.endswith("/tickets/validate"):
+                return make_response(500, {"message": "Not yet implemented."})
             if raw_path.endswith("/tickets/send"):
                 validated_request = SendTicketEmailRequest(**parsed_event)
                 return send_tickets(validated_request, organisationSlug, eventId, actor)

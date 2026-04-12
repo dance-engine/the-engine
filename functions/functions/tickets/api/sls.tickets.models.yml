@@ -165,3 +165,34 @@ UpdateTicketRequest:
         properties:
           ticket:
             $ref: "#/components/schemas/TicketObject"
+ValidateTicketJwtRequest:
+  name: "ValidateTicketJwtRequest"
+  description: "Request model for validating a ticket JWT"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["jwt"]
+        properties:
+          jwt:
+            type: string
+            description: "JWT minted for the ticket QR code."
+ValidateTicketJwtResponse:
+  name: "ValidateTicketJwtResponse"
+  description: "Response model for ticket JWT validation"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        required: ["valid"]
+        properties:
+          valid:
+            type: boolean
+            description: "Whether the provided ticket JWT is valid."
+          ticket:
+            $ref: "#/components/schemas/TicketObject"

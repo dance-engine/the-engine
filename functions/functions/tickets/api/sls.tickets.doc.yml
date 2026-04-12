@@ -1,5 +1,46 @@
 endpoints: 
   Tickets:
+    ValidateTicketJwt:
+      summary: "Validate Ticket JWT"
+      description: "Validates a ticket QR JWT and, when valid, returns the associated ticket."
+      tags:
+        - Tickets
+      security:
+        - {}
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      requestBody:
+        description: "Ticket JWT validation request."
+      requestModels:
+        application/json: "ValidateTicketJwtRequest"
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Returns whether the JWT is valid and the associated ticket when found.
+          responseModels:
+            application/json: "ValidateTicketJwtResponse"
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 404
+          responseBody:
+            description: Ticket not found.
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
     GETall:
       summary: "Get All Tickets"
       description: "Returns a list of all tickets for a given organisation and event."

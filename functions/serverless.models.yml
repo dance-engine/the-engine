@@ -57,6 +57,8 @@ models:
   - ${file(functions/tickets/api/sls.tickets.models.yml):SendTicketEmailRequest}
   - ${file(functions/tickets/api/sls.tickets.models.yml):BulkImportTicketsRequest}
   - ${file(functions/tickets/api/sls.tickets.models.yml):UpdateTicketRequest}
+  - ${file(functions/tickets/api/sls.tickets.models.yml):ValidateTicketJwtRequest}
+  - ${file(functions/tickets/api/sls.tickets.models.yml):ValidateTicketJwtResponse}
 
   - name: "ErrorResponse"
     description: "Error response model"

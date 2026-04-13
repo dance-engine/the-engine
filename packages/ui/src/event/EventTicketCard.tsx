@@ -35,16 +35,16 @@ export default function EventTicketCard({
       onClick={onClick}
       disabled={disabled}
       className={`group relative flex h-full min-h-[220px] flex-col overflow-hidden rounded-xl px-6 py-5 text-left transition ${
-        disabled ? "cursor-default opacity-85" : "cursor-pointer hover:-translate-y-0.5"
+        disabled ? "cursor-not-allowed opacity-85" : "cursor-pointer hover:-translate-y-0.5"
       }`}
       style={{
         backgroundColor: disabled
-          ? "color-mix(in srgb, var(--scheme-panel-bg) 70%, grey)"
+          ? "color-mix(in srgb, var(--scheme-panel-bg) 90%, grey)"
           : selected
             ? "color-mix(in srgb, var(--scheme-panel-bg) 88%, black)"
             : "color-mix(in srgb, var(--scheme-panel-bg) 100%, black)",
         color: disabled
-          ? "color-mix(in srgb, var(--scheme-panel-text) 60%, grey)"
+          ? "color-mix(in srgb, var(--scheme-panel-text) 90%, grey)"
           : "var(--scheme-panel-text)",
         outline: disabled
           ? "1px solid color-mix(in srgb, grey 50%, transparent)"
@@ -54,6 +54,7 @@ export default function EventTicketCard({
         outlineOffset: "-1px",
       }}
     >
+      { disabled ? <div className="w-full h-full bg-black/50 absolute -mx-6 -my-5 flex justify-center items-center text-3xl font-bold">Sold Out</div> : null}
       {highlighted ? (
         <div className="absolute right-4 top-4 inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--highlight-color)]">
           <SparklesIcon className="h-4 w-4" />

@@ -36,11 +36,13 @@ export type EventType = z.infer<typeof eventSchema>;
 export type EventResponseType = EventType & { status: string, items?: ItemType[], bundles?: BundleTypeExtended[] }
 export type EventModelType = EventType & { items?: Record<string, ItemType>, bundles?: BundleTypeExtended[] }
 
+const displayableStatuses = ["live", "sold_out"] as const;
+
 export const createEvent =(eventData: EventResponseType) => {
   const event: EventModelType = {...eventData, items: {}};
   event.items = Object.fromEntries(
     Object.entries(eventData?.items || {})
-      .filter(([_key, item]) => item.status == "live")
+      .filter(([_key, item]) => displayableStatuses.includes(item.status as typeof displayableStatuses[number]))
       .map(([_key, item]) => [item.ksuid, { ...item }])
   );
   return event

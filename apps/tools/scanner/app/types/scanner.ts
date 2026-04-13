@@ -24,6 +24,7 @@ export type PublicOrganisation = {
 export type TicketStatus = "used" | "unused";
 
 export type TicketRecord = {
+  name: string;
   ticketId: string;
   attendeeName: string;
   customerEmail?: string | null;

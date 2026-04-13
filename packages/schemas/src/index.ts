@@ -1,7 +1,7 @@
 import { eventSchema, EventType } from './eventSchema'
 import { customerSchema, CustomerType } from './customerSchema'
 import { locationSchema, LocationType } from './locationSchema'
-import { ticketSchema, TicketType } from './ticketSchema'
+import { ticketSchema, TicketTypeExtended } from './ticketSchema'
 import { SafeParseReturnType, ZodTypeAny } from 'zod'
 
 export const schemaRegistry = {
@@ -22,4 +22,4 @@ export const validateEntity = <T extends EntityNameType>(
 
 export type EntityNameType = keyof typeof schemaRegistry
 export type EntityData<T extends EntityNameType> = ReturnType<(typeof schemaRegistry)[T]['parse']>
-export type EntityType = EventType | CustomerType | LocationType | TicketType
+export type EntityType = EventType | CustomerType | LocationType | TicketTypeExtended

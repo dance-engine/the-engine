@@ -19,6 +19,8 @@ export const ticketSchema = z.object({
   }).optional().describe("Timestamp when the ticket was checked in"),
   checked_in_by: z.string().describe("Identifier of the user who checked in the ticket").optional(),
   check_in_count: z.coerce.number().optional().describe("Number of times the ticket has been checked in"),
+  version: z.coerce.number().optional().describe("Version Number"),
+  meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
   }).optional().describe("Timestamp when the ticket was created"),
@@ -34,7 +36,9 @@ export type TicketTypeExtended = TicketType & {
   event_slug?: string, 
   parent_event_ksuid: string,
   entity_type: string,
-  ticket_status: string
+  ticket_status: string,
+  version?: number,
+  meta?: Record<string, string | number | boolean>,
 };
 
 // Additional no validation metadata relating to how we display data in forms
@@ -48,6 +52,8 @@ export const ticketMetadata = {
   checked_in_at: { info: true },
   checked_in_by: { info: true },
   check_in_count: { info: true },
+  version: { info: true },
+  meta: { hidden:  true },
   created_at: { info: true },
   updated_at: { info: true },
 }

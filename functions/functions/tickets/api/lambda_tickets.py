@@ -445,13 +445,13 @@ def validate_jwt(request: ValidateTicketJwtRequest, ticketId:str, organisationSl
 
     if ticket.admission_status == AdmissionStatus.checked_in or ticket.admission_status == AdmissionStatus.denied:
         logger.info(f"Ticket with invalid admission status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} admission_status={ticket.admission_status}")
-        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": f"Ticket has already been {ticket.admission_status.value}."})
-        return make_response(400, response.model_dump(mode="json"))
+        response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": f"Ticket has already been {ticket.admission_status.value}."})
+        return make_response(200, response.model_dump(mode="json"))
     
     if ticket.ticket_status != TicketStatus.active:
         logger.info(f"Ticket with non-active status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} status={ticket.ticket_status}")
         response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket is not active."})
-        return make_response(400, response.model_dump(mode="json"))
+        return make_response(200, response.model_dump(mode="json"))
     
     #TODO do something to check if it is valid for this event 
 

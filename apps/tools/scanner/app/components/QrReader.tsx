@@ -13,6 +13,23 @@ type QrReaderProps = {
   onDetected: (value: string) => void;
 };
 
+const isExpectedMediaAbort = (error: unknown): boolean => {
+  if (error instanceof DOMException) {
+    return error.name === "AbortError";
+  }
+
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes("aborted by the user agent") ||
+      message.includes("fetching process for the media resource was aborted") ||
+      message.includes("the play() request was interrupted")
+    );
+  }
+
+  return false;
+};
+
 const CAMERA_KEY = "scanner:selected-camera";
 const VISITED_KEY = "scanner:visited";
 
@@ -86,10 +103,28 @@ export default function QrReader({ active, onDetected }: QrReaderProps) {
     window.localStorage.setItem(CAMERA_KEY, selectedCamera);
   }, [selectedCamera]);
 
+  // Browser tab switches can trigger benign media abort rejections while video
+  // playback is being paused/resumed by the user agent.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (isExpectedMediaAbort(event.reason)) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+    return () => {
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    };
+  }, []);
+
   // Start scanner only when we are live-scanning.
   // If paused, no camera stream is active.
   useEffect(() => {
     if (!videoRef.current || !selectedCamera || scanningPaused || !active) return;
+    let disposed = false;
 
     setCameraReady(false);
     setCameraError("");
@@ -117,10 +152,15 @@ export default function QrReader({ active, onDetected }: QrReaderProps) {
     void scanner
       .start()
       .then(() => {
+        if (disposed) return;
         setCameraError("");
         setCameraReady(true);
       })
       .catch((error: unknown) => {
+        if (disposed || isExpectedMediaAbort(error)) {
+          return;
+        }
+
         setCameraReady(false);
         if (
           typeof error === "object" &&
@@ -135,6 +175,7 @@ export default function QrReader({ active, onDetected }: QrReaderProps) {
       });
 
     return () => {
+      disposed = true;
       setCameraReady(false);
       scanner.stop();
       scanner.destroy();

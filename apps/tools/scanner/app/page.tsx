@@ -219,6 +219,7 @@ function ScannerWorkspace() {
   });
 
   const scannerFetchJson = async (url: string, config?: RequestInit): Promise<unknown> => {
+    console.log("Fetching URL:", url, { config });
     const token = await getToken();
     const headers = {
       ...(config?.headers ?? {}),
@@ -231,6 +232,7 @@ function ScannerWorkspace() {
       const data = contentType.includes("application/json") ? await response.json() : null;
 
       if (!response.ok) {
+        console.error("API request failed:", { url, status: response.status, data });
         throw new ScannerApiError(
           asMessage(
             (data as ApiErrorPayload | null)?.message ??
@@ -392,6 +394,7 @@ function ScannerWorkspace() {
     qrCodeOverride?: string,
     options?: { resetTicketOnCheck?: boolean },
   ): Promise<boolean> => {
+    console.log("action:",action)
     if (!selectedOrg || !selectedEvent) {
       setError("Choose an organisation and an event first.");
       return false;
@@ -444,6 +447,7 @@ function ScannerWorkspace() {
       const orgMismatch = Boolean(jwtOrg && jwtOrg !== selectedOrg);
 
       if (action === "check") {
+        console.log("Validating ticket with API...", { endpoint: `${apiBaseUrl}/${selectedOrg}/${selectedEvent}/tickets/${ticketKsuid}/validate`,qrCode: qrCode });
         const endpoint = `${apiBaseUrl}/${selectedOrg}/${selectedEvent}/tickets/${ticketKsuid}/validate`;
         const result = await scannerFetchJson(endpoint, {
           method: "POST",
@@ -452,13 +456,17 @@ function ScannerWorkspace() {
             qr_token: qrCode,
           }),
         }) as ValidateTicketResponse | null;
+        console.log("Validation response:", result);
 
         if (!result?.valid || !result.ticket) {
-          setError(asMessage(result?.reason, "Ticket validation failed."));
+          console.log("Ticket validation failed:", result);
+          setError(asMessage(`Reason: ${result?.reason}`, "Ticket validation failed for an unknown reason."));
           return false;
         }
+        console.log("Ticket validation succeeded:", result);
 
         const mappedTicket: TicketRecord = {
+          name: result.ticket.name?.trim() || "Unnamed Ticket",
           ticketId: result.ticket.ksuid?.trim() || ticketKsuid,
           attendeeName:
             result.ticket.name_on_ticket?.trim() ||
@@ -489,21 +497,26 @@ function ScannerWorkspace() {
         return false;
       }
 
-      const endpoint = `${apiBaseUrl}/${selectedOrg}/${selectedEvent}/tickets/${ticketKsuid}/${action === "mark-used" ? "use" : "unuse"}`;
-      const result = await scannerFetchJson(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_email: customerEmail,
-        }),
-      }) as TicketMutationResponse | null;
+      if (action === "mark-used" || action === "reset-unused") {
+        const endpoint = `${apiBaseUrl}/${selectedOrg}/${selectedEvent}/tickets/${ticketKsuid}/${action === "mark-used" ? "use" : "unuse"}`;
+        const result = await scannerFetchJson(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer_email: customerEmail,
+          }),
+        }) as TicketMutationResponse | null;
+        console.log("Mutation response:", result);
+        // setNotice(
+        //   action === "mark-used"
+        //     ? "Marked as used locally. Verification will happen via API later."
+        //     : "Reset to unused locally. Verification will happen via API later.",
+        // );
+        return true;
+      }
+      
+      return false // Nothing was done?
 
-      setNotice(
-        action === "mark-used"
-          ? "Marked as used locally. Verification will happen via API later."
-          : "Reset to unused locally. Verification will happen via API later.",
-      );
-      return true;
     } catch (actionError) {
       setError(
         getApiErrorMessage(
@@ -530,6 +543,7 @@ function ScannerWorkspace() {
   };
 
   const handleOverlayAction = async (action: "check" | "mark-used" | "reset-unused") => {
+    console.log("Overlay action:", action);
     const success = await runTicketAction(action);
     if (success) {
       clearScannedTicket();
@@ -613,7 +627,7 @@ function ScannerWorkspace() {
       );
     }
 
-    if (eventsError || true) {
+    if (eventsError) {
       return (
         <FullPageWarning
           title="Failed to load events"

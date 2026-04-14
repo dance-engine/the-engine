@@ -7,6 +7,8 @@ import { IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";
 import { TicketType } from "@dance-engine/schemas/ticket";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { IoEyeOutline } from "react-icons/io5";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
   ssr: false,
@@ -69,6 +71,15 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           parentEntityName="event"
           showEditAction={false}
           showDeleteAction={false}
+          rowActions={(record) => (
+            <Link
+              href={`/events/${ksuid}/tickets/${String(record.ksuid)}`}
+              className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0"
+            >
+              <IoEyeOutline className="h-5 w-5" />
+              <span className="sr-only">View ticket</span>
+            </Link>
+          )}
         />
       </div>
     </div>

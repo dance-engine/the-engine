@@ -489,6 +489,8 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
             "reason": "A customer email is required.",
         })
 
+    next_check_in_count = (existing_ticket.check_in_count or 0) + 1
+
     try:
         ticket_model = TicketModel.model_validate({
                 "ksuid": ticketId,
@@ -499,8 +501,9 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
 
                 "admission_status": AdmissionStatus.checked_in,
                 "ticket_status": TicketStatus.used,
-                "checked_in_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace('+00:00', 'Z'),
+                "checked_in_at": current_time,
                 "checked_in_by": actor,
+                "check_in_count": next_check_in_count,
 
                 "name": "ishouldnothavethisvalue", # to satisfy validation will not be actualyl changed to this
                 "name_on_ticket": "ishouldnothavethisvalue", # to satisfy validation will not be actualyl changed to this

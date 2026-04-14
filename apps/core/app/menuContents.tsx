@@ -43,39 +43,39 @@ export const getMenuContents = (isSuperAdmin = false): MenuSection[] => [
         link: "/customers", 
         icon: CustomersIcon
       },
-      { 
-        title: "Secure",
-        link: "/secure", 
-        icon: SecureIcon
-      },
-      { 
-        title: "Test",
-        link: "/test", 
-        icon: SecureIcon
-      }
+      // { 
+      //   title: "Secure",
+      //   link: "/secure", 
+      //   icon: SecureIcon
+      // },
+      // { 
+      //   title: "Test",
+      //   link: "/test", 
+      //   icon: SecureIcon
+      // }
 
     ] 
   },
-  { 
-    name: "Your Teams",
-    contents: [
-      { 
-        title: "Dance",
-        link: "/events", 
-        icon: AIcon
-      },
-      { 
-        title: "Engine",
-        link: "/secure", 
-        icon:  BIcon
-      },
-      { 
-        title: "Core",
-        link: "/secure", 
-        icon:  CIcon
-      },
-    ] 
-  },
+  // { 
+  //   name: "Your Teams",
+  //   contents: [
+  //     { 
+  //       title: "Dance",
+  //       link: "/events", 
+  //       icon: AIcon
+  //     },
+  //     { 
+  //       title: "Engine",
+  //       link: "/secure", 
+  //       icon:  BIcon
+  //     },
+  //     { 
+  //       title: "Core",
+  //       link: "/secure", 
+  //       icon:  CIcon
+  //     },
+  //   ] 
+  // },
   { 
     // name: "Bottom",
     position: "bottom",

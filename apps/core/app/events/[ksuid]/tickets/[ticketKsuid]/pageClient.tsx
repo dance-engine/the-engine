@@ -9,10 +9,20 @@ import Badge from "@dance-engine/ui/Badge";
 import QRCode from "react-qr-code";
 import { IoArrowBack, IoCloudOffline } from "react-icons/io5";
 import { TicketTypeExtended } from "@dance-engine/schemas/ticket";
+import EntityDetailsCard from "../../../../components/EntityDetailsCard";
+import RelatedEntityOverlay from "../../../../components/RelatedEntityOverlay";
 
 interface TicketDetailClientProps {
   ksuid: string;
   ticketKsuid: string;
+}
+
+type RelatedEntityType = "BUNDLE" | "ITEM";
+
+interface RelatedEntityRef {
+  type: RelatedEntityType;
+  ksuid: string;
+  label?: string;
 }
 
 const preferredFieldOrder = [
@@ -57,15 +67,56 @@ const bundleFieldOrder = [
   "updated_at",
 ] as const;
 
+const itemFieldOrder = [
+  "ksuid",
+  "entity_type",
+  "name",
+  "description",
+  "status",
+  "primary_price",
+  "primary_price_name",
+  "stripe_price_id",
+  "parent_event_ksuid",
+  "event_slug",
+  "version",
+  "created_at",
+  "updated_at",
+] as const;
+
 const isPlainObject = (value: unknown): value is Record<string, unknown> => (
   typeof value === "object" && value !== null && !Array.isArray(value)
 );
 
-const normaliseBundleKsuid = (value: string) => {
-  const trimmed = value.trim();
-  return trimmed.toUpperCase().startsWith("BUNDLE#")
-    ? trimmed.split("#").slice(1).join("#")
-    : trimmed;
+const getEntityRef = (value: unknown): RelatedEntityRef | null => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    const [prefix, ...rest] = trimmed.split("#");
+    const entityType = (prefix ?? "").toUpperCase();
+    const ksuid = rest.join("#").trim();
+
+    if ((entityType === "BUNDLE" || entityType === "ITEM") && ksuid) {
+      return { type: entityType as RelatedEntityType, ksuid };
+    }
+
+    return null;
+  }
+
+  if (isPlainObject(value)) {
+    const rawType = value.entity_type ?? value.child_type;
+    const rawKsuid = value.ksuid ?? value.child_ksuid;
+    const entityType = typeof rawType === "string" ? rawType.toUpperCase().trim() : "";
+    const ksuid = typeof rawKsuid === "string" ? rawKsuid.trim() : "";
+
+    if ((entityType === "BUNDLE" || entityType === "ITEM") && ksuid) {
+      const label = typeof value.name === "string" && value.name.trim()
+        ? `${value.name} (${ksuid})`
+        : ksuid;
+
+      return { type: entityType as RelatedEntityType, ksuid, label };
+    }
+  }
+
+  return null;
 };
 
 const formatLabel = (key: string) =>
@@ -111,19 +162,15 @@ const formatValue = (value: unknown): ReactNode => {
   );
 };
 
-const FieldRow = ({ label, value }: { label: string; value?: ReactNode }) => (
-  <div className="border-b border-gray-200 py-3">
-    <dt className="text-sm font-medium text-gray-500">{label}</dt>
-    <dd className="mt-1 text-sm text-gray-900 break-all whitespace-pre-wrap">{value || "-"}</dd>
-  </div>
-);
-
 const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps) => {
   const { activeOrg } = useOrgContext();
-  const [selectedBundleKsuid, setSelectedBundleKsuid] = useState<string | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<RelatedEntityRef | null>(null);
   const ticketUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets/${ticketKsuid}`;
-  const bundleUrl = selectedBundleKsuid && activeOrg
-    ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${ksuid}/bundles/${selectedBundleKsuid}`
+  const bundleUrl = selectedEntity?.type === "BUNDLE" && activeOrg
+    ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${ksuid}/bundles/${selectedEntity.ksuid}`
+    : null;
+  const itemUrl = selectedEntity?.type === "ITEM" && activeOrg
+    ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${ksuid}/items/${selectedEntity.ksuid}`
     : null;
 
   const { data, error, isLoading } = useClerkSWR(
@@ -136,6 +183,12 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
     error: bundleError,
     isLoading: isBundleLoading,
   } = useClerkSWR(bundleUrl, { suspense: false });
+
+  const {
+    data: itemData,
+    error: itemError,
+    isLoading: isItemLoading,
+  } = useClerkSWR(itemUrl, { suspense: false });
 
   const ticketCandidates = Array.isArray(data?.tickets)
     ? data.tickets
@@ -165,30 +218,41 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
         ? [bundleData]
         : [];
 
+  const itemCandidates = Array.isArray(itemData?.items)
+    ? itemData.items
+    : itemData?.item
+      ? [itemData.item]
+      : itemData?.ksuid
+        ? [itemData]
+        : [];
+
   const selectedBundle = bundleCandidates[0] as Record<string, unknown> | undefined;
-  const bundleFieldKeys = selectedBundle
+  const selectedItem = itemCandidates[0] as Record<string, unknown> | undefined;
+  const overlayRecord = selectedEntity?.type === "BUNDLE" ? selectedBundle : selectedItem;
+  const overlayTitle = selectedEntity?.type === "ITEM" ? "Item details" : "Bundle details";
+  const overlayFieldOrder: readonly string[] = selectedEntity?.type === "ITEM" ? itemFieldOrder : bundleFieldOrder;
+  const overlayFieldKeys = overlayRecord
     ? [
-        ...bundleFieldOrder.filter((key) => key in selectedBundle),
-        ...Object.keys(selectedBundle).filter(
-          (key) => !bundleFieldOrder.includes(key as typeof bundleFieldOrder[number]),
+        ...overlayFieldOrder.filter((key) => key in overlayRecord),
+        ...Object.keys(overlayRecord).filter(
+          (key) => !overlayFieldOrder.includes(key as typeof overlayFieldOrder[number]),
         ),
       ]
     : [];
 
-  const openBundle = (bundleKsuid: string) => {
-    const trimmed = normaliseBundleKsuid(bundleKsuid);
-    if (trimmed) {
-      setSelectedBundleKsuid(trimmed);
+  const openEntity = (type: RelatedEntityType, ksuid: string, label?: string) => {
+    if (ksuid.trim()) {
+      setSelectedEntity({ type, ksuid: ksuid.trim(), ...(label ? { label } : {}) });
     }
   };
 
-  const renderBundleButton = (bundleKsuid: string, label?: string) => (
+  const renderEntityButton = (entity: RelatedEntityRef) => (
     <button
       type="button"
-      onClick={() => openBundle(bundleKsuid)}
-      className="inline-flex items-center rounded-md bg-keppel-on-light px-2 py-1 text-xs text-white font-semibold text-gray-900 hover:opacity-90"
+      onClick={() => openEntity(entity.type, entity.ksuid, entity.label)}
+      className="inline-flex items-center rounded-md bg-keppel-on-light px-2 py-1 text-xs text-white font-semibold hover:opacity-90"
     >
-      {label || bundleKsuid}
+      {entity.label || entity.ksuid}
     </button>
   );
 
@@ -196,50 +260,26 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
     const lowerKey = key.toLowerCase();
 
     if (typeof value === "string") {
-      const trimmed = value.trim();
-      const bundleKsuid = normaliseBundleKsuid(trimmed);
-
-      if (trimmed && (lowerKey.includes("bundle") || trimmed.toUpperCase().startsWith("BUNDLE#"))) {
-        return renderBundleButton(bundleKsuid, bundleKsuid);
+      const entityRef = getEntityRef(value);
+      if (entityRef && (lowerKey.includes("bundle") || lowerKey.includes("item") || value.includes("#"))) {
+        return renderEntityButton(entityRef);
       }
       return formatValue(value);
     }
 
     if (Array.isArray(value)) {
-      const bundleStringEntries = value.filter(
-        (item): item is string => typeof item === "string" && item.trim().toUpperCase().startsWith("BUNDLE#"),
-      );
+      const entityRefs = value
+        .map((item) => getEntityRef(item))
+        .filter((item): item is RelatedEntityRef => Boolean(item));
 
-      const bundleEntries = value.filter(
-        (item): item is Record<string, unknown> =>
-          isPlainObject(item)
-          && String(item.entity_type ?? "").toUpperCase() === "BUNDLE"
-          && typeof item.ksuid === "string",
-      );
-
-      if (bundleStringEntries.length > 0 || bundleEntries.length > 0) {
+      if (entityRefs.length > 0) {
         return (
           <div className="flex flex-col gap-2">
-            {bundleStringEntries.map((item) => {
-              const bundleKsuid = normaliseBundleKsuid(item);
-              return (
-                <div key={item} className="flex flex-wrap items-center gap-2">
-                  {renderBundleButton(bundleKsuid, bundleKsuid)}
-                </div>
-              );
-            })}
-            {bundleEntries.map((item) => {
-              const bundleKsuid = normaliseBundleKsuid(String(item.ksuid));
-              const label = typeof item.name === "string" && item.name.trim()
-                ? `${item.name} (${bundleKsuid})`
-                : bundleKsuid;
-
-              return (
-                <div key={bundleKsuid} className="flex flex-wrap items-center gap-2">
-                  {renderBundleButton(bundleKsuid, label)}
-                </div>
-              );
-            })}
+            {entityRefs.map((entity) => (
+              <div key={`${entity.type}-${entity.ksuid}`} className="flex flex-wrap items-center gap-2">
+                {renderEntityButton(entity)}
+              </div>
+            ))}
           </div>
         );
       }
@@ -248,14 +288,9 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
     }
 
     if (isPlainObject(value)) {
-      const bundleKsuid = typeof value.ksuid === "string" ? normaliseBundleKsuid(value.ksuid) : "";
-      const entityType = String(value.entity_type ?? "").toUpperCase();
-
-      if (bundleKsuid && (lowerKey.includes("bundle") || entityType === "BUNDLE")) {
-        const label = typeof value.name === "string" && value.name.trim()
-          ? `${value.name} (${bundleKsuid})`
-          : bundleKsuid;
-        return renderBundleButton(bundleKsuid, label);
+      const entityRef = getEntityRef(value);
+      if (entityRef && (lowerKey.includes("bundle") || lowerKey.includes("item") || Boolean(entityRef.type))) {
+        return renderEntityButton(entityRef);
       }
     }
 
@@ -307,19 +342,14 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_340px]">
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">Ticket information</h2>
-          <p className="mt-1 text-sm text-gray-500">Showing all fields currently returned by the API for this ticket.</p>
-          <dl className="mt-4 grid gap-x-8 sm:grid-cols-2">
-            {orderedFieldKeys.map((key) => (
-              <FieldRow
-                key={key}
-                label={formatLabel(key)}
-                value={renderFieldValue(key, ticketRecord[key])}
-              />
-            ))}
-          </dl>
-        </div>
+        <EntityDetailsCard
+          title="Ticket information"
+          description="Showing all fields currently returned by the API for this ticket."
+          record={ticketRecord}
+          fieldKeys={orderedFieldKeys}
+          formatLabel={formatLabel}
+          renderValue={renderFieldValue}
+        />
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-center">
           <h2 className="text-lg font-semibold text-gray-900">QR code</h2>
@@ -336,51 +366,19 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
         </div>
       </div>
 
-      {selectedBundleKsuid ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Bundle details</h2>
-                <p className="text-sm text-gray-500">{selectedBundleKsuid}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedBundleKsuid(null)}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="max-h-[70vh] overflow-y-auto p-5">
-              {isBundleLoading ? (
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Spinner className="w-5 h-5" /> Loading bundle...
-                </div>
-              ) : bundleError ? (
-                <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
-                  Failed to load the bundle.
-                </div>
-              ) : !selectedBundle ? (
-                <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
-                  Bundle not found.
-                </div>
-              ) : (
-                <dl className="grid gap-x-8 sm:grid-cols-2">
-                  {bundleFieldKeys.map((key) => (
-                    <FieldRow
-                      key={key}
-                      label={formatLabel(key)}
-                      value={formatValue(selectedBundle[key])}
-                    />
-                  ))}
-                </dl>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <RelatedEntityOverlay
+        open={Boolean(selectedEntity)}
+        title={overlayTitle}
+        subtitle={selectedEntity?.label || selectedEntity?.ksuid}
+        isLoading={(selectedEntity?.type === "BUNDLE" && isBundleLoading) || (selectedEntity?.type === "ITEM" && isItemLoading)}
+        hasError={Boolean((selectedEntity?.type === "BUNDLE" && bundleError) || (selectedEntity?.type === "ITEM" && itemError))}
+        emptyMessage="Related item not found."
+        record={overlayRecord}
+        fieldKeys={overlayFieldKeys}
+        onClose={() => setSelectedEntity(null)}
+        formatLabel={formatLabel}
+        renderValue={(_key, value) => formatValue(value)}
+      />
     </div>
   );
 };

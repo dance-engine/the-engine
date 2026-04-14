@@ -24,7 +24,7 @@ const AIcon = (<span className="flex size-6 shrink-0 items-center justify-center
 const BIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-pear-logo text-[0.625rem] font-medium text-white">-</span>)
 const CIcon = (<span className="flex size-6 shrink-0 items-center justify-center rounded-lg border border-white/30 bg-keppel-logo text-[0.625rem] font-medium text-white">E</span>)
 
-export const menuContents:MenuSection[] = [
+export const getMenuContents = (isSuperAdmin = false): MenuSection[] => [
   { 
     // name: "Default"
     contents: [
@@ -85,10 +85,21 @@ export const menuContents:MenuSection[] = [
         link: "/settings/org", 
         icon: SettingsIcon
       },
+      ...(isSuperAdmin
+        ? [
+            {
+              title: "Admin Onboarding",
+              link: "/admin/onboarding/start",
+              icon: SettingsIcon,
+            },
+          ]
+        : []),
 
     ] 
   }
 ]
+
+export const menuContents:MenuSection[] = getMenuContents();
 
 // Example Icons
 {/* 

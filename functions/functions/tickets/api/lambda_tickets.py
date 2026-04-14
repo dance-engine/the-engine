@@ -457,6 +457,8 @@ def validate_jwt(request: ValidateTicketJwtRequest, ticketId:str, organisationSl
         response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket is not active."})
         return make_response(200, response.model_dump(mode="json"))
 
+    # This is already checked above when validating token, I suppose not a bad to check again with db data. 
+    # TODO I still want to do a bit more to check validity of the ticket for the event, maybe with warning based on event timing (e.g if the event has past)
     if ticket_event_id != eventId:
         logger.info(f"Ticket event mismatch for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} ticket_event={ticket_event_id}")
         response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket does not belong to this event."})
@@ -476,6 +478,9 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
 
+    # I would rather not have to get a ticket here, it will slow down checkin
+    # check_in_count was intentionally left blank for this reason.
+    # TODO the solution is to implement the extended functions of transact_upsert here to do the addition on the write and only use conditions to check ticket exists. 
     existing_ticket = get_single_ticket(organisationSlug, eventId, ticketId, actor=actor)
     if existing_ticket is None:
         return make_response(404, {
@@ -513,6 +518,7 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
                                        explicit_fields_only=True, 
                                        only_set_once=["created_at", "ticket_creation_key", "ksuid", "qr_token", "name", "name_on_ticket"], 
                                        condition_expression=(
+                                           # TODO to be depricated later because this assumes tickets without those attributes are valid 
                                             "(attribute_not_exists(#ticket_status) OR #ticket_status = :active_status) AND "
                                             "(attribute_not_exists(#admission_status) OR #admission_status = :not_checked_in_status)"
                                         ), 
@@ -562,6 +568,7 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
         return make_response(500, {"message": "Something went wrong."})
 
 def unuse_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisationSlug: str, eventId: str, actor: str):
+    # TODO Again this can be done with just handling conditional check fails correctly, but this works for now
     existing_ticket = get_single_ticket(organisationSlug, eventId, ticketId, actor=actor)
     if existing_ticket is None:
         return make_response(404, {"message": "Ticket not found."})

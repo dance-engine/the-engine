@@ -340,7 +340,7 @@ function ScannerWorkspace() {
       return null;
     }
 
-    return `${apiBaseUrl}/{org}/events`.replace(
+    return `${apiBaseUrl}/public/{org}/events`.replace(
       "/{org}",
       `/${selectedOrg}`,
     );

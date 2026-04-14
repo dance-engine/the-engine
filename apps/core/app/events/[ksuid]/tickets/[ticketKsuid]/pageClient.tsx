@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
@@ -14,10 +15,75 @@ interface TicketDetailClientProps {
   ticketKsuid: string;
 }
 
-const FieldRow = ({ label, value }: { label: string; value?: string | number | null }) => (
+const preferredFieldOrder = [
+  "ksuid",
+  "entity_type",
+  "name",
+  "name_on_ticket",
+  "customer_email",
+  "parent_event_ksuid",
+  "event_slug",
+  "ticket_status",
+  "financial_status",
+  "admission_status",
+  "check_in_count",
+  "checked_in_by",
+  "checked_in_at",
+  "created_at",
+  "updated_at",
+  "includes",
+  "expanded_includes",
+  "version",
+  "meta",
+] as const;
+
+const formatLabel = (key: string) =>
+  key
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const formatValue = (value: unknown): ReactNode => {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || "-";
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return "-";
+    }
+
+    const primitiveValues = value.every(
+      (item) => ["string", "number", "boolean"].includes(typeof item),
+    );
+
+    return primitiveValues ? value.join(", ") : (
+      <pre className="rounded bg-gray-50 p-2 text-xs text-gray-700 whitespace-pre-wrap break-words">
+        {JSON.stringify(value, null, 2)}
+      </pre>
+    );
+  }
+
+  return (
+    <pre className="rounded bg-gray-50 p-2 text-xs text-gray-700 whitespace-pre-wrap break-words">
+      {JSON.stringify(value, null, 2)}
+    </pre>
+  );
+};
+
+const FieldRow = ({ label, value }: { label: string; value?: ReactNode }) => (
   <div className="border-b border-gray-200 py-3">
     <dt className="text-sm font-medium text-gray-500">{label}</dt>
-    <dd className="mt-1 text-sm text-gray-900 break-all">{value || "-"}</dd>
+    <dd className="mt-1 text-sm text-gray-900 break-all whitespace-pre-wrap">{value || "-"}</dd>
   </div>
 );
 
@@ -41,6 +107,14 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
           : [];
 
   const ticket = ticketCandidates[0] as TicketTypeExtended | undefined;
+  const ticketRecord = (ticket ?? {}) as Record<string, unknown>;
+  const hiddenFieldKeys = new Set(["qr_token"]);
+  const orderedFieldKeys = [
+    ...preferredFieldOrder.filter((key) => key in ticketRecord && !hiddenFieldKeys.has(key)),
+    ...Object.keys(ticketRecord).filter(
+      (key) => !hiddenFieldKeys.has(key) && !preferredFieldOrder.includes(key as typeof preferredFieldOrder[number]),
+    ),
+  ];
 
   if (!activeOrg) {
     return <div className="px-4 py-4 text-gray-600">No active organization selected</div>;
@@ -89,15 +163,15 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
       <div className="grid gap-6 lg:grid-cols-[1.4fr_340px]">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Ticket information</h2>
+          <p className="mt-1 text-sm text-gray-500">Showing all fields currently returned by the API for this ticket.</p>
           <dl className="mt-4 grid gap-x-8 sm:grid-cols-2">
-            <FieldRow label="KSUID" value={ticket.ksuid} />
-            <FieldRow label="Ticket type" value={ticket.name} />
-            <FieldRow label="Name on ticket" value={ticket.name_on_ticket} />
-            <FieldRow label="Customer email" value={ticket.customer_email} />
-            <FieldRow label="Checked in by" value={ticket.checked_in_by} />
-            <FieldRow label="Checked in at" value={ticket.checked_in_at} />
-            <FieldRow label="Check in count" value={ticket.check_in_count} />
-            <FieldRow label="Created at" value={ticket.created_at} />
+            {orderedFieldKeys.map((key) => (
+              <FieldRow
+                key={key}
+                label={formatLabel(key)}
+                value={formatValue(ticketRecord[key])}
+              />
+            ))}
           </dl>
         </div>
 

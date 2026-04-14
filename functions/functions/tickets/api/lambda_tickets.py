@@ -443,22 +443,28 @@ def validate_jwt(request: ValidateTicketJwtRequest, ticketId:str, organisationSl
         response = ValidateTicketJwtResponse(**{"valid":False, "ticket": None, "reason": "Ticket not found."})
         return make_response(404, response.model_dump(mode="json"))
 
-    if ticket.admission_status == AdmissionStatus.checked_in or ticket.admission_status == AdmissionStatus.denied:
-        logger.info(f"Ticket with invalid admission status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} admission_status={ticket.admission_status}")
-        response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": f"Ticket has already been {ticket.admission_status.value}."})
+    admission_status = ticket.admission_status or AdmissionStatus.not_checked_in
+    ticket_status = ticket.ticket_status or TicketStatus.active
+    ticket_event_id = ticket.parent_event_ksuid or eventId
+
+    if admission_status == AdmissionStatus.checked_in or admission_status == AdmissionStatus.denied:
+        logger.info(f"Ticket with invalid admission status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} admission_status={admission_status}")
+        response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": f"Ticket has already been {admission_status.value}."})
         return make_response(200, response.model_dump(mode="json"))
     
-    if ticket.ticket_status != TicketStatus.active:
-        logger.info(f"Ticket with non-active status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} status={ticket.ticket_status}")
+    if ticket_status != TicketStatus.active:
+        logger.info(f"Ticket with non-active status for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} status={ticket_status}")
         response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket is not active."})
         return make_response(200, response.model_dump(mode="json"))
-    
-    #TODO do something to check if it is valid for this event 
 
-    if ticket.admission_status == AdmissionStatus.not_checked_in and ticket.ticket_status == TicketStatus.active and ticket.parent_event_ksuid == eventId:
-        logger.info(f"Valid ticket JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')}")
-        response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": None})
+    if ticket_event_id != eventId:
+        logger.info(f"Ticket event mismatch for valid JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')} ticket_event={ticket_event_id}")
+        response = ValidateTicketJwtResponse(**{"valid":False, "ticket": ticket, "reason": "Ticket does not belong to this event."})
         return make_response(200, response.model_dump(mode="json"))
+
+    logger.info(f"Valid ticket JWT for {organisationSlug}:{eventId} by {actor}. Ticket ID={decoded.get('sub')}")
+    response = ValidateTicketJwtResponse(**{"valid":True, "ticket": ticket, "reason": None})
+    return make_response(200, response.model_dump(mode="json"))
 
 def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisationSlug: str, eventId: str, actor: str):
     logger.info(f"Update Ticket: {request_data}")
@@ -470,10 +476,23 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
     current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
     logger.info(f"Current Time: {current_time}")
 
+    existing_ticket = get_single_ticket(organisationSlug, eventId, ticketId, actor=actor)
+    if existing_ticket is None:
+        return make_response(404, {
+            "message": "Ticket not found.",
+        })
+
+    customer_email = (request_data.customer_email or "").strip()
+    if not customer_email:
+        return make_response(400, {
+            "message": "Ticket cannot be used.",
+            "reason": "A customer email is required.",
+        })
+
     try:
         ticket_model = TicketModel.model_validate({
                 "ksuid": ticketId,
-                "customer_email": request_data.customer_email,
+                "customer_email": customer_email,
 
                 "organisation": organisationSlug,
                 "parent_event_ksuid": eventId,
@@ -491,8 +510,8 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
                                        explicit_fields_only=True, 
                                        only_set_once=["created_at", "ticket_creation_key", "ksuid", "qr_token", "name", "name_on_ticket"], 
                                        condition_expression=(
-                                            "#ticket_status = :active_status AND "
-                                            "#admission_status = :not_checked_in_status"
+                                            "(attribute_not_exists(#ticket_status) OR #ticket_status = :active_status) AND "
+                                            "(attribute_not_exists(#admission_status) OR #admission_status = :not_checked_in_status)"
                                         ), 
                                        extra_expression_attr_names={
                                             "#ticket_status": "ticket_status",
@@ -540,9 +559,20 @@ def use_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisation
         return make_response(500, {"message": "Something went wrong."})
 
 def unuse_ticket(request_data: TicketAdmissionRequest, ticketId: str, organisationSlug: str, eventId: str, actor: str):
+    existing_ticket = get_single_ticket(organisationSlug, eventId, ticketId, actor=actor)
+    if existing_ticket is None:
+        return make_response(404, {"message": "Ticket not found."})
+
+    customer_email = (request_data.customer_email or "").strip()
+    if not customer_email:
+        return make_response(400, {
+            "message": "Ticket cannot be reset.",
+            "reason": "A customer email is required.",
+        })
+
     ticket = {
         "ksuid": ticketId,
-        "customer_email": request_data.customer_email,
+        "customer_email": customer_email,
 
         "organisation": organisationSlug,
         "parent_event_ksuid": eventId,

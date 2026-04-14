@@ -276,6 +276,10 @@ function ScannerWorkspace() {
     () => includesScanningPermission(orgPermissions["*"]),
     [orgPermissions],
   );
+  const hasWildcardOrgAccess = useMemo(
+    () => Object.prototype.hasOwnProperty.call(orgPermissions, "*"),
+    [orgPermissions],
+  );
 
   const canScan = hasGlobalScanning || allowedOrgs.length > 0;
 
@@ -283,7 +287,7 @@ function ScannerWorkspace() {
     data: organisationsResponse,
     error: organisationsError,
     isLoading: loadingOrganisations,
-  } = useClerkSWR(hasGlobalScanning && organisationsApiUrl ? organisationsApiUrl : null, {
+  } = useClerkSWR(hasWildcardOrgAccess && organisationsApiUrl ? organisationsApiUrl : null, {
     suspense: false,
   });
 
@@ -319,7 +323,7 @@ function ScannerWorkspace() {
       return;
     }
 
-    if (!hasGlobalScanning && allowedOrgs.length === 1) {
+    if (!hasWildcardOrgAccess && allowedOrgs.length === 1) {
       const firstOrg = allowedOrgs.at(0);
       if (firstOrg) {
         setSelectedOrg(firstOrg);
@@ -329,7 +333,7 @@ function ScannerWorkspace() {
     }
 
     setViewMode("orgs");
-  }, [allowedOrgs, canScan, hasGlobalScanning, isLoaded, selectedOrg]);
+  }, [allowedOrgs, canScan, hasWildcardOrgAccess, isLoaded, selectedOrg]);
 
   const eventsApiUrl = useMemo(() => {
     if (!selectedOrg || !apiBaseUrl) {
@@ -561,12 +565,12 @@ function ScannerWorkspace() {
   );
 
   const orgItems = useMemo(() => {
-    if (hasGlobalScanning) {
+    if (hasWildcardOrgAccess) {
       return wildcardOrganisations;
     }
 
     return allowedOrgs.map((org) => ({ id: org, label: formatOrgLabel(org) }));
-  }, [allowedOrgs, hasGlobalScanning, wildcardOrganisations]);
+  }, [allowedOrgs, hasWildcardOrgAccess, wildcardOrganisations]);
 
   const orgsEmptyState = useMemo(() => {
     if (loadingOrganisations) {
@@ -591,7 +595,7 @@ function ScannerWorkspace() {
       );
     }
 
-    if (hasGlobalScanning ) {
+    if (hasWildcardOrgAccess) {
       return (
         <FullPageWarning
           title="No organisations found"
@@ -601,7 +605,7 @@ function ScannerWorkspace() {
     }
 
     return null;
-  }, [hasGlobalScanning, loadingOrganisations, organisationsError]);
+  }, [hasWildcardOrgAccess, loadingOrganisations, organisationsError]);
 
   const eventItems = useMemo(
     () =>
@@ -700,7 +704,7 @@ function ScannerWorkspace() {
           <SelectionList
             title="Choose Organisation"
             items={orgItems}
-            loading={hasGlobalScanning ? loadingOrganisations : false}
+            loading={hasWildcardOrgAccess ? loadingOrganisations : false}
             emptyState={orgsEmptyState}
             emptyLabel="No organisations found"
             onSelect={(orgId) => navigation.selectOrganisation(orgId)}

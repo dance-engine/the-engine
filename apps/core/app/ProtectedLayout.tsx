@@ -3,6 +3,7 @@ import { Open_Sans } from "next/font/google";
 import "./globals.css";
 
 // import Head from 'next/head'
+import Image from "next/image";
 import { ClerkProvider } from '@clerk/nextjs'
 import { currentUser } from "@clerk/nextjs/server";
 import { MenuProvider } from '@dance-engine/ui/menu/MenuContext';  // Adjust the import path
@@ -45,6 +46,7 @@ export default async function ProtectedLayout({
       <OrgProvider>
       <MenuProvider>
 
+      {user?.publicMetadata.admin ? 
       <div>
         
         {/* Mobile Menu */}
@@ -81,6 +83,16 @@ export default async function ProtectedLayout({
           </main>
         </div>
       </div>
+      :
+      <div className="flex flex-col items-center justify-center h-screen dark:text-dark-secondary bg-[url(/circuits.jpg)] bg-cover bg-center ">
+        <Image src="/dance-engine-logo-wide.png" width={300} height={100} alt="Dance Engine" className="mb-6"/>
+        <div className="text-center rounded bg-amber-50 p-8 shadow-lg max-w-lg">
+          
+          <h1 className="text-xl font-bold ">Your account does not currently have access</h1>
+          <p>Either you&apos;re a cheeky monkey trying to access the admin panel, or your account is still being set up. If you think this is a mistake, please contact your administrator.</p>
+        </div>
+      </div>
+    }
 
       </MenuProvider>
       </OrgProvider>

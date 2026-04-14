@@ -4,15 +4,17 @@ import "./globals.css";
 
 // import Head from 'next/head'
 import { ClerkProvider } from '@clerk/nextjs'
+import { currentUser } from "@clerk/nextjs/server";
 import { MenuProvider } from '@dance-engine/ui/menu/MenuContext';  // Adjust the import path
 import { MenuToggle } from '@dance-engine/ui/menu/MenuToggle'
 import MobileMenu from '@dance-engine/ui/menu/MobileMenu'
 import MainMenu from '@dance-engine/ui/menu/MainMenu'
 import ProfileControl from '@dance-engine/ui/ProfileControl'
-import { menuContents } from './menuContents'
+import { getMenuContents } from './menuContents'
 
 import MessengerRedirect from "./components/MessengerRedirect";
 import { OrgProvider } from "@dance-engine/utils/OrgContext"
+import { isSuperAdmin } from "./lib/isSuperAdmin";
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -24,11 +26,14 @@ export const metadata: Metadata = {
   description: "Replace admin hassle with dancing passion",
 };
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await currentUser();
+  const filteredMenuContents = getMenuContents(isSuperAdmin(user?.publicMetadata));
+
   return (
     <html lang="en" className="h-full ">
       <body
@@ -43,10 +48,10 @@ export default function ProtectedLayout({
       <div>
         
         {/* Mobile Menu */}
-        <MobileMenu menuContents={menuContents}/>
+        <MobileMenu menuContents={filteredMenuContents}/>
 
         {/* Normal menu */}
-        <MainMenu menuContents={menuContents}/>
+        <MainMenu menuContents={filteredMenuContents}/>
         
         {/* Content */}
         <div className="lg:pl-72">

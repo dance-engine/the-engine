@@ -1,10 +1,16 @@
 import { ReactNode } from "react";
 
+export type BasicListColumnValueAdapter = {
+  displayValue?: (value: unknown, record: Record<string, unknown>) => ReactNode;
+  searchText?: (value: unknown, record: Record<string, unknown>) => string;
+};
+
 export type BasicListProps<T extends Record<string, any> = {}> = {
   entity: string,
   columns: string[];
   formats?: (string | undefined)[]; 
   records: Record<string, unknown>[];
+  columnValueAdapters?: Record<string, BasicListColumnValueAdapter>;
   searchQuery?: string;
   searchMinChars?: number;
   onClearSearch?: () => void;

@@ -10,6 +10,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { IoEyeOutline } from "react-icons/io5";
 import { useLayoutSearch } from "../../../components/LayoutSearchContext";
+import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
   ssr: false,
@@ -67,6 +68,33 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           entity="TICKET"
           columns={["name_on_ticket", "customer_email", "name", "ticket_status", "financial_status", "admission_status"]}
           formats={[undefined, undefined, undefined]}
+          columnValueAdapters={{
+            admission_status: {
+              displayValue: (value) => {
+                const status = String(value ?? '')
+                const isCheckedIn = status === 'checked_in'
+                const label = isCheckedIn ? 'checked-in' : 'unused'
+
+                return (
+                  <span className="inline-flex items-center" title={label} aria-label={label}>
+                    {isCheckedIn ? (
+                      <FaCheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <FaRegCircle className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span className="sr-only">{label}</span>
+                  </span>
+                )
+              },
+              searchText: (value) => {
+                const status = String(value ?? '')
+                if (status === 'checked_in') return 'checked-in checked in used admitted'
+                if (status === 'not_checked_in') return 'unused unredeemed'
+                if (status === 'denied') return 'denied rejected blocked'
+                return status
+              },
+            },
+          }}
           records={tickets as Record<string, unknown>[]}
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}

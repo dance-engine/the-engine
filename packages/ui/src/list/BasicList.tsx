@@ -17,6 +17,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   columns,
   formats,
   records,
+  columnValueAdapters,
   searchQuery = '',
   searchMinChars = 3,
   onClearSearch,
@@ -39,6 +40,15 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   const allHeaderClasses = "py-3.5 text-left text-sm font-semibold text-gray-900"
   const columnKeys = deDupKeys(columns)
   const hasActionsColumn = entity === "EVENT" || showEditAction || showDeleteAction || Boolean(rowActions)
+
+  const getDisplayValue = (col: string, value: unknown, record: Record<string, unknown>) => {
+    const adapter = columnValueAdapters?.[col]
+    if (adapter?.displayValue) {
+      return adapter.displayValue(value, record)
+    }
+    return formatField(String(value || ''), formats?.[columns.indexOf(col)]) || "-"
+  }
+
   const handleDelete = async (record: Record<string, unknown>) => {
     console.log("Deleting record:", record)
     const token = await getToken()
@@ -81,6 +91,14 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
       return <FaSort onClick={() => sortToggle(col)} className="inline-block ml-2" />
     }
     return sort.direction === 'asc' ? <FaSortUp onClick={() => sortToggle(col)} className="inline-block ml-2" /> : <FaSortDown onClick={() => sortToggle(col)} className="inline-block ml-2" />
+  }
+
+  const normalizeSearchTerm = (value: string) => {
+    return value
+      .toLowerCase()
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
   }
 
   const sortedRecords = useMemo(() => {
@@ -133,17 +151,23 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   }, [records, sort])
 
   const filteredRecords = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
+    const query = normalizeSearchTerm(searchQuery)
     if (!query || query.length < searchMinChars) return sortedRecords
 
     return sortedRecords.filter(record => {
       return columns.some(col => {
         const value = getNestedValue(record, col)
         if (value === undefined || value === null) return false
-        return String(value).toLowerCase().includes(query)
+
+        const adapter = columnValueAdapters?.[col]
+        const searchableText = normalizeSearchTerm(
+          adapter?.searchText ? adapter.searchText(value, record) : String(value ?? ''),
+        )
+
+        return searchableText.includes(query)
       })
     })
-  }, [sortedRecords, columns, searchMinChars, searchQuery])
+  }, [sortedRecords, columns, columnValueAdapters, searchMinChars, searchQuery])
 
   const totalVisibleRecords = useMemo(() => {
     return records.filter((record) => record?.status !== 'archived').length
@@ -208,7 +232,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                             columns.map((col,idx)=>{
                               const value = getNestedValue(record, col) || ''
                               return <td key={`${record.ksuid || record.email }-${columnKeys[idx]}`} className={[(idx == 0 ? firstHeaderClasses + " grow" : restHeaderClasses), allHeaderClasses].join(' ')}>
-                                {formatField(String(value || ''),formats?.[idx] ) || "-"}
+                                {getDisplayValue(col, value, record)}
                               </td>
                             })
                           }

@@ -9,6 +9,7 @@ import { TicketType } from "@dance-engine/schemas/ticket";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { IoEyeOutline } from "react-icons/io5";
+import { useLayoutSearch } from "../../../components/LayoutSearchContext";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
   ssr: false,
@@ -20,6 +21,7 @@ interface TicketsClientProps {
 
 const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
   const { activeOrg } = useOrgContext();
+  const { debouncedQuery, setRawQuery } = useLayoutSearch();
   const baseUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets`;
   const ticketsUrl = baseUrl.replace('/{org}', activeOrg ? `/${activeOrg}` : '');
 
@@ -69,6 +71,8 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}
           parentEntityName="event"
+          searchQuery={debouncedQuery}
+          onClearSearch={() => setRawQuery('')}
           showEditAction={false}
           showDeleteAction={false}
           rowActions={(record) => (

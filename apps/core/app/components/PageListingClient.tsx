@@ -8,6 +8,7 @@ import { validateEntity, EntityNameType, EntityType } from '@dance-engine/schema
 import Spinner from '@dance-engine/ui/general/Spinner'
 import { IoCloudOffline } from "react-icons/io5";
 import { CustomerType } from "@dance-engine/schemas/customer";
+import { useLayoutSearch } from "./LayoutSearchContext";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //TODO Does this actually need to be dynamic?
   ssr: false, // ⬅ Disables SSR for this component
@@ -17,6 +18,7 @@ const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //T
 const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined] }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[] }) => {
   const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${entity?.toLowerCase()}s`
   const { activeOrg } = useOrgContext() 
+  const { debouncedQuery, setRawQuery } = useLayoutSearch()
   // Pass null as key when no activeOrg to prevent the fetch
   const { data: remoteEntityData= [], error, isLoading } = useClerkSWR(activeOrg ? eventsApiUrl.replace('/{org}',`/${activeOrg}`) : null,{ suspense: false, });
 
@@ -86,6 +88,8 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
         formats={formats}
         records={allEntities}
         activeOrg={activeOrg || ''}
+        searchQuery={debouncedQuery}
+        onClearSearch={() => setRawQuery('')}
       /> : null
     }
     

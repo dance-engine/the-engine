@@ -1,5 +1,8 @@
 {
   "extends": "@dance-engine/typescript-config/react-library.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["src", "../../apps/core/app/menuContents.tsx"],
   "exclude": ["dist", "build", "node_modules"]
 }

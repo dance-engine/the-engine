@@ -37,16 +37,22 @@ const orgRedirectFallback: Record<string, string> = {
 
 type SoloEdgeConfig = {
   redirects?: Record<string, string>;
+  domains?: Record<string, string[]>;
+  themes?: Record<string, string[]>;
 };
 
-const resolveEdgeConfigRedirect = async (org: string): Promise<string | null> => {
-  try {
-    const edgeConfigValue = await get<SoloEdgeConfig>('solo');
-    const candidate = edgeConfigValue?.redirects?.[org];
-    if (!candidate || typeof candidate !== 'string') return null;
+const toDomainLookupMap = (grouped: Record<string, string[]>): Record<string, string> => {
+  return Object.entries(grouped).reduce<Record<string, string>>((acc, [key, domains]) => {
+    domains.forEach((domain) => {
+      acc[domain] = key;
+    });
+    return acc;
+  }, {});
+};
 
-    // Keep values path-only so redirects stay on the same host.
-    return candidate.startsWith('/') ? candidate : null;
+const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
+  try {
+    return await get<SoloEdgeConfig>('solo');
   } catch {
     return null;
   }
@@ -57,14 +63,18 @@ export async function middleware(request: NextRequest) {
   const nextHost = request.nextUrl.hostname;
   const headerHost = request.headers.get("Host")?.split(':')?.[0] || 'localhost';
   const hostname = nextHost === 'localhost' ? headerHost : nextHost;
+  const soloEdgeConfig = await getSoloEdgeConfig();
+  const edgeDomainToOrgMap = soloEdgeConfig?.domains ? toDomainLookupMap(soloEdgeConfig.domains) : null;
+  const edgeDomainToThemeMap = soloEdgeConfig?.themes ? toDomainLookupMap(soloEdgeConfig.themes) : null;
   
   // Find org by domain; fallback to 'default-org'
-  const org = domainToOrgMap[hostname] || 'default-org';
-  const theme = domainToThemeMap[hostname] || 'default'
+  const org = edgeDomainToOrgMap?.[hostname] || domainToOrgMap[hostname] || 'default-org';
+  const theme = edgeDomainToThemeMap?.[hostname] || domainToThemeMap[hostname] || 'default'
 
   // Redirect at the edge before route rendering to avoid first-paint flashes.
   if (request.nextUrl.pathname === '/' && (request.method === 'GET' || request.method === 'HEAD')) {
-    const redirectPath = (await resolveEdgeConfigRedirect(org)) || orgRedirectFallback[org] || null
+    const edgeRedirectPath = soloEdgeConfig?.redirects?.[org];
+    const redirectPath = (typeof edgeRedirectPath === 'string' && edgeRedirectPath.startsWith('/') ? edgeRedirectPath : null) || orgRedirectFallback[org] || null
     if (redirectPath) {
       const target = new URL(redirectPath, request.url)
       target.search = request.nextUrl.search

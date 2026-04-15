@@ -7,6 +7,7 @@ import { IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";
 import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle";
 import dynamic from "next/dynamic";
+import { useLayoutSearch } from "../../../components/LayoutSearchContext";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
   ssr: false,
@@ -18,6 +19,7 @@ interface BundlesClientProps {
 
 const PageBundlesClient = ({ ksuid }: BundlesClientProps) => {
   const { activeOrg } = useOrgContext();
+  const { debouncedQuery, setRawQuery } = useLayoutSearch();
   const baseUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/events/${ksuid}`;
   const eventUrl = baseUrl.replace('/{org}', activeOrg ? `/${activeOrg}` : '');
 
@@ -71,6 +73,8 @@ const PageBundlesClient = ({ ksuid }: BundlesClientProps) => {
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}
           parentEntityName="event"
+          searchQuery={debouncedQuery}
+          onClearSearch={() => setRawQuery('')}
         />
       </div>
 
@@ -85,6 +89,8 @@ const PageBundlesClient = ({ ksuid }: BundlesClientProps) => {
           activeOrg={activeOrg || ''}
           parentKsuid={ksuid}
           parentEntityName="event"
+          searchQuery={debouncedQuery}
+          onClearSearch={() => setRawQuery('')}
         />
       </div>
     </div>

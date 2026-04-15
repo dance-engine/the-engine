@@ -1,6 +1,7 @@
 // import next from 'next';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { get } from '@vercel/edge-config';
 
 // Org-to-Domain mapping for better clarity and scalability
 const orgDomains: Record<string, string[]> = {
@@ -29,13 +30,30 @@ const domainToThemeMap = Object.entries(orgThemes).reduce<Record<string, string>
   return acc;
 }, {});
 
-const orgRedirects: Record<string, string> = {
+const orgRedirectFallback: Record<string, string> = {
   'cuban-y-dominican': '/3Aqx8q7NxBP7fQroKsKjhiNCnnc',
   'power-of-woman': '/3BAqYwmGde5YJzzPeHLJqVo37Fo',
 };
 
+type SoloEdgeConfig = {
+  redirects?: Record<string, string>;
+};
 
-export function middleware(request: NextRequest) {
+const resolveEdgeConfigRedirect = async (org: string): Promise<string | null> => {
+  try {
+    const edgeConfigValue = await get<SoloEdgeConfig>('solo');
+    const candidate = edgeConfigValue?.redirects?.[org];
+    if (!candidate || typeof candidate !== 'string') return null;
+
+    // Keep values path-only so redirects stay on the same host.
+    return candidate.startsWith('/') ? candidate : null;
+  } catch {
+    return null;
+  }
+};
+
+
+export async function middleware(request: NextRequest) {
   const nextHost = request.nextUrl.hostname;
   const headerHost = request.headers.get("Host")?.split(':')?.[0] || 'localhost';
   const hostname = nextHost === 'localhost' ? headerHost : nextHost;
@@ -46,7 +64,7 @@ export function middleware(request: NextRequest) {
 
   // Redirect at the edge before route rendering to avoid first-paint flashes.
   if (request.nextUrl.pathname === '/' && (request.method === 'GET' || request.method === 'HEAD')) {
-    const redirectPath = orgRedirects[org]
+    const redirectPath = (await resolveEdgeConfigRedirect(org)) || orgRedirectFallback[org] || null
     if (redirectPath) {
       const target = new URL(redirectPath, request.url)
       target.search = request.nextUrl.search

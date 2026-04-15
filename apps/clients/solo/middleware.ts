@@ -29,6 +29,11 @@ const domainToThemeMap = Object.entries(orgThemes).reduce<Record<string, string>
   return acc;
 }, {});
 
+const orgRedirects: Record<string, string> = {
+  'cuban-y-dominican': '/3Aqx8q7NxBP7fQroKsKjhiNCnnc',
+  'power-of-woman': '/3BAqYwmGde5YJzzPeHLJqVo37Fo',
+};
+
 
 export function middleware(request: NextRequest) {
   const nextHost = request.nextUrl.hostname;
@@ -38,6 +43,16 @@ export function middleware(request: NextRequest) {
   // Find org by domain; fallback to 'default-org'
   const org = domainToOrgMap[hostname] || 'default-org';
   const theme = domainToThemeMap[hostname] || 'default'
+
+  // Redirect at the edge before route rendering to avoid first-paint flashes.
+  if (request.nextUrl.pathname === '/' && (request.method === 'GET' || request.method === 'HEAD')) {
+    const redirectPath = orgRedirects[org]
+    if (redirectPath) {
+      const target = new URL(redirectPath, request.url)
+      target.search = request.nextUrl.search
+      return NextResponse.redirect(target)
+    }
+  }
 
   const headers = new Headers(request.headers);
   headers.set('x-site-org', org);

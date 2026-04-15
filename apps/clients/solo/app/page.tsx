@@ -26,7 +26,6 @@ import { EventResponseType } from '@dance-engine/schemas/events';
 // Legacy Code from site launches
 import RebelPayment from "../components/legacy/RebelPayment";
 // import POWPayment from "../components/legacy/POWPayment";
-import Redirect from "../components/Redirect";
 
 
 export default async function IndexPage() {
@@ -105,8 +104,6 @@ export default async function IndexPage() {
             'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
             'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
             'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-            'cuban-y-dominican': <Redirect url="/3Aqx8q7NxBP7fQroKsKjhiNCnnc" />,
-            'power-of-woman':  <Redirect url="/3BAqYwmGde5YJzzPeHLJqVo37Fo" />,
           }[orgSlug] || <div className='hidden'>No custom hero for this org</div>
         }
 

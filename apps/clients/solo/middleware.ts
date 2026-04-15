@@ -1,6 +1,7 @@
 // import next from 'next';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { get } from '@vercel/edge-config';
 
 // Org-to-Domain mapping for better clarity and scalability
 const orgDomains: Record<string, string[]> = {
@@ -29,15 +30,57 @@ const domainToThemeMap = Object.entries(orgThemes).reduce<Record<string, string>
   return acc;
 }, {});
 
+const orgRedirectFallback: Record<string, string> = {
+  'cuban-y-dominican': '/3Aqx8q7NxBP7fQroKsKjhiNCnnc',
+  'power-of-woman': '/3BAqYwmGde5YJzzPeHLJqVo37Fo',
+};
 
-export function middleware(request: NextRequest) {
+type SoloEdgeConfig = {
+  redirects?: Record<string, string>;
+  domains?: Record<string, string[]>;
+  themes?: Record<string, string[]>;
+};
+
+const toDomainLookupMap = (grouped: Record<string, string[]>): Record<string, string> => {
+  return Object.entries(grouped).reduce<Record<string, string>>((acc, [key, domains]) => {
+    domains.forEach((domain) => {
+      acc[domain] = key;
+    });
+    return acc;
+  }, {});
+};
+
+const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
+  try {
+    return await get<SoloEdgeConfig>('solo');
+  } catch {
+    return null;
+  }
+};
+
+
+export async function middleware(request: NextRequest) {
   const nextHost = request.nextUrl.hostname;
   const headerHost = request.headers.get("Host")?.split(':')?.[0] || 'localhost';
   const hostname = nextHost === 'localhost' ? headerHost : nextHost;
+  const soloEdgeConfig = await getSoloEdgeConfig();
+  const edgeDomainToOrgMap = soloEdgeConfig?.domains ? toDomainLookupMap(soloEdgeConfig.domains) : null;
+  const edgeDomainToThemeMap = soloEdgeConfig?.themes ? toDomainLookupMap(soloEdgeConfig.themes) : null;
   
   // Find org by domain; fallback to 'default-org'
-  const org = domainToOrgMap[hostname] || 'default-org';
-  const theme = domainToThemeMap[hostname] || 'default'
+  const org = edgeDomainToOrgMap?.[hostname] || domainToOrgMap[hostname] || 'default-org';
+  const theme = edgeDomainToThemeMap?.[hostname] || domainToThemeMap[hostname] || 'default'
+
+  // Redirect at the edge before route rendering to avoid first-paint flashes.
+  if (request.nextUrl.pathname === '/' && (request.method === 'GET' || request.method === 'HEAD')) {
+    const edgeRedirectPath = soloEdgeConfig?.redirects?.[org];
+    const redirectPath = (typeof edgeRedirectPath === 'string' && edgeRedirectPath.startsWith('/') ? edgeRedirectPath : null) || orgRedirectFallback[org] || null
+    if (redirectPath) {
+      const target = new URL(redirectPath, request.url)
+      target.search = request.nextUrl.search
+      return NextResponse.redirect(target)
+    }
+  }
 
   const headers = new Headers(request.headers);
   headers.set('x-site-org', org);

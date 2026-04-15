@@ -13,6 +13,7 @@
     "@dance-engine/schemas": "workspace:^",
     "@dance-engine/ui": "workspace:^",
     "@dance-engine/utils": "workspace:^",
+    "@vercel/edge-config": "^1.4.0",
     "@tailwindcss/typography": "^0.5.16",
     "@tiptap/core": "^3.20.4",
     "@tiptap/extension-bold": "^3.20.4",

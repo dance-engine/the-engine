@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
+import { useAuth } from "@clerk/nextjs";
 import Spinner from "@dance-engine/ui/general/Spinner";
 import { IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";
 import { TicketType } from "@dance-engine/schemas/ticket";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { IoEyeOutline } from "react-icons/io5";
+import { IoEyeOutline, IoMailOutline } from "react-icons/io5";
 import { useLayoutSearch } from "../../../components/LayoutSearchContext";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
@@ -21,10 +22,12 @@ interface TicketsClientProps {
 }
 
 const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
+  const { getToken } = useAuth();
   const { activeOrg } = useOrgContext();
   const { debouncedQuery, setRawQuery } = useLayoutSearch();
   const baseUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets`;
   const ticketsUrl = baseUrl.replace('/{org}', activeOrg ? `/${activeOrg}` : '');
+  const sendTicketsUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets/send`;
 
   const { data: ticketsData, error, isLoading } = useClerkSWR(
     activeOrg ? ticketsUrl : null,
@@ -32,11 +35,57 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
   );
 
   const [tickets, setTickets] = useState<TicketType[]>([]);
+  const [resendingTicketKsuid, setResendingTicketKsuid] = useState<string | null>(null);
+  const [resendStatus, setResendStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   useEffect(() => {
     const { tickets: eventTickets = [] } = ticketsData || {};
     setTickets(Array.isArray(eventTickets) ? eventTickets : Object.values(eventTickets || {}));
   }, [ticketsData]);
+
+  const resendTicketEmail = async (ticketKsuid: string) => {
+    if (!activeOrg || !ticketKsuid.trim()) {
+      return;
+    }
+
+    try {
+      setResendingTicketKsuid(ticketKsuid);
+      setResendStatus(null);
+
+      const token = await getToken();
+      const endpoint = sendTicketsUrl.replace('/{org}', `/${activeOrg}`);
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tickets: [ticketKsuid] }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof payload?.message === 'string'
+            ? payload.message
+            : 'Failed to resend ticket email.',
+        );
+      }
+
+      setResendStatus({
+        type: 'success',
+        message: `Ticket email resend requested for ${ticketKsuid}.`,
+      });
+    } catch (error) {
+      setResendStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to resend ticket email.',
+      });
+    } finally {
+      setResendingTicketKsuid(null);
+    }
+  };
 
   if (!activeOrg) {
     return <div className="px-4 py-4 text-gray-600">No active organization selected</div>;
@@ -64,6 +113,17 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
       {/* Tickets Section */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 px-4 lg:px-8">Tickets ({tickets.length})</h2>
+        {resendStatus ? (
+          <div
+            className={`mx-4 rounded px-4 py-3 text-sm lg:mx-8 ${
+              resendStatus.type === 'success'
+                ? 'bg-green-50 text-green-800 border border-green-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}
+          >
+            {resendStatus.message}
+          </div>
+        ) : null}
         <BasicList 
           entity="TICKET"
           columns={["name_on_ticket", "customer_email", "name", "ticket_status", "financial_status", "admission_status"]}
@@ -104,13 +164,31 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           showEditAction={false}
           showDeleteAction={false}
           rowActions={(record) => (
-            <Link
-              href={`/events/${ksuid}/tickets/${String(record.ksuid)}`}
-              className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0"
-            >
-              <IoEyeOutline className="h-5 w-5" />
-              <span className="sr-only">View ticket</span>
-            </Link>
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const ticketId = String(record.ksuid || '').trim();
+                  if (ticketId) {
+                    void resendTicketEmail(ticketId);
+                  }
+                }}
+                disabled={resendingTicketKsuid === String(record.ksuid)}
+                className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Resend ticket"
+                aria-label="Resend ticket"
+              >
+                <IoMailOutline className="h-5 w-5" />
+                <span className="sr-only">Resend ticket</span>
+              </button>
+              <Link
+                href={`/events/${ksuid}/tickets/${String(record.ksuid)}`}
+                className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0"
+              >
+                <IoEyeOutline className="h-5 w-5" />
+                <span className="sr-only">View ticket</span>
+              </Link>
+            </>
           )}
         />
       </div>

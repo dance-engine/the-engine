@@ -4,8 +4,8 @@ import DynamicForm from "@dance-engine/ui/form/DynamicForm";
 import { organisationSchema } from "@dance-engine/schemas/organisation";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import type { FieldValues } from "react-hook-form";
+import { useCallback, useMemo, useState } from "react";
+import type { FieldValues, UseFormSetValue } from "react-hook-form";
 
 const onboardingSchema = organisationSchema.pick({
   name: true,
@@ -26,6 +26,40 @@ const slugifyOrganisation = (value: string) =>
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+const extractApiErrorMessage = (
+  payload: unknown,
+  fallback: string,
+) => {
+  if (!payload || typeof payload !== "object") {
+    return fallback;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const parts = [record.message, record.error]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .map((value) => value.trim());
+
+  if (Array.isArray(record.errors)) {
+    for (const entry of record.errors) {
+      if (typeof entry === "string" && entry.trim()) {
+        parts.push(entry.trim());
+      } else if (
+        entry &&
+        typeof entry === "object" &&
+        typeof (entry as Record<string, unknown>).message === "string"
+      ) {
+        parts.push(String((entry as Record<string, unknown>).message).trim());
+      }
+    }
+  }
+
+  if (parts.length === 0) {
+    return fallback;
+  }
+
+  return Array.from(new Set(parts)).join(" ");
+};
 
 const OnboardingStartPageClient = () => {
   const router = useRouter();
@@ -50,11 +84,51 @@ const OnboardingStartPageClient = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [createdSlug, setCreatedSlug] = useState("");
 
+  const handleFormValuesChange = useCallback(
+    ({
+      values,
+      dirtyFields,
+      setValue,
+    }: {
+      values: FieldValues;
+      dirtyFields: Partial<Record<string, unknown>>;
+      setValue: UseFormSetValue<FieldValues>;
+    }) => {
+      const organisationWasEdited = Object.prototype.hasOwnProperty.call(
+        dirtyFields,
+        "organisation",
+      );
+
+      if (organisationWasEdited) {
+        return;
+      }
+
+      const nameValue = String(values.name || "");
+      const nextSlug = slugifyOrganisation(nameValue);
+      const currentSlug = String(values.organisation || "");
+
+      if (nextSlug !== currentSlug) {
+        setValue("organisation", nextSlug, {
+          shouldDirty: false,
+          shouldValidate: true,
+          shouldTouch: false,
+        });
+      }
+    },
+    [],
+  );
+
   const handleSubmit = async (formData: FieldValues) => {
     const { _meta, ...cleanedData } = formData;
     const organisation = slugifyOrganisation(
-      String(cleanedData.organisation || cleanedData.name || ""),
+      String(cleanedData.organisation || ""),
     );
+
+    if (!organisation) {
+      setErrorMessage("Organisation slug is required.");
+      setSuccessMessage("");
+      return;
+    }
 
     setErrorMessage("");
     setSuccessMessage("");
@@ -78,18 +152,23 @@ const OnboardingStartPageClient = () => {
         },
       );
 
-      const result = (await res.json().catch(() => ({}))) as {
-        message?: string;
-      };
+      const result = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(result.message || "Failed to start organisation setup");
+        throw new Error(
+          extractApiErrorMessage(
+            result,
+            `Failed to start organisation setup (${res.status})`,
+          ),
+        );
       }
 
       setCreatedSlug(organisation);
       setSuccessMessage(
-        result.message ||
+        extractApiErrorMessage(
+          result,
           "Organisation setup has been initiated. AWS provisioning is now in progress.",
+        ),
       );
       router.refresh();
     } catch (error) {
@@ -139,6 +218,7 @@ const OnboardingStartPageClient = () => {
             schema={onboardingSchema}
             metadata={onboardingMetadata}
             onSubmit={handleSubmit}
+            onValuesChange={handleFormValuesChange}
             persistKey={initialData}
             data={initialData}
           />

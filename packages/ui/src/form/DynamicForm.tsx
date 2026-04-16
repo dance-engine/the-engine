@@ -67,7 +67,7 @@ function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityTyp
 }
 
 
-const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, MapComponent, data, persistKey, orgSlug}) => {
+const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schema, metadata, onSubmit, onValuesChange, MapComponent, data, persistKey, orgSlug}) => {
   const {
     register,
     control,
@@ -103,6 +103,14 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
       reset(transformFormData(data, metadata) as EntityType)
     }  
   }, [loadFromStorage, data, reset, metadata]);
+
+  useEffect(() => {
+    onValuesChange?.({
+      values: watchedValues,
+      dirtyFields: dirtyFields as Partial<Record<string, unknown>>,
+      setValue,
+    });
+  }, [watchedValues, dirtyFields, setValue, onValuesChange]);
   
   const fields = Object.keys(schema.shape);
   

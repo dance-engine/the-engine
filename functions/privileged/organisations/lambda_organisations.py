@@ -60,7 +60,15 @@ def get(public: bool = False):
 
 def create_organisation(request_data: CreateOrganisationRequest, actor: str):
     logger.info(f"Create organisation: {request_data}")
-    organisation_slug = generateSlug(request_data.organisation.name)
+    requested_slug = (request_data.organisation.organisation or "").strip()
+    requested_name = (request_data.organisation.name or "").strip()
+
+    if requested_slug:
+        organisation_slug = generateSlug(requested_slug)
+    elif requested_name:
+        organisation_slug = generateSlug(requested_name)
+    else:
+        return make_response(400, {"message": "Either organisation slug or name is required."})
 
     logger.info(f"Initialising the creation of an organisation for {organisation_slug}")
 

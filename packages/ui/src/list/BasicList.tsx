@@ -11,6 +11,8 @@ import { LuPackage } from "react-icons/lu";
 import { useAuth } from '@clerk/nextjs'
 import { IoTicketOutline } from "react-icons/io5";
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import ActionIconButton from '../actions/ActionIconButton';
+import ActionRow from '../actions/ActionRow';
 
 const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>> = ({
   entity,
@@ -237,31 +239,36 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
                             })
                           }
                           {hasActionsColumn ? (
-                            <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8 flex gap-2 justify-end items-center">
-                              {entity === "EVENT" && (
-                                <Link href={`/${entityTypeSlug}/${record.ksuid}/bundles`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
-                                  <LuPackage className='h-5 w-5'></LuPackage>
-                                  <span className="sr-only">Manage Bundles for {String(record.name)}</span>
-                                </Link>
-                              )}
-                              {entity === "EVENT" && (
-                                <Link href={`/${entityTypeSlug}/${record.ksuid}/tickets`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
-                                  <IoTicketOutline className='h-5 w-5'></IoTicketOutline>
-                                  <span className="sr-only">Manage Tickets for {String(record.name)}</span>
-                                </Link>
-                              )}
-                              {rowActions?.(record)}
-                              {showEditAction ? (
-                                <Link href={parentKsuid && parentEntityName ? `/${parentEntityName}s/${parentKsuid}/${entityTypeSlug}/${record.ksuid}/edit` : `/${entityTypeSlug}/${record.ksuid || record.email}/edit`} className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0">
-                                  <MdModeEdit className='h-5 w-5'></MdModeEdit> 
-                                  <span className="sr-only">Edit {String(record.name)}</span>
-                                </Link>
-                              ) : null}
-                              {showDeleteAction && record.ksuid ? (
-                                <DestructiveButton className='text-white flex items-center justify-center gap-1 bg-keppel-on-light px-1.5 py-1.5 rounded z-0' record={record} onClick={handleDelete}>
-                                  <MdDeleteOutline className='h-5 w-5'></MdDeleteOutline> <span className='sr-only'>Delete {String(record.name)}</span>
-                                </DestructiveButton>
-                              ) : null}
+                            <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6 lg:pr-8">
+                              <ActionRow>
+                                {entity === "EVENT" && (
+                                  <ActionIconButton
+                                    href={`/${entityTypeSlug}/${record.ksuid}/bundles`}
+                                    label={`Manage Bundles for ${String(record.name)}`}
+                                    icon={<LuPackage className='h-5 w-5' />}
+                                  />
+                                )}
+                                {entity === "EVENT" && (
+                                  <ActionIconButton
+                                    href={`/${entityTypeSlug}/${record.ksuid}/tickets`}
+                                    label={`Manage Tickets for ${String(record.name)}`}
+                                    icon={<IoTicketOutline className='h-5 w-5' />}
+                                  />
+                                )}
+                                {rowActions?.(record)}
+                                {showEditAction ? (
+                                  <ActionIconButton
+                                    href={parentKsuid && parentEntityName ? `/${parentEntityName}s/${parentKsuid}/${entityTypeSlug}/${record.ksuid}/edit` : `/${entityTypeSlug}/${record.ksuid || record.email}/edit`}
+                                    label={`Edit ${String(record.name)}`}
+                                    icon={<MdModeEdit className='h-5 w-5' />}
+                                  />
+                                ) : null}
+                                {showDeleteAction && record.ksuid ? (
+                                  <DestructiveButton className='text-white flex items-center justify-center gap-1 bg-keppel-on-light px-1.5 py-1.5 rounded z-0' record={record} onClick={handleDelete}>
+                                    <MdDeleteOutline className='h-5 w-5'></MdDeleteOutline> <span className='sr-only'>Delete {String(record.name)}</span>
+                                  </DestructiveButton>
+                                ) : null}
+                              </ActionRow>
                             </td>
                           ) : null}
                     </tr>

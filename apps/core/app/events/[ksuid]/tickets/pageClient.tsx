@@ -8,8 +8,9 @@ import { IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";
 import { TicketType } from "@dance-engine/schemas/ticket";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { IoEyeOutline, IoMailOutline } from "react-icons/io5";
+import ActionIconButton from "@dance-engine/ui/actions/ActionIconButton";
+import ActionRow from "@dance-engine/ui/actions/ActionRow";
 import { useLayoutSearch } from "../../../components/LayoutSearchContext";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 
@@ -164,31 +165,24 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           showEditAction={false}
           showDeleteAction={false}
           rowActions={(record) => (
-            <>
-              <button
-                type="button"
+            <ActionRow>
+              <ActionIconButton
+                label="Resend ticket"
+                icon={<IoMailOutline className="h-5 w-5" />}
+                disabled={resendingTicketKsuid === String(record.ksuid)}
                 onClick={() => {
                   const ticketId = String(record.ksuid || '').trim();
                   if (ticketId) {
                     void resendTicketEmail(ticketId);
                   }
                 }}
-                disabled={resendingTicketKsuid === String(record.ksuid)}
-                className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Resend ticket"
-                aria-label="Resend ticket"
-              >
-                <IoMailOutline className="h-5 w-5" />
-                <span className="sr-only">Resend ticket</span>
-              </button>
-              <Link
+              />
+              <ActionIconButton
                 href={`/events/${ksuid}/tickets/${String(record.ksuid)}`}
-                className="flex items-center justify-center gap-2 bg-keppel-on-light text-white px-1.5 py-1.5 rounded z-0"
-              >
-                <IoEyeOutline className="h-5 w-5" />
-                <span className="sr-only">View ticket</span>
-              </Link>
-            </>
+                label="View ticket"
+                icon={<IoEyeOutline className="h-5 w-5" />}
+              />
+            </ActionRow>
           )}
         />
       </div>

@@ -307,6 +307,24 @@ const PageClient = ({
                   : undefined
               }
             />
+
+            {selectedEvent ? (
+              <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+                <div className="grid gap-2 text-sm text-gray-900 sm:grid-cols-3 sm:gap-3">
+                  <div>
+                    {selectedEvent.starts_at
+                      ? new Date(selectedEvent.starts_at).toLocaleDateString("en-GB")
+                      : "Not set"}
+                  </div>
+                  <div>
+                    {Array.isArray(selectedEvent.category) && selectedEvent.category.length > 0
+                      ? selectedEvent.category.join(", ")
+                      : "Not set"}
+                  </div>
+                  <div>{selectedEvent.status || "Not set"}</div>
+                </div>
+              </div>
+            ) : null}
           </BuilderCard>
 
           <TicketDetailsFormCard

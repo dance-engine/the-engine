@@ -123,18 +123,22 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
         return (
           <div className="flex flex-col gap-2">
             {tickets.map((ticket) => {
-              const ticketLabel = [ticket.name_on_ticket, ticket.name].filter(Boolean).join(" - ");
+              const ticketLabel = [ticket.name, ticket.name_on_ticket].filter(Boolean).join(" - ");
+              const isActive = ticket.ticket_status === "active";
 
               return (
                 <Link
                   key={ticket.ksuid}
                   href={`/events/${ticket.parent_event_ksuid}/tickets/${ticket.ksuid}`}
-                  className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 hover:border-keppel-on-light hover:bg-gray-50"
+                  className={`rounded-md border px-3 py-2 text-sm text-gray-900 hover:border-keppel-on-light ${
+                    isActive
+                      ? "border-green-200 bg-green-50 hover:bg-green-100"
+                      : "border-gray-200 bg-white hover:bg-gray-50"
+                  }`}
                 >
                   <div className="font-medium">{ticketLabel || ticket.ksuid}</div>
-                  <div className="text-xs text-gray-600">
-                    {ticket.ticket_status ? `Status: ${ticket.ticket_status}` : "View ticket"}
-                  </div>
+                  {/* Will add a snapshot of the event name to the ticket item and then display it here */}
+                  <div className="text-xs text-gray-600">Event Name</div>
                 </Link>
               );
             })}
@@ -190,17 +194,15 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
           title="Customer information"
           description="Showing all fields currently returned by the API for this customer."
           record={customerRecord}
-          fieldKeys={orderedFieldKeys}
+          fieldKeys={orderedFieldKeys.filter((fieldKey) => fieldKey !== "tickets")}
           formatLabel={formatLabel}
           renderValue={renderFieldValue}
         />
 
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-center">
-          <h2 className="text-lg font-semibold text-gray-900">QR code</h2>
-          <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
-            <div className="h-[220px] w-[220px] flex items-center justify-center text-sm text-gray-500">
-            No QR token
-            </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">Tickets</h2>
+          <div className="mt-4">
+            {renderFieldValue("tickets", customerRecord.tickets)}
           </div>
         </div>
       </div>

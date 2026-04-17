@@ -136,6 +136,45 @@ endpoints:
             description: Internal server error.
           responseModels:
             application/json: "ErrorResponse"
+    POST:
+      summary: "Create a Ticket"
+      description: "Requests creation of a ticket for the selected event. The request is queued and processed asynchronously."
+      tags:
+        - Tickets
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      requestBody:
+        description: "Ticket details"
+      requestModels:
+        application/json: "CreateTicketRequest"
+      methodResponses:
+        - statusCode: 202
+          responseBody:
+            description: Ticket creation requested successfully.
+          responseModels:
+            application/json: "CreateTicketQueuedResponse"
+        - statusCode: 400
+          responseBody:
+            description: Invalid input
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 409
+          responseBody:
+            description: Duplicate or conflicting ticket creation request.
+          responseModels:
+            application/json: "ErrorResponse"
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
     GETall:
       summary: "Get All Tickets"
       description: "Returns a list of all tickets for a given organisation and event."

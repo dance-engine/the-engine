@@ -38,6 +38,12 @@ Tickets:
         documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.UnuseTicket}
     - httpApi:
         path: /{organisation}/{event}/tickets
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.POST}
+    - httpApi:
+        path: /{organisation}/{event}/tickets
         method: get
         authorizer:
           adminAuthorizer

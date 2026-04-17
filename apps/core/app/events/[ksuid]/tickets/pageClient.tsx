@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import { useAuth } from "@clerk/nextjs";
@@ -113,7 +114,15 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
     <div className="w-full space-y-8">
       {/* Tickets Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900 px-4 lg:px-8">Tickets ({tickets.length})</h2>
+        <div className="flex items-center justify-between gap-4 px-4 lg:px-8">
+          <h2 className="text-lg font-semibold text-gray-900">Tickets ({tickets.length})</h2>
+          <Link
+            href={`/tickets/new?event=${encodeURIComponent(ksuid)}&returnTo=${encodeURIComponent(`/events/${ksuid}/tickets`)}`}
+            className="inline-flex items-center rounded-md bg-dark-background px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-dark-highlight"
+          >
+            Create ticket
+          </Link>
+        </div>
         {resendStatus ? (
           <div
             className={`mx-4 rounded px-4 py-3 text-sm lg:mx-8 ${

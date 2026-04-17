@@ -18,6 +18,8 @@ export default async function Page({
       draftKsuid={KSUID.randomSync().string}
       initialEventKsuid={getSingleSearchParam(params.event)}
       initialCustomerEmail={getSingleSearchParam(params.customer)}
+      initialNameOnTicket={getSingleSearchParam(params.name)}
+      returnTo={getSingleSearchParam(params.returnTo)}
     />
   );
 }

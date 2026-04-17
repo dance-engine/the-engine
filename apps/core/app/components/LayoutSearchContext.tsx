@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 type LayoutSearchContextValue = {
@@ -29,14 +29,25 @@ export function LayoutSearchProvider({
 
   const initialSearch = searchParams.get('search') ?? ''
   const [rawQuery, setRawQuery] = useState(initialSearch)
+  const rawQueryRef = useRef(rawQuery)
   const [debouncedQuery, setDebouncedQuery] = useState(() => {
     const trimmed = initialSearch.trim()
     return trimmed.length >= minChars ? trimmed : ''
   })
 
   useEffect(() => {
+    rawQueryRef.current = rawQuery
+  }, [rawQuery])
+
+  useEffect(() => {
     const searchFromUrl = searchParams.get('search') ?? ''
-    setRawQuery(searchFromUrl)
+    const currentRawQuery = rawQueryRef.current
+    const shouldPreserveShortInput =
+      searchFromUrl.length === 0 && currentRawQuery.trim().length > 0 && currentRawQuery.trim().length < minChars
+
+    if (!shouldPreserveShortInput) {
+      setRawQuery(searchFromUrl)
+    }
 
     const trimmed = searchFromUrl.trim()
     setDebouncedQuery(trimmed.length >= minChars ? trimmed : '')

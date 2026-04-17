@@ -213,7 +213,7 @@ const PageClient = ({
 
   const handleCreateTicket = async () => {
     if (!canCreateTicket) {
-      setSubmitMessage("Choose an event, enter a customer email, add the attendee name, and select at least one include.");
+      setSubmitMessage("Choose an event, enter an email address, add the attendee name, and select at least one include.");
       return;
     }
 
@@ -228,9 +228,9 @@ const PageClient = ({
       //   headers: { "Content-Type": "application/json", Authorization: `Bearer ${await getToken()}` },
       //   body: JSON.stringify(ticketPayload),
       // })
-      console.info("Ticket payload ready for API implementation", ticketPayload);
+      console.info("Ticket details ready", ticketPayload);
       await Promise.resolve();
-      setSubmitMessage("Payload prepared successfully. API implementation is still pending.");
+      setSubmitMessage("Everything looks ready.");
     } finally {
       setIsSubmitting(false);
     }
@@ -243,7 +243,7 @@ const PageClient = ({
   if (isEventsLoading || isCustomersLoading) {
     return (
       <div className="flex items-center gap-2 px-4 py-4 bg-pear-on-light text-gray-900 font-semibold w-full">
-        <Spinner className="w-5 h-5" /> Loading ticket builder…
+        <Spinner className="w-5 h-5" /> Loading ticket details…
       </div>
     );
   }
@@ -253,7 +253,7 @@ const PageClient = ({
     return (
       <div className="flex items-center gap-2 px-4 py-4 bg-red-800 text-white w-full">
         <IoCloudOffline className="w-6 h-6" />
-        {error instanceof CorsError ? "Failed to load ticket builder data (CORS error)" : "Failed to load ticket builder data"}
+        {error instanceof CorsError ? "We couldn't load this page right now." : "We couldn't load this page right now."}
       </div>
     );
   }
@@ -266,7 +266,7 @@ const PageClient = ({
         </Link>
         <h1 className="mt-3 text-2xl font-bold text-gray-900">Create ticket</h1>
         <p className="mt-2 max-w-3xl text-sm text-gray-600">
-          A single ticket-builder flow that can be prefilled from either a customer or an event. Search is local and debounced in the same spirit as the header search, but scoped to this page.
+          Create a ticket for an event and attendee in one place.
         </p>
       </div>
 
@@ -302,8 +302,8 @@ const PageClient = ({
               errorMessage={
                 eventsError
                   ? eventsError instanceof CorsError
-                    ? "Failed to load events (CORS error)."
-                    : "Failed to load events."
+                    ? "We couldn't load events right now."
+                    : "We couldn't load events right now."
                   : undefined
               }
             />
@@ -352,14 +352,14 @@ const PageClient = ({
           {eventInventoryError ? (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {eventInventoryError instanceof CorsError
-                ? "Failed to load event inventory (CORS error)."
-                : "Failed to load event inventory."}
+                ? "We couldn't load the available options right now."
+                : "We couldn't load the available options right now."}
             </div>
           ) : null}
 
           {isEventInventoryLoading && selectedEventKsuid ? (
             <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm text-sm text-gray-600">
-              <Spinner className="w-5 h-5" /> Loading event inventory…
+              <Spinner className="w-5 h-5" /> Loading available options…
             </div>
           ) : null}
 

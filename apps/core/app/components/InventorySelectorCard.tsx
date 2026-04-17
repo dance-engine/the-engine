@@ -87,17 +87,17 @@ const InventorySelectorCard = ({
       title="Includes"
       description={
         eventName
-          ? `Choose the bundles and items that should be included on the ticket for ${eventName}.`
-          : "Choose an event first to load the available bundles and items."
+          ? `Choose what is included with this ticket for ${eventName}.`
+          : "Choose an event first to see the available options."
       }
     >
       {!eventName ? (
         <p className="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500">
-          Select an event to browse inventory.
+          Select an event to view what is available.
         </p>
       ) : !hasInventory ? (
         <p className="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-sm text-gray-500">
-          No bundles or items are currently attached to this event.
+          No options are available for this event right now.
         </p>
       ) : (
         <div className="space-y-6">

@@ -37,7 +37,7 @@ const TicketCreationSummaryCard = ({
   return (
     <BuilderCard
       title="Ready to create"
-      description="Review the ticket details below, then create the ticket once everything looks right."
+      description="Review the details below before creating the ticket."
       footer={
         <button
           type="button"
@@ -47,7 +47,7 @@ const TicketCreationSummaryCard = ({
           disabled={isSubmitting || !canCreateTicket}
           className="w-full rounded-md bg-dark-background px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-dark-highlight disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none"
         >
-          {isSubmitting ? "Preparing payload…" : "Create ticket"}
+          {isSubmitting ? "Preparing ticket…" : "Create ticket"}
         </button>
       }
     >
@@ -78,7 +78,7 @@ const TicketCreationSummaryCard = ({
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Defaults</dt>
-          <dd className="mt-1 text-sm text-gray-900">ticket_status: active, admission_status: not_checked_in</dd>
+          <dd className="mt-1 text-sm text-gray-900">Active, not checked in</dd>
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Included products</dt>

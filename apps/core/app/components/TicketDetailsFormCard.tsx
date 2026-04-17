@@ -41,7 +41,7 @@ const TicketDetailsFormCard = ({
   return (
     <BuilderCard
       title="Ticket details"
-      description="Enter the details of the attendee that this ticket is for. If no customer exists for the email you enter, a customer will be created."
+      description="Enter the details for the person this ticket is for."
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
@@ -68,7 +68,7 @@ const TicketDetailsFormCard = ({
                 <>
                   <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">New customer</p>
                   <p className="mt-1 text-sm text-gray-700">
-                    No existing customer matches this email. The API can create one when the ticket is created.
+                    No customer matches this email yet.
                   </p>
                 </>
               )}

@@ -112,14 +112,6 @@ const TicketDetailsFormCard = ({
             <option value="comp">comp</option>
           </select>
         </div>
-
-        <div className="sm:col-span-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Draft ticket KSUID</p>
-          <p className="mt-1 break-all text-sm font-medium text-gray-900">{draftKsuid}</p>
-          <p className="mt-2 text-sm text-gray-600">
-            Ticket status will default to <span className="font-medium text-gray-900">active</span> and admission status will default to <span className="font-medium text-gray-900">not_checked_in</span>.
-          </p>
-        </div>
       </div>
     </BuilderCard>
   );

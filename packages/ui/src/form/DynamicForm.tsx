@@ -47,8 +47,7 @@ const getFieldMetadata = (metadata: MetaData | undefined, field: string): Dynami
 };
 
 function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityType | FieldValues {
-  // Add any date fields you want to transform
-  const dateFields = ["starts_at", "ends_at"];  //TODO Should calculate these from metadata
+  const dateFields = getDateFieldKeys(metadata)
   const newObj = { ...formObj };
   dateFields.forEach(field => {
     if (formObj[field]) {
@@ -64,6 +63,35 @@ function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityTyp
     }
   });
   return newObj as EntityType;
+}
+
+function getDateFieldKeys(metadata?: MetaData): string[] {
+  const fallbackDateFields = ["starts_at", "ends_at"]
+  if (!metadata) return fallbackDateFields
+
+  const metadataDateFields = Object.entries(metadata)
+    .filter(([, value]) => isDynamicFieldOptions(value) && value.dateField)
+    .map(([key]) => key)
+
+  return metadataDateFields.length > 0 ? metadataDateFields : fallbackDateFields
+}
+
+function transformFormDataForSubmit(formObj: FieldValues, metadata?: MetaData): FieldValues {
+  const dateFields = getDateFieldKeys(metadata)
+  const newObj = { ...formObj }
+
+  dateFields.forEach((field) => {
+    const value = formObj[field]
+    if (!value) return
+
+    const date = new Date(String(value))
+    if (Number.isNaN(date.getTime())) return
+
+    // datetime-local values are local; normalize to UTC for persistence.
+    newObj[field] = date.toISOString()
+  })
+
+  return newObj
 }
 
 
@@ -117,7 +145,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
 
   return (
     <form onSubmit={handleSubmit((data) => {
-        onSubmit(data)
+      onSubmit(transformFormDataForSubmit(data, metadata))
         setValue("meta.saved", "saving") 
         setValue("meta.updated_at", new Date().toISOString())
       })} 
@@ -150,7 +178,6 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               <HiddenInput name={field} register={register} />
             ) : dateField ? (
               <>
-                {(new Date).toISOString() }
                 {/* <TextInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema}  validate={() => {trigger(field)}} /> */}
                 <DateInput label={field} name={field} register={register} error={errors[field]?.message as string} fieldSchema={fieldSchema} />
               </>

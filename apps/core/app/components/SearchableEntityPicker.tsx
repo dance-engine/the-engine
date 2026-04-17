@@ -155,6 +155,7 @@ const SearchableEntityPicker = <T,>({
                     <button
                       key={option.key}
                       type="button"
+                      onMouseDown={(event) => event.preventDefault()}
                       onClick={() => {
                         onSelect(option);
                         setHasFocus(false);

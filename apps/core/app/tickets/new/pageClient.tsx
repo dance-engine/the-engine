@@ -246,6 +246,13 @@ const PageClient = ({
           ? payload.message
           : "Ticket creation requested successfully.",
       );
+      setTicketValues({
+        name_on_ticket: "",
+        customer_email: "",
+        financial_status: "paid",
+      });
+      setRequestedBundleIds([]);
+      setRequestedItemIds([]);
     } catch (error) {
       setSubmitMessage(
         error instanceof Error

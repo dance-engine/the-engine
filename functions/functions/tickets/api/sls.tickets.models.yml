@@ -1,3 +1,18 @@
+FinancialStatus:
+  name: "FinancialStatus"
+  description: "Reusable model for ticket financial status values"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: string
+        enum:
+          - "paid"
+          - "unpaid"
+          - "partially_refunded"
+          - "refunded"
+          - "comp"
 TicketObject:
   name: "TicketObject"
   description: "Model representing a ticket object"
@@ -46,13 +61,7 @@ TicketObject:
               - "used"
             description: "Status of the ticket"
           financial_status:
-            type: string
-            enum:
-              - "paid"
-              - "unpaid"
-              - "partially_refunded"
-              - "refunded"
-              - "comp"
+            $ref: "#/components/schemas/FinancialStatus"
             description: "Financial status of the ticket"
           admission_status:
             type: string
@@ -151,6 +160,55 @@ BulkImportTicketsRequest:
                         type: array
                         items:
                           type: string
+CreateTicketRequest:
+  name: "CreateTicketRequest"
+  description: "Request model for creating a ticket"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required: ["ticket"]
+        properties:
+          ticket:
+            type: object
+            required: ["customer_email", "name_on_ticket", "includes"]
+            properties:
+              customer_email:
+                type: string
+                description: "Email address for the ticket holder."
+              name_on_ticket:
+                type: string
+                description: "Name shown on the ticket."
+              financial_status:
+                $ref: "#/components/schemas/FinancialStatus"
+                description: "Financial status to apply when the ticket is created."
+              includes:
+                type: array
+                description: "Bundles and items to include with the ticket."
+                items:
+                  type: string
+              ticket_creation_key:
+                type: string
+                description: "Optional idempotency key for the creation request."
+CreateTicketQueuedResponse:
+  name: "CreateTicketQueuedResponse"
+  description: "Response model for a queued ticket creation request"
+  x-internal-group: "tickets"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+          ticket_creation_key:
+            type: string
+          status:
+            type: string
 UpdateTicketRequest:          
   name: "UpdateTicketRequest"
   description: "Request model for updating a ticket"

@@ -136,12 +136,7 @@ const InventorySelectorCard = ({
                       status={item.status}
                       selected={isSelected}
                       included={isIncluded}
-                      disabled={isIncluded && !isSelected}
-                      onToggle={() => {
-                        if (!isIncluded || isSelected) {
-                          onToggleItem(item);
-                        }
-                      }}
+                      onToggle={() => onToggleItem(item)}
                     />
                   );
                 })}

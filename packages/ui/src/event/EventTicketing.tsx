@@ -113,7 +113,7 @@ function EventTicketingContent({
   const savings = Math.max(0, directPriceTotal - checkoutTotal);
   const highlightedPassLabel = highlightBundle?.name || "Tickets";
 
-  return (
+  return items && items.length > 0 ? (
     <div className="space-y-8">
       <EventTicketOptionsSection
         event={event}
@@ -141,7 +141,7 @@ function EventTicketingContent({
         highlightedPassLabel={highlightedPassLabel}
       />
     </div>
-  );
+  ) : <div className="px-6 py-12 text-center text-gray-600">No ticket options available for this event currently.</div>;
 }
 
 export default function EventTicketing({

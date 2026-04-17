@@ -13,7 +13,7 @@ export default function EventHeroBanner({
 }) {
   const bannerImage = event.banner || org.banner || "";
   const heroLogo = theme.logoSecondaryUrl || theme.logoUrl;
-  const legacyHero = org.organisation === "rebel-sbk";
+  const legacyHero = org.organisation === "rebel-sbk" ;
   const foregroundColour = bannerImage
     ? "var(--scheme-hero-text)"
     : "var(--scheme-page-text)";

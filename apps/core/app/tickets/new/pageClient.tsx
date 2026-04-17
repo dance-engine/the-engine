@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import Spinner from "@dance-engine/ui/general/Spinner";
@@ -28,6 +29,7 @@ const PageClient = ({
   initialCustomerEmail,
 }: TicketCreatePageClientProps) => {
   const { activeOrg } = useOrgContext();
+  const { getToken } = useAuth();
   const [selectedEventKsuid, setSelectedEventKsuid] = useState(initialEventKsuid || "");
   const [eventQuery, setEventQuery] = useState("");
   const [requestedBundleIds, setRequestedBundleIds] = useState<string[]>([]);
@@ -136,27 +138,23 @@ const PageClient = ({
     [availableBundles, availableItems, requestedBundleIds, requestedItemIds],
   );
 
-  const ticketPayload = useMemo(() => {
-    const timestamp = new Date().toISOString();
-    return {
+  const selectedIncludeIds = useMemo(
+    () => [...includeSelection.chosenBundleIds, ...includeSelection.chosenItemIds],
+    [includeSelection.chosenBundleIds, includeSelection.chosenItemIds],
+  );
+
+  const ticketPayload = useMemo(
+    () => ({
       ticket: {
-        ksuid: draftKsuid,
-        // TODO: The API should generate the ticket name during creation.
-        name_on_ticket: ticketValues.name_on_ticket,
         customer_email: ticketValues.customer_email,
-        created_at: timestamp,
-        updated_at: timestamp,
-        includes: includeSelection.includeKeys,
-        expanded_includes: includeSelection.expandedIncludes,
-        ticket_status: "active",
+        name_on_ticket: ticketValues.name_on_ticket,
         financial_status: ticketValues.financial_status,
-        admission_status: "not_checked_in",
-        qr_token: "",
-        checked_in_by: "",
-        check_in_count: 0,
+        includes: selectedIncludeIds,
+        ticket_creation_key: draftKsuid,
       },
-    };
-  }, [draftKsuid, includeSelection.expandedIncludes, includeSelection.includeKeys, ticketValues]);
+    }),
+    [draftKsuid, selectedIncludeIds, ticketValues],
+  );
 
   const includeLabels = useMemo(
     () =>
@@ -221,16 +219,39 @@ const PageClient = ({
     setSubmitMessage("");
 
     try {
-      // TODO: Implement the real ticket creation API here once the endpoint exists.
-      // Expected shape:
-      // await fetch(`${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${selectedEventKsuid}/tickets`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json", Authorization: `Bearer ${await getToken()}` },
-      //   body: JSON.stringify(ticketPayload),
-      // })
-      console.info("Ticket details ready", ticketPayload);
-      await Promise.resolve();
-      setSubmitMessage("Everything looks ready.");
+      const endpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${selectedEventKsuid}/tickets`
+        .replace('/{org}', `/${activeOrg}`);
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await getToken()}`,
+        },
+        body: JSON.stringify(ticketPayload),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(
+          typeof payload?.message === "string"
+            ? payload.message
+            : "We couldn't create the ticket right now.",
+        );
+      }
+
+      setSubmitMessage(
+        typeof payload?.message === "string"
+          ? payload.message
+          : "Ticket creation requested successfully.",
+      );
+    } catch (error) {
+      setSubmitMessage(
+        error instanceof Error
+          ? error.message
+          : "We couldn't create the ticket right now.",
+      );
     } finally {
       setIsSubmitting(false);
     }

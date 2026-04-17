@@ -17,6 +17,7 @@
     "./Map": "./src/Map.tsx",
     "./MobileMenu": "./src/MobileMenu.tsx",
     "./PassSelectorContext": "./src/event/contexts/PassSelectorContext.tsx",
+    "./passCalculator": "./src/event/contexts/passCalculator.ts",
     "./StripePurchaseButton": "./src/StripePurchaseButton.tsx",
     "./eventPricing": "./src/eventPricing.tsx",
     "./organisationTheme": "./src/organisationTheme.tsx",

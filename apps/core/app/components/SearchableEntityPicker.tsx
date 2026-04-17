@@ -52,9 +52,7 @@ const SearchableEntityPicker = <T,>({
   const visibleOptions = useMemo(() => {
     const normalizedQuery = value.trim().toLowerCase();
     const filteredOptions =
-      showAllOptions
-        ? options
-        : normalizedQuery.length >= minChars
+      normalizedQuery.length >= minChars
         ? options.filter((option) =>
             [option.title, option.subtitle, option.caption, option.searchText]
               .filter(Boolean)
@@ -62,6 +60,8 @@ const SearchableEntityPicker = <T,>({
               .toLowerCase()
               .includes(normalizedQuery),
           )
+        : showAllOptions
+        ? options
         : options;
 
     return filteredOptions.slice(0, maxVisibleOptions);
@@ -85,7 +85,7 @@ const SearchableEntityPicker = <T,>({
             className="pointer-events-none col-start-1 row-start-1 ml-3 mt-3 size-4 self-start text-gray-400"
           />
           <input
-            type="search"
+            type="text"
             aria-label={label}
             placeholder={placeholder}
             className="col-start-1 row-start-1 block w-full rounded-lg py-2.5 pl-9 pr-16 text-sm text-gray-900 outline-none placeholder:text-gray-400"
@@ -105,15 +105,15 @@ const SearchableEntityPicker = <T,>({
             {value ? (
               <button
                 type="button"
-                onClick={() => {
-                  onClear?.();
-                  onValueChange("");
-                  setShowAllOptions(false);
-                  setHasFocus(true);
-                }}
-                className="rounded p-1 text-gray-400 hover:text-gray-600"
-                aria-label={`Clear ${label.toLowerCase()}`}
-              >
+              onClick={() => {
+                onClear?.();
+                onValueChange("");
+                setShowAllOptions(false);
+                setHasFocus(true);
+              }}
+              className="rounded p-1 text-gray-400 hover:text-gray-600"
+              aria-label={`Clear ${label.toLowerCase()}`}
+            >
                 <IoCloseCircle className="size-4" />
               </button>
             ) : null}

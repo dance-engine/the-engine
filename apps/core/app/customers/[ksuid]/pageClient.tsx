@@ -252,7 +252,7 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-lg font-semibold text-gray-900">Tickets</h2>
             <Link
-              href={`/tickets/new?returnTo=${encodeURIComponent(customerHref)}`}
+              href={`/tickets/new?customer=${encodeURIComponent(customer.email || "")}&name=${encodeURIComponent(customer.name || "")}&returnTo=${encodeURIComponent(customerHref)}`}
               className="inline-flex items-center rounded-md bg-dark-background px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-dark-highlight"
             >
               Create ticket

@@ -21,6 +21,7 @@ interface TicketCreatePageClientProps {
   draftKsuid: string;
   initialEventKsuid?: string;
   initialCustomerEmail?: string;
+  initialNameOnTicket?: string;
   returnTo?: string;
 }
 
@@ -28,6 +29,7 @@ const PageClient = ({
   draftKsuid,
   initialEventKsuid,
   initialCustomerEmail,
+  initialNameOnTicket,
   returnTo,
 }: TicketCreatePageClientProps) => {
   const { activeOrg } = useOrgContext();
@@ -39,7 +41,7 @@ const PageClient = ({
   const [submitMessage, setSubmitMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ticketValues, setTicketValues] = useState<TicketDraftFormValues>({
-    name_on_ticket: "",
+    name_on_ticket: initialNameOnTicket || "",
     customer_email: initialCustomerEmail || "",
     financial_status: "paid",
   });

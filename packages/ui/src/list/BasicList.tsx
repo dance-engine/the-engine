@@ -1,13 +1,13 @@
 'use client'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { eventMetadata } from '@dance-engine/schemas/events'
 import { BasicListProps } from '@dance-engine/ui/types' 
 import { deDupKeys } from '@dance-engine/utils/arrayHelpers'
-import { useAuth } from '@clerk/nextjs'
 import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { BasicListSort, useBasicListRecords } from './useBasicListRecords'
 import BasicListMobileCards from './BasicListMobileCards'
 import BasicListDesktopTable from './BasicListDesktopTable'
+import { useArchiveEntityRecord } from './useArchiveEntityRecord'
 import {
   formatDatePart,
   formatTimePart,
@@ -33,11 +33,10 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   ...tableProps
 }: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
   const [sort, setSort] = useState<BasicListSort>({ key: '', direction: 'asc' });
+  const [optimisticallyArchivedKeys, setOptimisticallyArchivedKeys] = useState<Set<string>>(new Set())
 
-  const { getToken } = useAuth()
+  const { archiveRecord } = useArchiveEntityRecord({ entity, activeOrg })
   const entityTypeSlug = `${entity?.toLowerCase()}s`
-  const apiBaseUrl = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.NEXT_PUBLIC_DANCE_ENGINE_API ?? ''
-  const entityApiUrl = `${apiBaseUrl}/${activeOrg}/${entityTypeSlug}` 
   const firstHeaderClasses = "pr-3 pl-4 sm:pl-4 lg:pl-8"
   const restHeaderClasses = "px-3"
   const allHeaderClasses = "py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -61,28 +60,57 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
     })
   }
 
-  const handleDelete = async (record: Record<string, unknown>) => {
-    console.log("Deleting record:", record)
-    const token = await getToken()
-      fetch(`${entityApiUrl}/${record.ksuid}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({[entity?.toLowerCase()]: { ...record, status: "archived" }}),
-      }).then(res => {
-        if (res.ok) {
-          //alert(`${entity} deleted successfully!`);
-          window.location.reload();
-        } else {
-          //alert(`Failed to delete ${entity}. Please try again.`);
-        }
-      }).catch(err => {
-        console.error("Error deleting entity:", err);
-        //alert(`An error occurred while deleting the ${entity}.`);
-      });
+  const getRecordKey = (record: Record<string, unknown>) => {
+    const ksuid = record?.ksuid
+    if (typeof ksuid === 'string' && ksuid.length > 0) return ksuid
 
+    const email = record?.email
+    if (typeof email === 'string' && email.length > 0) return email
+
+    return ''
+  }
+
+  const optimisticRecords = useMemo(() => {
+    if (optimisticallyArchivedKeys.size === 0) return records
+
+    return records.map((record) => {
+      const key = getRecordKey(record)
+      if (!key || !optimisticallyArchivedKeys.has(key)) return record
+
+      return {
+        ...record,
+        status: 'archived',
+      }
+    })
+  }, [records, optimisticallyArchivedKeys])
+
+  const handleArchive = async (record: Record<string, unknown>) => {
+    const key = getRecordKey(record)
+
+    if (key) {
+      setOptimisticallyArchivedKeys((previousKeys) => {
+        if (previousKeys.has(key)) return previousKeys
+        const nextKeys = new Set(previousKeys)
+        nextKeys.add(key)
+        return nextKeys
+      })
+    }
+
+    const result = await archiveRecord(record)
+    if (result.ok) return
+
+    if (key) {
+      setOptimisticallyArchivedKeys((previousKeys) => {
+        if (!previousKeys.has(key)) return previousKeys
+        const nextKeys = new Set(previousKeys)
+        nextKeys.delete(key)
+        return nextKeys
+      })
+    }
+
+    if (result.error) {
+      console.error(result.error)
+    }
   }
 
   const sortToggle = (col: string) => {
@@ -112,7 +140,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
     countCaption,
     emptyStateMessage,
   } = useBasicListRecords({
-    records,
+    records: optimisticRecords,
     sort,
     columns,
     columnValueAdapters,
@@ -139,7 +167,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
       showEditAction={showEditAction}
       showDeleteAction={showDeleteAction}
       rowActions={rowActions}
-      onDelete={handleDelete}
+      onDelete={handleArchive}
       getDisplayValue={displayValue}
       toDateOrNull={toDateOrNull}
       formatDatePart={formatDatePart}
@@ -168,7 +196,7 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
       showEditAction={showEditAction}
       showDeleteAction={showDeleteAction}
       rowActions={rowActions}
-      onDelete={handleDelete}
+      onDelete={handleArchive}
       emptyStateMessage={emptyStateMessage}
       isFullyFilteredOut={isFullyFilteredOut}
       onClearSearch={onClearSearch}

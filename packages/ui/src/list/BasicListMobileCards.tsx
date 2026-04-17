@@ -16,7 +16,7 @@ type BasicListMobileCardsProps = {
   showEditAction: boolean
   showDeleteAction: boolean
   rowActions?: (record: Record<string, unknown>) => React.ReactNode
-  onDelete: (record: Record<string, unknown>) => void
+  onDelete: (record: Record<string, unknown>) => void | Promise<void>
   getDisplayValue: (col: string, value: unknown, record: Record<string, unknown>) => React.ReactNode
   toDateOrNull: (value: unknown) => Date | null
   formatDatePart: (value: Date | null) => string

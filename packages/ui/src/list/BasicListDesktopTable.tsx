@@ -23,7 +23,7 @@ type BasicListDesktopTableProps = {
   showEditAction: boolean
   showDeleteAction: boolean
   rowActions?: (record: Record<string, unknown>) => React.ReactNode
-  onDelete: (record: Record<string, unknown>) => void
+  onDelete: (record: Record<string, unknown>) => void | Promise<void>
   emptyStateMessage: string
   isFullyFilteredOut: boolean
   onClearSearch?: () => void

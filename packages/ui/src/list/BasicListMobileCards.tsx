@@ -73,12 +73,12 @@ const BasicListMobileCards: React.FC<BasicListMobileCardsProps> = ({
                 return (
                   <div key={`mobile-${record.ksuid || record.email}-date-time`} className="grid grid-cols-2 gap-3 rounded-md bg-gray-50 px-3 py-2">
                     <div>
-                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Starts</dt>
+                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Start</dt>
                       <dd className="mt-1 text-sm font-semibold text-gray-900">{formatDatePart(startDateTime)}</dd>
                       <dd className="text-sm text-gray-700">{formatTimePart(startDateTime)}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Ends</dt>
+                      <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">End</dt>
                       {shouldShowEndDate ? (
                         <dd className="mt-1 text-sm font-semibold text-gray-900">{formatDatePart(endDateTime)}</dd>
                       ) : null}
@@ -92,7 +92,7 @@ const BasicListMobileCards: React.FC<BasicListMobileCardsProps> = ({
 
               if (colIdx === 0) {
                 return (
-                  <div key={`mobile-${record.ksuid || record.email}-${col}-${colIdx}`} className="-mx-3 -mt-3 rounded-t-lg bg-dark-background/90 px-3 py-3">
+                  <div key={`mobile-${record.ksuid || record.email}-${col}-${colIdx}`} className="-mx-3 -mt-3 rounded-t-lg bg-dark-highlight/90 px-3 py-3">
                     <dt className="text-xs font-medium uppercase tracking-wide text-white/70">{labelFromSnake(col.replace('meta.', ''))}</dt>
                     <dd className="mt-1 text-base font-semibold text-white break-words">{getDisplayValue(col, value, record)}</dd>
                   </div>

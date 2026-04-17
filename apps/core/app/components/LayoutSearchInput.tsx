@@ -3,7 +3,7 @@
 import { useLayoutSearch } from './LayoutSearchContext'
 
 export default function LayoutSearchInput() {
-  const { rawQuery, setRawQuery, minChars } = useLayoutSearch()
+  const { rawQuery, setRawQuery, submitSearch, minChars } = useLayoutSearch()
 
   return (
     <input
@@ -14,6 +14,12 @@ export default function LayoutSearchInput() {
       placeholder={`Search (min ${minChars} chars)`}
       value={rawQuery}
       onChange={(event) => setRawQuery(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          submitSearch()
+        }
+      }}
     />
   )
 }

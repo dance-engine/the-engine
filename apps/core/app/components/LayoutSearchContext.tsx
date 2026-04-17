@@ -1,11 +1,13 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 type LayoutSearchContextValue = {
   rawQuery: string
   debouncedQuery: string
   setRawQuery: (query: string) => void
+  submitSearch: () => void
   minChars: number
   debounceMs: number
 }
@@ -21,29 +23,75 @@ export function LayoutSearchProvider({
   minChars?: number
   debounceMs?: number
 }) {
-  const [rawQuery, setRawQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const router = useRouter()
+
+  const initialSearch = searchParams.get('search') ?? ''
+  const [rawQuery, setRawQuery] = useState(initialSearch)
+  const [debouncedQuery, setDebouncedQuery] = useState(() => {
+    const trimmed = initialSearch.trim()
+    return trimmed.length >= minChars ? trimmed : ''
+  })
+
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search') ?? ''
+    setRawQuery(searchFromUrl)
+
+    const trimmed = searchFromUrl.trim()
+    setDebouncedQuery(trimmed.length >= minChars ? trimmed : '')
+  }, [searchParams, minChars])
+
+  const syncSearchParam = useCallback(
+    (query: string) => {
+      const trimmed = query.trim()
+      const params = new URLSearchParams(searchParams.toString())
+
+      if (trimmed) {
+        params.set('search', trimmed)
+      } else {
+        params.delete('search')
+      }
+
+      const nextQuery = params.toString()
+      if (nextQuery === searchParams.toString()) {
+        return
+      }
+
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false })
+    },
+    [searchParams, router, pathname],
+  )
 
   useEffect(() => {
     const trimmed = rawQuery.trim()
 
     if (trimmed.length < minChars) {
       setDebouncedQuery('')
+      syncSearchParam('')
       return
     }
 
     const timeoutId = window.setTimeout(() => {
       setDebouncedQuery(trimmed)
+      syncSearchParam(trimmed)
     }, debounceMs)
 
     return () => {
       window.clearTimeout(timeoutId)
     }
-  }, [rawQuery, minChars, debounceMs])
+  }, [rawQuery, minChars, debounceMs, syncSearchParam])
+
+  const submitSearch = useCallback(() => {
+    const trimmed = rawQuery.trim()
+
+    setDebouncedQuery(trimmed.length >= minChars ? trimmed : '')
+    syncSearchParam(trimmed)
+  }, [rawQuery, minChars, syncSearchParam])
 
   const value = useMemo(
-    () => ({ rawQuery, debouncedQuery, setRawQuery, minChars, debounceMs }),
-    [rawQuery, debouncedQuery, minChars, debounceMs],
+    () => ({ rawQuery, debouncedQuery, setRawQuery, submitSearch, minChars, debounceMs }),
+    [rawQuery, debouncedQuery, minChars, debounceMs, submitSearch],
   )
 
   return <LayoutSearchContext.Provider value={value}>{children}</LayoutSearchContext.Provider>

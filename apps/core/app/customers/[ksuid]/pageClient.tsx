@@ -249,7 +249,15 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">Tickets</h2>
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold text-gray-900">Tickets</h2>
+            <Link
+              href={`/tickets/new?returnTo=${encodeURIComponent(customerHref)}`}
+              className="inline-flex items-center rounded-md bg-dark-background px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-dark-highlight"
+            >
+              Create ticket
+            </Link>
+          </div>
           <div className="mt-4">
             {renderFieldValue("tickets", customerRecord.tickets)}
           </div>

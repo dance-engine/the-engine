@@ -21,12 +21,14 @@ interface TicketCreatePageClientProps {
   draftKsuid: string;
   initialEventKsuid?: string;
   initialCustomerEmail?: string;
+  returnTo?: string;
 }
 
 const PageClient = ({
   draftKsuid,
   initialEventKsuid,
   initialCustomerEmail,
+  returnTo,
 }: TicketCreatePageClientProps) => {
   const { activeOrg } = useOrgContext();
   const { getToken } = useAuth();
@@ -126,6 +128,8 @@ const PageClient = ({
       })),
     [customers],
   );
+  const backHref = returnTo && returnTo.startsWith("/") ? returnTo : "/customers";
+  const backLabel = backHref.startsWith("/events/") ? "Back to tickets" : "Back to customer";
 
   const includeSelection = useMemo(
     () =>
@@ -289,8 +293,8 @@ const PageClient = ({
   return (
     <div className="w-full px-4 lg:px-8 py-4 space-y-6">
       <div>
-        <Link href="/customers" className="inline-flex items-center gap-2 text-sm font-medium text-dark-highlight hover:underline">
-          <IoArrowBack className="h-4 w-4" /> Back to customers
+        <Link href={backHref} className="inline-flex items-center gap-2 text-sm font-medium text-dark-highlight hover:underline">
+          <IoArrowBack className="h-4 w-4" /> {backLabel}
         </Link>
         <h1 className="mt-3 text-2xl font-bold text-gray-900">Create ticket</h1>
         <p className="mt-2 max-w-3xl text-sm text-gray-600">

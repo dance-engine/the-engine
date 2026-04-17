@@ -100,6 +100,7 @@ const getTicketRef = (value: unknown): TicketTypeExtended | null => {
 const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
   const { activeOrg } = useOrgContext();
   const customerUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/customers/${email}`;
+  const customerHref = `/customers/${encodeURIComponent(email)}`;
 
   const { data, error, isLoading } = useClerkSWR(
     activeOrg ? customerUrl.replace('/{org}', `/${activeOrg}`) : null,
@@ -165,7 +166,7 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
               return (
                 <Link
                   key={ticket.ksuid}
-                  href={`/events/${ticket.parent_event_ksuid}/tickets/${ticket.ksuid}`}
+                  href={`/events/${ticket.parent_event_ksuid}/tickets/${ticket.ksuid}?returnTo=${encodeURIComponent(customerHref)}`}
                   className={`rounded-md border px-3 py-2 text-sm text-gray-900 hover:border-keppel-on-light ${
                     isActive
                       ? "border-green-200 bg-green-50 hover:bg-green-100"

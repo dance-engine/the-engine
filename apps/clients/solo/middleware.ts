@@ -52,8 +52,11 @@ const toDomainLookupMap = (grouped: Record<string, string[]>): Record<string, st
 
 const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
   try {
-    return await get<SoloEdgeConfig>('solo');
-  } catch {
+    const edgeConfig = await get<SoloEdgeConfig>('solo');
+    // console.log('Fetched solo edge config:', edgeConfig);
+    return edgeConfig;
+  } catch (error) {
+    console.error('Error fetching solo edge config:', error);
     return null;
   }
 };

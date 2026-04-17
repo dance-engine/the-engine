@@ -104,7 +104,7 @@ export default async function IndexPage() {
             'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
             'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
             'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-          }[orgSlug] || <div className='hidden'>No custom hero for this org</div>
+          }[orgSlug] || <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
         }
 
         {/* {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 

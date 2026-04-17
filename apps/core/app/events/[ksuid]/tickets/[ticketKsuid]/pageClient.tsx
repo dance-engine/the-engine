@@ -15,6 +15,7 @@ import RelatedEntityOverlay from "../../../../components/RelatedEntityOverlay";
 interface TicketDetailClientProps {
   ksuid: string;
   ticketKsuid: string;
+  returnTo?: string;
 }
 
 type RelatedEntityType = "BUNDLE" | "ITEM";
@@ -162,9 +163,11 @@ const formatValue = (value: unknown): ReactNode => {
   );
 };
 
-const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps) => {
+const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailClientProps) => {
   const { activeOrg } = useOrgContext();
   const [selectedEntity, setSelectedEntity] = useState<RelatedEntityRef | null>(null);
+  const backHref = returnTo && returnTo.startsWith('/') ? returnTo : `/events/${ksuid}/tickets`;
+  const backLabel = backHref.startsWith('/customers/') ? 'Back to customer' : 'Back to tickets';
   const ticketUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets/${ticketKsuid}`;
   const bundleUrl = selectedEntity?.type === "BUNDLE" && activeOrg
     ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/${activeOrg}/${ksuid}/bundles/${selectedEntity.ksuid}`
@@ -327,10 +330,10 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid }: TicketDetailClientProps)
       <div className="flex items-center justify-between gap-4">
         <div>
           <Link
-            href={`/events/${ksuid}/tickets`}
+            href={backHref}
             className="inline-flex items-center gap-2 text-sm font-medium text-dark-highlight hover:underline"
           >
-            <IoArrowBack className="h-4 w-4" /> Back to tickets
+            <IoArrowBack className="h-4 w-4" /> {backLabel}
           </Link>
           <h1 className="mt-3 text-2xl font-bold text-gray-900">{ticket.name_on_ticket || ticket.name || "Ticket"}</h1>
           <div className="mt-2 flex flex-wrap gap-2">

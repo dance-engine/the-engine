@@ -1,6 +1,19 @@
 'use client'
 
 import type { ReactNode } from "react";
+import Bold from "@tiptap/extension-bold";
+import BulletedList from "@tiptap/extension-bullet-list";
+import Document from "@tiptap/extension-document";
+import HardBreak from "@tiptap/extension-hard-break";
+import Heading from "@tiptap/extension-heading";
+import Italic from "@tiptap/extension-italic";
+import TiptapLink from "@tiptap/extension-link";
+import ListItem from "@tiptap/extension-list-item";
+import OrderedList from "@tiptap/extension-ordered-list";
+import Paragraph from "@tiptap/extension-paragraph";
+import Strike from "@tiptap/extension-strike";
+import Text from "@tiptap/extension-text";
+import { generateHTML } from "@tiptap/html";
 import Link from "next/link";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
@@ -105,13 +118,36 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
 
   const customer = customerCandidates[0] as CustomerType | undefined;
   const customerRecord = (customer ?? {}) as Record<string, unknown>;
-  const hiddenFieldKeys = new Set(["version"]);
+  const hiddenFieldKeys = new Set(["version", "bio"]);
   const orderedFieldKeys = [
     ...preferredFieldOrder.filter((key) => key in customerRecord && !hiddenFieldKeys.has(key)),
     ...Object.keys(customerRecord).filter(
       (key) => !hiddenFieldKeys.has(key) && !preferredFieldOrder.includes(key as typeof preferredFieldOrder[number]),
     ),
   ];
+  const customerBio = typeof customer?.bio === "string" ? customer.bio.trim() : "";
+  const customerBioHtml = customerBio
+    ? (() => {
+        try {
+          return generateHTML(JSON.parse(customerBio), [
+            Document,
+            Paragraph,
+            Text,
+            Bold,
+            Strike,
+            Italic,
+            Heading,
+            ListItem,
+            BulletedList,
+            OrderedList,
+            TiptapLink,
+            HardBreak,
+          ]);
+        } catch {
+          return customerBio;
+        }
+      })()
+    : "";
 
   const renderFieldValue = (key: string, value: unknown): ReactNode => {
     if (key === "tickets" && Array.isArray(value)) {
@@ -190,14 +226,26 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_340px]">
-        <EntityDetailsCard
-          title="Customer information"
-          description="Showing all fields currently returned by the API for this customer."
-          record={customerRecord}
-          fieldKeys={orderedFieldKeys.filter((fieldKey) => fieldKey !== "tickets")}
-          formatLabel={formatLabel}
-          renderValue={renderFieldValue}
-        />
+        <div className="space-y-6">
+          <EntityDetailsCard
+            title="Customer information"
+            description="Showing all fields currently returned by the API for this customer."
+            record={customerRecord}
+            fieldKeys={orderedFieldKeys.filter((fieldKey) => fieldKey !== "tickets")}
+            formatLabel={formatLabel}
+            renderValue={renderFieldValue}
+          />
+
+          {customerBioHtml ? (
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900">Bio</h2>
+              <div
+                className="prose mt-4 max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{ __html: customerBioHtml }}
+              />
+            </div>
+          ) : null}
+        </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">Tickets</h2>

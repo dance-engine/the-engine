@@ -20,7 +20,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _pydantic.dynamodb import transact_upsert
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
-from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, UpdateTicketRequest, ValidateTicketJwtRequest, ValidateTicketJwtResponse, TicketAdmissionRequest, TicketStatus, AdmissionStatus
+from _pydantic.models.tickets_models import TicketListResponse, SendTicketEmailRequest, BulkImportTicketsRequest, CreateTicketRequest, CreateTicketQueuedResponse, UpdateTicketRequest, ValidateTicketJwtRequest, ValidateTicketJwtResponse, TicketAdmissionRequest, TicketStatus, AdmissionStatus
 from _pydantic.models.models_extended import TicketModel, EventModel
 from functions.tickets.shared.shared_tickets import create_email_job, get_single_ticket as _get_single_ticket, _build_ticket_name, get_single_event as _get_single_event, build_ticket_creation_key, get_ticket_request_record
 
@@ -80,9 +80,64 @@ def _line_item_lookup(event_model: EventModel | None) -> dict[str, dict]:
             "entity_type": getattr(bundle, "entity_type", "BUNDLE"),
             "name": bundle.name,
             "status": getattr(bundle, "status", None),
+            "includes": getattr(bundle, "includes", []) or [],
         }
 
     return line_item_lookup
+
+def _build_create_ticket_payload(request_data: CreateTicketRequest, organisationSlug: str, eventId: str, event_model: EventModel) -> dict:
+    ticket_data = request_data.ticket.model_dump(mode="json")
+    available_line_items = _line_item_lookup(event_model)
+    requested_include_ids = ticket_data.get("includes", []) or []
+
+    if len(requested_include_ids) == 0:
+        raise ValueError("At least one include is required.")
+
+    missing_include_ids = [
+        include_id for include_id in requested_include_ids
+        if include_id not in available_line_items
+    ]
+
+    if len(missing_include_ids) > 0:
+        raise ValueError(f"Invalid include(s): {', '.join(missing_include_ids)}")
+
+    line_items = []
+    for include_id in requested_include_ids:
+        line_item = available_line_items.get(include_id)
+        if not line_item:
+            continue
+
+        line_items.append({
+            "ksuid": line_item.get("ksuid"),
+            "entity_type": line_item.get("entity_type"),
+            "name": line_item.get("name"),
+            "includes": line_item.get("includes", []) if str(line_item.get("entity_type", "")).lower() == "bundle" else [],
+        })
+
+    ticket_creation_key = ticket_data.get("ticket_creation_key") or build_ticket_creation_key(
+        ticket_data={
+            "customer_email": ticket_data.get("customer_email"),
+            "name_on_ticket": ticket_data.get("name_on_ticket"),
+            "financial_status": ticket_data.get("financial_status"),
+            "line_items": line_items,
+        },
+        organisation_slug=organisationSlug,
+        event_ksuid=eventId,
+        fallback_prefix="manual_create",
+    )
+
+    return {
+        "ticket_creation_key": ticket_creation_key,
+        "event_ksuid": eventId,
+        "customer_email": ticket_data.get("customer_email"),
+        "name_on_ticket": ticket_data.get("name_on_ticket"),
+        "financial_status": ticket_data.get("financial_status"),
+        "line_items": line_items,
+        "source_sale_type": "manual_create",
+        "payment_provider": None,
+        "payment_reference": None,
+        "ticket_name_preview": _build_ticket_name(line_items),
+    }
     
 def get_single_ticket(organisationSlug: str,  eventId: str,  ticketId: str, public: bool = False, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
@@ -337,6 +392,63 @@ def import_tickets(request_data: BulkImportTicketsRequest, organisationSlug: str
         "event": event_data.model_dump(mode="json", exclude_none=True),
         "tickets": analysed_tickets,
     })
+
+def create_ticket(request_data: CreateTicketRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Create ticket request received for {organisationSlug}:{eventId} from {TABLE_NAME}")
+
+    current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+
+    event_data = _get_single_event(organisationSlug, eventId, table)[0]
+
+    if not event_data:
+        return make_response(404, {
+            "message": "Event not found.",
+            "event_id": eventId,
+        })
+
+    try:
+        payload = _build_create_ticket_payload(request_data, organisationSlug, eventId, event_data)
+    except ValueError as e:
+        return make_response(400, {
+            "message": "Invalid create ticket request",
+            "error": str(e)
+        })
+
+    idempotency_record = get_ticket_request_record(table, payload["ticket_creation_key"])
+    if idempotency_record:
+        return make_response(409, {
+            "message": "A ticket creation request already exists for this ticket_creation_key.",
+            "ticket_creation_key": payload["ticket_creation_key"],
+        })
+
+    queued = trigger_eventbridge_event(
+        eventbridge,
+        source="dance-engine.core" if not STAGE_NAME == "preview" else "dance-engine.core.preview",
+        resource_type=EventType.ticket,
+        action=Action.requested,
+        organisation=organisationSlug,
+        resource_id=payload["ticket_creation_key"],
+        data=payload,
+        meta={
+            "accountId": actor,
+            "requested_at": current_time,
+        },
+    )
+
+    if not queued:
+        return make_response(500, {
+            "message": "Failed to request ticket creation.",
+            "ticket_creation_key": payload["ticket_creation_key"],
+        })
+
+    response = CreateTicketQueuedResponse(
+        message="Ticket creation requested successfully.",
+        ticket_creation_key=payload["ticket_creation_key"],
+        status="queued",
+    )
+    return make_response(202, response.model_dump(mode="json"))
 
 def _update(request_data: UpdateTicketRequest, organisationSlug: str, eventId: str, actor: str = "unknown", 
             only_set_once: list[str] | None = None, 
@@ -629,6 +741,9 @@ def lambda_handler(event, context):
             if raw_path.endswith("/validate"):
                 validated_request = ValidateTicketJwtRequest(**parsed_event)
                 return validate_jwt(validated_request, ticketId, organisationSlug, eventId, actor)
+            if raw_path.endswith("/tickets"):
+                validated_request = CreateTicketRequest(**parsed_event)
+                return create_ticket(validated_request, organisationSlug, eventId, actor)
             if raw_path.endswith("/tickets/send"):
                 validated_request = SendTicketEmailRequest(**parsed_event)
                 return send_tickets(validated_request, organisationSlug, eventId, actor)

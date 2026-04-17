@@ -5,7 +5,7 @@ const MenuToggle = () => {
   const { toggleMenu } = useMenu();
 
   return (
-      <button type="button" className="-m-2.5 p-2.5 text-gray-700 lg:hidden cursor-pointer" onClick={toggleMenu}>
+      <button type="button" className="-m-2.5 p-2.5 text-gray-700 min-[1150px]:hidden cursor-pointer" onClick={toggleMenu}>
         <span className="sr-only">Open sidebar</span>
         <svg className="size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />

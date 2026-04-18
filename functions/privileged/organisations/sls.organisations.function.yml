@@ -33,3 +33,8 @@ Organisations:
         path: /public/organisations
         method: get
         documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.GETpub}
+    - httpApi:
+        path: /organisations/{organisationId}/stack-status
+        method: get
+        authorizer:
+          adminAuthorizer

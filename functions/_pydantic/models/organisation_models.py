@@ -80,6 +80,10 @@ class OrganisationObject(BaseModel):
         None,
         description='URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed',
     )
+    cf_stack_id: Optional[str] = Field(
+        None,
+        description='AWS CloudFormation StackId (ARN) for this organisation\'s infrastructure stack',
+    )
 
 
 class OrganisationObjectPublic(OrganisationObject):

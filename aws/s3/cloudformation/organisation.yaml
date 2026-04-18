@@ -15,7 +15,7 @@ Conditions:
 Resources:
   organisationTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
+    DeletionPolicy: !If [IsProd, Retain, Delete]
     Properties:
       DeletionProtectionEnabled:        
         Fn::If:

@@ -129,7 +129,13 @@ def create_organisation(request_data: CreateOrganisationRequest, actor: str):
                 {"Key": "OrganisationId", "Value": organisation_slug}
             ]
         )
-        logger.info(f"Created stack: {stack_name}")
+        stack_id = response["StackId"]
+        logger.info(f"Created stack: {stack_name} StackId: {stack_id}")
+
+        # Persist the StackId ARN on the organisation record so status lookups
+        # can use it directly rather than reconstructing the StackName.
+        organisation_model.cf_stack_id = stack_id
+        organisation_model.upsert(table, only_set_once=[])
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.privileged.organisations" if not STAGE_NAME == "preview" else "dance-engine.privileged.preview.organisations", 
                                   resource_type=EventType.organisation,
@@ -154,6 +160,79 @@ def create_organisation(request_data: CreateOrganisationRequest, actor: str):
         logger.error(traceback.format_exc())
         return make_response(500, {"message": "Something went wrong."})
 
+# Maps each CloudFormation StackStatus to a UI-friendly progress value.
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html
+STACK_PROGRESS = {
+    "CREATE_IN_PROGRESS":       {"pct": 30,  "done": False, "ok": True},
+    "CREATE_COMPLETE":          {"pct": 100, "done": True,  "ok": True},
+    "CREATE_FAILED":            {"pct": 100, "done": True,  "ok": False},
+    "ROLLBACK_IN_PROGRESS":     {"pct": 60,  "done": False, "ok": False},
+    "ROLLBACK_COMPLETE":        {"pct": 100, "done": True,  "ok": False},
+    "ROLLBACK_FAILED":          {"pct": 100, "done": True,  "ok": False},
+    "DELETE_IN_PROGRESS":       {"pct": 50,  "done": False, "ok": False},
+    "DELETE_COMPLETE":          {"pct": 100, "done": True,  "ok": False},
+    "DELETE_FAILED":            {"pct": 100, "done": True,  "ok": False},
+    "UPDATE_IN_PROGRESS":       {"pct": 30,  "done": False, "ok": True},
+    "UPDATE_COMPLETE":          {"pct": 100, "done": True,  "ok": True},
+    "UPDATE_ROLLBACK_COMPLETE": {"pct": 100, "done": True,  "ok": False},
+}
+
+def get_stack_status(organisation_slug: str):
+    logger.info(f"Getting stack status for organisation: {organisation_slug}")
+    blank_model = OrganisationModel(name="blank", organisation=organisation_slug)
+
+    # Look up the organisation record to retrieve the stored StackId ARN.
+    try:
+        result = table.get_item(Key={"PK": blank_model.PK, "SK": blank_model.SK})
+        item = result.get("Item")
+    except Exception as e:
+        logger.error(f"DynamoDB lookup failed: {e}")
+        return make_response(500, {"message": "Failed to look up organisation."})
+
+    if not item:
+        return make_response(404, {"message": f"Organisation '{organisation_slug}' not found."})
+
+    stack_id = item.get("cf_stack_id")
+    if not stack_id:
+        return make_response(404, {"message": "No CloudFormation StackId found for this organisation. Stack may not have been created yet."})
+
+    # Use the StackId ARN — more reliable than StackName after deletions/recreations.
+    try:
+        cf_response = cloudformation.describe_stacks(StackName=stack_id)
+        stack = cf_response["Stacks"][0]
+        stack_status = stack["StackStatus"]
+
+        events_response = cloudformation.describe_stack_events(StackName=stack_id)
+        recent_events = [
+            {
+                "logicalResourceId": e["LogicalResourceId"],
+                "resourceType": e["ResourceType"],
+                "resourceStatus": e["ResourceStatus"],
+                "timestamp": e["Timestamp"].isoformat(),
+                "statusReason": e.get("ResourceStatusReason"),
+            }
+            for e in events_response["StackEvents"][:20]
+        ]
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ValidationError":
+            return make_response(404, {"message": f"Stack not found for StackId: {stack_id}"})
+        logger.error(f"CloudFormation describe_stacks failed: {e}")
+        raise
+
+    progress = STACK_PROGRESS.get(stack_status, {"pct": 50, "done": False, "ok": True})
+
+    return make_response(200, {
+        "organisation": organisation_slug,
+        "stackId": stack_id,
+        "stackName": stack["StackName"],
+        "stackStatus": stack_status,
+        "pct": progress["pct"],
+        "done": progress["done"],
+        "ok": progress["ok"],
+        "recentEvents": recent_events,
+    })
+
+
 def lambda_handler(event, context):
     try:
         logger.info("Received event: %s", json.dumps(event, indent=2, cls=DecimalEncoder))
@@ -162,12 +241,18 @@ def lambda_handler(event, context):
 
         is_public        = event.get("rawPath", "").startswith("/public")
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
+        raw_path         = event.get("rawPath", "")
+        path_params      = event.get("pathParameters") or {}
+        organisation_id  = path_params.get("organisationId")
 
         # POST
         if http_method == "POST":
             validated_request = CreateOrganisationRequest(**parsed_event)
             return create_organisation(validated_request, actor)
-        # GET 
+        # GET /organisations/{organisationId}/stack-status
+        elif http_method == "GET" and raw_path.endswith("/stack-status") and organisation_id:
+            return get_stack_status(organisation_id)
+        # GET /organisations or /public/organisations
         elif http_method == "GET":
             list_response_cls = OrganisationsListResponsePublic if is_public else OrganisationsListResponse
 

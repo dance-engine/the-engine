@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import Spinner from "@dance-engine/ui/general/Spinner";
@@ -165,7 +166,12 @@ const formatValue = (value: unknown): ReactNode => {
 
 const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailClientProps) => {
   const { activeOrg } = useOrgContext();
+  const { getToken } = useAuth();
   const [selectedEntity, setSelectedEntity] = useState<RelatedEntityRef | null>(null);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [checkInError, setCheckInError] = useState<string>("");
+  const [checkInNotice, setCheckInNotice] = useState<string>("");
+  const [ticketStatusOverride, setTicketStatusOverride] = useState<string | null>(null);
   const backHref = returnTo && returnTo.startsWith('/') ? returnTo : `/events/${ksuid}/tickets`;
   const backLabel = backHref.startsWith('/customers/') ? 'Back to customer' : 'Back to tickets';
   const ticketUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets/${ticketKsuid}`;
@@ -204,6 +210,7 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailCl
           : [];
 
   const ticket = ticketCandidates[0] as TicketTypeExtended | undefined;
+  const effectiveTicketStatus = ticketStatusOverride ?? ticket?.ticket_status;
   const ticketRecord = (ticket ?? {}) as Record<string, unknown>;
   const hiddenFieldKeys = new Set(["qr_token"]);
   const orderedFieldKeys = [
@@ -300,6 +307,79 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailCl
     return formatValue(value);
   };
 
+  useEffect(() => {
+    setTicketStatusOverride(null);
+    setCheckInError("");
+    setCheckInNotice("");
+  }, [ticketKsuid]);
+
+  const handleQrCheckIn = async () => {
+    if (!ticket || isCheckingIn) return;
+
+    if (effectiveTicketStatus === "used") {
+      setCheckInNotice("Ticket is already checked in.");
+      setCheckInError("");
+      return;
+    }
+
+    const customerEmail = String(ticket.customer_email ?? "").trim();
+    if (!customerEmail) {
+      setCheckInError("Ticket is missing customer email and cannot be checked in.");
+      setCheckInNotice("");
+      return;
+    }
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_DANCE_ENGINE_API ?? "";
+    if (!apiBaseUrl) {
+      setCheckInError("API base URL is not configured.");
+      setCheckInNotice("");
+      return;
+    }
+
+    if (!activeOrg) {
+      setCheckInError("No active organization selected.");
+      setCheckInNotice("");
+      return;
+    }
+
+    setIsCheckingIn(true);
+    setCheckInError("");
+    setCheckInNotice("");
+
+    try {
+      const token = await getToken();
+      const endpoint = `${apiBaseUrl}/${activeOrg}/${ksuid}/tickets/${ticketKsuid}/use`;
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ customer_email: customerEmail }),
+      });
+
+      if (!response.ok) {
+        let message = `Check-in failed with status ${response.status}.`;
+
+        try {
+          const data = await response.json() as { message?: string; reason?: string; msg?: string };
+          message = data.message || data.reason || data.msg || message;
+        } catch {
+          // Keep default message when response is not JSON.
+        }
+
+        throw new Error(message);
+      }
+
+      setTicketStatusOverride("used");
+      setCheckInNotice("Ticket checked in.");
+    } catch (error) {
+      setCheckInError(error instanceof Error ? error.message : "Unable to check in ticket.");
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
   if (!activeOrg) {
     return <div className="px-4 py-4 text-gray-600">No active organization selected</div>;
   }
@@ -337,7 +417,7 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailCl
           </Link>
           <h1 className="mt-3 text-2xl font-bold text-gray-900">{ticket.name_on_ticket || ticket.name || "Ticket"}</h1>
           <div className="mt-2 flex flex-wrap gap-2">
-            {ticket.ticket_status ? <Badge>{ticket.ticket_status}</Badge> : null}
+            {effectiveTicketStatus ? <Badge>{effectiveTicketStatus}</Badge> : null}
             {ticket.financial_status ? <Badge>{ticket.financial_status}</Badge> : null}
             {ticket.admission_status ? <Badge>{ticket.admission_status}</Badge> : null}
           </div>
@@ -356,7 +436,15 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailCl
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-center">
           <h2 className="text-lg font-semibold text-gray-900">QR code</h2>
-          <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
+          <button
+            type="button"
+            onClick={() => {
+              void handleQrCheckIn();
+            }}
+            disabled={!ticket.qr_token || isCheckingIn}
+            className="mt-4 rounded-lg border border-gray-200 bg-white p-4 transition hover:border-keppel-logo disabled:cursor-not-allowed disabled:opacity-60"
+            title={!ticket.qr_token ? "No QR token available" : "Click to check in this ticket"}
+          >
             {ticket.qr_token ? (
               <QRCode value={ticket.qr_token} size={220} />
             ) : (
@@ -364,8 +452,13 @@ const PageTicketDetailClient = ({ ksuid, ticketKsuid, returnTo }: TicketDetailCl
                 No QR token
               </div>
             )}
-          </div>
+          </button>
+          <p className="mt-2 text-xs text-center text-gray-500">
+            {isCheckingIn ? "Checking in..." : "Click QR to check in"}
+          </p>
           <p className="mt-4 text-xs text-center text-gray-500 break-all">{ticket.qr_token || "No QR token available"}</p>
+          {checkInNotice ? <p className="mt-2 text-xs text-green-700">{checkInNotice}</p> : null}
+          {checkInError ? <p className="mt-2 text-xs text-red-700 text-center">{checkInError}</p> : null}
         </div>
       </div>
 

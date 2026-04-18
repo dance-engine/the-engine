@@ -5,7 +5,7 @@ import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import { useAuth } from "@clerk/nextjs";
 import Spinner from "@dance-engine/ui/general/Spinner";
-import { IoCloudOffline } from "react-icons/io5";
+import { IoCheckmarkDoneOutline, IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";
 import { TicketType } from "@dance-engine/schemas/ticket";
 import dynamic from "next/dynamic";
@@ -38,6 +38,7 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
 
   const [tickets, setTickets] = useState<TicketType[]>([]);
   const [resendingTicketKsuid, setResendingTicketKsuid] = useState<string | null>(null);
+  const [checkingInTicketKsuid, setCheckingInTicketKsuid] = useState<string | null>(null);
   const [resendStatus, setResendStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   useEffect(() => {
@@ -86,6 +87,81 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
       });
     } finally {
       setResendingTicketKsuid(null);
+    }
+  };
+
+  const checkInTicket = async (record: Record<string, unknown>) => {
+    const ticketKsuid = String(record.ksuid || '').trim();
+    const customerEmail = String(record.customer_email || '').trim();
+
+    if (!activeOrg || !ticketKsuid) {
+      return;
+    }
+
+    if (!customerEmail) {
+      setResendStatus({
+        type: 'error',
+        message: `Ticket ${ticketKsuid} has no customer email, so it can't be checked in.`,
+      });
+      return;
+    }
+
+    try {
+      setCheckingInTicketKsuid(ticketKsuid);
+      setResendStatus(null);
+
+      const token = await getToken();
+      const endpoint = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets/${ticketKsuid}/use`.replace(
+        '/{org}',
+        `/${activeOrg}`,
+      );
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ customer_email: customerEmail }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof payload?.message === 'string'
+            ? payload.message
+            : typeof payload?.reason === 'string'
+              ? payload.reason
+              : 'Failed to check in ticket.',
+        );
+      }
+
+      setTickets((previousTickets) =>
+        previousTickets.map((ticket) => {
+          if (String((ticket as Record<string, unknown>).ksuid || '') !== ticketKsuid) {
+            return ticket;
+          }
+
+          return {
+            ...ticket,
+            ticket_status: 'used',
+            admission_status: 'checked_in',
+            checked_in_at: new Date().toISOString(),
+          } as TicketType;
+        }),
+      );
+
+      setResendStatus({
+        type: 'success',
+        message: `Ticket ${ticketKsuid} checked in.`,
+      });
+    } catch (error) {
+      setResendStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to check in ticket.',
+      });
+    } finally {
+      setCheckingInTicketKsuid(null);
     }
   };
 
@@ -175,6 +251,18 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
           showDeleteAction={false}
           rowActions={(record) => (
             <ActionRow>
+              <ActionIconButton
+                label="Check in"
+                icon={<IoCheckmarkDoneOutline className="h-5 w-5" />}
+                disabled={
+                  checkingInTicketKsuid === String(record.ksuid) ||
+                  String(record.admission_status || '') === 'checked_in' ||
+                  String(record.ticket_status || '') === 'used'
+                }
+                onClick={() => {
+                  void checkInTicket(record);
+                }}
+              />
               <ActionIconButton
                 label="Resend ticket"
                 icon={<IoMailOutline className="h-5 w-5" />}

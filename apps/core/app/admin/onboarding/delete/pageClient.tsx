@@ -51,7 +51,15 @@ const OnboardingDeletePageClient = () => {
         `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/organisations/${activeOrg}/delete-stack`,
         {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            confirm_delete_data: true,
+            confirm_stripe_managed_separately: true,
+            confirm_irreversible: true,
+          }),
         },
       );
 

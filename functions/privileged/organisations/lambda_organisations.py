@@ -17,7 +17,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response
 from _shared.parser import parse_event
 from _shared.naming import generateSlug
-from _pydantic.models.organisation_models import CreateOrganisationRequest, OrganisationsListResponsePublic, OrganisationsListResponse, Status
+from _pydantic.models.organisation_models import CreateOrganisationRequest, DeleteOrganisationRequest, OrganisationsListResponsePublic, OrganisationsListResponse, Status
 from _pydantic.models.models_extended import OrganisationModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
 
@@ -580,6 +580,8 @@ def lambda_handler(event, context):
 
         # POST /organisations/{organisationId}/delete-stack
         if http_method == "POST" and raw_path.endswith("/delete-stack") and organisation_id:
+            parsed_event = parse_event(event)
+            validated_request = DeleteOrganisationRequest(**parsed_event)
             return initiate_organisation_delete(organisation_id)
         # POST /organisations
         elif http_method == "POST":

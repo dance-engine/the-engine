@@ -57,3 +57,79 @@ Organisations:
           description: Internal server error.
         responseModels:
           application/json: "ErrorResponse"
+  GETstackStatus:
+    summary: "Get organisation stack status"
+    description: "Returns CloudFormation provisioning or teardown progress for an organisation."
+    tags:
+      - Organisations
+    pathParams:
+      - name: organisationId
+        description: Organisation slug
+        schema:
+          type: string
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Current stack status and progress details.
+        responseModels:
+          application/json: "OrganisationStackStatusResponse"
+      - statusCode: 403
+        responseBody:
+          description: Not authorized to read CloudFormation stack status.
+        responseModels:
+          application/json: "ErrorResponse"
+      - statusCode: 404
+        responseBody:
+          description: Organisation or stack not found.
+        responseModels:
+          application/json: "ErrorResponse"
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"
+  POSTdeleteStack:
+    summary: "Initiate organisation stack deletion"
+    description: "Starts CloudFormation stack deletion for an organisation and marks it offboarding."
+    tags:
+      - Organisations
+    pathParams:
+      - name: organisationId
+        description: Organisation slug
+        schema:
+          type: string
+    requestBody:
+      description: "Deletion confirmations"
+    requestModels:
+      application/json: "DeleteOrganisationRequest"
+    methodResponses:
+      - statusCode: 200
+        responseBody:
+          description: Stack was already deleted or no longer exists.
+        responseModels:
+          application/json: "DeleteOrganisationResponse"
+      - statusCode: 202
+        responseBody:
+          description: Deletion is in progress.
+        responseModels:
+          application/json: "DeleteOrganisationResponse"
+      - statusCode: 400
+        responseBody:
+          description: Invalid delete request payload.
+        responseModels:
+          application/json: "ErrorResponse"
+      - statusCode: 403
+        responseBody:
+          description: Not authorized to delete stack.
+        responseModels:
+          application/json: "ErrorResponse"
+      - statusCode: 404
+        responseBody:
+          description: Organisation or stack not found.
+        responseModels:
+          application/json: "ErrorResponse"
+      - statusCode: 500
+        responseBody:
+          description: Internal server error.
+        responseModels:
+          application/json: "ErrorResponse"

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 
 from pydantic import BaseModel, Field
 
@@ -105,6 +105,21 @@ class UpdateOrganisationRequest(BaseModel):
 
 class CreateOrganisationRequest(UpdateOrganisationRequest):
     pass
+
+
+class DeleteOrganisationRequest(BaseModel):
+    confirm_delete_data: Literal[True] = Field(
+        ...,
+        description='Must be true to confirm all organisation data will be deleted',
+    )
+    confirm_stripe_managed_separately: Literal[True] = Field(
+        ...,
+        description='Must be true to confirm Stripe closure is handled separately',
+    )
+    confirm_irreversible: Literal[True] = Field(
+        ...,
+        description='Must be true to confirm deletion is irreversible',
+    )
 
 
 class OrganisationsListResponse(BaseModel):

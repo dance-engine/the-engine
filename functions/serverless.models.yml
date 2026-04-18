@@ -20,6 +20,9 @@ models:
   - ${file(privileged/organisations/sls.organisations.models.yml):CreateOrganisationRequest}
   - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponse}
   - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationsListResponsePublic}
+  - ${file(privileged/organisations/sls.organisations.models.yml):DeleteOrganisationRequest}
+  - ${file(privileged/organisations/sls.organisations.models.yml):DeleteOrganisationResponse}
+  - ${file(privileged/organisations/sls.organisations.models.yml):OrganisationStackStatusResponse}
 
   - ${file(functions/items/sls.items.models.yml):PriceScheduleObject}
   - ${file(functions/items/sls.items.models.yml):ItemObject}

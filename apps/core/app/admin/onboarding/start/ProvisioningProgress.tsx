@@ -102,6 +102,8 @@ export default function ProvisioningProgress({
             ? pollError.message
             : "Unable to fetch provisioning progress",
         );
+        // Keep polling — stack may not exist yet (cf_stack_id not written yet)
+        timer = setTimeout(poll, POLL_INTERVAL_MS);
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -156,8 +158,10 @@ export default function ProvisioningProgress({
       ) : null}
 
       {error ? (
-        <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-          {error}
+        <div className="mt-3 rounded-md border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+          {result === null
+            ? "Waiting for stack initialisation — this may take a few seconds…"
+            : error}
         </div>
       ) : null}
 

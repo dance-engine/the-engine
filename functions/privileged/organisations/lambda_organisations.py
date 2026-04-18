@@ -179,7 +179,9 @@ STACK_PROGRESS = {
 
 def get_stack_status(organisation_slug: str):
     logger.info(f"Getting stack status for organisation: {organisation_slug}")
-    blank_model = OrganisationModel(name="blank", organisation=organisation_slug)
+    # Use generateSlug to match the same key used during create_organisation
+    normalised_slug = generateSlug(organisation_slug)
+    blank_model = OrganisationModel(name="blank", organisation=normalised_slug)
 
     # Look up the organisation record to retrieve the stored StackId ARN.
     try:

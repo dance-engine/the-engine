@@ -6,6 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import type { FieldValues, UseFormSetValue } from "react-hook-form";
+import ProvisioningProgress from "./ProvisioningProgress";
 
 const onboardingSchema = organisationSchema.pick({
   name: true,
@@ -132,6 +133,7 @@ const OnboardingStartPageClient = () => {
 
     setErrorMessage("");
     setSuccessMessage("");
+    setCreatedSlug("");
     setIsSubmitting(true);
 
     try {
@@ -225,6 +227,14 @@ const OnboardingStartPageClient = () => {
 
           {isSubmitting ? (
             <p className="mt-3 text-sm text-gray-500">Submitting onboarding request…</p>
+          ) : null}
+
+          {createdSlug ? (
+            <ProvisioningProgress
+              organisationId={createdSlug}
+              apiBaseUrl={process.env.NEXT_PUBLIC_DANCE_ENGINE_API}
+              getToken={getToken}
+            />
           ) : null}
         </section>
 

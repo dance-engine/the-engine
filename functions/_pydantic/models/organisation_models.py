@@ -16,6 +16,7 @@ class Status(Enum):
     draft = 'draft'
     active = 'active'
     setup = 'setup'
+    offboarding = 'offboarding'
     suspended = 'suspended'
     archived = 'archived'
 

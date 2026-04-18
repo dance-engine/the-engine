@@ -38,3 +38,8 @@ Organisations:
         method: get
         authorizer:
           adminAuthorizer
+    - httpApi:
+        path: /organisations/{organisationId}/delete-stack
+        method: post
+        authorizer:
+          adminAuthorizer

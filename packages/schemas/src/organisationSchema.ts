@@ -14,7 +14,7 @@ export const organisationSchema = z.object({
   css_vars: z.string().optional().describe('CSS variables for the organisation used to customise SOLO templates'),
   description: z.string().min(2, "Name must be at least 2 characters"),
   organisation: z.string().min(2, "Slug must be at least 2 characters").max(50, "Slug must be less than 50 characters").regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with dashes"),
-  status: z.enum(["draft","active","setup","suspended","archived"]).default("active").describe("Status of the organisation"),
+  status: z.enum(["draft","active","setup","offboarding","suspended","archived"]).default("active").describe("Status of the organisation"),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
     message: "Invalid date or time",
   }).optional().describe("Updated timstamp"),

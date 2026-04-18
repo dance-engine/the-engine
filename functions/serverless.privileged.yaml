@@ -21,13 +21,16 @@ resources:
                 - Effect: Allow
                   Action:
                     - cloudformation:CreateStack
+                    - cloudformation:DeleteStack
                     - cloudformation:DescribeStacks
                     - cloudformation:DescribeStackEvents
+                    - cloudformation:DescribeStackResources
                   Resource:
                     - arn:aws:cloudformation:*:*:stack/${sls:stage}-org-*/*
                 - Effect: Allow
                   Action:
                     - dynamodb:CreateTable
+                    - dynamodb:DeleteTable
                     - dynamodb:DescribeTable
                     - dynamodb:TagResource 
                     - dynamodb:UpdateContinuousBackups

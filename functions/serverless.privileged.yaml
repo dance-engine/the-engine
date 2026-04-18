@@ -21,6 +21,8 @@ resources:
                 - Effect: Allow
                   Action:
                     - cloudformation:CreateStack
+                    - cloudformation:DescribeStacks
+                    - cloudformation:DescribeStackEvents
                   Resource:
                     - arn:aws:cloudformation:*:*:stack/${sls:stage}-org-*/*
                 - Effect: Allow

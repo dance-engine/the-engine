@@ -214,6 +214,11 @@ def get_stack_status(organisation_slug: str):
             for e in events_response["StackEvents"][:20]
         ]
     except ClientError as e:
+        if e.response["Error"]["Code"] in ["AccessDenied", "AccessDeniedException"]:
+            return make_response(403, {
+                "message": "Not authorized to read CloudFormation stack status. Ensure role has cloudformation:DescribeStacks and cloudformation:DescribeStackEvents.",
+                "error": e.response["Error"]["Code"],
+            })
         if e.response["Error"]["Code"] == "ValidationError":
             return make_response(404, {"message": f"Stack not found for StackId: {stack_id}"})
         logger.error(f"CloudFormation describe_stacks failed: {e}")

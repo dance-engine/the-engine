@@ -120,6 +120,10 @@ const OnboardingStartPageClient = () => {
   );
 
   const handleSubmit = async (formData: FieldValues) => {
+    if (isSubmitting) {
+      return;
+    }
+
     const { _meta, ...cleanedData } = formData;
     const organisation = slugifyOrganisation(
       String(cleanedData.organisation || ""),
@@ -216,38 +220,39 @@ const OnboardingStartPageClient = () => {
             </div>
           ) : null}
 
-          <DynamicForm
-            schema={onboardingSchema}
-            metadata={onboardingMetadata}
-            onSubmit={handleSubmit}
-            onValuesChange={handleFormValuesChange}
-            persistKey={initialData}
-            data={initialData}
-          />
+          <div
+            className={isSubmitting ? "pointer-events-none opacity-60" : ""}
+            aria-disabled={isSubmitting}
+          >
+            <DynamicForm
+              schema={onboardingSchema}
+              metadata={onboardingMetadata}
+              onSubmit={handleSubmit}
+              onValuesChange={handleFormValuesChange}
+              persistKey={initialData}
+              data={initialData}
+            />
+          </div>
 
           {isSubmitting ? (
             <p className="mt-3 text-sm text-gray-500">Submitting onboarding request…</p>
           ) : null}
 
+        </section>
+
+        <aside className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
+          <h2 className="text-sm font-semibold text-gray-900">Provisioning</h2>
           {createdSlug ? (
             <ProvisioningProgress
               organisationId={createdSlug}
               apiBaseUrl={process.env.NEXT_PUBLIC_DANCE_ENGINE_API}
               getToken={getToken}
             />
-          ) : null}
-        </section>
-
-        <aside className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
-          <h2 className="text-sm font-semibold text-gray-900">What happens next</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-gray-700">
-            <li>The organisation record is created in the core table.</li>
-            <li>A provisioning stack is started for the new organisation.</li>
-            <li>Once AWS finishes, the org-specific resources are populated.</li>
-          </ul>
-          <p className="mt-4 text-xs text-gray-500">
-            Tip: you can enter a plain name in the slug field and it will be normalised automatically.
-          </p>
+          ) : (
+            <p className="mt-3 text-sm text-gray-600">
+              Submit the form to start organisation setup and view live CloudFormation progress here.
+            </p>
+          )}
         </aside>
       </div>
     </div>

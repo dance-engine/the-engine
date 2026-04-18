@@ -144,6 +144,10 @@ def get_customers(organisationSlug):
     except Exception as e:
         logger.error(f"DynamoDB query failed to get customers for {organisationSlug}: {e}")
         raise Exception
+    
+    #! temporary fix this needs review
+    if isinstance(customers, CustomerModel):
+        customers = [customers]
 
     return customers
 

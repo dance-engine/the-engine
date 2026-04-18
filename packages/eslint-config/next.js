@@ -46,4 +46,10 @@ export const nextJsConfig = [
       "react/react-in-jsx-scope": "off",
     },
   },
+  {
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+    rules: {
+      "react/prop-types": "off",
+    },
+  },
 ];

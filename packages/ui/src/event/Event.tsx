@@ -5,22 +5,15 @@ import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import type { CSSProperties } from "react";
 import { format } from "date-fns";
-import { generateHTML } from "@tiptap/core";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Bold from "@tiptap/extension-bold";
-import Strike from "@tiptap/extension-strike";
-import Italic from "@tiptap/extension-italic";
-import Heading from "@tiptap/extension-heading";
-import BulletedList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import ListItem from "@tiptap/extension-list-item";
-import { Link } from "@tiptap/extension-link";
-import HardBreak from "@tiptap/extension-hard-break";
+import { Node, generateHTML, type JSONContent } from "@tiptap/core";
 import { createEvent, EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";
 import { getOrganisationTheme } from "./lib/organisationTheme";
+import {
+  RICH_TEXT_ALLOWED_MARK_TYPES,
+  RICH_TEXT_ALLOWED_NODE_TYPES,
+  richTextRenderExtensions,
+} from "../richText";
 import EventHeroBanner from "./EventHeroBanner";
 import EventFactsPanel from "./EventFactsPanel";
 import EventTicketing from "./EventTicketing";
@@ -40,6 +33,199 @@ const MapDisplay = dynamic(() => import("../Map"), {
 });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+const UnsupportedBlock = Node.create({
+  name: "unsupportedBlock",
+  group: "block",
+  content: "inline*",
+  addAttributes() {
+    return {
+      originalType: {
+        default: null,
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: "div[data-unsupported-node]" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "div",
+      {
+        ...HTMLAttributes,
+        "data-unsupported-node": "true",
+      },
+      0,
+    ];
+  },
+});
+
+type RichTextMark = {
+  type?: unknown;
+  attrs?: Record<string, unknown>;
+};
+
+type RichTextNodeRaw = {
+  type?: unknown;
+  text?: unknown;
+  attrs?: Record<string, unknown>;
+  marks?: RichTextMark[];
+  content?: RichTextNodeRaw[];
+};
+
+const ALLOWED_NODE_TYPES: Set<string> = new Set(
+  RICH_TEXT_ALLOWED_NODE_TYPES as readonly string[],
+);
+const ALLOWED_MARK_TYPES: Set<string> = new Set(
+  RICH_TEXT_ALLOWED_MARK_TYPES as readonly string[],
+);
+const INLINE_PARENT_TYPES = new Set(["paragraph", "heading"]);
+
+const extractPlainText = (node: RichTextNodeRaw): string => {
+  const fragments: string[] = [];
+
+  if (typeof node.text === "string") {
+    fragments.push(node.text);
+  }
+
+  if (Array.isArray(node.content)) {
+    for (const child of node.content) {
+      const childText = extractPlainText(child);
+      if (childText) {
+        fragments.push(childText);
+      }
+    }
+  }
+
+  return fragments.join(" ").trim();
+};
+
+const sanitizeLinkAttrs = (attrs?: Record<string, unknown>) => {
+  if (!attrs) {
+    return undefined;
+  }
+
+  const href = typeof attrs.href === "string" ? attrs.href : undefined;
+  if (!href) {
+    return undefined;
+  }
+
+  return {
+    href,
+    target: typeof attrs.target === "string" ? attrs.target : null,
+    rel: typeof attrs.rel === "string" ? attrs.rel : null,
+    class: typeof attrs.class === "string" ? attrs.class : null,
+  };
+};
+
+const sanitizeMarks = (marks?: RichTextMark[]) => {
+  if (!Array.isArray(marks)) {
+    return undefined;
+  }
+
+  const sanitized = marks
+    .map((mark) => {
+      const markType = typeof mark?.type === "string" ? mark.type : undefined;
+      if (!markType || !ALLOWED_MARK_TYPES.has(markType)) {
+        return null;
+      }
+
+      if (markType === "link") {
+        return {
+          type: markType,
+          attrs: sanitizeLinkAttrs(mark.attrs),
+        };
+      }
+
+      return { type: markType };
+    })
+    .filter(Boolean);
+
+  return sanitized.length > 0
+    ? (sanitized as Array<{ type: string; attrs?: Record<string, unknown> }> )
+    : undefined;
+};
+
+const sanitizeNode = (node: RichTextNodeRaw, parentType?: string): JSONContent[] => {
+  const nodeType = typeof node?.type === "string" ? node.type : undefined;
+  const sanitizedContent = Array.isArray(node?.content)
+    ? node.content.flatMap((child) => sanitizeNode(child, nodeType))
+    : undefined;
+
+  if (!nodeType || !ALLOWED_NODE_TYPES.has(nodeType)) {
+    const fallbackText = extractPlainText(node);
+
+    if (parentType && INLINE_PARENT_TYPES.has(parentType)) {
+      return fallbackText ? [{ type: "text", text: fallbackText }] : [];
+    }
+
+    if (fallbackText) {
+      return [
+        {
+          type: "unsupportedBlock",
+          attrs: { originalType: nodeType || "unknown" },
+          content: [{ type: "text", text: fallbackText }],
+        },
+      ];
+    }
+
+    return sanitizedContent || [];
+  }
+
+  if (nodeType === "text") {
+    const text = typeof node.text === "string" ? node.text : "";
+    if (!text) {
+      return [];
+    }
+
+    return [
+      {
+        type: "text",
+        text,
+        marks: sanitizeMarks(node.marks),
+      },
+    ];
+  }
+
+  const sanitizedNode: JSONContent = {
+    type: nodeType,
+  };
+
+  if (nodeType === "heading") {
+    const level =
+      typeof node.attrs?.level === "number" && node.attrs.level >= 1 && node.attrs.level <= 6
+        ? node.attrs.level
+        : 2;
+    sanitizedNode.attrs = { level };
+  }
+
+  if (sanitizedContent && sanitizedContent.length > 0) {
+    sanitizedNode.content = sanitizedContent;
+  }
+
+  if (nodeType === "doc" && !sanitizedNode.content?.length) {
+    sanitizedNode.content = [{ type: "paragraph", content: [] }];
+  }
+
+  return [sanitizedNode];
+};
+
+const safeGenerateEventDescriptionHtml = (description?: string) => {
+  if (!description) {
+    return "";
+  }
+
+  try {
+    const parsed = JSON.parse(description) as RichTextNodeRaw;
+    const [rootNode] = sanitizeNode(parsed);
+    const sanitizedDoc: JSONContent =
+      rootNode?.type === "doc" ? rootNode : { type: "doc", content: [] };
+
+    return generateHTML(sanitizedDoc, [...richTextRenderExtensions, UnsupportedBlock]);
+  } catch {
+    return "";
+  }
+};
 
 const getHighlightBundleLabel = (event: EventModelType) => {
   const highlightBundleKsuid =
@@ -149,22 +335,7 @@ export default function Event({
   const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
   const highlightPassLabel = getHighlightBundleLabel(event);
   const directionsHref = getDirectionsHref(event);
-  const eventDescription = event.description
-    ? generateHTML(JSON.parse(event.description), [
-        Document,
-        Paragraph,
-        Text,
-        Bold,
-        Strike,
-        Italic,
-        Heading,
-        ListItem,
-        BulletedList,
-        OrderedList,
-        Link,
-        HardBreak,
-      ])
-    : "";
+  const eventDescription = safeGenerateEventDescriptionHtml(event.description);
 
   return (
     <div className="w-full">
@@ -203,7 +374,7 @@ export default function Event({
                 What you&apos;re booking
               </h2>
               <div
-                className="prose mt-6 max-w-none prose-headings:font-black"
+                className="prose mt-6 max-w-none prose-headings:font-black prose-li:mb-0 [&_li_p]:my-1 [&_mark]:bg-[var(--highlight-color)] [&_mark]:text-[var(--scheme-page-bg-start)]"
                 style={
                   {
                     color: "var(--scheme-surface-text)",

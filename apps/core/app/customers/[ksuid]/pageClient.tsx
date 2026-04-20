@@ -1,23 +1,12 @@
 'use client'
 
 import type { ReactNode } from "react";
-import Bold from "@tiptap/extension-bold";
-import BulletedList from "@tiptap/extension-bullet-list";
-import Document from "@tiptap/extension-document";
-import HardBreak from "@tiptap/extension-hard-break";
-import Heading from "@tiptap/extension-heading";
-import Italic from "@tiptap/extension-italic";
-import TiptapLink from "@tiptap/extension-link";
-import ListItem from "@tiptap/extension-list-item";
-import OrderedList from "@tiptap/extension-ordered-list";
-import Paragraph from "@tiptap/extension-paragraph";
-import Strike from "@tiptap/extension-strike";
-import Text from "@tiptap/extension-text";
 import { generateHTML } from "@tiptap/html";
 import Link from "next/link";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
 import Spinner from "@dance-engine/ui/general/Spinner";
+import { richTextRenderExtensions } from "@dance-engine/ui/richText";
 import { IoArrowBack, IoCloudOffline } from "react-icons/io5";
 import { CustomerType } from "@dance-engine/schemas/customer";
 import { TicketTypeExtended } from "@dance-engine/schemas/ticket";
@@ -130,20 +119,7 @@ const PageCustomerDetailClient = ({ email }: CustomerDetailClientProps) => {
   const customerBioHtml = customerBio
     ? (() => {
         try {
-          return generateHTML(JSON.parse(customerBio), [
-            Document,
-            Paragraph,
-            Text,
-            Bold,
-            Strike,
-            Italic,
-            Heading,
-            ListItem,
-            BulletedList,
-            OrderedList,
-            TiptapLink,
-            HardBreak,
-          ]);
+          return generateHTML(JSON.parse(customerBio), richTextRenderExtensions);
         } catch {
           return customerBio;
         }

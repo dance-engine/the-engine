@@ -2,21 +2,10 @@
 
 import { format } from "date-fns";
 import { generateHTML } from "@tiptap/core";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Bold from "@tiptap/extension-bold";
-import Strike from "@tiptap/extension-strike";
-import Italic from "@tiptap/extension-italic";
-import Heading from "@tiptap/extension-heading";
-import BulletedList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import ListItem from "@tiptap/extension-list-item";
-import { Link } from "@tiptap/extension-link";
-import HardBreak from "@tiptap/extension-hard-break";
 import type { CSSProperties } from "react";
 import { EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";
+import { richTextRenderExtensions } from "../richText";
 import EventFactsPanel from "./EventFactsPanel";
 import EventFooter from "./EventFooter";
 import EventHeroBanner from "./EventHeroBanner";
@@ -177,20 +166,7 @@ export default function EventPreview({
   const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
   const highlightPassLabel = getHighlightBundleLabel(event);
   const eventDescription = event.description
-    ? generateHTML(JSON.parse(event.description), [
-        Document,
-        Paragraph,
-        Text,
-        Bold,
-        Strike,
-        Italic,
-        Heading,
-        ListItem,
-        BulletedList,
-        OrderedList,
-        Link,
-        HardBreak,
-      ])
+    ? generateHTML(JSON.parse(event.description), richTextRenderExtensions)
     : "";
 
   return (
@@ -241,7 +217,7 @@ export default function EventPreview({
                     What you&apos;re booking
                   </h2>
                   <div
-                    className="prose mt-6 max-w-none prose-headings:font-black"
+                    className="prose mt-6 max-w-none prose-headings:font-black [&_mark]:bg-[var(--highlight-color)] [&_mark]:text-[var(--scheme-page-bg-start)]"
                     style={
                       {
                         color: "var(--scheme-surface-text)",

@@ -6,19 +6,8 @@ import Header from '@/components/header/Header';
 import RebelHero from '../components/legacy/RebelHero';
 import PowHero from '../components/legacy/PowHero';
 
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
-import Bold from '@tiptap/extension-bold'
-import Strike from '@tiptap/extension-strike'
-import Italic from '@tiptap/extension-italic'
-import Heading  from '@tiptap/extension-heading'
-import BulletedList  from '@tiptap/extension-bullet-list'
-import OrderedList  from '@tiptap/extension-ordered-list'
-import ListItem  from '@tiptap/extension-list-item'
-import Link  from '@tiptap/extension-link'
-import HardBreak from '@tiptap/extension-hard-break'
 import { generateHTML } from '@tiptap/html'
+import { richTextRenderExtensions } from '@dance-engine/ui/richText';
 
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 import { EventResponseType } from '@dance-engine/schemas/events';
@@ -88,7 +77,7 @@ export default async function IndexPage() {
               `} 
                 dangerouslySetInnerHTML={{ __html: generateHTML(
                   JSON.parse(org.description), 
-                  [ Document, Paragraph, Text,  Bold, Strike, Italic, Heading, ListItem, BulletedList, OrderedList, Link, HardBreak],) }} 
+                  richTextRenderExtensions,) }} 
               />
           
             {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}

@@ -1,79 +1,17 @@
 'use client'
 import { RichTextEditorProps } from "../../types/form"
 import { useEditor, EditorContent, Editor, useEditorState} from '@tiptap/react';
-import Link from '@tiptap/extension-link'
-import StarterKit from '@tiptap/starter-kit';
 import { Level } from '@tiptap/extension-heading';
 import { useEffect, useCallback } from 'react';
-import { FaBold, FaItalic, FaStrikethrough, FaListUl, FaListOl, FaQuoteRight,FaEraser, FaLink } from 'react-icons/fa';
+import { FaBold, FaItalic, FaStrikethrough, FaListUl, FaListOl, FaEraser, FaLink, FaUnderline, FaHighlighter, FaQuoteRight, FaMinus } from 'react-icons/fa';
 import CustomComponent from "./CustomComponent";
+import { richTextEditorExtensions } from "../../richText";
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ label, name, value, onChange, error, fieldSchema }: RichTextEditorProps) => {
 
 // export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ code: false, codeBlock: false }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: 'https',
-        protocols: ['http', 'https'],
-        isAllowedUri: (url:string, ctx:{defaultProtocol:string, protocols:(string | {scheme:string})[], defaultValidate:(url:string) => boolean}) => {
-          try {
-            // construct URL
-            const parsedUrl = url.includes(':') ? new URL(url) : new URL(`${ctx.defaultProtocol}://${url}`)
-
-            // use default validation
-            if (!ctx.defaultValidate(parsedUrl.href)) {
-              return false
-            }
-
-            // disallowed protocols
-            const disallowedProtocols = ['ftp', 'file', 'mailto']
-            const protocol = parsedUrl.protocol.replace(':', '')
-
-            if (disallowedProtocols.includes(protocol)) {
-              return false
-            }
-
-            // only allow protocols specified in ctx.protocols
-            const allowedProtocols = ctx.protocols.map(p => (typeof p === 'string' ? p : p.scheme))
-
-            if (!allowedProtocols.includes(protocol)) {
-              return false
-            }
-
-            // disallowed domains
-            const disallowedDomains = ['example-phishing.com', 'malicious-site.net']
-            const domain = parsedUrl.hostname
-
-            if (disallowedDomains.includes(domain)) {
-              return false
-            }
-
-            // all checks have passed
-            return true
-          } catch {
-            return false
-          }
-        },
-        shouldAutoLink: (url:string) => {
-          try {
-            // construct URL
-            const parsedUrl = url.includes(':') ? new URL(url) : new URL(`https://${url}`)
-
-            // only auto-link if the domain is not in the disallowed list
-            const disallowedDomains = ['example-no-autolink.com', 'another-no-autolink.com']
-            const domain = parsedUrl.hostname
-
-            return !disallowedDomains.includes(domain)
-          } catch {
-            return false
-          }
-        },
-      }),
-    ],
+    extensions: richTextEditorExtensions,
     immediatelyRender: false,
     content: value ? JSON.parse(value) : value,
     editorProps: {
@@ -206,6 +144,28 @@ const MenuBar = ({ editor }: MenuBarProps) => {
       <FaStrikethrough />
     </button>
 
+    {/* Underline */}
+    <button
+      type="button"
+      aria-label="Underline"
+      title="Underline"
+      onClick={() => editor.chain().focus().toggleUnderline().run()}
+      className={`p-2 rounded ${editor.isActive('underline') ? bgColorClasses : ''}`}
+    >
+      <FaUnderline />
+    </button>
+
+    {/* Highlight */}
+    <button
+      type="button"
+      aria-label="Highlight"
+      title="Highlight"
+      onClick={() => editor.chain().focus().toggleHighlight().run()}
+      className={`p-2 rounded ${editor.isActive('highlight') ? bgColorClasses : ''}`}
+    >
+      <FaHighlighter />
+    </button>
+
     
 
     {/* Bullet List */}
@@ -233,12 +193,23 @@ const MenuBar = ({ editor }: MenuBarProps) => {
     {/* Blockquote */}
     <button
       type="button"
-      aria-label="Quote"
-      title="Quote"
+      aria-label="Blockquote"
+      title="Blockquote"
       onClick={() => editor.chain().focus().toggleBlockquote().run()}
       className={`p-2 rounded ${editor.isActive('blockquote') ? bgColorClasses : ''}`}
     >
       <FaQuoteRight />
+    </button>
+
+    {/* Horizontal Rule */}
+    <button
+      type="button"
+      aria-label="Horizontal Rule"
+      title="Horizontal Rule"
+      onClick={() => editor.chain().focus().setHorizontalRule().run()}
+      className="p-2 rounded"
+    >
+      <FaMinus />
     </button>
 
     {/* Clear Formatting */}

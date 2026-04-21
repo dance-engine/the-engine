@@ -4,9 +4,8 @@ app: dance-engine
 service: core
 
 plugins:
-  - serverless-prune-plugin
+  - ./serverless-plugin-config-sync.cjs
   - serverless-openapi-documenter
-  - serverless-s3-sync # USed to move the aws cloudformation template we use to build customer resources
 
 custom:
   documentation: ${file(serverless.doc.yml):documentation}
@@ -18,11 +17,6 @@ custom:
   upload_bucket: "${sls:stage}-danceengine-uploads"
   dynamodb_table_format: "${sls:stage}-org-org_name"
   core_table_name: "${sls:stage}-core-danceengine"
-  s3Sync:
-    - bucketName: ${self:custom.config_bucket}
-      localDir: ../aws/s3/
-      acl: private
-      dependsOn: ConfigBucket
 
 package:
   individually: true

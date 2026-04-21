@@ -1,7 +1,43 @@
-Anything in ./aws/s3 will be synced to the config bucket for this stage
+Anything in ./aws/s3 should be synced to the stage config bucket:
 
-cloudformation/customer.yaml
-This template will be used to deploy new organisations
+`s3://<stage>-danceengine-config`
+
+The old `serverless-s3-sync` plugin is no longer used. Sync this folder with:
+
+`pnpm --filter @dance-engine/api-deployment-scripts sync-config-assets --stage <preview|prod>`
+
+Useful variants:
+
+- `pnpm --filter @dance-engine/api-deployment-scripts sync-config-assets:preview`
+- `pnpm --filter @dance-engine/api-deployment-scripts sync-config-assets:prod`
+
+Deploy now runs this automatically via a Serverless lifecycle hook:
+
+- `cd functions && serverless deploy --stage preview`
+
+If you deploy via pnpm scripts, pass serverless args after `--`:
+
+- `pnpm --filter @dance-engine/api-deployment-scripts deploy -- --stage preview`
+
+Or use the aliases:
+
+- `pnpm --filter @dance-engine/api-deployment-scripts deploy:preview`
+- `pnpm --filter @dance-engine/api-deployment-scripts deploy:prod`
+
+The deploy script first checks for changes with a dry run and only uploads when files in `aws/s3` differ from the target bucket.
+
+On first deploy, if the config bucket does not exist yet, pre-deploy sync is skipped and retried automatically after the stack deploys.
+
+If you need to bypass this behavior, set:
+
+- `SLS_SKIP_CONFIG_SYNC=true`
+
+By default, sync failures are treated as warnings so deploy can continue. To enforce hard failure on sync errors, set:
+
+- `SLS_CONFIG_SYNC_STRICT=true`
+
+cloudformation/organisation.yaml
+This template is used to deploy new organisations
 
 This can be used to test it via the Organista
 

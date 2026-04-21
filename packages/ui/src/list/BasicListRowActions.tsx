@@ -33,14 +33,16 @@ const BasicListRowActions: React.FC<BasicListRowActionsProps> = ({
       {entity === 'EVENT' && (
         <ActionIconButton
           href={`/${entityTypeSlug}/${record.ksuid}/bundles`}
-          label={`Manage Bundles for ${String(record.name)}`}
+          label={`Manage Bundles`}
+          record_label={` for ${String(record.name)}`}
           icon={<LuPackage className='h-5 w-5' />}
         />
       )}
       {entity === 'EVENT' && (
         <ActionIconButton
           href={`/${entityTypeSlug}/${record.ksuid}/tickets`}
-          label={`Manage Tickets for ${String(record.name)}`}
+          label={`Manage Tickets`}
+          record_label={` for ${String(record.name)}`}
           icon={<IoTicketOutline className='h-5 w-5' />}
         />
       )}
@@ -48,7 +50,8 @@ const BasicListRowActions: React.FC<BasicListRowActionsProps> = ({
       {showEditAction ? (
         <ActionIconButton
           href={parentKsuid && parentEntityName ? `/${parentEntityName}s/${parentKsuid}/${entityTypeSlug}/${record.ksuid}/edit` : `/${entityTypeSlug}/${record.ksuid || record.email}/edit`}
-          label={`Edit ${String(record.name)}`}
+          label={`Edit event details`}
+          record_label={` for ${String(record.name)}`}
           icon={<MdModeEdit className='h-5 w-5' />}
         />
       ) : null}
@@ -59,7 +62,7 @@ const BasicListRowActions: React.FC<BasicListRowActionsProps> = ({
           onClick={onDelete}
         >
           <MdDeleteOutline className='h-5 w-5'></MdDeleteOutline>{' '}
-          <span className='sr-only'>Delete {String(record.name)}</span>
+          <span className='text-xs font-medium leading-none lg:sr-only'>Delete <span className='sr-only'>{String(record.name)}</span></span>
         </DestructiveButton>
       ) : null}
     </ActionRow>

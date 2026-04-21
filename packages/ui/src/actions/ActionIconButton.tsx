@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 
 type ActionIconButtonProps = {
   label: string;
+  record_label?: string;
   icon: ReactNode;
   href?: string;
   onClick?: () => void;
@@ -14,6 +15,7 @@ type ActionIconButtonProps = {
 
 const ActionIconButton = ({
   label,
+  record_label,
   icon,
   href,
   onClick,
@@ -34,9 +36,9 @@ const ActionIconButton = ({
 
   if (href) {
     return (
-      <Link href={href} className={baseClassName} aria-label={label} title={label}>
+      <Link href={href} className={baseClassName} aria-label={record_label ? `${label} ${record_label}` : label} title={label}>
         {icon}
-        <span className="sr-only">{label}</span>
+        <span className="text-xs font-medium leading-none ">{label} {record_label && <span className="sr-only">{record_label}</span>} </span>
       </Link>
     );
   }
@@ -51,7 +53,7 @@ const ActionIconButton = ({
       title={label}
     >
       {icon}
-      <span className="sr-only">{label}</span>
+      <span className="text-xs font-medium leading-none ">{label} {record_label && <span className="sr-only">{record_label}</span>} </span>
     </button>
   );
 };

@@ -33,3 +33,15 @@ Organisations:
         path: /public/organisations
         method: get
         documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.GETpub}
+    - httpApi:
+        path: /organisations/{organisationId}/stack-status
+        method: get
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.GETstackStatus}
+    - httpApi:
+        path: /organisations/{organisationId}/delete-stack
+        method: post
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(privileged/organisations/sls.organisations.doc.yml):Organisations.POSTdeleteStack}

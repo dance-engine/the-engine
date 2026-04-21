@@ -13,6 +13,7 @@ from botocore.exceptions import ClientError
 ## custom scripts
 from _pydantic.models.organisation_models import OrganisationObject
 from _pydantic.models.models_extended import OrganisationModel
+from _pydantic.models.organisation_models import Status
 
 ## logger setup
 logger = logging.getLogger()
@@ -76,6 +77,7 @@ def lambda_handler(event, context):
     logger.info(f"event: {event}")
     logger.info(f"context: {context}")
     stack_id = event.get("detail", {}).get("stack-id")
+    event_status = event.get("detail", {}).get("status-details", {}).get("status")
 
     if not stack_id:
         logger.error("No stack-id found in event")
@@ -99,6 +101,21 @@ def lambda_handler(event, context):
 
     if not organisation_model:
         logger.error(f"Couldn;t find {organisation_slug} in {CORE_TABLE_NAME}")
+        return
+
+    if event_status == "DELETE_COMPLETE":
+        try:
+            organisation_model.status = Status.archived
+            archive_response = organisation_model.upsert(table, ["organisation", "created_at"])
+            logger.info(f"Archived organisation in core table: {archive_response}")
+            return
+        except Exception as e:
+            logger.error(f"Failed to archive organisation after DELETE_COMPLETE: {str(e)}")
+            logger.error(traceback.format_exc())
+            return
+
+    if event_status != "CREATE_COMPLETE":
+        logger.info(f"Ignoring CloudFormation status change event: {event_status}")
         return
 
     ORG_TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)

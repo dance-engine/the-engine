@@ -28,4 +28,5 @@ ProvisionedOrganisation:
             status-details:
               status:
                 - "CREATE_COMPLETE"
+                - "DELETE_COMPLETE"
 

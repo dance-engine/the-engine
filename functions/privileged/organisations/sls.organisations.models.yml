@@ -40,3 +40,80 @@ OrganisationsListResponsePublic:
             type: array
             items:
               $ref: "#/components/schemas/OrganisationObjectPublic"                   
+
+DeleteOrganisationRequest:
+  name: "DeleteOrganisationRequest"
+  description: "Request model for initiating organisation deletion"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        $schema: "http://json-schema.org/draft-04/schema#"
+        type: object
+        required:
+          - confirm_delete_data
+          - confirm_stripe_managed_separately
+          - confirm_irreversible
+        properties:
+          confirm_delete_data:
+            type: boolean
+            enum: [true]
+          confirm_stripe_managed_separately:
+            type: boolean
+            enum: [true]
+          confirm_irreversible:
+            type: boolean
+            enum: [true]
+
+DeleteOrganisationResponse:
+  name: "DeleteOrganisationResponse"
+  description: "Response model for organisation deletion initiation status"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+          organisation:
+            type: string
+          stackId:
+            type: string
+          offboarding:
+            type: boolean
+          archived:
+            type: boolean
+
+OrganisationStackStatusResponse:
+  name: "OrganisationStackStatusResponse"
+  description: "Response model for organisation CloudFormation stack status"
+  x-internal-group: "organisation"
+  x-internal-path: "_pydantic/models"
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          organisation:
+            type: string
+          stackId:
+            type: string
+          stackName:
+            type: string
+          stackStatus:
+            type: string
+          pct:
+            type: integer
+          done:
+            type: boolean
+          ok:
+            type: boolean
+          archived:
+            type: boolean
+          touchedSteps:
+            type: integer
+          totalSteps:
+            type: integer

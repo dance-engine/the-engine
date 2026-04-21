@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Literal
 
 from pydantic import BaseModel, Field
 
@@ -16,6 +16,7 @@ class Status(Enum):
     draft = 'draft'
     active = 'active'
     setup = 'setup'
+    offboarding = 'offboarding'
     suspended = 'suspended'
     archived = 'archived'
 
@@ -80,6 +81,10 @@ class OrganisationObject(BaseModel):
         None,
         description='URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed',
     )
+    cf_stack_id: Optional[str] = Field(
+        None,
+        description='AWS CloudFormation StackId (ARN) for this organisation\'s infrastructure stack',
+    )
 
 
 class OrganisationObjectPublic(OrganisationObject):
@@ -100,6 +105,21 @@ class UpdateOrganisationRequest(BaseModel):
 
 class CreateOrganisationRequest(UpdateOrganisationRequest):
     pass
+
+
+class DeleteOrganisationRequest(BaseModel):
+    confirm_delete_data: Literal[True] = Field(
+        ...,
+        description='Must be true to confirm all organisation data will be deleted',
+    )
+    confirm_stripe_managed_separately: Literal[True] = Field(
+        ...,
+        description='Must be true to confirm Stripe closure is handled separately',
+    )
+    confirm_irreversible: Literal[True] = Field(
+        ...,
+        description='Must be true to confirm deletion is irreversible',
+    )
 
 
 class OrganisationsListResponse(BaseModel):

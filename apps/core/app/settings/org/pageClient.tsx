@@ -428,6 +428,26 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
             </SettingsSection>
           );
         })}
+
+        <section className="overflow-hidden rounded-lg border border-red-200 bg-white">
+          <div className="flex flex-col gap-4 border-b border-red-200 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+            <div>
+              <h2 className="text-base font-semibold text-red-700">Danger Zone</h2>
+              <p className="mt-1 text-sm text-red-700">
+                Permanently remove this organisation and all associated data.
+              </p>
+            </div>
+            <Link
+              href="/admin/onboarding/delete"
+              className="rounded-md bg-red-700 px-3 py-2 text-sm font-semibold text-white hover:bg-red-800"
+            >
+              Delete my organisation
+            </Link>
+          </div>
+          <div className="px-4 py-4 text-sm text-gray-700 sm:px-6">
+            Stripe account closure is managed separately and this action cannot be undone.
+          </div>
+        </section>
       </div>
     </div>
   );

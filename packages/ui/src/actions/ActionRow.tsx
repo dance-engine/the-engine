@@ -7,7 +7,7 @@ type ActionRowProps = {
 
 const ActionRow = ({ children, className = "" }: ActionRowProps) => {
   return (
-    <div className={`flex gap-2 justify-end items-center ${className}`.trim()}>
+    <div className={`flex gap-2 justify-end items-stretch ${className}`.trim()}>
       {children}
     </div>
   );

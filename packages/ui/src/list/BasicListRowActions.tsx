@@ -50,7 +50,7 @@ const BasicListRowActions: React.FC<BasicListRowActionsProps> = ({
       {showEditAction ? (
         <ActionIconButton
           href={parentKsuid && parentEntityName ? `/${parentEntityName}s/${parentKsuid}/${entityTypeSlug}/${record.ksuid}/edit` : `/${entityTypeSlug}/${record.ksuid || record.email}/edit`}
-          label={`Edit event details`}
+          label={`Edit details`}
           record_label={` for ${String(record.name)}`}
           icon={<MdModeEdit className='h-5 w-5' />}
         />

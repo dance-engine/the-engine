@@ -38,7 +38,7 @@ const ActionIconButton = ({
     return (
       <Link href={href} className={baseClassName} aria-label={record_label ? `${label} ${record_label}` : label} title={label}>
         {icon}
-        <span className="text-xs font-medium leading-none ">{label} {record_label && <span className="sr-only">{record_label}</span>} </span>
+        <span className="text-xs font-medium leading-none lg:sr-only">{label} {record_label && <span className="sr-only">{record_label}</span>} </span>
       </Link>
     );
   }
@@ -53,7 +53,7 @@ const ActionIconButton = ({
       title={label}
     >
       {icon}
-      <span className="text-xs font-medium leading-none ">{label} {record_label && <span className="sr-only">{record_label}</span>} </span>
+      <span className="text-xs font-medium leading-none lg:sr-only">{label} {record_label && <span className="sr-only">{record_label}</span>} </span>
     </button>
   );
 };

@@ -30,7 +30,10 @@
     "./pricingUtilties": {
       "default": "./src/pricingUtilties.ts"
     },
-    "./actions/*": "./dist/actions/*.js"
+    "./actions/*": "./dist/actions/*.js",
+    "./solo-edge-config": {
+      "default": "./dist/solo-edge-config.js"
+    }
   },
   "typesVersions": {
     "*": {
@@ -48,6 +51,7 @@
     "@clerk/nextjs": "^6.14.0"
   },
   "dependencies": {
+    "@vercel/edge-config": "^1.4.0",
     "@clerk/types": "^4.49.1",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",

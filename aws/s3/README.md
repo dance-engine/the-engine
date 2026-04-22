@@ -11,20 +11,20 @@ Useful variants:
 - `pnpm --filter @dance-engine/api-deployment-scripts sync-config-assets:preview`
 - `pnpm --filter @dance-engine/api-deployment-scripts sync-config-assets:prod`
 
-Deploy now runs this automatically via a Serverless lifecycle hook:
+Deploy runs sync automatically via the Serverless lifecycle plugin:
 
 - `cd functions && serverless deploy --stage preview`
 
-If you deploy via pnpm scripts, pass serverless args after `--`:
+If you deploy via pnpm scripts, pass Serverless args after `--`:
 
 - `pnpm --filter @dance-engine/api-deployment-scripts deploy -- --stage preview`
 
-Or use the aliases:
+Or use stage aliases:
 
 - `pnpm --filter @dance-engine/api-deployment-scripts deploy:preview`
 - `pnpm --filter @dance-engine/api-deployment-scripts deploy:prod`
 
-The deploy script first checks for changes with a dry run and only uploads when files in `aws/s3` differ from the target bucket.
+The plugin first checks for changes with a dry run and uploads only when files in `aws/s3` differ from the target bucket.
 
 On first deploy, if the config bucket does not exist yet, pre-deploy sync is skipped and retried automatically after the stack deploys.
 

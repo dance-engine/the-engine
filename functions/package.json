@@ -18,9 +18,8 @@
     "sync-config-assets:if-changed": "pnpm sync-config-assets --if-changed true",
     "sync-config-assets:preview": "pnpm sync-config-assets --stage preview",
     "sync-config-assets:prod": "pnpm sync-config-assets --stage prod",
-    "deploy": "node .scripts/deploy-with-config-sync.mjs",
+    "deploy": "serverless deploy",
     "deploy:preview": "pnpm deploy -- --stage preview",
-    "deploy:prod": "pnpm deploy -- --stage prod",
-    "deploy:no-sync": "serverless deploy"
+    "deploy:prod": "pnpm deploy -- --stage prod"
   }
 }

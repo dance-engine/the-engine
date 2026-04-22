@@ -409,8 +409,21 @@ def completed(stripe_event: dict):
 
         if result.failed:
             mutation_failure = result.failures[0] if result.failures else None
+            # ConditionalCheckFailed with require_reserved_at_least=1 means reserved is already 0.
+            # This is a duplicate delivery — the webhook was already processed successfully.
+            # Return 200 so Stripe does not retry endlessly.
+            if mutation_failure and mutation_failure.code == "ConditionalCheckFailed":
+                logger.warning(
+                    "Duplicate checkout.session.completed for session %s (event %s): reserved already 0, treating as already reconciled.",
+                    session_id, event_ksuid
+                )
+                return make_response(200, {
+                    "message": "Already reconciled.",
+                    "session_id": session_id,
+                    "event_ksuid": event_ksuid,
+                })
             return make_response(500, {
-                "message": "Failed to reconcile capacity for completed checkout.",
+                "message": "Database error while completing checkout — please retry.",
                 "session_id": session_id,
                 "event_ksuid": event_ksuid,
                 "reason": mutation_failure.code if mutation_failure else "unknown",

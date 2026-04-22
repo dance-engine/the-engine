@@ -1,7 +1,7 @@
 // import next from 'next';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSoloEdgeConfig, toDomainLookupMap } from '@dance-engine/utils/solo-edge-config';
+import { getSoloEdgeConfig, toDomainLookupMap, normalizePath } from '@dance-engine/utils/solo-edge-config';
 
 
 
@@ -18,13 +18,17 @@ export async function middleware(request: NextRequest) {
   const theme = edgeOrgToThemeMap?.[org] || 'default';
 
   // Redirect at the edge before route rendering to avoid first-paint flashes.
-  if (request.nextUrl.pathname === '/' && (request.method === 'GET' || request.method === 'HEAD')) {
-    const edgeRedirectPath = soloEdgeConfig?.redirects?.[org];
-    const redirectPath = typeof edgeRedirectPath === 'string' && edgeRedirectPath.startsWith('/') ? edgeRedirectPath : null;
-    if (redirectPath) {
-      const target = new URL(redirectPath, request.url)
-      target.search = request.nextUrl.search
-      return NextResponse.redirect(target)
+  if (request.method === 'GET' || request.method === 'HEAD') {
+    const normalizedPath = normalizePath(request.nextUrl.pathname);
+    const orgRedirects = soloEdgeConfig?.redirects?.[org];
+    
+    if (orgRedirects && typeof orgRedirects === 'object') {
+      const redirectPath = orgRedirects[normalizedPath] || null;
+      if (typeof redirectPath === 'string' && redirectPath.startsWith('/')) {
+        const target = new URL(redirectPath, request.url);
+        target.search = request.nextUrl.search;
+        return NextResponse.redirect(target);
+      }
     }
   }
 

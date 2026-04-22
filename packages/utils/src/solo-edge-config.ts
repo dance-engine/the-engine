@@ -1,7 +1,7 @@
 import { get } from "@vercel/edge-config";
 
 export type SoloEdgeConfig = {
-  redirects?: Record<string, string>;
+  redirects?: Record<string, Record<string, string>>;
   domains?: Record<string, string[]>;
   themes?: Record<string, string[]>;
   accountUrls?: Record<string, string>;
@@ -26,6 +26,11 @@ export const toDomainLookupMap = (grouped: DomainGroups): Record<string, string>
     });
     return acc;
   }, {});
+};
+
+export const normalizePath = (path: string): string => {
+  if (path === '/') return '/';
+  return path.endsWith('/') ? path.slice(0, -1) : path;
 };
 
 export const resolveOrgFromDomainGroups = (

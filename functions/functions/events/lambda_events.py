@@ -85,8 +85,8 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
             if existing_event and hasattr(existing_event, 'capacity') and existing_event.capacity is not None:
                 existing_capacity = existing_event.capacity
                 if new_capacity == existing_capacity:
-                    # Capacity is unchanged; do not touch any capacity tracking fields.
-                    event_update_data.pop("capacity", None)
+                    # Capacity is unchanged; keep capacity for model validation,
+                    # but do not mutate derived capacity tracking fields.
                     event_update_data.pop("remaining_capacity", None)
                     event_update_data.pop("reserved", None)
                     event_update_data.pop("number_sold", None)

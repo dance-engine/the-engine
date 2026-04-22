@@ -3,25 +3,40 @@ import { BundleTypeExtended, ItemType } from '@dance-engine/schemas/bundle';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 import React from 'react';
 
+function parseErrorMessage(text: string): string {
+  try {
+    const parsed = JSON.parse(text);
+    return parsed.message || parsed.error || text;
+  } catch {
+    return text || 'An unexpected error occurred.';
+  }
+}
+
 const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue, className, style, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, cartValue?: number, className?: string, style?: React.CSSProperties}) => {
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleClick = async () => {
     if (loading) return; // prevent double-clicks
     setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      setError('Request timed out. Please try again.');
+      setLoading(false);
+    }, 15000);
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
       const res = await fetch('/api/stripe/checkout_session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
         body: JSON.stringify({
-          accountId: accountId, // if needed, otherwise remove
-          couponCode: couponCode ? couponCode : false, // must be the actual coupon ID from Stripe
-          priceId: priceId, // must be the actual product ID from Stripe
+          accountId: accountId,
+          couponCode: couponCode ? couponCode : false,
+          priceId: priceId,
           cartValue: cartValue ? cartValue : undefined,
         }),
       });
@@ -29,21 +44,27 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
       clearTimeout(timeoutId);
 
       if (!res.ok) {
-        // handle non-200 responses
         const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
+        console.error('checkout session error', res.status, text);
+        setError(parseErrorMessage(text));
+        setLoading(false);
+        return;
       }
 
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+        // Stay disabled — page is navigating away
       } else {
-        throw new Error('no url returned from checkout session');
+        console.error('No url returned from checkout session', data);
+        setError('Failed to initiate checkout. Please try again.');
+        setLoading(false);
       }
     } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') return; // handled by timeout callback
       console.error('checkout session error', err);
-      alert('There was a problem initiating the checkout. Please try again.');
-    } finally {
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
   };
@@ -51,14 +72,17 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   const combinedClass = `${className ?? ''} disabled:opacity-50 disabled:cursor-not-allowed`;
 
   return (
-    <button
-      onClick={handleClick}
-      className={combinedClass}
-      style={style}
-      disabled={loading}
-    >
-      {loading ? (label ? `${label}…` : 'Processing…') : (label || "Get Yours Now")}
-    </button>
+    <>
+      <button
+        onClick={handleClick}
+        className={combinedClass}
+        style={style}
+        disabled={loading}
+      >
+        {loading ? (label ? `${label}…` : 'Processing…') : (label || "Get Yours Now")}
+      </button>
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+    </>
   );
 };
 
@@ -73,24 +97,30 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
   style?: React.CSSProperties,
   disabled?: boolean}) => {
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleClick = async () => {
     if (loading) return;
     setLoading(true);
+    setError(null);
+
+    const body = JSON.stringify({
+      accountId: accountId,
+      org: org,
+      priceId: priceId,
+      lineItems: lineItems,
+      cartValue: cartValue ? cartValue : undefined,
+    });
+    console.log("StripeMultiPurchaseButton body:", body);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      setError('Request timed out. Please try again.');
+      setLoading(false);
+    }, 15000);
 
     try {
-      const body = JSON.stringify({
-        accountId: accountId, // if needed, otherwise remove
-        org: org,
-        priceId: priceId, // must be the actual product IDs from Stripe
-        lineItems: lineItems, // must be the actual product IDs from Stripe
-        cartValue: cartValue ? cartValue : undefined,
-      });
-      console.log("StripeMultiPurchaseButton body:", body);
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
-
       const res = await fetch('/api/stripe/checkout_session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,20 +132,26 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
+        console.error('checkout session error', res.status, text);
+        setError(parseErrorMessage(text));
+        setLoading(false);
+        return;
       }
 
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+        // Stay disabled — page is navigating away
       } else {
-        console.error("Failed to add items to cart", data);
-        alert("Failed to add items to cart");
+        console.error('Failed to add items to cart', data);
+        setError(data.error || data.message || 'Failed to create checkout session.');
+        setLoading(false);
       }
     } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') return; // handled by timeout callback
       console.error('checkout session error', err);
-      alert('There was a problem initiating the checkout. Please try again.');
-    } finally {
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
   };
@@ -123,14 +159,17 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
   const combinedClass = `${className ?? ''} disabled:opacity-50 disabled:cursor-not-allowed`;
 
   return (
-    <button
-      onClick={handleClick}
-      className={combinedClass}
-      style={style}
-      disabled={loading || disabled}
-    >
-      {loading ? (label ? `${label}…` : 'Processing…') : (label || "Add to Cart")}
-    </button>
+    <>
+      <button
+        onClick={handleClick}
+        className={combinedClass}
+        style={style}
+        disabled={loading || disabled}
+      >
+        {loading ? (label ? `${label}…` : 'Processing…') : (label || "Add to Cart")}
+      </button>
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+    </>
   );
 }
 export { StripeMultiPurchaseButton };

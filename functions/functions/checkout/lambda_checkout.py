@@ -43,18 +43,23 @@ def _event_capacity_mutation(table, *,
                              remaining_capacity_delta: int,
                              current_time: str,
                              require_remaining_at_least: int | None = None,
+                             require_reserved_at_least: int | None = None,
                              number_sold_delta: int | None = None):
     """
 
     """
-    extra_names = {"#remaining_capacity": "remaining_capacity"}
+    extra_names = {"#remaining_capacity": "remaining_capacity", "#reserved": "reserved"}
     extra_values = {}
     add_fields = {"reserved", "remaining_capacity"}
 
-    condition_expr = None
+    conditions = []
     if require_remaining_at_least is not None:
-        condition_expr = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min"
-        extra_values[":min"] = int(require_remaining_at_least)
+        conditions.append("attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min_remaining")
+        extra_values[":min_remaining"] = int(require_remaining_at_least)
+    if require_reserved_at_least is not None:
+        conditions.append("attribute_exists(#reserved) AND #reserved >= :min_reserved")
+        extra_values[":min_reserved"] = int(require_reserved_at_least)
+    condition_expr = " AND ".join(conditions) if conditions else None
 
     model_data = {
             "name": "placeholder", 
@@ -271,7 +276,8 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
                 event_ksuid=event_ksuid, 
                 reserved_delta=-1, 
                 remaining_capacity_delta=1, 
-                current_time=current_time
+                current_time=current_time,
+                require_reserved_at_least=1
             )
         except Exception as rb_e:
             logger.error("Rollback failed (reserved may be stranded): %s", str(rb_e))
@@ -314,12 +320,18 @@ def unreserve(stripe_event: dict):
             event_ksuid=event_ksuid, 
             reserved_delta=-1, 
             remaining_capacity_delta=1, 
-            current_time=current_time 
+            current_time=current_time,
+            require_reserved_at_least=1
         ) 
         if result.failed: 
             f = result.failures[0]
-            if f.inferred == "remaining_capacity_insufficient":
-                return make_response(409, {"message": "Event is at capacity."})
+            if f.inferred == "remaining_capacity_insufficient" or f.code == "ConditionalCheckFailed":
+                # reserved is already 0 — nothing to unreserve, treat as no-op
+                logger.warning("Unreserve skipped for event %s: reserved already at 0.", event_ksuid)
+                return make_response(200, {
+                    "message": "No reservation to release (reserved already 0).",
+                    "event_ksuid": event_ksuid
+                })
             if f.inferred == "version_conflict":
                 return make_response(409, {"message": "Version conflict."})
             if f.code == "throttled":
@@ -391,7 +403,8 @@ def completed(stripe_event: dict):
             reserved_delta=-1, 
             remaining_capacity_delta=0, 
             current_time=current_time,
-            number_sold_delta=1
+            number_sold_delta=1,
+            require_reserved_at_least=1
         )
 
         if result.failed:

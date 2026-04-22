@@ -21,13 +21,29 @@ export async function middleware(request: NextRequest) {
   if (request.method === 'GET' || request.method === 'HEAD') {
     const normalizedPath = normalizePath(request.nextUrl.pathname);
     const orgRedirects = soloEdgeConfig?.redirects?.[org];
-    
+
     if (orgRedirects && typeof orgRedirects === 'object') {
       const redirectPath = orgRedirects[normalizedPath] || null;
-      if (typeof redirectPath === 'string' && redirectPath.startsWith('/')) {
-        const target = new URL(redirectPath, request.url);
-        target.search = request.nextUrl.search;
-        return NextResponse.redirect(target);
+      if (typeof redirectPath === 'string') {
+        let target: URL | null = null;
+
+        if (redirectPath.startsWith('/')) {
+          target = new URL(redirectPath, request.url);
+        } else {
+          try {
+            const externalUrl = new URL(redirectPath);
+            if (externalUrl.protocol === 'http:' || externalUrl.protocol === 'https:') {
+              target = externalUrl;
+            }
+          } catch {
+            target = null;
+          }
+        }
+
+        if (target) {
+          target.search = request.nextUrl.search;
+          return NextResponse.redirect(target);
+        }
       }
     }
   }

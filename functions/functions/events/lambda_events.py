@@ -53,7 +53,7 @@ def _preprocess_event_item(item: dict) -> dict:
     return item
 
 def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor: str = "unknown"):
-    logger.info(f"Updating Event: {request_data.model_dump}")
+    logger.info(f"Updating Event: {request_data.model_dump(mode='json', exclude_none=True)}")
 
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisation_slug)
     table = db.Table(TABLE_NAME)
@@ -65,8 +65,67 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
     event_data = request_data.event
 
     try:
+        # Fetch existing event to handle capacity delta calculations
+        existing_event = None
+        if event_data.ksuid:
+            try:
+                existing_result = get_single_event(organisation_slug, event_data.ksuid, public=False)
+                if existing_result:
+                    existing_event = existing_result
+            except Exception as e:
+                logger.warning(f"Could not fetch existing event for capacity validation: {e}")
+        
+        # Prepare event data for update
+        event_update_data = event_data.model_dump(mode="json", exclude_unset=True)
+        
+        # Handle capacity delta logic
+        if "capacity" in event_update_data and event_update_data["capacity"] is not None:
+            new_capacity = event_update_data["capacity"]
+            
+            if existing_event and hasattr(existing_event, 'capacity') and existing_event.capacity is not None:
+                existing_capacity = existing_event.capacity
+                if new_capacity == existing_capacity:
+                    # Capacity is unchanged; do not touch any capacity tracking fields.
+                    event_update_data.pop("capacity", None)
+                    event_update_data.pop("remaining_capacity", None)
+                    event_update_data.pop("reserved", None)
+                    event_update_data.pop("number_sold", None)
+                    logger.info("Capacity unchanged; skipping capacity field updates")
+                else:
+                    capacity_delta = new_capacity - existing_capacity
+                    
+                    # Get current reserved and number_sold
+                    reserved = getattr(existing_event, 'reserved', 0) or 0
+                    number_sold = getattr(existing_event, 'number_sold', 0) or 0
+                    total_committed = reserved + number_sold
+                    
+                    # Check if new capacity is less than committed tickets
+                    if new_capacity < total_committed:
+                        return make_response(400, {
+                            "message": "Reserved and sold tickets are greater than your new capacity",
+                            "error": f"reserved={reserved}, number_sold={number_sold}, committed={total_committed}, new_capacity={new_capacity}",
+                            "details": {
+                                "current_capacity": existing_capacity,
+                                "new_capacity": new_capacity,
+                                "reserved": reserved,
+                                "number_sold": number_sold,
+                                "total_committed": total_committed
+                            }
+                        })
+                    
+                    # Calculate new remaining_capacity
+                    existing_remaining = getattr(existing_event, 'remaining_capacity', 0) or 0
+                    new_remaining = existing_remaining + capacity_delta
+                    event_update_data["remaining_capacity"] = new_remaining
+                    logger.info(f"Capacity delta: {capacity_delta}, new remaining: {new_remaining}")
+            else:
+                # New event or first time setting capacity
+                event_update_data["remaining_capacity"] = new_capacity
+                event_update_data["reserved"] = 0
+                logger.info(f"Setting initial capacity: {new_capacity}, remaining: {new_capacity}")
+        
         event_model = EventModel.model_validate({
-            **event_data.model_dump(mode="json", exclude_unset=True),
+            **event_update_data,
             "updated_at":current_time,
             "organisation": organisation_slug,
         })
@@ -259,7 +318,13 @@ def create_event(request_data: CreateEventRequest, organisation_slug: str, actor
         "created_at": current_time,
         "updated_at": current_time,
         "version": event_data.version or 0
-        })
+    })
+    
+    # Initialize capacity fields
+    if event_data.capacity is not None:
+        event_model.remaining_capacity = event_data.capacity
+        event_model.reserved = 0
+        event_model.number_sold = 0
 
     location_data  = event_data.location
     location_model = LocationModel.model_validate({

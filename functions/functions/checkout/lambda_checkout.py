@@ -394,6 +394,18 @@ def completed(stripe_event: dict):
             number_sold_delta=1
         )
 
+        if result.failed:
+            mutation_failure = result.failures[0] if result.failures else None
+            return make_response(500, {
+                "message": "Failed to reconcile capacity for completed checkout.",
+                "session_id": session_id,
+                "event_ksuid": event_ksuid,
+                "reason": mutation_failure.code if mutation_failure else "unknown",
+                "dynamodb_code": mutation_failure.dynamodb_code if mutation_failure else None,
+                "detail": mutation_failure.message if mutation_failure else None,
+                "inferred": mutation_failure.inferred if mutation_failure else None,
+            })
+
         line_items = [
             {
                 "ksuid": it.get("metadata", {}).get("ksuid"),

@@ -2,6 +2,7 @@
 // OR pages/api/create-checkout-session.ts (Pages Router)
 
 import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle";
+import { fallbackAccountUrls, getSoloEdgeConfig, getUrlOfAccount } from "@dance-engine/utils/solo-edge-config";
 import { NextResponse } from "next/server"; // for App Router
 import Stripe from "stripe";
 
@@ -9,20 +10,12 @@ const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-06-30.basil", // check current supported version
 });
 
-const getUrlOfAccount = (accountId: string) => {
-  const accountUrls: Record<string, string> = {
-    'acct_1RnpiyD1ZofqWwLa': 'https://iamrebel.co.uk',
-    'acct_1Rkp1ODIMY9TzhzF': "https://powerofwomansbk.co.uk",
-    'acct_1TACbkDnZQBrVCD7': "https://www.cubanydominican.com",
-    'acct_1RT4baRWBoTdG7OY': "http://localhost:3003" // default URL if accountId is missing or doesn't match
-  }
-  return accountUrls[accountId] || "https://danceengine.co.uk";
-}
-
 
 export async function POST(req: Request) {
   try {
     const { couponCode, accountId, priceId, lineItems, cartValue, org } = await req.json();
+    const soloEdgeConfig = await getSoloEdgeConfig();
+    const accountUrls = soloEdgeConfig?.accountUrls || fallbackAccountUrls;
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
     console.log("IsAndreas", isAndreas, accountId)
     console.log("Received data:", { couponCode, accountId, lineItems, cartValue });
@@ -44,8 +37,8 @@ export async function POST(req: Request) {
           //   destination: accountId ,
           // },
         },
-        success_url: isAndreas ? "https://iamrebel.co.uk/checkout/success" : `${getUrlOfAccount(accountId)}/checkout/success`,
-        cancel_url: isAndreas ? "https://iamrebel.co.uk/" : `${getUrlOfAccount(accountId)}/`,
+        success_url: isAndreas ? "https://iamrebel.co.uk/checkout/success" : `${getUrlOfAccount(accountId, accountUrls)}/checkout/success`,
+        cancel_url: isAndreas ? "https://iamrebel.co.uk/" : `${getUrlOfAccount(accountId, accountUrls)}/`,
       } as Stripe.Checkout.SessionCreateParams;
       const sessionObject = couponCode ? {...baseSessionObject, discounts: [{ coupon: couponCode }]} : {...baseSessionObject, allow_promotion_codes: true };
         const session = await stripe.checkout.sessions.create(sessionObject,
@@ -75,8 +68,8 @@ export async function POST(req: Request) {
       {
         "collect_customer_on_stripe": true,
         "coupon_code": couponCode || undefined,
-        "success_url": `${getUrlOfAccount(org.account_id || '')}/${eventKsuid}/success`,
-        "cancel_url": `${getUrlOfAccount(org.account_id || '')}/${eventKsuid}`,
+        "success_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}/success`,
+        "cancel_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}`,
         "application_fee_amount": isAndreas ? 0 : platformCharge,
         "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
         "line_items": line_items

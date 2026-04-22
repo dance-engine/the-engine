@@ -47,7 +47,6 @@ const deleteRemote = args.delete === "true";
 const dryRun = args["dry-run"] === "true";
 const ifChanged = args["if-changed"] === "true";
 const quiet = args.quiet === "true";
-const serverlessHook = args["serverless-hook"] === "true";
 const verbose = args.verbose === "true";
 
 const bucket = `${stage}-danceengine-config`;
@@ -97,11 +96,6 @@ const runAws = ({ awsArgs, capture = false }) => {
     });
   });
 };
-
-if (serverlessHook) {
-  // Ensure we start on a fresh line instead of appending to Serverless spinner text.
-  process.stdout.write("\n");
-}
 
 log(`Checking config assets for ${destination}`);
 if (!quiet) {

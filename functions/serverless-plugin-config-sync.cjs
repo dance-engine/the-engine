@@ -99,8 +99,6 @@ class ConfigAssetsSyncPlugin {
       stage,
       "--quiet",
       "true",
-      "--serverless-hook",
-      "true",
     ];
 
     if (this.options["aws-profile"]) {

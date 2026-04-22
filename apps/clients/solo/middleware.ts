@@ -1,7 +1,7 @@
 // import next from 'next';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { get } from '@vercel/edge-config';
+import { getSoloEdgeConfig, toDomainLookupMap } from '@dance-engine/utils/solo-edge-config';
 
 // Org-to-Domain mapping for better clarity and scalability
 const orgDomains: Record<string, string[]> = {
@@ -35,31 +35,7 @@ const orgRedirectFallback: Record<string, string> = {
   'power-of-woman': '/3BAqYwmGde5YJzzPeHLJqVo37Fo',
 };
 
-type SoloEdgeConfig = {
-  redirects?: Record<string, string>;
-  domains?: Record<string, string[]>;
-  themes?: Record<string, string[]>;
-};
 
-const toDomainLookupMap = (grouped: Record<string, string[]>): Record<string, string> => {
-  return Object.entries(grouped).reduce<Record<string, string>>((acc, [key, domains]) => {
-    domains.forEach((domain) => {
-      acc[domain] = key;
-    });
-    return acc;
-  }, {});
-};
-
-const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
-  try {
-    const edgeConfig = await get<SoloEdgeConfig>('solo');
-    // console.log('Fetched solo edge config:', edgeConfig);
-    return edgeConfig;
-  } catch (error) {
-    console.error('Error fetching solo edge config:', error);
-    return null;
-  }
-};
 
 
 export async function middleware(request: NextRequest) {

@@ -88,16 +88,27 @@ export async function POST(req: Request) {
       console.log("Response from checkout session API:", response);
 
       if (!response.ok) {
-        // const errorData = await response.text();
-        // console.error("Error response from checkout session API:", errorData);
-        
         try {
           const dataText = await response.text();
           console.error("Error response from checkout session API:", dataText);
-          return new NextResponse(dataText || JSON.stringify({ "message": "Failed to create checkout session with No message returned" }) , { status: 500 });
+
+          let payload = { message: "Failed to create checkout session." };
+          if (dataText) {
+            try {
+              payload = JSON.parse(dataText);
+            } catch {
+              payload = { message: dataText };
+            }
+          }
+
+          // Preserve upstream semantics (e.g. 409 at capacity) instead of forcing 500.
+          return NextResponse.json(payload, { status: response.status });
         } catch (err) {
           console.error("Error parsing error response from checkout session API:", err);
-          return new NextResponse(JSON.stringify({ "message": "Failed to create checkout session for unknown reason" }), { status: 500 });
+          return NextResponse.json(
+            { message: "Failed to create checkout session for unknown reason" },
+            { status: response.status || 500 }
+          );
         }
       }
 

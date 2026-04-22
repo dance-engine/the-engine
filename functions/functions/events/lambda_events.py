@@ -114,8 +114,13 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                         })
                     
                     # Calculate new remaining_capacity
-                    existing_remaining = getattr(existing_event, 'remaining_capacity', 0) or 0
-                    new_remaining = existing_remaining + capacity_delta
+                    existing_remaining_raw = getattr(existing_event, 'remaining_capacity', None)
+                    if existing_remaining_raw is None:
+                        existing_remaining = existing_capacity - total_committed
+                    else:
+                        existing_remaining = existing_remaining_raw
+
+                    new_remaining = max(existing_remaining + capacity_delta, 0)
                     event_update_data["remaining_capacity"] = new_remaining
                     logger.info(f"Capacity delta: {capacity_delta}, new remaining: {new_remaining}")
             else:

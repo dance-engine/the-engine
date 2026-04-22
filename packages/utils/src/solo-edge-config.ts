@@ -7,6 +7,8 @@ export type SoloEdgeConfig = {
   accountUrls?: Record<string, string>;
 };
 
+type DomainGroups = Record<string, string[]>;
+
 export const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
   try {
     const edgeConfig = await get<SoloEdgeConfig>("solo");
@@ -17,13 +19,41 @@ export const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
   }
 };
 
-export const toDomainLookupMap = (grouped: Record<string, string[]>): Record<string, string> => {
+export const toDomainLookupMap = (grouped: DomainGroups): Record<string, string> => {
   return Object.entries(grouped).reduce<Record<string, string>>((acc, [key, domains]) => {
     domains.forEach((domain) => {
       acc[domain] = key;
     });
     return acc;
   }, {});
+};
+
+export const resolveOrgFromDomainGroups = (
+  hostname: string,
+  domainGroups?: Record<string, string[]>,
+): string => {
+  if (!domainGroups) {
+    return "default-org";
+  }
+
+  const normalizedHost = hostname.toLowerCase();
+  const matched = Object.entries(domainGroups).find(([, domains]) =>
+    domains.some((domain) => domain.toLowerCase() === normalizedHost),
+  );
+
+  return matched?.[0] || "default-org";
+};
+
+export const resolveThemeFromThemeGroups = (
+  org: string,
+  themeGroups?: Record<string, string[]>,
+): string => {
+  if (!themeGroups) {
+    return "default";
+  }
+
+  const matched = Object.entries(themeGroups).find(([, orgs]) => orgs.includes(org));
+  return matched?.[0] || "default";
 };
 
 export const fallbackAccountUrls: Record<string, string> = {

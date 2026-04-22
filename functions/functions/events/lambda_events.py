@@ -17,7 +17,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
-from _pydantic.dynamodb import VersionConflictError # pydantic layer
+from _pydantic.dynamodb import transact_upsert # pydantic layer
 from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, DeleteEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from _pydantic.models.models_extended import EventModel, LocationModel
 from _pydantic.models.items_models import Status as ItemStatus
@@ -135,7 +135,6 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
             "organisation": organisation_slug,
         })
 
-        location_response = None
         if event_data.location:
             location_model = LocationModel.model_validate({
                 **event_data.location.model_dump(mode="json", exclude_unset=True),
@@ -144,28 +143,24 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                 "updated_at": current_time
             })
 
-        event_response = event_model.upsert(table, ["event_slug", "created_at"], explicit_fields_only=True)
-        if event_data.location:
-            location_response = location_model.upsert(table, ["created_at"], explicit_fields_only=True)
+        transact_result = transact_upsert(
+            table=table,
+            items=[event_model] + ([location_model] if event_data.location else [])
+        )
 
-        if (
-            (not event_response.success and event_response.error == "Version conflict")
-            or (
-                location_response is not None
-                and not location_response.success
-                and location_response.error == "Version conflict"
+        if transact_result.failed:
+            failure = transact_result.failures[0] if transact_result.failures else None
+
+            if failure and failure.inferred == "version_conflict":
+                return make_response(409, {
+                    "message": "Version conflict",
+                    "resource": failure.pk,
+                    "your_version": getattr(event_data, "version", None)
+                })
+
+            raise RuntimeError(
+                failure.message if failure and failure.message else "Failed to update event transaction"
             )
-        ):
-            return make_response(409, {
-                "message": "Version conflict",
-                "resource": event_model.PK,
-                "your_version": getattr(event_data, "version", None)
-            })
-
-        if not event_response.success:
-            raise RuntimeError(event_response.error or "Failed to upsert event")
-        if location_response is not None and not location_response.success:
-            raise RuntimeError(location_response.error or "Failed to upsert location")
 
         trigger_eventbridge_event(eventbridge, 
                                   source="dance-engine.core", 
@@ -178,14 +173,6 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
         return make_response(201, {
             "message": "Event updated successfully.",
             "event": event_model.model_dump(mode="json"),
-        })
-    except VersionConflictError as e:
-        logger.error(f"Version Conflict")
-        return make_response(409, {
-            "message": "Version conflict",
-            "resource": e.model.PK,
-            "your_version": e.incoming_version,
-            "error": str(e)
         })
     except ValueError as e:
         return make_response(400, {

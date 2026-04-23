@@ -17,11 +17,12 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
-from _pydantic.dynamodb import VersionConflictError, transact_upsert # pydantic layer
+from _pydantic.dynamodb import VersionConflictError # pydantic layer
 from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, DeleteEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from _pydantic.models.models_extended import EventModel, LocationModel
 from _pydantic.models.items_models import Status as ItemStatus
 from _pydantic.models.bundles_models import Status as BundleStatus
+from functions.shared.event_capacity import event_capacity_mutation
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -68,10 +69,7 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
         # Fetch existing event to handle capacity delta calculations
         existing_event = None
         capacity_delta = 0
-        event_add_fields: set[str] = set()
-        event_condition_expression = None
-        event_extra_expression_attr_names: dict[str, str] = {}
-        event_extra_expression_attr_values: dict[str, int] = {}
+        capacity_mutation_applied = False
         if event_data.ksuid:
             try:
                 existing_result = get_single_event(organisation_slug, event_data.ksuid, public=False)
@@ -117,16 +115,7 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                                 "total_committed": total_committed
                             }
                         })
-
-                    # Mutate remaining capacity atomically using ADD with a delta,
-                    # so concurrent checkout reservations don't get overwritten.
-                    event_update_data["remaining_capacity"] = capacity_delta
-                    event_add_fields.add("remaining_capacity")
-
-                    if capacity_delta < 0:
-                        event_condition_expression = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min_remaining"
-                        event_extra_expression_attr_names["#remaining_capacity"] = "remaining_capacity"
-                        event_extra_expression_attr_values[":min_remaining"] = abs(capacity_delta)
+                    capacity_mutation_applied = True
 
                     logger.info(f"Capacity delta: {capacity_delta}")
             else:
@@ -150,16 +139,24 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                 "updated_at": current_time
             })
 
-        if event_add_fields or event_condition_expression:
-            event_tx_result = transact_upsert(
+        if capacity_mutation_applied:
+            mutation_set_fields = {
+                k: v
+                for k, v in event_update_data.items()
+                if k not in {"ksuid", "organisation", "remaining_capacity", "reserved", "number_sold"}
+            }
+
+            event_tx_result = event_capacity_mutation(
                 table,
-                [event_model],
-                only_set_once=["event_slug", "created_at"],
-                condition_expression=event_condition_expression,
-                add_fields=event_add_fields,
-                extra_expression_attr_names=event_extra_expression_attr_names,
-                extra_expression_attr_values=event_extra_expression_attr_values,
-                explicit_fields_only=True,
+                organisation_slug=organisation_slug,
+                event_ksuid=event_model.ksuid,
+                reserved_delta=0,
+                remaining_capacity_delta=capacity_delta,
+                current_time=current_time,
+                require_remaining_at_least=abs(capacity_delta) if capacity_delta < 0 else None,
+                set_fields=mutation_set_fields,
+                version_override=False,
+                only_set_once={"event_slug", "created_at"},
             )
 
             if event_tx_result.failed:

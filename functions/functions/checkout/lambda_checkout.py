@@ -18,9 +18,9 @@ from _shared.parser import parse_event
 from _shared.DecimalEncoder import DecimalEncoder
 from _shared.helpers import make_response, get_organisation_settings
 from _pydantic.models.checkout_models import CreateCheckoutRequest, CheckoutObjectPublic, LineItemObjectPublic
-from _pydantic.models.models_extended import EventModel, OrganisationModel
-from _pydantic.dynamodb import transact_upsert
+from _pydantic.models.models_extended import OrganisationModel
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
+from functions.shared.event_capacity import event_capacity_mutation
 
 ## logger setup
 logger = logging.getLogger()
@@ -35,58 +35,6 @@ eventbridge = boto3.client('events')
 STAGE_NAME = os.environ.get('STAGE_NAME') or (_ for _ in ()).throw(KeyError("Environment variable 'STAGE_NAME' not found"))
 ORG_TABLE_NAME_TEMPLATE = os.environ.get('ORG_TABLE_NAME_TEMPLATE') or (_ for _ in ()).throw(KeyError("Environment variable 'ORG_TABLE_NAME_TEMPLATE' not found"))
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY') or (_ for _ in ()).throw(KeyError("Environment variable 'STRIPE_API_KEY' not found"))
-
-def _event_capacity_mutation(table, *,
-                             organisation_slug: str,
-                             event_ksuid: str,
-                             reserved_delta: int,
-                             remaining_capacity_delta: int,
-                             current_time: str,
-                             require_remaining_at_least: int | None = None,
-                             require_reserved_at_least: int | None = None,
-                             number_sold_delta: int | None = None):
-    """
-
-    """
-    extra_names = {"#remaining_capacity": "remaining_capacity", "#reserved": "reserved"}
-    extra_values = {}
-    add_fields = {"reserved", "remaining_capacity"}
-
-    conditions = []
-    if require_remaining_at_least is not None:
-        conditions.append("attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min_remaining")
-        extra_values[":min_remaining"] = int(require_remaining_at_least)
-    if require_reserved_at_least is not None:
-        conditions.append("attribute_exists(#reserved) AND #reserved >= :min_reserved")
-        extra_values[":min_reserved"] = int(require_reserved_at_least)
-    condition_expr = " AND ".join(conditions) if conditions else None
-
-    model_data = {
-            "name": "placeholder", 
-            "organisation": organisation_slug,
-            "ksuid": event_ksuid,
-            "reserved": int(reserved_delta),
-            "remaining_capacity": int(remaining_capacity_delta),
-            "updated_at": current_time
-        }
-    
-    if number_sold_delta is not None:
-        model_data["number_sold"] = int(number_sold_delta)
-        add_fields.add("number_sold")
-
-    event_models = [EventModel.model_validate(model_data)]
-
-    result = transact_upsert(
-        table,
-        event_models,
-        condition_expression=condition_expr,
-        add_fields=add_fields,
-        extra_expression_attr_names=extra_names,
-        extra_expression_attr_values=extra_values,
-        version_override=True,
-        only_set_once={"created_at", "organisation", "ksuid", "name", "event_slug", "status"}
-    )
-    return result
 
 def start(validated_request: CreateCheckoutRequest, organisation_slug: str, actor: str):
     logger.info("Starting checkout process for organisation: %s", organisation_slug)
@@ -145,7 +93,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         })
 
     try:
-        result = _event_capacity_mutation(
+        result = event_capacity_mutation(
             table, 
             organisation_slug=organisation_slug, 
             event_ksuid=event_ksuid, 
@@ -270,7 +218,7 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
         logger.error(traceback.format_exc())
 
         try:
-            _event_capacity_mutation(
+            event_capacity_mutation(
                 table, 
                 organisation_slug=organisation_slug, 
                 event_ksuid=event_ksuid, 
@@ -314,7 +262,7 @@ def unreserve(stripe_event: dict):
     logger.info(f"Current Time: {current_time}")
 
     try:
-        result = _event_capacity_mutation(
+        result = event_capacity_mutation(
             table,
             organisation_slug=organisation_slug,
             event_ksuid=event_ksuid, 
@@ -400,7 +348,7 @@ def completed(stripe_event: dict):
         current_time = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
         logger.info(f"Current Time: {current_time}")
 
-        result = _event_capacity_mutation(
+        result = event_capacity_mutation(
             table,
             organisation_slug=organisation_slug,
             event_ksuid=event_ksuid, 

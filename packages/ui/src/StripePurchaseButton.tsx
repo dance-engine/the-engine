@@ -3,11 +3,103 @@ import { BundleTypeExtended, ItemType } from '@dance-engine/schemas/bundle';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 import React from 'react';
 
+const ERROR_DISPLAY_MS = 2500;
+const ERROR_FADE_MS = 500;
+
+type ErrorMessageState = {
+  id: number;
+  message: string;
+};
+
+const getCheckoutErrorMessage = async (response: Response) => {
+  const fallbackMessage = 'There was a problem initiating the checkout. Please try again.';
+
+  try {
+    const text = await response.text();
+    if (!text) return fallbackMessage;
+
+    const parsed = JSON.parse(text);
+    if (
+      parsed
+      && typeof parsed === 'object'
+      && 'message' in parsed
+      && typeof parsed.message === 'string'
+    ) {
+      return parsed.message;
+    }
+  } catch {
+    // Fall back to a generic client-safe message when the body is not JSON.
+  }
+
+  return fallbackMessage;
+};
+
+const getCheckoutRequestErrorMessage = (error: unknown) => {
+  if (error instanceof Error && error.name === 'AbortError') {
+    return 'Checkout request timed out. Please try again.';
+  }
+
+  return 'There was a problem initiating the checkout. Please try again.';
+};
+
+
+const ErrorStateDialog = ({
+  message,
+  resetKey,
+  onDismiss,
+}: {
+  message: string;
+  resetKey: number;
+  onDismiss: () => void;
+}) => {
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    setVisible(false);
+
+    const animationFrame = requestAnimationFrame(() => setVisible(true));
+    const hideTimeout = window.setTimeout(() => setVisible(false), ERROR_DISPLAY_MS);
+    const dismissTimeout = window.setTimeout(onDismiss, ERROR_DISPLAY_MS + ERROR_FADE_MS);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      window.clearTimeout(hideTimeout);
+      window.clearTimeout(dismissTimeout);
+    };
+  }, [onDismiss, resetKey]);
+
+  return (
+    <div
+      className={`pointer-events-none fixed top-0 left-0 w-screen h-screen z-10 min-h-64 flex items-center justify-center bg-de-background-dark/80  p-4 text-white
+        transition-opacity duration-500 ease-out
+        ${visible ? 'opacity-100' : 'opacity-0'}`}
+    >
+      <p
+        className="text-xl w-10/12 flex items-center justify-center max-w-2xl min-h-64 rounded px-6 py-4 text-center bg-de-background-dark font-bold"
+        style={{
+          // backgroundColor: 'var(--accent-color, var(--org-color-secondary, #2d5b87))',
+          color: 'var(--primary-color, var(--scheme-action-text, #ffffff))',
+        }}
+      >
+        {message}
+      </p>
+    </div>
+  );
+};
+
 const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue, className, style, }: {accountId?: string, couponCode?: string, label?: string, priceId: string, cartValue?: number, className?: string, style?: React.CSSProperties}) => {
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<ErrorMessageState | null>(null);
+  const errorIdRef = React.useRef(0);
+
+  const showError = (message: string) => {
+    errorIdRef.current += 1;
+    setError({ id: errorIdRef.current, message });
+  };
 
   const handleClick = async () => {
     if (loading) return; // prevent double-clicks
+    setError(null);
     setLoading(true);
 
     try {
@@ -29,9 +121,8 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
       clearTimeout(timeoutId);
 
       if (!res.ok) {
-        // handle non-200 responses
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
+        showError(await getCheckoutErrorMessage(res));
+        return;
       }
 
       const data = await res.json();
@@ -42,7 +133,7 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
       }
     } catch (err) {
       console.error('checkout session error', err);
-      alert('There was a problem initiating the checkout. Please try again.');
+      showError(getCheckoutRequestErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -51,14 +142,17 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   const combinedClass = `${className ?? ''} disabled:opacity-50 disabled:cursor-not-allowed`;
 
   return (
-    <button
-      onClick={handleClick}
-      className={combinedClass}
-      style={style}
-      disabled={loading}
-    >
-      {loading ? (label ? `${label}…` : 'Processing…') : (label || "Get Yours Now")}
-    </button>
+    <div>
+      <button
+        onClick={handleClick}
+        className={combinedClass}
+        style={style}
+        disabled={loading}
+      >
+        {loading ? (label ? `${label}…` : 'Processing…') : (label || "Get Yours Now")}
+      </button>
+      {error && <ErrorStateDialog message={error.message} resetKey={error.id} onDismiss={() => setError(null)} />}
+    </div>
   );
 };
 
@@ -73,9 +167,17 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
   style?: React.CSSProperties,
   disabled?: boolean}) => {
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<ErrorMessageState | null>(null);
+  const errorIdRef = React.useRef(0);
+
+  const showError = (message: string) => {
+    errorIdRef.current += 1;
+    setError({ id: errorIdRef.current, message });
+  };
 
   const handleClick = async () => {
     if (loading) return;
+    setError(null);
     setLoading(true);
 
     try {
@@ -101,8 +203,8 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
       clearTimeout(timeoutId);
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
+        showError(await getCheckoutErrorMessage(res));
+        return;
       }
 
       const data = await res.json();
@@ -110,11 +212,11 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
         window.location.href = data.url;
       } else {
         console.error("Failed to add items to cart", data);
-        alert("Failed to add items to cart");
+        showError('Failed to add items to cart.');
       }
     } catch (err) {
       console.error('checkout session error', err);
-      alert('There was a problem initiating the checkout. Please try again.');
+      showError(getCheckoutRequestErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -123,14 +225,17 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
   const combinedClass = `${className ?? ''} disabled:opacity-50 disabled:cursor-not-allowed`;
 
   return (
-    <button
-      onClick={handleClick}
-      className={combinedClass}
-      style={style}
-      disabled={loading || disabled}
-    >
-      {loading ? (label ? `${label}…` : 'Processing…') : (label || "Add to Cart")}
-    </button>
+    <div>
+      <button
+        onClick={handleClick}
+        className={combinedClass}
+        style={style}
+        disabled={loading || disabled}
+      >
+        {loading ? (label ? `${label}…` : 'Processing…') : (label || "Add to Cart")}
+      </button>
+      {error && <ErrorStateDialog message={error.message} resetKey={error.id} onDismiss={() => setError(null)} />}
+    </div>
   );
 }
 export { StripeMultiPurchaseButton };

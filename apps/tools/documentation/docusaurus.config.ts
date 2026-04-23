@@ -17,7 +17,6 @@ const config: Config = {
   baseUrl: '/',
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -65,6 +64,9 @@ const config: Config = {
   themes: ["docusaurus-theme-openapi-docs", '@docusaurus/theme-mermaid'], // export theme components
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
   },
 
 

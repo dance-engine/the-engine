@@ -10,6 +10,37 @@ const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-06-30.basil", // check current supported version
 });
 
+const getCheckoutSessionErrorMessage = (status: number) => {
+  if (status === 409) return "Event is at capacity.";
+  if (status === 404) return "Missing Dance Engine API";
+  if (status >= 400 && status < 500) return "Unable to create checkout session.";
+  return "Failed to create checkout session.";
+};
+
+const sanitizeCheckoutSessionError = (status: number, errorText: string) => {
+  let message = getCheckoutSessionErrorMessage(status);
+
+  if (!errorText) {
+    return { message };
+  }
+
+  try {
+    const parsed = JSON.parse(errorText);
+    if (
+      parsed
+      && typeof parsed === "object"
+      && "message" in parsed
+      && typeof parsed.message === "string"
+    ) {
+      message = parsed.message;
+    }
+  } catch {
+    // Keep raw upstream error text in server logs only.
+  }
+
+  return { message };
+};
+
 
 export async function POST(req: Request) {
   try {
@@ -17,8 +48,8 @@ export async function POST(req: Request) {
     const soloEdgeConfig = await getSoloEdgeConfig();
     const accountUrls = soloEdgeConfig?.accountUrls || fallbackAccountUrls;
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
-    console.log("IsAndreas", isAndreas, accountId)
-    console.log("Received data:", { couponCode, accountId, lineItems, cartValue });
+    // console.log("IsAndreas", isAndreas, accountId)
+    // console.log("Received data:", { couponCode, accountId, lineItems, cartValue });
     const platformCharge = isAndreas || !cartValue ? 0 : Math.round((cartValue * 0.01) + 10 );
 
     if(priceId) {
@@ -49,7 +80,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: session.url });
     } 
     else { 
-      console.log("Creating checkout session with line items:", lineItems);
+      // console.log("Creating checkout session with line items:", lineItems);
       const checkoutSessionApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/:organisation/checkout/start`.replace(':organisation', org.organisation || 'unknown');
       const line_items = lineItems.map((item: (ItemType | BundleTypeExtended)) => ({
             "ksuid": item.ksuid,
@@ -64,20 +95,20 @@ export async function POST(req: Request) {
       const eventKsuid = lineItems[0]?.parent_event_ksuid || 'unknown';
 
       const requestBody = {
-    "checkout": [
-      {
-        "collect_customer_on_stripe": true,
-        "coupon_code": couponCode || undefined,
-        "success_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}/success`,
-        "cancel_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}`,
-        "application_fee_amount": isAndreas ? 0 : platformCharge,
-        "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
-        "line_items": line_items
+        "checkout": [
+          {
+            "collect_customer_on_stripe": true,
+            "coupon_code": couponCode || undefined,
+            "success_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}/success`,
+            "cancel_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}`,
+            "application_fee_amount": isAndreas ? 0 : platformCharge,
+            "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
+            "line_items": line_items
+          }
+        ]
       }
-    ]
-  }
 
-    console.log("Request body for checkout session API:", requestBody);
+      // console.log("Request body for checkout session API:", requestBody);
 
       const response = await fetch(checkoutSessionApiUrl, {
         method: 'POST',
@@ -85,12 +116,16 @@ export async function POST(req: Request) {
         body: JSON.stringify(requestBody),
       });
           
-      console.log("Response from checkout session API:", response);
+      // console.log("Response from checkout session API:", response);
 
       if (!response.ok) {
-        const errorData = await response.text();
-        console.error("Error response from checkout session API:", errorData);
-        return new NextResponse("Failed to create checkout session", { status: 500 });
+        const errorText = await response.text();
+        console.error("Error response from checkout session API:", errorText);
+
+        return NextResponse.json(
+          sanitizeCheckoutSessionError(response.status, errorText),
+          { status: response.status }
+        );
       }
 
       const data = await response.json();
@@ -103,33 +138,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Failed to create checkout session", ...data }, { status: 500 });
       }
     }
-    
-
-
-    // const stripe = accountId == 'acct_1Ry9rvDqtDds31FK' ? new Stripe(process.env.STRIPE_SECRET_KEY_DEV!, { apiVersion: "2025-06-30.basil" }) : mainStripe
-
-    // const baseSessionObject = {
-    //   mode: "payment",
-    //   payment_method_types: ["card"],
-    //   line_items: line_items,
-    //   payment_intent_data: {
-    //     application_fee_amount: isAndreas ? 0 : platformCharge, 
-    //     //   destination: accountId ,
-    //     // },
-    //   },
-    //   success_url: isAndreas ? "https://iamrebel.co.uk/checkout/success" : `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success`,
-    //   cancel_url: isAndreas ? "https://iamrebel.co.uk/" : `${process.env.NEXT_PUBLIC_BASE_URL}/`,
-    // } as Stripe.Checkout.SessionCreateParams;
-
-    // const sessionObject = couponCode ? {...baseSessionObject, discounts: [{ coupon: couponCode }]} : {...baseSessionObject, allow_promotion_codes: true };
-    // console.log("Checkout Session",sessionObject)
-
-
-
-    // const session = await stripe.checkout.sessions.create(sessionObject,
-    // {
-    //   stripeAccount: accountId, // 🔹 act on behalf of the connected account
-    // });
 
     // return NextResponse.json({ url: session.url });
   } catch (err) {

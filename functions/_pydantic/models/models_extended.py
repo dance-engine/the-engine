@@ -31,6 +31,14 @@ class CapacityModel(CapacityBase, DynamoModel):
         '''
         This function will mutate the capacity and other realated fields in a reliable way
         '''
+        # reimplementation of mutation logic in lambda_checkout.py
+        return "Not yet implemented"
+    
+    @classmethod
+    def calculate_remaining_capacity(cls):
+        '''
+        This function will calculate the remaining capacity based on the current state of other values belonging to this object
+        '''
         return "Not yet implemented"
 
     @model_validator(mode="before")
@@ -38,6 +46,11 @@ class CapacityModel(CapacityBase, DynamoModel):
         '''
         This function will validate that the capacity is valid based on the current state of other values belonging to this object
         '''
+        # get myself
+        # don't fail, but warn if something unusual is happening (reducing sold, or reserved)
+        # check that capacity is valid value i.e. if reducing capacity, check that new capacity is not below sold + reserved
+        # check that allocated_count (number_sold) is not above capacity - reserved
+        # check that reserved is not above capacity - allocated_count
         return "Not yet implemented"
 
 class BundleModel(BundleBase, DynamoModel):

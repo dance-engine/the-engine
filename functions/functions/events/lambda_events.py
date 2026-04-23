@@ -17,7 +17,7 @@ from _shared.DecimalEncoder import DecimalEncoder
 from _shared.naming import getOrganisationTableName, generateSlug
 from _shared.helpers import make_response
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action # pydantic layer
-from _pydantic.dynamodb import VersionConflictError # pydantic layer
+from _pydantic.dynamodb import VersionConflictError, transact_upsert # pydantic layer
 from _pydantic.models.events_models import CreateEventRequest, UpdateEventRequest, DeleteEventRequest, EventListResponse, EventResponse, EventListResponsePublic, EventResponsePublic, EventObjectPublic, EventObject, LocationObject, Status, CategoryEnum
 from _pydantic.models.models_extended import EventModel, LocationModel
 from _pydantic.models.items_models import Status as ItemStatus
@@ -67,6 +67,11 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
     try:
         # Fetch existing event to handle capacity delta calculations
         existing_event = None
+        capacity_delta = 0
+        event_add_fields: set[str] = set()
+        event_condition_expression = None
+        event_extra_expression_attr_names: dict[str, str] = {}
+        event_extra_expression_attr_values: dict[str, int] = {}
         if event_data.ksuid:
             try:
                 existing_result = get_single_event(organisation_slug, event_data.ksuid, public=False)
@@ -112,17 +117,18 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                                 "total_committed": total_committed
                             }
                         })
-                    
-                    # Calculate new remaining_capacity
-                    existing_remaining_raw = getattr(existing_event, 'remaining_capacity', None)
-                    if existing_remaining_raw is None:
-                        existing_remaining = existing_capacity - total_committed
-                    else:
-                        existing_remaining = existing_remaining_raw
 
-                    new_remaining = max(existing_remaining + capacity_delta, 0)
-                    event_update_data["remaining_capacity"] = new_remaining
-                    logger.info(f"Capacity delta: {capacity_delta}, new remaining: {new_remaining}")
+                    # Mutate remaining capacity atomically using ADD with a delta,
+                    # so concurrent checkout reservations don't get overwritten.
+                    event_update_data["remaining_capacity"] = capacity_delta
+                    event_add_fields.add("remaining_capacity")
+
+                    if capacity_delta < 0:
+                        event_condition_expression = "attribute_exists(#remaining_capacity) AND #remaining_capacity >= :min_remaining"
+                        event_extra_expression_attr_names["#remaining_capacity"] = "remaining_capacity"
+                        event_extra_expression_attr_values[":min_remaining"] = abs(capacity_delta)
+
+                    logger.info(f"Capacity delta: {capacity_delta}")
             else:
                 # New event or first time setting capacity
                 event_update_data["remaining_capacity"] = new_capacity
@@ -144,7 +150,56 @@ def update_event(request_data: UpdateEventRequest, organisation_slug: str, actor
                 "updated_at": current_time
             })
 
-        event_response = event_model.upsert(table, ["event_slug", "created_at"], explicit_fields_only=True)
+        if event_add_fields or event_condition_expression:
+            event_tx_result = transact_upsert(
+                table,
+                [event_model],
+                only_set_once=["event_slug", "created_at"],
+                condition_expression=event_condition_expression,
+                add_fields=event_add_fields,
+                extra_expression_attr_names=event_extra_expression_attr_names,
+                extra_expression_attr_values=event_extra_expression_attr_values,
+                explicit_fields_only=True,
+            )
+
+            if event_tx_result.failed:
+                event_failure = event_tx_result.failures[0] if event_tx_result.failures else None
+
+                if event_failure and event_failure.inferred == "remaining_capacity_insufficient":
+                    reserved = getattr(existing_event, 'reserved', 0) if existing_event else 0
+                    number_sold = getattr(existing_event, 'number_sold', 0) if existing_event else 0
+                    total_committed = (reserved or 0) + (number_sold or 0)
+                    return make_response(400, {
+                        "message": "Reserved and sold tickets are greater than your new capacity",
+                        "error": f"reserved={reserved}, number_sold={number_sold}, committed={total_committed}, capacity_delta={capacity_delta}",
+                        "details": {
+                            "current_capacity": getattr(existing_event, 'capacity', None) if existing_event else None,
+                            "new_capacity": event_update_data.get("capacity"),
+                            "reserved": reserved,
+                            "number_sold": number_sold,
+                            "total_committed": total_committed
+                        }
+                    })
+
+                if event_failure and event_failure.inferred == "version_conflict":
+                    return make_response(409, {
+                        "message": "Version conflict",
+                        "resource": event_model.PK,
+                        "your_version": getattr(event_data, "version", None)
+                    })
+
+                if event_failure and event_failure.code == "throttled":
+                    return make_response(503, {"message": "Database throttled, retry."})
+
+                raise RuntimeError(event_failure.message if event_failure else "Failed to upsert event")
+
+            class _EventUpsertCompat:
+                success = True
+                error = None
+            event_response = _EventUpsertCompat()
+        else:
+            event_response = event_model.upsert(table, ["event_slug", "created_at"], explicit_fields_only=True)
+
         if event_data.location:
             location_response = location_model.upsert(table, ["created_at"], explicit_fields_only=True)
 

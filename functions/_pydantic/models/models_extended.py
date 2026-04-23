@@ -5,9 +5,40 @@ from _pydantic.models.items_models import ItemObject as ItemBase, ItemObjectPubl
 from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, OrganisationThemeObject as OrganisationThemeBase, Status as OrganisationStatus, OrganisationObjectPublic
 from _pydantic.models.events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
 from _pydantic.dynamodb import DynamoModel, HistoryModel
+from _pydantic.shared_models import CapacityObject as CapacityBase
 from datetime import datetime, timezone
 from pydantic import model_validator, field_validator, Field
 from typing import Optional, Literal
+
+class CapacityModel(CapacityBase, DynamoModel):
+    organisation: str
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    entity_type: Literal["CAPACITY"] = "CAPACITY"
+    parent_type: str
+
+    @property
+    def PK(self): return f"CAPACITY#{self.ksuid}"
+
+    @property
+    def SK(self): return f"EVENT#{self.parent_ksuid}"
+
+    @property
+    def org_slug(self): return self._slugify(self.organisation)
+
+    @classmethod
+    def mutate_capacity(cls):
+        '''
+        This function will mutate the capacity and other realated fields in a reliable way
+        '''
+        return "Not yet implemented"
+
+    @model_validator(mode="before")
+    def validate_capacity(self) -> 'CapacityModel':
+        '''
+        This function will validate that the capacity is valid based on the current state of other values belonging to this object
+        '''
+        return "Not yet implemented"
 
 class BundleModel(BundleBase, DynamoModel):
     organisation: str

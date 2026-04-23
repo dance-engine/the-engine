@@ -158,3 +158,9 @@ models:
             allocated_count:
               type: integer
               description: "Number of this thing already allocated, probably through a sale (only relevant if mode is 'limited')"
+            version:
+              type: integer
+              description: "Version number"
+            oversell_limit:
+              type: integer
+              description: "*Future Feature: Number of additional items that can be sold beyond the defined capacity (only relevant if mode is 'limited')"

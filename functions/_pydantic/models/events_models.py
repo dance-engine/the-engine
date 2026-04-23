@@ -69,6 +69,8 @@ class EventObjectPublic(BaseModel):
     starts_at: datetime
     ends_at: datetime
     category: Optional[List[CategoryEnum]] = None
+    capacity: Optional[int] = Field(None, ge=1)
+    remaining_capacity: Optional[int] = None
     description: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

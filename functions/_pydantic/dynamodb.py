@@ -710,7 +710,9 @@ def transact_upsert(table,
                         old_version = None
                         if isinstance(old_item, dict):
                             old_version = old_item.get("version", None)
-                        if isinstance(old_version, (int, float)) and old_version > incoming_version:
+                            logger.info(f"Old item version: {old_version}, {type(old_version)}")
+                        # if isinstance(old_version, (int, float)) and old_version > incoming_version:
+                        if isinstance(old_version, dict) and "N" in old_version and old_version.get("N") is not None and int(old_version["N"]) > incoming_version:
                             inferred = "version_conflict"
 
                     if isinstance(old_item, dict):

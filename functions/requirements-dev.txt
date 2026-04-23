@@ -1,0 +1,23 @@
+# Local development and test dependencies.
+# Mirrors what the Lambda layers provide at runtime, plus test tooling.
+#
+# Install with: pip install -r requirements-dev.txt
+
+# --- Lambda layer: utils ---
+svix-ksuid
+
+# --- Lambda layer: pydantic ---
+pydantic[email,timezone]
+
+# --- Lambda layer: stripe ---
+stripe
+
+# --- Lambda layer: auth ---
+pyjwt
+pyjwt[crypto]
+
+# --- Lambda runtime (provided automatically in Lambda, needed locally) ---
+boto3
+
+# --- Test tooling ---
+pytest

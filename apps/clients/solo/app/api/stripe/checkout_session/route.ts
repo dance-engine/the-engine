@@ -10,6 +10,12 @@ const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-06-30.basil", // check current supported version
 });
 
+const getCheckoutSessionErrorMessage = (status: number) => {
+  if (status === 409) return "Event is at capacity.";
+  if (status >= 400 && status < 500) return "Unable to create checkout session.";
+  return "Failed to create checkout session for unknown reason.";
+};
+
 
 export async function POST(req: Request) {
   try {
@@ -91,23 +97,24 @@ export async function POST(req: Request) {
         try {
           const dataText = await response.text();
           console.error("Error response from checkout session API:", dataText);
-
-          let payload = { message: "Failed to create checkout session." };
           if (dataText) {
             try {
-              payload = JSON.parse(dataText);
+              JSON.parse(dataText);
             } catch {
-              payload = { message: dataText };
+              // Keep raw body in server logs only; never echo upstream body to browser.
             }
           }
 
           // Preserve upstream semantics (e.g. 409 at capacity) instead of forcing 500.
-          return NextResponse.json(payload, { status: response.status });
+          return NextResponse.json(
+            { message: getCheckoutSessionErrorMessage(response.status) },
+            { status: response.status }
+          );
         } catch (err) {
           console.error("Error parsing error response from checkout session API:", err);
           return NextResponse.json(
-            { message: "Failed to create checkout session for unknown reason" },
-            { status: response.status || 500 }
+            { message: getCheckoutSessionErrorMessage(response.status ?? 500) },
+            { status: response.status ?? 500 }
           );
         }
       }

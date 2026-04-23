@@ -325,7 +325,11 @@ def unreserve(stripe_event: dict):
         ) 
         if result.failed: 
             f = result.failures[0]
-            if f.inferred == "remaining_capacity_insufficient" or f.code == "ConditionalCheckFailed":
+            if (
+                f.inferred == "remaining_capacity_insufficient"
+                or f.code == "conditional_failed"
+                or f.dynamodb_code == "ConditionalCheckFailed"
+            ):
                 # reserved is already 0 — nothing to unreserve, treat as no-op
                 logger.warning("Unreserve skipped for event %s: reserved already at 0.", event_ksuid)
                 return make_response(200, {
@@ -412,7 +416,10 @@ def completed(stripe_event: dict):
             # ConditionalCheckFailed with require_reserved_at_least=1 means reserved is already 0.
             # This is a duplicate delivery — the webhook was already processed successfully.
             # Return 200 so Stripe does not retry endlessly.
-            if mutation_failure and mutation_failure.code == "ConditionalCheckFailed":
+            if mutation_failure and (
+                mutation_failure.code == "conditional_failed"
+                or mutation_failure.dynamodb_code == "ConditionalCheckFailed"
+            ):
                 logger.warning(
                     "Duplicate checkout.session.completed for session %s (event %s): reserved already 0, treating as already reconciled.",
                     session_id, event_ksuid

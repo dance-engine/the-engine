@@ -143,6 +143,9 @@ models:
             ksuid:
               type: string
               description: "ID of the object"
+            parent_ksuid:
+              type: string
+              description: "ID of the parent object this capacity belongs to, e.g. an event or item or bundle"
             capacity:
               type: integer
               description: "Total capacity (only relevant if mode is 'limited')"

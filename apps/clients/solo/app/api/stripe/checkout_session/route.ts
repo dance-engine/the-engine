@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
     // console.log("IsAndreas", isAndreas, accountId)
     // console.log("Received data:", { couponCode, accountId, lineItems, cartValue });
-    const platformCharge = isAndreas || !cartValue ? 0 : Math.round((cartValue * 0.01) + 10 );
+    const platformCharge = isAndreas || !cartValue ? 0 : Math.round((cartValue * 0.015) + 15 );
 
     if(priceId) {
       console.log("Creating Stripe checkout session with priceId:", priceId);

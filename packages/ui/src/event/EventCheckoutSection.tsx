@@ -10,6 +10,9 @@ type CheckoutLineItem = (ItemType | BundleTypeExtended) & {
   checkout_price?: number;
   checkout_price_id?: string;
   checkout_price_name?: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string;
 };
 
 export default function EventCheckoutSection({
@@ -18,12 +21,18 @@ export default function EventCheckoutSection({
   checkoutTotal,
   savings,
   highlightedPassLabel,
+  onLineItemContactChange,
 }: {
   org: OrganisationType;
   lineItems: CheckoutLineItem[];
   checkoutTotal: number;
   savings: number;
   highlightedPassLabel: string;
+  onLineItemContactChange: (
+    itemKsuid: string,
+    field: "customer_name" | "customer_email",
+    value: string,
+  ) => void;
 }) {
   return (
     <section id="checkout" className="p-6">
@@ -52,7 +61,7 @@ export default function EventCheckoutSection({
                 >
                   <div>
                     <p
-                      className="text-base font-semibold"
+                      className="text-lg font-semibold"
                       style={{ color: "var(--scheme-surface-text)" }}
                     >
                       {item.name}
@@ -61,7 +70,7 @@ export default function EventCheckoutSection({
                       className="mt-1 text-xs font-semibold uppercase tracking-[0.24em]"
                       style={{ color: "var(--scheme-surface-muted)" }}
                     >
-                      {item.entity_type === "BUNDLE" ? "Bundle" : "Item"}
+                      {item.entity_type === "BUNDLE" ? "Bundle" : "Individual Item"}
                       {item.checkout_price_name !== "Default" &&
                         ` · ${item.checkout_price_name}`}
                     </p>
@@ -78,9 +87,47 @@ export default function EventCheckoutSection({
                           : ""}
                       </p>
                     ) : null}
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      <input
+                        type="text"
+                        value={item.customer_name || ""}
+                        onChange={(event) =>
+                          onLineItemContactChange(
+                            item.ksuid,
+                            "customer_name",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Name on ticket"
+                        className="w-full border px-3 py-2 text-sm"
+                        style={{
+                          borderColor: "var(--scheme-surface-border, #d4d4d8)",
+                          backgroundColor: "white",
+                          color: "var(--scheme-surface-text)",
+                        }}
+                      />
+                      <input
+                        type="email"
+                        value={item.customer_email || ""}
+                        onChange={(event) =>
+                          onLineItemContactChange(
+                            item.ksuid,
+                            "customer_email",
+                            event.target.value,
+                          )
+                        }
+                        placeholder="Email for ticket"
+                        className="w-full border px-3 py-2 text-sm"
+                        style={{
+                          borderColor: "var(--scheme-surface-border, #d4d4d8)",
+                          backgroundColor: "white",
+                          color: "var(--scheme-surface-text)",
+                        }}
+                      />
+                    </div>
                   </div>
                   <p
-                    className="text-lg font-black"
+                    className="text-xl font-black"
                     style={{ color: "var(--scheme-surface-text)" }}
                   >
                     {formatPounds(item.checkout_price || 0)}

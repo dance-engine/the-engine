@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { BundleTypeExtended, ItemType } from "@dance-engine/schemas/bundle";
 import { EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";
@@ -21,6 +22,13 @@ type CheckoutLineItem = (ItemType | BundleTypeExtended) & {
   checkout_price?: number;
   checkout_price_id?: string;
   checkout_price_name?: string;
+  customer_name?: string;
+  customer_email?: string;
+};
+
+type LineItemContactDetails = {
+  customer_name?: string;
+  customer_email?: string;
 };
 
 const getHighlightBundleKsuid = (event: EventModelType) => {
@@ -52,6 +60,25 @@ function EventTicketingContent({
 }) {
   const { selected, included, pricingTier } = usePassSelectorState();
   const { toggleBundle, toggleItem, setPricingTier } = usePassSelectorActions();
+  const [lineItemContacts, setLineItemContacts] =
+    useState<Record<string, LineItemContactDetails>>({});
+
+  const handleLineItemContactChange = useCallback(
+    (
+      itemKsuid: string,
+      field: keyof LineItemContactDetails,
+      value: string,
+    ) => {
+      setLineItemContacts((previous) => ({
+        ...previous,
+        [itemKsuid]: {
+          ...previous[itemKsuid],
+          [field]: value,
+        },
+      }));
+    },
+    [],
+  );
 
   const items = getAllItems(event);
   const highlightBundleKsuid = getHighlightBundleKsuid(event);
@@ -82,10 +109,18 @@ function EventTicketingContent({
   const lineItems = [
     ...orderedBundles
       .filter((bundle) => selectedBundleIds.has(bundle.ksuid))
-      .map((bundle) => buildCheckoutItem(bundle, pricingTier)),
+      .map((bundle) => ({
+        ...buildCheckoutItem(bundle, pricingTier),
+        customer_name: lineItemContacts[bundle.ksuid]?.customer_name,
+        customer_email: lineItemContacts[bundle.ksuid]?.customer_email,
+      })),
     ...items
       .filter((item) => selectedItemIds.has(item.ksuid))
-      .map((item) => buildCheckoutItem(item, pricingTier)),
+      .map((item) => ({
+        ...buildCheckoutItem(item, pricingTier),
+        customer_name: lineItemContacts[item.ksuid]?.customer_name,
+        customer_email: lineItemContacts[item.ksuid]?.customer_email,
+      })),
   ];
 
   const requestedItems = Array.from(
@@ -139,6 +174,7 @@ function EventTicketingContent({
         checkoutTotal={checkoutTotal}
         savings={savings}
         highlightedPassLabel={highlightedPassLabel}
+        onLineItemContactChange={handleLineItemContactChange}
       />
     </div>
   ) : <div className="px-6 py-12 text-center" style={{ color: "var(--scheme-surface-text)" }}>No ticket options available for this event currently.</div>;

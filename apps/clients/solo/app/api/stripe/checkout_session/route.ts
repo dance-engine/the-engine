@@ -97,7 +97,11 @@ export async function POST(req: Request) {
       const requestBody = {
         "checkout": [
           {
-            "collect_customer_on_stripe": true,
+            // "collect_customer_on_stripe": true,
+            "collect_customer_on_stripe": false,
+            "name": lineItems[0].customer_name ? lineItems[0].customer_name : '',
+            "email": lineItems[0].customer_email ? lineItems[0].customer_email : '',
+            // "phone": lineItems[0].customer_phone ? lineItems[0].customer_phone : '',
             "coupon_code": couponCode || undefined,
             "success_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}/success`,
             "cancel_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}`,

@@ -212,6 +212,8 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+        // Don't reset loading — keep the button disabled while the browser navigates.
+        return;
       } else {
         console.error("Failed to add items to cart", data);
         showError('Failed to add items to cart.');

@@ -190,6 +190,20 @@ export default function EventCheckoutSection({
               color: "var(--scheme-action-text)",
             }}
           />
+          <div>
+            <p className="mt-4 text-xs" style={{ color: "var(--scheme-surface-muted)" }}>
+              By completing your purchase, you agree to our{" "}
+              <a
+                href="https://www.danceengine.com/tos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                terms of service
+              </a>
+              .
+            </p>
+          </div>
         </div>
       </div>
     </section>

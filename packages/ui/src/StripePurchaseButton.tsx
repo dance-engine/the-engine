@@ -156,11 +156,12 @@ const StripePurchaseButton = ({accountId, couponCode, label, priceId, cartValue,
   );
 };
 
-const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style, disabled}: 
+const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, cartValue, className, style, disabled, pricing_tier}: 
     {accountId?: string, 
       org?: OrganisationType, 
       label?: string, 
       priceId?: string, 
+      pricing_tier?: string,
       lineItems?: (ItemType | BundleTypeExtended)[], 
       cartValue?: number,
       className?: string, 
@@ -187,6 +188,7 @@ const StripeMultiPurchaseButton = ({accountId, org, label, priceId,lineItems, ca
         priceId: priceId, // must be the actual product IDs from Stripe
         lineItems: lineItems, // must be the actual product IDs from Stripe
         cartValue: cartValue ? cartValue : undefined,
+        pricing_tier: pricing_tier,
       });
       console.log("StripeMultiPurchaseButton body:", body);
 

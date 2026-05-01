@@ -44,7 +44,7 @@ const sanitizeCheckoutSessionError = (status: number, errorText: string) => {
 
 export async function POST(req: Request) {
   try {
-    const { couponCode, accountId, priceId, lineItems, cartValue, org } = await req.json();
+    const { couponCode, accountId, priceId, lineItems, cartValue, org, pricing_tier } = await req.json();
     const soloEdgeConfig = await getSoloEdgeConfig();
     const accountUrls = soloEdgeConfig?.accountUrls || fallbackAccountUrls;
     const isAndreas = accountId == 'acct_1RnpiyD1ZofqWwLa' ? true : false
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     // console.log("Received data:", { couponCode, accountId, lineItems, cartValue });
     const platformCharge = isAndreas || !cartValue ? 0 : Math.round((cartValue * 0.015) + 15 );
 
-    if(priceId) {
+    if(priceId) { // Legacy Code
       console.log("Creating Stripe checkout session with priceId:", priceId);
       const stripe = mainStripe
       const line_items = [{
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
             "name": item.name,
             "includes": item.entity_type == "BUNDLE" ? (item as BundleTypeExtended)?.includes || [] :   [],
             "event_ksuid": item.parent_event_ksuid,
-            "price_id": item.stripe_price_id,
+            "price_id": pricing_tier ? pricing_tier == "student" ? item.stripe_secondary_price_id : item.stripe_primary_price_id : item.stripe_price_id,
             "quantity": 1
       }))
 

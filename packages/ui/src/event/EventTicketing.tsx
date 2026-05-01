@@ -175,6 +175,7 @@ function EventTicketingContent({
         savings={savings}
         highlightedPassLabel={highlightedPassLabel}
         onLineItemContactChange={handleLineItemContactChange}
+        pricing_tier={pricingTier}
       />
     </div>
   ) : <div className="px-6 py-12 text-center" style={{ color: "var(--scheme-surface-text)" }}>No ticket options available for this event currently.</div>;

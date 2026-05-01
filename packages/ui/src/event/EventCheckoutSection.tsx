@@ -21,6 +21,7 @@ export default function EventCheckoutSection({
   checkoutTotal,
   savings,
   highlightedPassLabel,
+  pricing_tier,
   onLineItemContactChange,
 }: {
   org: OrganisationType;
@@ -28,6 +29,7 @@ export default function EventCheckoutSection({
   checkoutTotal: number;
   savings: number;
   highlightedPassLabel: string;
+  pricing_tier: string;
   onLineItemContactChange: (
     itemKsuid: string,
     field: "customer_name" | "customer_email",
@@ -179,6 +181,7 @@ export default function EventCheckoutSection({
             lineItems={lineItems}
             cartValue={checkoutTotal}
             disabled={lineItems.length === 0}
+            pricing_tier={pricing_tier}
             label={
               lineItems.length > 0
                 ? `Buy now · ${highlightedPassLabel}`

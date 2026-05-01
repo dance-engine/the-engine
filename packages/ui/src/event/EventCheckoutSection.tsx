@@ -36,6 +36,9 @@ export default function EventCheckoutSection({
     value: string,
   ) => void;
 }) {
+  const eventInputClassNames = "block w-full rounded-md bg-white px-3 py-1.5 text-base outline-black/10 text-gray-900 outline-1 outline-offset-1 placeholder:text-gray-400 \
+                          focus:outline-2 focus:-outline-offset-2  focus:outline-keppel-logo/50 sm:text-sm/6 \
+                          dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-keppel-logo/50"
   return (
     <section id="checkout" className="p-6">
       <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
@@ -89,9 +92,11 @@ export default function EventCheckoutSection({
                           : ""}
                       </p>
                     ) : null}
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    <div className="mt-4 grid gap-2 sm:grid-cols-[2fr_3fr]">
                       <input
                         type="text"
+                        name="name"
+                        autoComplete="name"
                         value={item.customer_name || ""}
                         onChange={(event) =>
                           onLineItemContactChange(
@@ -101,15 +106,12 @@ export default function EventCheckoutSection({
                           )
                         }
                         placeholder="Name on ticket"
-                        className="w-full border px-3 py-2 text-sm"
-                        style={{
-                          borderColor: "var(--scheme-surface-border, #d4d4d8)",
-                          backgroundColor: "white",
-                          color: "var(--scheme-surface-text)",
-                        }}
+                        className={eventInputClassNames}
                       />
                       <input
                         type="email"
+                        name="email"
+                        autoComplete="email"
                         value={item.customer_email || ""}
                         onChange={(event) =>
                           onLineItemContactChange(
@@ -119,12 +121,7 @@ export default function EventCheckoutSection({
                           )
                         }
                         placeholder="Email for ticket"
-                        className="w-full border px-3 py-2 text-sm"
-                        style={{
-                          borderColor: "var(--scheme-surface-border, #d4d4d8)",
-                          backgroundColor: "white",
-                          color: "var(--scheme-surface-text)",
-                        }}
+                        className={eventInputClassNames}
                       />
                     </div>
                   </div>

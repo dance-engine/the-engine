@@ -1,4 +1,11 @@
 "use client";
+// Event Page
+// This page is responsible for displaying the details of a single event. 
+// It fetches the event data from the Dance Engine API using the event's ksuid. 
+// The page also retrieves organization settings to apply theming and other configurations specific to the organization hosting the event. 
+// The main components rendered on this page include the
+//  * hero banner, facts panel, ticketing information, and a map showing the event location. 
+// The page also handles loading states and displays appropriate messages if the event cannot be loaded or if multiple events match the URL.
 
 import useSWR from "swr";
 import dynamic from "next/dynamic";
@@ -6,6 +13,7 @@ import NextLink from "next/link";
 import type { CSSProperties } from "react";
 import { format } from "date-fns";
 import { Node, generateHTML, type JSONContent } from "@tiptap/core";
+import { parseAndSanitizeRichTextDocument } from "@dance-engine/utils/richTextSanitizer";
 import { createEvent, EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";
 import { getOrganisationTheme } from "./lib/organisationTheme";
@@ -60,171 +68,22 @@ const UnsupportedBlock = Node.create({
   },
 });
 
-type RichTextMark = {
-  type?: unknown;
-  attrs?: Record<string, unknown>;
-};
-
-type RichTextNodeRaw = {
-  type?: unknown;
-  text?: unknown;
-  attrs?: Record<string, unknown>;
-  marks?: RichTextMark[];
-  content?: RichTextNodeRaw[];
-};
-
-const ALLOWED_NODE_TYPES: Set<string> = new Set(
-  RICH_TEXT_ALLOWED_NODE_TYPES as readonly string[],
-);
-const ALLOWED_MARK_TYPES: Set<string> = new Set(
-  RICH_TEXT_ALLOWED_MARK_TYPES as readonly string[],
-);
-const INLINE_PARENT_TYPES = new Set(["paragraph", "heading"]);
-
-const extractPlainText = (node: RichTextNodeRaw): string => {
-  const fragments: string[] = [];
-
-  if (typeof node.text === "string") {
-    fragments.push(node.text);
-  }
-
-  if (Array.isArray(node.content)) {
-    for (const child of node.content) {
-      const childText = extractPlainText(child);
-      if (childText) {
-        fragments.push(childText);
-      }
-    }
-  }
-
-  return fragments.join(" ").trim();
-};
-
-const sanitizeLinkAttrs = (attrs?: Record<string, unknown>) => {
-  if (!attrs) {
-    return undefined;
-  }
-
-  const href = typeof attrs.href === "string" ? attrs.href : undefined;
-  if (!href) {
-    return undefined;
-  }
-
-  return {
-    href,
-    target: typeof attrs.target === "string" ? attrs.target : null,
-    rel: typeof attrs.rel === "string" ? attrs.rel : null,
-    class: typeof attrs.class === "string" ? attrs.class : null,
-  };
-};
-
-const sanitizeMarks = (marks?: RichTextMark[]) => {
-  if (!Array.isArray(marks)) {
-    return undefined;
-  }
-
-  const sanitized = marks
-    .map((mark) => {
-      const markType = typeof mark?.type === "string" ? mark.type : undefined;
-      if (!markType || !ALLOWED_MARK_TYPES.has(markType)) {
-        return null;
-      }
-
-      if (markType === "link") {
-        return {
-          type: markType,
-          attrs: sanitizeLinkAttrs(mark.attrs),
-        };
-      }
-
-      return { type: markType };
-    })
-    .filter(Boolean);
-
-  return sanitized.length > 0
-    ? (sanitized as Array<{ type: string; attrs?: Record<string, unknown> }> )
-    : undefined;
-};
-
-const sanitizeNode = (node: RichTextNodeRaw, parentType?: string): JSONContent[] => {
-  const nodeType = typeof node?.type === "string" ? node.type : undefined;
-  const sanitizedContent = Array.isArray(node?.content)
-    ? node.content.flatMap((child) => sanitizeNode(child, nodeType))
-    : undefined;
-
-  if (!nodeType || !ALLOWED_NODE_TYPES.has(nodeType)) {
-    const fallbackText = extractPlainText(node);
-
-    if (parentType && INLINE_PARENT_TYPES.has(parentType)) {
-      return fallbackText ? [{ type: "text", text: fallbackText }] : [];
-    }
-
-    if (fallbackText) {
-      return [
-        {
-          type: "unsupportedBlock",
-          attrs: { originalType: nodeType || "unknown" },
-          content: [{ type: "text", text: fallbackText }],
-        },
-      ];
-    }
-
-    return sanitizedContent || [];
-  }
-
-  if (nodeType === "text") {
-    const text = typeof node.text === "string" ? node.text : "";
-    if (!text) {
-      return [];
-    }
-
-    return [
-      {
-        type: "text",
-        text,
-        marks: sanitizeMarks(node.marks),
-      },
-    ];
-  }
-
-  const sanitizedNode: JSONContent = {
-    type: nodeType,
-  };
-
-  if (nodeType === "heading") {
-    const level =
-      typeof node.attrs?.level === "number" && node.attrs.level >= 1 && node.attrs.level <= 6
-        ? node.attrs.level
-        : 2;
-    sanitizedNode.attrs = { level };
-  }
-
-  if (sanitizedContent && sanitizedContent.length > 0) {
-    sanitizedNode.content = sanitizedContent;
-  }
-
-  if (nodeType === "doc" && !sanitizedNode.content?.length) {
-    sanitizedNode.content = [{ type: "paragraph", content: [] }];
-  }
-
-  return [sanitizedNode];
-};
-
 const safeGenerateEventDescriptionHtml = (description?: string) => {
-  if (!description) {
+  const sanitizedDoc = parseAndSanitizeRichTextDocument(description, {
+    allowedNodeTypes: RICH_TEXT_ALLOWED_NODE_TYPES,
+    allowedMarkTypes: RICH_TEXT_ALLOWED_MARK_TYPES,
+    inlineParentTypes: ["paragraph", "heading"],
+    unsupportedBlockType: "unsupportedBlock",
+  });
+
+  if (!sanitizedDoc) {
     return "";
   }
 
-  try {
-    const parsed = JSON.parse(description) as RichTextNodeRaw;
-    const [rootNode] = sanitizeNode(parsed);
-    const sanitizedDoc: JSONContent =
-      rootNode?.type === "doc" ? rootNode : { type: "doc", content: [] };
-
-    return generateHTML(sanitizedDoc, [...richTextRenderExtensions, UnsupportedBlock]);
-  } catch {
-    return "";
-  }
+  return generateHTML(
+    sanitizedDoc as unknown as JSONContent,
+    [...richTextRenderExtensions, UnsupportedBlock],
+  );
 };
 
 const getHighlightBundleLabel = (event: EventModelType) => {

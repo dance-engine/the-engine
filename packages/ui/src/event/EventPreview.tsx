@@ -1,11 +1,16 @@
 "use client";
 
 import { format } from "date-fns";
-import { generateHTML } from "@tiptap/core";
+import { generateHTML, type JSONContent } from "@tiptap/core";
 import type { CSSProperties } from "react";
+import { parseAndSanitizeRichTextDocument } from "@dance-engine/utils/richTextSanitizer";
 import { EventModelType } from "@dance-engine/schemas/events";
 import { OrganisationType } from "@dance-engine/schemas/organisation";
-import { richTextRenderExtensions } from "../richText";
+import {
+  RICH_TEXT_ALLOWED_MARK_TYPES,
+  RICH_TEXT_ALLOWED_NODE_TYPES,
+  richTextRenderExtensions,
+} from "../richText";
 import EventFactsPanel from "./EventFactsPanel";
 import EventFooter from "./EventFooter";
 import EventHeroBanner from "./EventHeroBanner";
@@ -165,8 +170,19 @@ export default function EventPreview({
   const startDate = event.starts_at ? new Date(event.starts_at) : undefined;
   const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
   const highlightPassLabel = getHighlightBundleLabel(event);
-  const eventDescription = event.description
-    ? generateHTML(JSON.parse(event.description), richTextRenderExtensions)
+  const sanitizedEventDescription = parseAndSanitizeRichTextDocument(
+    event.description,
+    {
+      allowedNodeTypes: RICH_TEXT_ALLOWED_NODE_TYPES,
+      allowedMarkTypes: RICH_TEXT_ALLOWED_MARK_TYPES,
+      inlineParentTypes: ["paragraph", "heading"],
+    },
+  );
+  const eventDescription = sanitizedEventDescription
+    ? generateHTML(
+        sanitizedEventDescription as unknown as JSONContent,
+        richTextRenderExtensions,
+      )
     : "";
 
   return (

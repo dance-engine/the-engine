@@ -18,6 +18,9 @@
     "./arrayHelpers": {
       "default": "./dist/arrayHelpers.js"
     },
+    "./richTextSanitizer": {
+      "default": "./dist/richTextSanitizer.js"
+    },
     "./OrgContext": {
       "default": "./src/hooks/OrgContext.tsx"
     },

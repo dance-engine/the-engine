@@ -1,4 +1,9 @@
 'use client';
+// Event List
+// This component is used to display a list of events in a carousel format. 
+// It fetches event data from the Dance Engine API and displays it as a card.  Each event card includes the event's banner, name, category, and start/end times. 
+// Users can navigate through the events using previous and next buttons. The component also handles loading and error states gracefully.
+
 import { useCallback, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import {createEvent} from '@dance-engine/schemas/events';

@@ -214,7 +214,12 @@ def start(validated_request: CreateCheckoutRequest, organisation_slug: str, acto
             }
 
         payment_intent_data = {
-            "application_fee_amount": checkout.application_fee_amount if checkout.application_fee_amount else 0
+            "application_fee_amount": checkout.application_fee_amount if checkout.application_fee_amount else 0,
+            "metadata": {
+                "organisation": organisation_slug,
+                "event_ksuid": event_ksuid,
+                **extra_metadata
+            }
         }
         if checkout.email:
             # Ask Stripe to send its own payment receipt to the checkout email when available.

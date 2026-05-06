@@ -1,0 +1,11 @@
+{
+  "brand_logo_url": "https://d43ttk7zo7n9p.cloudfront.net/demo/organtisation/logo/00e98ec7-3c4f-4944-9d69-b88e900964fb.png",
+  "brand_name": "Example Brand",
+  "event_name": "Example Event",
+  "ticket_type": "VIP",
+  "event_date": "2024-12-31",
+  "event_time": "20:00",
+  "venue_name": "Example Venue",
+  "qr_image_url": "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ABC123XYZ",
+  "ticket_code": "ABC123XYZ"
+}

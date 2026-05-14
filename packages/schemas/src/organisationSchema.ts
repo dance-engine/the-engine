@@ -1,5 +1,4 @@
 'use client'
-import { log } from "console";
 import { z } from "zod";
 
 // Define the event schema
@@ -11,6 +10,7 @@ export const organisationSchema = z.object({
   logo: z.string().optional().describe('Appears in the top left of your page'),
   logo_secondary_url: z.string().optional().describe('Optional secondary logo variant URL'),
   logo_icon_url: z.string().optional().describe('Optional icon logo URL'),
+  whatsapp_join_url: z.string().url().optional().describe('Public WhatsApp join URL for approved members'),
   css_vars: z.string().optional().describe('CSS variables for the organisation used to customise SOLO templates'),
   description: z.string().min(2, "Name must be at least 2 characters"),
   organisation: z.string().min(2, "Slug must be at least 2 characters").max(50, "Slug must be less than 50 characters").regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with dashes"),
@@ -35,6 +35,7 @@ export const organisationMetadata = {
   logo: { fileUploadField: 'single' },
   logo_secondary_url: { fileUploadField: 'single' },
   logo_icon_url: { fileUploadField: 'single' },
+  whatsapp_join_url: {},
   css_vars: { info: true },
   description: { richText: true },
   organisation: { info: true }, 

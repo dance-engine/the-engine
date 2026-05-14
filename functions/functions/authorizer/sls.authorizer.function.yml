@@ -10,3 +10,5 @@
       - !Ref AuthLambdaLayer
     environment:
       CLERK_KEY: ${ssm:/danceengine/${sls:stage}/clerk/public_key}
+      SERVICE_BEARER_TOKEN: ${ssm:/danceengine/${sls:stage}/service_tokens/join_api_bearer}
+      SERVICE_ALLOWED_ORGS: ${ssm:/danceengine/${sls:stage}/service_tokens/join_api_allowed_orgs}

@@ -38,6 +38,7 @@ const detailFields = [
   "organisation",
   "status",
   "account_id",
+  "whatsapp_join_url",
 ] as const;
 const brandingFields = [
   "banner",
@@ -103,6 +104,7 @@ const detailSchema = organisationSchema.pick({
   organisation: true,
   status: true,
   account_id: true,
+  whatsapp_join_url: true,
 });
 
 const brandingSchema = organisationSchema.pick({
@@ -123,6 +125,7 @@ const sectionMetadata = {
     description: organisationMetadata.description,
     organisation: organisationMetadata.organisation,
     account_id: organisationMetadata.account_id,
+    whatsapp_join_url: organisationMetadata.whatsapp_join_url,
   },
   branding: {
     banner: organisationMetadata.banner,

@@ -111,10 +111,15 @@ class OrganisationObject(BaseModel):
         None,
         description='URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed',
     )
+    whatsapp_join_url: Optional[str] = Field(
+        None, description='Public WhatsApp join URL for approved members'
+    )
 
 
 class OrganisationObjectPublic(OrganisationObject):
-    pass
+    whatsapp_join_url: Optional[str] = Field(
+        None, exclude=True, description='Hidden from public organisation responses'
+    )
 
 
 class OrganisationResponse(BaseModel):

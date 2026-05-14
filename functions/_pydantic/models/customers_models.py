@@ -14,6 +14,9 @@ class CustomerObject(BaseModel):
     name: str = Field(..., description='The name of the customer.')
     email: Optional[str] = Field(None, description='The email of the customer.')
     phone: Optional[str] = Field(None, description='Phone number for the customer.')
+    whatsapp_group_status: Optional[str] = Field(
+        None, description='Status of this customer in the WhatsApp group.'
+    )
     bio: Optional[str] = Field(
         None, description='Short description or biography for the customer.'
     )

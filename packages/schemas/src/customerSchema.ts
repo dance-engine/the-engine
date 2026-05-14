@@ -8,6 +8,7 @@ export const customerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().min(2, "Name must be at least 2 characters"),
   phone: z.string().min(2, "Name must be at least 2 characters"),
+  whatsapp_group_status: z.enum(["unknown", "pending", "invited", "joined", "left"]).optional().describe("Customer status in WhatsApp group"),
   bio: z.string().describe("About this person"),
   meta: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
   created_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {

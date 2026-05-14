@@ -21,6 +21,9 @@ CustomerObject:
           phone:
             type: string
             description: "Phone number for the customer."
+          whatsapp_group_status:
+            type: string
+            description: "Status of this customer in the WhatsApp group."
           bio:
             type: string
             description: "Short description or biography for the customer."

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 
 type JoinQuestion = {
@@ -41,6 +42,25 @@ function selectRandomQuestions(bank: JoinQuestion[], count: number): JoinQuestio
   return shuffled.slice(0, count);
 }
 
+function selectJoinQuestions(bank: JoinQuestion[]): JoinQuestion[] {
+  if (bank.length < 2) {
+    return bank;
+  }
+
+  const teacherQuestion = bank.find((question) => question.id === 'local-teacher');
+  if (!teacherQuestion) {
+    return selectRandomQuestions(bank, 2);
+  }
+
+  const nonTeacherQuestions = bank.filter((question) => question.id !== 'local-teacher');
+  if (!nonTeacherQuestions.length) {
+    return [teacherQuestion];
+  }
+
+  const [randomSecondQuestion] = selectRandomQuestions(nonTeacherQuestions, 1);
+  return [teacherQuestion, randomSecondQuestion];
+}
+
 declare global {
   interface Window {
     turnstile?: {
@@ -65,7 +85,12 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [questions, setQuestions] = useState<JoinQuestion[]>(() => initialQuestions);
+  const [questions, setQuestions] = useState<JoinQuestion[]>(() => {
+    if (questionBank.length) {
+      return selectJoinQuestions(questionBank);
+    }
+    return initialQuestions;
+  });
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [captchaToken, setCaptchaToken] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,8 +100,53 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
 
+  const clearTurnstileWidget = () => {
+    if (!window.turnstile || !widgetIdRef.current) {
+      return;
+    }
+
+    try {
+      window.turnstile.remove(widgetIdRef.current);
+    } catch {
+      // Ignore stale widget errors during navigation/unmount races.
+    } finally {
+      widgetIdRef.current = null;
+    }
+  };
+
+  const resetTurnstileWidget = () => {
+    if (!window.turnstile || !widgetIdRef.current) {
+      return;
+    }
+
+    try {
+      window.turnstile.reset(widgetIdRef.current);
+    } catch {
+      // If the widget no longer exists (e.g. back nav), clear stale ID.
+      widgetIdRef.current = null;
+    }
+  };
+
   const siteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+  const turnstileTheme = useMemo<'light' | 'dark' | 'auto'>(() => {
+    const value = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_THEME;
+    if (value === 'light' || value === 'dark' || value === 'auto') {
+      return value;
+    }
+    return 'dark';
+  }, []);
+  const turnstileSize = useMemo<'normal' | 'compact'>(() => {
+    return process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SIZE === 'compact' ? 'compact' : 'normal';
+  }, []);
   const joinApiUrl = useMemo(() => '/api/join', []);
+  const organisationName = useMemo(() => {
+    const normalized = orgSlug.replace(/[-_]+/g, ' ').trim();
+    if (!normalized) {
+      return 'this organisation';
+    }
+
+    return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
+  }, [orgSlug]);
 
   useEffect(() => {
     const initialAnswers: Record<string, string> = {};
@@ -134,8 +204,8 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
           }
           setErrorMessage('Captcha check failed. Please try again.');
         },
-        theme: 'auto',
-        size: 'normal',
+        theme: turnstileTheme,
+        size: turnstileSize,
       });
     };
 
@@ -147,27 +217,22 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
 
     return () => {
       window.clearInterval(intervalId);
-      if (window.turnstile && widgetIdRef.current) {
-        window.turnstile.remove(widgetIdRef.current);
-        widgetIdRef.current = null;
-      }
+      clearTurnstileWidget();
     };
-  }, [siteKey]);
+  }, [siteKey, turnstileSize, turnstileTheme]);
 
   const resetForm = () => {
     setFullName('');
     setEmail('');
     setPhoneNumber('');
-    if (questionBank.length >= 2) {
-      setQuestions(selectRandomQuestions(questionBank, 2));
+    if (questionBank.length) {
+      setQuestions(selectJoinQuestions(questionBank));
     }
     setCaptchaToken('');
     setErrorMessage('');
     setResult({ status: 'idle' });
 
-    if (window.turnstile && widgetIdRef.current) {
-      window.turnstile.reset(widgetIdRef.current);
-    }
+    resetTurnstileWidget();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -206,7 +271,7 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
 
     try {
       const response = await fetch(joinApiUrl, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -256,12 +321,12 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
   };
 
   return (
-    <main className="min-h-screen bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)]">
+    <main className="flex-grow bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)]">
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="rounded-2xl border border-white/20 bg-black/20 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
           <h1 className="text-3xl font-semibold tracking-tight">Join The Community</h1>
           <p className="mt-2 text-sm text-white/80">
-            Complete this short application for <strong>{orgSlug}</strong>. If your answers match and you&apos;re not a bot or scammer, you will get instant access.
+            Complete this short application for <strong>{organisationName}</strong>. If your answers match and you&apos;re not a bot or scammer, you will get instant access.
             Otherwise your request will be marked pending and an admin will review it, we may message you for more information.
           </p>
 
@@ -317,9 +382,6 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
 
           {result.status === 'idle' ? (
             <form className="mt-6 space-y-5" onSubmit={handleSubmit} autoComplete="on" noValidate={false}>
-              <p id="join-form-help" className="text-xs text-white/70">
-                Your browser can autofill your details. Fields marked required must be completed.
-              </p>
 
               <div className="space-y-2">
                 <label htmlFor="join-name" className="text-sm font-medium text-white/90">
@@ -383,55 +445,53 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                 />
               </div>
 
-              <fieldset className="space-y-4 rounded-xl border border-white/20 bg-black/15 p-4">
-                <legend className="px-2 text-sm font-semibold text-white/90">Answer 2 Questions</legend>
+              <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                <div className="space-y-4">
+                  {questions.map((question) => (
+                    <div key={question.id} className="space-y-2">
+                      <label htmlFor={`q-${question.id}`} className="block text-sm font-medium text-white/90">
+                        {question.prompt}
+                      </label>
+                      <input
+                        id={`q-${question.id}`}
+                        type="text"
+                        required
+                        autoComplete="off"
+                        enterKeyHint="next"
+                        aria-required="true"
+                        aria-describedby="join-form-help"
+                        value={answers[question.id] || ''}
+                        onChange={(event) => {
+                          setAnswers((previous) => ({
+                            ...previous,
+                            [question.id]: event.target.value,
+                          }));
+                        }}
+                        className="w-full rounded-lg border border-white/25 bg-black/25 px-3 py-2.5 text-base outline-none transition focus:border-cerise-logo"
+                      />
+                    </div>
+                  ))}
+                </div>
 
-                {questions.map((question, index) => (
-                  <div key={question.id} className="space-y-2">
-                    <label htmlFor={`q-${question.id}`} className="block text-sm font-medium text-white/90">
-                      {index + 1}. {question.prompt}
-                    </label>
-                    <input
-                      id={`q-${question.id}`}
-                      type="text"
-                      required
-                      autoComplete="off"
-                      enterKeyHint="next"
-                      aria-required="true"
-                      aria-describedby="join-form-help"
-                      value={answers[question.id] || ''}
-                      onChange={(event) => {
-                        setAnswers((previous) => ({
-                          ...previous,
-                          [question.id]: event.target.value,
-                        }));
-                      }}
-                      className="w-full rounded-lg border border-white/25 bg-black/25 px-3 py-2.5 text-base outline-none transition focus:border-cerise-logo"
-                    />
-                  </div>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setQuestions(selectRandomQuestions(questionBank, 2))}
-                  className="inline-flex rounded-lg border border-white/35 px-3 py-2 text-sm font-medium text-white hover:bg-white/10"
-                >
-                  Pick 2 Different Questions
-                </button>
-              </fieldset>
+                <div className="md:pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setQuestions(selectJoinQuestions(questionBank))}
+                    className="inline-flex w-full justify-center rounded-lg border border-white/35 px-3 py-2 text-sm font-medium text-white hover:bg-white/10 md:w-auto"
+                  >
+                    Change question
+                  </button>
+                </div>
+              </div>
 
               <div className="space-y-2">
-                <p id="join-captcha-label" className="text-sm font-medium text-white/90">Captcha</p>
+                <p id="join-captcha-label" className="text-sm font-medium text-white/90">Just checking your a real person</p>
                 <div
                   ref={widgetContainerRef}
                   className="min-h-16"
                   role="group"
                   aria-labelledby="join-captcha-label"
-                  aria-describedby="join-captcha-help"
                 />
-                <p id="join-captcha-help" className="text-xs text-white/70">
-                  Complete this challenge to prove you are human.
-                </p>
                 {!siteKey ? (
                   <p className="text-xs text-amber-200/90">
                     Turnstile is not configured. Set NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY.
@@ -458,6 +518,7 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Join Request'}
               </button>
+              <p>By submitting this form you consent to the   <Link href="/tos" className="underline">terms and conditions</Link>, <Link href="/privacy" className="underline">privacy policy</Link> and to Dance Engine and {organisationName} sending you relevant SBK information.</p>
             </form>
           ) : null}
         </div>

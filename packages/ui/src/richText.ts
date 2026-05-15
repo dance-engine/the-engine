@@ -14,6 +14,7 @@ import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 import Link from "@tiptap/extension-link";
 import HardBreak from "@tiptap/extension-hard-break";
+import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 
 export const RICH_TEXT_ALLOWED_NODE_TYPES = [
   "doc",
@@ -26,6 +27,10 @@ export const RICH_TEXT_ALLOWED_NODE_TYPES = [
   "orderedList",
   "listItem",
   "hardBreak",
+  "table",
+  "tableRow",
+  "tableHeader",
+  "tableCell",
 ] as const;
 
 export const RICH_TEXT_ALLOWED_MARK_TYPES = [
@@ -53,6 +58,12 @@ const richTextSharedExtensions = [
   BulletedList,
   OrderedList,
   HardBreak,
+  Table.configure({
+    resizable: true,
+  }),
+  TableRow,
+  TableHeader,
+  TableCell,
 ];
 
 export const richTextRenderExtensions = [

@@ -19,6 +19,10 @@ describe("richText contract", () => {
       "orderedList",
       "listItem",
       "hardBreak",
+      "table",
+      "tableRow",
+      "tableHeader",
+      "tableCell",
     ]);
 
     expect(RICH_TEXT_ALLOWED_MARK_TYPES).toEqual([

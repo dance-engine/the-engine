@@ -31,6 +31,79 @@ type OrganisationSettingsResponse = {
   organisation?: OrganisationRecord;
 };
 
+type CustomerRecord = {
+  email?: string;
+  bio?: string;
+  version?: number;
+};
+
+type CustomerListResponse = {
+  customers?: Array<CustomerRecord | null>;
+};
+
+// Tiptap content block structure
+type TiptapParagraph = {
+  type: 'paragraph';
+  attrs?: Record<string, unknown>;
+  content?: Array<{ type: 'text'; text: string }>;
+};
+
+type TiptapTableNode = {
+  type: 'table';
+  content?: Array<Record<string, unknown>>;
+};
+
+type TiptapDoc = {
+  type: 'doc';
+  content: Array<TiptapParagraph | TiptapTableNode | Record<string, unknown>>;
+};
+
+const WHATSAPP_METADATA_TABLE_HEADER = 'WhatsApp Metadata';
+
+const getFirstTextFromNode = (node: unknown): string => {
+  if (!node || typeof node !== 'object') {
+    return '';
+  }
+
+  const maybeText = (node as { text?: unknown }).text;
+  if (typeof maybeText === 'string') {
+    return maybeText.trim();
+  }
+
+  const content = (node as { content?: unknown }).content;
+  if (!Array.isArray(content)) {
+    return '';
+  }
+
+  for (const child of content) {
+    const text = getFirstTextFromNode(child);
+    if (text) {
+      return text;
+    }
+  }
+
+  return '';
+};
+
+const isWhatsappMetadataTable = (node: unknown): boolean => {
+  if (!node || typeof node !== 'object') {
+    return false;
+  }
+
+  const tableNode = node as { type?: unknown; content?: unknown };
+  if (tableNode.type !== 'table' || !Array.isArray(tableNode.content) || tableNode.content.length === 0) {
+    return false;
+  }
+
+  const firstRow = tableNode.content[0] as { content?: unknown };
+  if (!firstRow || !Array.isArray(firstRow.content) || firstRow.content.length === 0) {
+    return false;
+  }
+
+  const firstCell = firstRow.content[0];
+  return getFirstTextFromNode(firstCell) === WHATSAPP_METADATA_TABLE_HEADER;
+};
+
 const getDanceEngineApiBase = (): string => (process.env.NEXT_PUBLIC_DANCE_ENGINE_API || '').trim();
 
 const getDanceEngineBearerToken = (): string =>
@@ -64,6 +137,195 @@ const extractWhatsappJoinUrl = (record?: OrganisationRecord | null): string => {
     || ''
   ).trim();
 };
+
+const parseBioAsJson = (bio: string | undefined): TiptapDoc => {
+  if (!bio) {
+    return { type: 'doc', content: [] };
+  }
+
+  const trimmedBio = bio.trim();
+  if (!trimmedBio) {
+    return { type: 'doc', content: [] };
+  }
+
+  try {
+    const parsed = JSON.parse(bio);
+    if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
+      return parsed as TiptapDoc;
+    }
+  } catch {
+    return {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: trimmedBio,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  return { type: 'doc', content: [] };
+};
+
+const bioToJsonString = (doc: TiptapDoc): string => JSON.stringify(doc);
+
+const buildWhatsappMetadataTable = (status: 'pending' | 'invited'): TiptapTableNode => ({
+  type: 'table',
+  content: [
+    {
+      type: 'tableRow',
+      content: [
+        {
+          type: 'tableHeader',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: WHATSAPP_METADATA_TABLE_HEADER }],
+            },
+          ],
+        },
+        {
+          type: 'tableHeader',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Value' }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'tableRow',
+      content: [
+        {
+          type: 'tableCell',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Group Status' }],
+            },
+          ],
+        },
+        {
+          type: 'tableCell',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: status }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'tableRow',
+      content: [
+        {
+          type: 'tableCell',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Updated At' }],
+            },
+          ],
+        },
+        {
+          type: 'tableCell',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: new Date().toISOString() }],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});
+
+const buildJoinApplicationParagraph = (score: number, answers: Array<{ questionId: string; answer: string }>): TiptapParagraph => {
+  const lines = [
+    `Join Application Score: ${score.toFixed(2)}`,
+    ...answers.map((item) => `${item.questionId}: ${item.answer}`),
+  ];
+  return {
+    type: 'paragraph',
+    content: [
+      {
+        type: 'text',
+        text: lines.join('\n'),
+      },
+    ],
+  };
+};
+
+const upsertBioWithWhatsappAndJoinApplication = (
+  existingBio: string | undefined,
+  whatsappTable: TiptapTableNode,
+  joinApplicationParagraph: TiptapParagraph,
+): string => {
+  const doc = parseBioAsJson(existingBio);
+
+  // Remove existing WhatsApp metadata table if present.
+  doc.content = doc.content.filter((node) => !isWhatsappMetadataTable(node));
+
+  // Add updated WhatsApp metadata table.
+  doc.content.push(whatsappTable);
+
+  // Add join application paragraph
+  doc.content.push(joinApplicationParagraph);
+
+  return bioToJsonString(doc);
+};
+
+async function fetchExistingCustomer(input: {
+  orgSlug: string;
+  email: string;
+  bearerToken?: string;
+}): Promise<{ bio: string; version: number }> {
+  const apiBase = getDanceEngineApiBase();
+  if (!apiBase) {
+    return { bio: '', version: 0 };
+  }
+
+  const bearerToken = (input.bearerToken || getDanceEngineBearerToken()).trim();
+  if (!bearerToken) {
+    return { bio: '', version: 0 };
+  }
+
+  const response = await fetch(`${apiBase}/${input.orgSlug}/customers/${encodeURIComponent(input.email)}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${bearerToken}`,
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return { bio: '', version: 0 };
+  }
+
+  const data = (await response.json().catch(() => ({}))) as CustomerListResponse;
+  const customers = Array.isArray(data.customers) ? data.customers : [];
+  const matchingCustomer = customers.find((customer) => {
+    if (!customer || !customer.email) {
+      return false;
+    }
+    return customer.email.toLowerCase() === input.email.toLowerCase();
+  }) || customers.find((customer) => Boolean(customer));
+
+  return {
+    bio: (matchingCustomer?.bio || '').trim(),
+    version: (matchingCustomer?.version || 0) as number,
+  };
+}
 
 async function fetchOrganisationWhatsappJoinUrl(orgSlug: string, bearerToken?: string): Promise<string> {
   const apiBase = getDanceEngineApiBase();
@@ -111,22 +373,35 @@ async function createCustomerRecord(input: {
     throw new Error('Missing Dance Engine API bearer token. Provide Authorization header or set DANCE_ENGINE_API_BEARER_TOKEN.');
   }
 
+  const existing = await fetchExistingCustomer({
+    orgSlug: input.orgSlug,
+    email: input.email,
+    bearerToken,
+  });
+
+  const whatsappTable = buildWhatsappMetadataTable(input.whatsappGroupStatus);
+  const joinApplicationParagraph = buildJoinApplicationParagraph(input.score, input.answers);
+  const mergedBio = upsertBioWithWhatsappAndJoinApplication(existing.bio, whatsappTable, joinApplicationParagraph);
+
   const requestBody = {
     customer: {
       name: input.name,
       email: input.email,
       phone: input.phoneNumber,
       whatsapp_group_status: input.whatsappGroupStatus,
-      bio: [
-        `Join application score: ${input.score.toFixed(2)}`,
-        ...input.answers.map((item) => `${item.questionId}: ${item.answer}`),
-      ].join('\n'),
-      version: 0,
+      bio: mergedBio,
+      version: existing.version,
     },
   };
 
-  const response = await fetch(`${apiBase}/${input.orgSlug}/customers`, {
-    method: 'POST',
+  const isNewCustomer = existing.version === 0 && !existing.bio;
+  const method = isNewCustomer ? 'POST' : 'PUT';
+  const url = isNewCustomer
+    ? `${apiBase}/${input.orgSlug}/customers`
+    : `${apiBase}/${input.orgSlug}/customers/${encodeURIComponent(input.email)}`;
+
+  const response = await fetch(url, {
+    method,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${bearerToken}`,
@@ -135,12 +410,13 @@ async function createCustomerRecord(input: {
   });
 
   if (response.ok) {
-    console.log(`Customer record created for ${input.email} in org ${input.orgSlug}`);
+    console.log(`Customer record ${isNewCustomer ? 'created' : 'updated'} for ${input.email} in org ${input.orgSlug}`);
     return;
   }
 
   const errorText = await response.text();
-  throw new Error(`Customer creation failed (${response.status}): ${errorText}`);
+  console.log(`Failed to ${isNewCustomer ? 'create' : 'update'} customer record`, { status: response.status, response: errorText });
+  throw new Error(`Customer ${isNewCustomer ? 'creation' : 'update'} failed (${response.status}): ${errorText}`);
 }
 
 async function verifyTurnstileToken(token: string): Promise<boolean> {
@@ -170,7 +446,7 @@ async function verifyTurnstileToken(token: string): Promise<boolean> {
   return Boolean(data.success);
 }
 
-export async function POST(req: Request) {
+async function handleJoinRequest(req: Request) {
   try {
     const body = (await req.json()) as JoinRequestBody;
     const inboundBearerToken = getBearerTokenFromAuthorizationHeader(req.headers.get('authorization'));
@@ -247,4 +523,12 @@ export async function POST(req: Request) {
     console.error('Join API error', error);
     return NextResponse.json({ message: 'Unable to process join request.' }, { status: 500 });
   }
+}
+
+export async function PUT(req: Request) {
+  return handleJoinRequest(req);
+}
+
+export async function POST(req: Request) {
+  return handleJoinRequest(req);
 }

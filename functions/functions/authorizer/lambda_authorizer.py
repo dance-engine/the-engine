@@ -14,7 +14,9 @@ SERVICE_ALLOWED_ORGS = {
   if org.strip()
 }
 SERVICE_ALLOWED_ROUTES = {
+  "GET /{organisation}/customers/{ksuid}",
   "POST /{organisation}/customers",
+  "PUT /{organisation}/customers/{ksuid}",
   "GET /{organisation}/settings",
 }
 

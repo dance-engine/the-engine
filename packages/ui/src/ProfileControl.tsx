@@ -4,7 +4,6 @@ import {
   // ClerkProvider,
   SignInButton,
   // SignUpButton,
-  SignedIn,
   // SignedOut,
   // UserButton,
   SignOutButton,
@@ -83,7 +82,6 @@ const ProfileControl = () => {
         {/* <SignedOut>
         <SignInButton ><button className="block px-3 py-1 text-sm/6 text-gray-100 dark:text-gray-100" role="menuitem" tabIndex={-1} id="user-menu-item-1">Sign-in </button></SignInButton>
       </SignedOut> */}
-        <SignedIn>
           {/* <UserButton showName={true}/> */}
           <button
             type="button"
@@ -159,7 +157,6 @@ const ProfileControl = () => {
               </button>
             </SignOutButton>
           </div>
-        </SignedIn>
       </div>
     </div>
   );

@@ -45,6 +45,7 @@
     "@dance-engine/eslint-config": "workspace:*",
     "@dance-engine/typescript-config": "workspace:*",
     "@next/eslint-plugin-next": "^15.2.4",
+    "@tailwindcss/postcss": "^4.1.6",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.0",

@@ -366,6 +366,9 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^15.2.4
         version: 15.3.2
+      '@tailwindcss/postcss':
+        specifier: ^4.1.6
+        version: 4.1.6
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@4.1.6)

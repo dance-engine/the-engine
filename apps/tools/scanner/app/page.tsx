@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton, SignOutButton, SignedIn, SignedOut, useAuth, useUser } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, useAuth, useUser } from "@clerk/nextjs";
 import useClerkSWR, { CorsError } from "@dance-engine/utils/clerkSWR";
 import { useEffect, useMemo, useState } from "react";
 import DataLoading from "./components/DataLoading";
@@ -777,6 +777,8 @@ function ScannerWorkspace() {
 }
 
 export default function Home() {
+  const { isSignedIn } = useAuth();
+
   if (!hasClerkKey) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-10 md:px-8">
@@ -792,7 +794,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full flex-col gap-4">
-      <SignedOut>
+      {!isSignedIn ? (
         <>
           <ScannerHeader
             selectedOrg=""
@@ -811,11 +813,11 @@ export default function Home() {
             </p>
           </section>
         </>
-      </SignedOut>
+      ) : null}
 
-      <SignedIn>
+      {isSignedIn ? (
         <ScannerWorkspace />
-      </SignedIn>
+      ) : null}
     </main>
   );
 }

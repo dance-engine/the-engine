@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import Link from 'next/link';
 import Event from '@dance-engine/ui/Event';
 import type { OrganisationType } from '@dance-engine/schemas/organisation';
 import { format } from 'date-fns/format';
@@ -40,7 +41,17 @@ const EventPage = async ({ params }: {params: Promise<{ ksuid: string }>}) => {
       <main className='w-full flex flex-col items-center flex-1'>
         {orgSlug == 'default-org' ?
           <div>Loading Event</div> :
-          <Event org={org} eventKsuid={ksuid} />
+          <>
+            <Event org={org} eventKsuid={ksuid} />
+            <div className='mt-6 flex gap-4'>
+              <Link
+                href={`/${ksuid}/media`}
+                className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors'
+              >
+                View Photos
+              </Link>
+            </div>
+          </>
         }
         
         {<p className='text-sm mt-4 hidden'>

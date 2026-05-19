@@ -11,9 +11,9 @@ const nextConfig: NextConfig = {
       // add other domains here if needed
     ],
   },
-  experimental: {
-    serverComponentsHmrCache: false, // defaults to true
-  },
+  // experimental: {
+  //   serverComponentsHmrCache: false, // defaults to true
+  // },
 };
 
 export default nextConfig;

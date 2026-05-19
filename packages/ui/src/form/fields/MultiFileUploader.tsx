@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useDropzone, FileRejection } from 'react-dropzone'
 import { useAuth } from '@clerk/nextjs'
-import { v4 as uuidv4 } from 'uuid'
 import { MultiFileUploaderProps } from '../../types/form'
 import CustomComponent from './CustomComponent'
 import { MdCloudUpload, MdCheckCircle, MdError, MdClose } from 'react-icons/md'
@@ -12,6 +11,7 @@ type FileUploadState = {
   progress: number
   status: 'queued' | 'uploading' | 'done' | 'error'
   s3Key?: string
+  fileName?: string // For restored uploads from sessionStorage
 }
 
 type BatchPresignedResponse = {
@@ -21,7 +21,10 @@ type BatchPresignedResponse = {
 
 const buildSafeUniqueFileName = (file: File): string => {
   const extension = file.name.split('.').pop() || 'bin'
-  return `${uuidv4()}.${extension}`
+  const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+  return `${uniqueId}.${extension}`
 }
 
 const MultiFileUploader: React.FC<MultiFileUploaderProps> = ({
@@ -179,6 +182,52 @@ const MultiFileUploader: React.FC<MultiFileUploaderProps> = ({
     setValue(name, keys, { shouldDirty: true, shouldValidate: true })
   }, [uploads, name, setValue])
 
+  // Preserve uploads state across form resets/validation errors
+  // Store the completed uploads in sessionStorage to restore after form reset
+  useEffect(() => {
+    const completeUploads = uploads.filter((u) => u.status === 'done')
+    if (completeUploads.length > 0) {
+      const serializable = completeUploads.map((u) => ({
+        id: u.id,
+        fileName: u.file?.name || u.fileName,
+        progress: u.progress,
+        status: u.status,
+        s3Key: u.s3Key,
+      }))
+      sessionStorage.setItem(
+        `uploads_${name}`,
+        JSON.stringify(serializable)
+      )
+    }
+  }, [uploads, name])
+
+  // On mount, restore any previously completed uploads
+  useEffect(() => {
+    const stored = sessionStorage.getItem(`uploads_${name}`)
+    if (stored && uploads.length === 0) {
+      try {
+        const restored = JSON.parse(stored) as Array<{
+          id: string
+          fileName: string
+          progress: number
+          status: string
+          s3Key: string
+        }>
+        const restoredUploads: FileUploadState[] = restored.map((item) => ({
+          id: item.id,
+          file: new File([], item.fileName), // Minimal mock File object for display
+          fileName: item.fileName,
+          progress: item.progress,
+          status: item.status as FileUploadState['status'],
+          s3Key: item.s3Key,
+        }))
+        setUploads(restoredUploads)
+      } catch {
+        sessionStorage.removeItem(`uploads_${name}`)
+      }
+    }
+  }, [name])
+
   const isUploading = uploads.some((u) => u.status === 'uploading')
 
   return (
@@ -203,47 +252,60 @@ const MultiFileUploader: React.FC<MultiFileUploaderProps> = ({
 
       {/* File list */}
       {uploads.length > 0 && (
-        <ul className="flex flex-col gap-2 mt-3">
-          {uploads.map((u) => (
-            <li
-              key={u.id}
-              className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2 text-sm"
-            >
-              <span className="flex-1 truncate text-gray-800">{u.file.name}</span>
+        <>
+          <ul className="flex flex-col gap-2 mt-3">
+            {uploads.map((u) => (
+              <li
+                key={u.id}
+                className="flex items-center gap-3 rounded-md border border-gray-200 px-3 py-2 text-sm"
+              >
+                <span className="flex-1 truncate text-gray-800">{u.file?.name || u.fileName}</span>
 
-              {u.status === 'uploading' && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-dark-background transition-all"
-                      style={{ width: `${u.progress}%` }}
-                    />
+                {u.status === 'uploading' && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-dark-background transition-all"
+                        style={{ width: `${u.progress}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-500 w-8 text-right">{u.progress}%</span>
                   </div>
-                  <span className="text-xs text-gray-500 w-8 text-right">{u.progress}%</span>
-                </div>
-              )}
+                )}
 
-              {u.status === 'done' && (
-                <MdCheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-              )}
+                {u.status === 'done' && (
+                  <MdCheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                )}
 
-              {u.status === 'error' && (
-                <MdError className="w-5 h-5 text-red-500 shrink-0" />
-              )}
+                {u.status === 'error' && (
+                  <MdError className="w-5 h-5 text-red-500 shrink-0" />
+                )}
 
-              {(u.status === 'queued' || u.status === 'error') && (
-                <button
-                  type="button"
-                  onClick={() => removeFile(u.id)}
-                  className="text-gray-400 hover:text-gray-600 shrink-0"
-                  aria-label={`Remove ${u.file.name}`}
-                >
-                  <MdClose className="w-4 h-4" />
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
+                {(u.status === 'queued' || u.status === 'error') && (
+                  <button
+                    type="button"
+                    onClick={() => removeFile(u.id)}
+                    className="text-gray-400 hover:text-gray-600 shrink-0"
+                    aria-label={`Remove ${u.file?.name || u.fileName}`}
+                  >
+                    <MdClose className="w-4 h-4" />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          <button
+            type="button"
+            onClick={() => {
+              setUploads([])
+              sessionStorage.removeItem(`uploads_${name}`)
+            }}
+            className="mt-2 text-xs text-gray-500 hover:text-gray-700 underline"
+          >
+            Clear old uploads
+          </button>
+        </>
       )}
 
       {isUploading ? <p className="text-xs text-gray-500 mt-2">Uploading files...</p> : null}

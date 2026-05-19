@@ -1,7 +1,7 @@
-'use client'
 import React, { useState, useCallback, useEffect } from 'react'
 import { useDropzone, FileRejection } from 'react-dropzone'
 import { useAuth } from '@clerk/nextjs'
+import { v4 as uuidv4 } from 'uuid'
 import { MultiFileUploaderProps } from '../../types/form'
 import CustomComponent from './CustomComponent'
 import { MdCloudUpload, MdCheckCircle, MdError, MdClose } from 'react-icons/md'
@@ -20,9 +20,8 @@ type BatchPresignedResponse = {
 }
 
 const buildSafeUniqueFileName = (file: File): string => {
-  const base = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-  const uniquePrefix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  return `${uniquePrefix}-${base}`
+  const extension = file.name.split('.').pop() || 'bin'
+  return `${uuidv4()}.${extension}`
 }
 
 const MultiFileUploader: React.FC<MultiFileUploaderProps> = ({

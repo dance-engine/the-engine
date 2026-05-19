@@ -20,6 +20,7 @@ UploadProcessor:
           source:
             - prefix: "dance-engine."
           detail-type:
+            - "media.completed"
             - prefix: "event."
             - prefix: "customer."
             - prefix: "organisation."

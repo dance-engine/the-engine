@@ -200,6 +200,7 @@ functions:
 #-------------------- AWS s3
 
   GeneratePresignedURL: ${file(functions/utils/s3/generate_presigned/sls.generate_presigned.function.yml):GeneratePresignedURL}
+  TriggerUploadProcessing: ${file(functions/utils/s3/trigger_upload_processing/sls.trigger_upload_processing.function.yml):TriggerUploadProcessing}
   UploadProcessor: ${file(functions/utils/s3/upload_processor/sls.upload_processor.function.yml):UploadProcessor}
 
 #---------------------- Customers

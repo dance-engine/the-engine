@@ -41,6 +41,11 @@ def generate_presigned_post(data):
     organisation = data.get("organisation", "unknown")
     batch_upload = bool(data.get("batch", False))
 
+    if field_name.startswith("photos/"):
+        parts = field_name.split("/")
+        if len(parts) == 2:
+            field_name = f"event/{parts[1]}/photos"
+
     if batch_upload:
         key_prefix = f"uploads/{organisation}/{field_name}/"
         key_template = f"{key_prefix}${{filename}}"

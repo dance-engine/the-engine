@@ -672,6 +672,9 @@ importers:
       swr:
         specifier: ^2
         version: 2.3.3(react@19.1.0)
+      uuid:
+        specifier: ^9.0.0
+        version: 9.0.1
       zod:
         specifier: ^3.24.2
         version: 3.24.4

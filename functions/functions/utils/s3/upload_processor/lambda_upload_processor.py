@@ -34,8 +34,14 @@ def move_upload(event,context):
 
     organisationSlug = organisationSlug if organisationSlug else entity.get("organisation")
 
+    event_ksuid = entity.get("event_ksuid") if isinstance(entity, dict) else None
+    if not event_ksuid:
+        event_ksuid = details.get("event_ksuid")
+    if not event_ksuid and resource_type == "event":
+        event_ksuid = entity.get("ksuid") if isinstance(entity, dict) else None
+
     # Copyfile & Delete Files
-    new_files = move_and_cleanup_uploaded_files(entity,organisationSlug)
+    new_files = move_and_cleanup_uploaded_files(entity, organisationSlug, event_ksuid)
     logger.info(j({"msg":"Move files","new_files": new_files}))
 
     # Get an identifier
@@ -60,11 +66,10 @@ def move_upload(event,context):
     return True
 
 
-def move_and_cleanup_uploaded_files(detail,organisationSlug):
-    logger.info(j({"msg":"Move files","detail": detail, "organisationSlug": organisationSlug}))
+def move_and_cleanup_uploaded_files(detail, organisationSlug, eventKsuid=None):
+    logger.info(j({"msg":"Move files","detail": detail, "organisationSlug": organisationSlug, "eventKsuid": eventKsuid}))
     CDN_URL = os.environ["CDN_URL"]
     prefix = f"uploads/{organisationSlug}/"
-    cdn_prefix = f"cdn/{organisationSlug}/"
 
     moved_files = []
 
@@ -72,9 +77,7 @@ def move_and_cleanup_uploaded_files(detail,organisationSlug):
         if isinstance(value, str) and value.startswith(prefix):
             logger.info(j({"msg":"Copying file","file": value}))
 
-            filename = value.split("/")[-1]
-            new_key = value.replace(prefix, cdn_prefix)
-            # new_key = f"{cdn_prefix}"
+            new_key = build_cdn_key(value, prefix, organisationSlug, eventKsuid)
             # Move file
             s3.copy_object(
                 Bucket=BUCKET_NAME,
@@ -84,11 +87,45 @@ def move_and_cleanup_uploaded_files(detail,organisationSlug):
             s3.delete_object(Bucket=BUCKET_NAME, Key=value)
             url = f"{CDN_URL}/{new_key.replace('cdn/','')}"
             moved_files.append([key, url])
+        
+        elif isinstance(value, list):
+            # Handle arrays of file paths
+            moved_urls = []
+            for item in value:
+                if isinstance(item, str) and item.startswith(prefix):
+                    logger.info(j({"msg":"Copying file from array","file": item}))
+                    
+                    new_key = build_cdn_key(item, prefix, organisationSlug, eventKsuid)
+                    # Move file
+                    s3.copy_object(
+                        Bucket=BUCKET_NAME,
+                        CopySource={'Bucket': BUCKET_NAME, 'Key': item},
+                        Key=new_key
+                    )
+                    s3.delete_object(Bucket=BUCKET_NAME, Key=item)
+                    url = f"{CDN_URL}/{new_key.replace('cdn/','')}"
+                    moved_urls.append(url)
+                else:
+                    # Keep non-upload items as-is
+                    moved_urls.append(item)
+            
+            if moved_urls:
+                moved_files.append([key, moved_urls])
 
     # Optional: delete any leftover files in uploads/org/* not used
     cleanup_unused_uploads(prefix, keep_keys=[f for f, _ in moved_files])
 
     return moved_files
+
+
+def build_cdn_key(source_key, prefix, organisationSlug, eventKsuid=None):
+    relative_key = source_key.removeprefix(prefix)
+
+    if eventKsuid:
+        file_name = relative_key.split("/")[-1]
+        return f"cdn/{organisationSlug}/event/{eventKsuid}/photos/{file_name}"
+
+    return f"cdn/{organisationSlug}/{relative_key}"
 
 def cleanup_unused_uploads(prefix, keep_keys):
     paginator = s3.get_paginator('list_objects_v2')

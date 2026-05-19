@@ -1,0 +1,18 @@
+TriggerUploadProcessing:
+  runtime: python3.11
+  handler: functions/utils/s3/trigger_upload_processing/lambda_trigger_upload_processing.trigger_upload_processing
+  name: "${sls:stage}-${self:service}-trigger-upload-processing"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/utils/s3/trigger_upload_processing/**"
+      - "_shared/**"
+      - "_pydantic/**"
+  layers:
+    - !Ref PydanticLambdaLayer
+  events:
+    - httpApi:
+        path: /{organisation}/media/process-uploads
+        method: post
+        authorizer:
+          adminAuthorizer

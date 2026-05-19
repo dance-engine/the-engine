@@ -13,6 +13,8 @@
     "./Event": "./src/event/Event.tsx",
     "./EventPreview": "./src/event/EventPreview.tsx",
     "./EventSuccess": "./src/event/EventSuccess.tsx",
+    "./event/EventHeroBanner": "./src/event/EventHeroBanner.tsx",
+    "./event/lib/organisationTheme": "./src/event/lib/organisationTheme.ts",
     "./LocationPicker": "./src/LocationPicker.tsx",
     "./Map": "./src/Map.tsx",
     "./MobileMenu": "./src/MobileMenu.tsx",
@@ -85,6 +87,7 @@
     "react-leaflet": "^5.0.0",
     "react-select": "^5.10.1",
     "swr": "^2",
+    "uuid": "^9.0.0",
     "zod": "^3.24.2"
   }
 }

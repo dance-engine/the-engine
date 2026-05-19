@@ -151,10 +151,22 @@ export interface DynamicFieldOptions {
   checkboxesField?: boolean,
   hidden?: boolean,
   fileUploadField?: string;
+  multiFileUploadField?: boolean;
   info?: boolean;
   onceOnly?: boolean; // This field can only be set once and is not editable after that
   selectField?: boolean; // show as select input
   currencyField?: boolean; // render currency formatting
+}
+
+export interface MultiFileUploaderProps {
+  label: string;
+  name: string;
+  entity?: DanceEngineEntity;
+  register: UseFormRegister<FieldValues>;
+  setValue: UseFormSetValue<FieldValues>;
+  error?: string;
+  fieldSchema: ZodTypeAny;
+  uploadUrl: string;
 }
 
 export type MetaData = {

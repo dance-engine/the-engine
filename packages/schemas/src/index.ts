@@ -3,6 +3,7 @@ import { customerSchema, CustomerType } from './customerSchema'
 import { locationSchema, LocationType } from './locationSchema'
 import { ticketSchema, TicketTypeExtended } from './ticketSchema'
 import { SafeParseReturnType, ZodTypeAny } from 'zod'
+export { mediaUploadSchema, type MediaUploadType } from './mediaUploadSchema'
 
 export const schemaRegistry = {
   "EVENT": eventSchema,

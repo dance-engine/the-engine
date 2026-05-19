@@ -15,6 +15,7 @@ class EventType(str, Enum):
     bundle = "bundle"
     checkout = "checkout"
     ticket = "ticket"
+    media = "media"
 
 class Action(str, Enum):
     requested = "requested"

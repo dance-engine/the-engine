@@ -43,14 +43,6 @@ const EventPage = async ({ params }: {params: Promise<{ ksuid: string }>}) => {
           <div>Loading Event</div> :
           <>
             <Event org={org} eventKsuid={ksuid} />
-            <div className='mt-6 flex gap-4'>
-              <Link
-                href={`/${ksuid}/media`}
-                className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors'
-              >
-                View Photos
-              </Link>
-            </div>
           </>
         }
         

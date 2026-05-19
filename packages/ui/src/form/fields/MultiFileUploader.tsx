@@ -169,18 +169,20 @@ const MultiFileUploader: React.FC<MultiFileUploaderProps> = ({
   }
 
   useEffect(() => {
+    register(name)
+  }, [name, register])
+
+  useEffect(() => {
     const keys = uploads
       .filter((u) => u.status === 'done' && u.s3Key)
       .map((u) => u.s3Key as string)
-    setValue(name, keys, { shouldDirty: true })
+    setValue(name, keys, { shouldDirty: true, shouldValidate: true })
   }, [uploads, name, setValue])
 
   const isUploading = uploads.some((u) => u.status === 'uploading')
 
   return (
     <CustomComponent label={label} name={name} htmlFor={name} error={error} fieldSchema={fieldSchema}>
-      {/* Hidden registration so react-hook-form tracks the field */}
-      <input type="hidden" {...register(name)} />
 
       {/* Drop zone */}
       <div

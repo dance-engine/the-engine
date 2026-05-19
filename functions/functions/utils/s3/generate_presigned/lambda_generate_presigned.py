@@ -39,6 +39,32 @@ def generate_presigned_post(data):
     extension = mimetypes.guess_extension(file_type)
     field_name = data.get("fieldName", "")
     organisation = data.get("organisation", "unknown")
+    batch_upload = bool(data.get("batch", False))
+
+    if batch_upload:
+        key_prefix = f"uploads/{organisation}/{field_name}/"
+        key_template = f"{key_prefix}${{filename}}"
+
+        presigned_post = s3.generate_presigned_post(
+            Bucket=BUCKET_NAME,
+            Key=key_template,
+            Conditions=[
+                ["starts-with", "$key", key_prefix],
+                ["starts-with", "$Content-Type", "image/"],
+            ],
+            ExpiresIn=3600,
+        )
+
+        return {
+            "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({
+                "url": presigned_post["url"],
+                "fields": presigned_post["fields"],
+                "fileKeyPrefix": key_prefix,
+                "batch": True,
+            }),
+        }
 
     key = f"uploads/{organisation}/{field_name}/{uuid.uuid4()}{extension}"
 

@@ -14,6 +14,7 @@ import Select from "@dance-engine/ui/form/fields/Select";
 import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
+import MultiFileUploader from "./fields/MultiFileUploader";
 import OnceOnly from "@dance-engine/ui/form/fields/OnceOnly";
 import { DynamicFieldOptions, DynamicFormProps, MetaData } from '@dance-engine/ui/types' 
 import { ZodObject, ZodRawShape } from "zod";
@@ -34,6 +35,7 @@ const isDynamicFieldOptions = (value: DynamicFieldOptions | MetaData | undefined
     "checkboxesField" in value ||
     "hidden" in value ||
     "fileUploadField" in value ||
+    "multiFileUploadField" in value ||
     "info" in value ||
     "onceOnly" in value ||
     "selectField" in value ||
@@ -46,7 +48,8 @@ const getFieldMetadata = (metadata: MetaData | undefined, field: string): Dynami
   return isDynamicFieldOptions(fieldMetadata) ? fieldMetadata : undefined;
 };
 
-function transformFormData(formObj: FieldValues, metadata?: MetaData): EntityType | FieldValues {
+function transformFormData(formObj: FieldValues | null | undefined, metadata?: MetaData): EntityType | FieldValues {
+  if (!formObj) return {}
   const dateFields = getDateFieldKeys(metadata)
   const newObj = { ...formObj };
   dateFields.forEach(field => {
@@ -73,7 +76,8 @@ function getDateFieldKeys(metadata?: MetaData): string[] {
     .filter(([, value]) => isDynamicFieldOptions(value) && value.dateField)
     .map(([key]) => key)
 
-  return metadataDateFields.length > 0 ? metadataDateFields : fallbackDateFields
+  // Only fall back to event defaults when no metadata was provided at all
+  return metadataDateFields
 }
 
 function transformFormDataForSubmit(formObj: FieldValues, metadata?: MetaData): FieldValues {
@@ -168,6 +172,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         const checkboxesField = fieldMetadata?.checkboxesField; // Get metadata for the field
         const isHidden = fieldMetadata?.hidden
         const isSingleFileUpload = fieldMetadata?.fileUploadField === 'single'
+        const isMultiFileUpload = fieldMetadata?.multiFileUploadField === true
         const isDisplayInfo = fieldMetadata?.info
         const isOnceOnly = fieldMetadata?.onceOnly; // Get metadata for the field
         const isCurrency = fieldMetadata?.currencyField; // Get metadata for the field
@@ -199,6 +204,12 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               <FileUploader label={field} name={field} fieldSchema={fieldSchema} watch={watch} uploadUrl={presignedUrlEndpoint}
                 {...(persistKey ? { entity: persistKey } : {})}
                 register={register} validate={() => {trigger(field)}} setValue={setValue}
+                error={errors[field]?.message as string}
+              />
+            ) : isMultiFileUpload ? (
+              <MultiFileUploader label={field} name={field} fieldSchema={fieldSchema} uploadUrl={presignedUrlEndpoint}
+                {...(persistKey ? { entity: persistKey } : {})}
+                register={register} setValue={setValue}
                 error={errors[field]?.message as string}
               />
             ) : checkboxesField ? (

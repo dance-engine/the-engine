@@ -94,7 +94,7 @@ export const Carousel = ({ photos, cdnUrl, eventKsuid, orgSlug }: CarouselProps)
 
       {/* Main carousel */}
       <div
-        className="relative w-full bg-black rounded-lg overflow-hidden aspect-video"
+        className="relative w-full bg-black rounded-lg overflow-hidden aspect-square"
       >
         <Image
           src={photoUrl}

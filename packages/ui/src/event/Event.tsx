@@ -337,6 +337,9 @@ export default function Event({
   const directionsHref = getDirectionsHref(event);
   const eventDescription = safeGenerateEventDescriptionHtml(event.description);
 
+  // If event has passed, show archive view
+  const hasEventPassed = endDate ? endDate < new Date() : false;
+
   return (
     <div className="w-full">
       <style dangerouslySetInnerHTML={{ __html: organisationTheme.cssText }} />
@@ -357,118 +360,149 @@ export default function Event({
         />
 
         <main className="mx-auto mt-10 w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-          <EventTicketing event={event} org={org} />
-
-          <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-            <div
-              className="p-6"
-              style={{ color: "var(--scheme-surface-text)" }}
-            >
-              <p
-                className="text-xs font-semibold uppercase tracking-[0.28em]"
-                style={{ color: "var(--scheme-surface-muted)" }}
-              >
-                About this event
-              </p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight">
-                What you&apos;re booking
-              </h2>
+          {hasEventPassed ? (
+            <div className="w-full max-w-4xl px-4 py-12 mx-auto">
               <div
-                className="prose mt-6 max-w-none prose-headings:font-black prose-li:mb-0 [&_li_p]:my-1 [&_mark]:bg-[var(--highlight-color)] [&_mark]:text-[var(--scheme-page-bg-start)]"
-                style={
-                  {
-                    color: "var(--scheme-surface-text)",
-                    "--tw-prose-body": "var(--scheme-surface-text)",
-                    "--tw-prose-headings": "var(--scheme-prose-strong)",
-                    "--tw-prose-links": "var(--scheme-prose-links)",
-                    "--tw-prose-bold": "var(--scheme-prose-strong)",
-                    "--tw-prose-bullets": "var(--highlight-color)",
-                    "--tw-prose-counters": "var(--scheme-surface-muted)",
-                  } as CSSProperties
-                }
-                dangerouslySetInnerHTML={{ __html: eventDescription }}
-              />
-              <div className="mt-8 px-5 py-4">
-                <p
-                  className="text-xs font-semibold uppercase tracking-[0.24em]"
-                  style={{ color: "var(--scheme-surface-muted)" }}
+                className="text-center rounded-xl"
+                style={{
+                  background: "var(--highlight-color)",
+                  color: "#fff",
+                  padding: "2.5rem 2rem"
+                }}
+              >
+                <h1 className="text-4xl font-bold mb-4" style={{ color: "#fff" }}>
+                  Event Concluded
+                </h1>
+                <p className="text-lg mb-8" style={{ color: "#fff", opacity: 0.92 }}>
+                  This event has already taken place. Check out photos from the event below.
+                </p>
+                <NextLink
+                  href={`/${eventKsuid}/media`}
+                  className="inline-block px-8 py-3 font-semibold rounded-lg transition-colors mb-12"
+                  style={{
+                    background: "#fff",
+                    color: "var(--highlight-color)",
+                  }}
                 >
-                  Schedule
-                </p>
-                <p className="mt-2 text-lg font-semibold">
-                  {startDate
-                    ? format(startDate, "EEEE d MMMM yyyy, h:mmaaa")
-                    : "Date TBC"}
-                </p>
-                {endDate ? (
-                  <p
-                    className="text-sm"
-                    style={{ color: "var(--scheme-surface-muted)" }}
-                  >
-                    Ends {format(endDate, "h:mmaaa")}
-                  </p>
-                ) : null}
+                  View Event Photos
+                </NextLink>
               </div>
             </div>
-
-            <div
-              className="p-3"
-              style={{ color: "var(--scheme-surface-text)" }}
-            >
-              <div className="px-3 pb-5">
-                <p
-                  className="text-xs font-semibold uppercase tracking-[0.24em]"
-                  style={{ color: "var(--scheme-surface-muted)" }}
-                >
-                  Venue
-                </p>
-                <p className="mt-2 text-2xl font-black tracking-tight">
-                  {event.location?.name || "Venue TBC"}
-                </p>
-                {event.location?.address ? (
-                  <p
-                    className="mt-2 whitespace-pre-line text-sm leading-6"
-                    style={{ color: "var(--scheme-surface-muted)" }}
-                  >
-                    {event.location.address}
-                  </p>
-                ) : null}
-              </div>
-
-              {typeof event.location?.lat === "number" &&
-              typeof event.location?.lng === "number" ? (
-                <MapDisplay lat={event.location.lat} lng={event.location.lng} />
-              ) : (
+          ) : (
+            <>
+              <EventTicketing event={event} org={org} />
+              <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
                 <div
-                  className="flex h-[320px] items-center justify-center text-sm"
-                  style={{ color: "var(--scheme-surface-muted)" }}
+                  className="p-6"
+                  style={{ color: "var(--scheme-surface-text)" }}
                 >
-                  Venue map unavailable
-                </div>
-              )}
-
-              <div className="px-3 pt-5">
-                {directionsHref ? (
-                  <a
-                    href={directionsHref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="cursor-pointer text-sm font-semibold underline underline-offset-4"
-                    style={{ color: "var(--highlight-color)" }}
-                  >
-                    Get directions
-                  </a>
-                ) : (
                   <p
-                    className="text-sm"
+                    className="text-xs font-semibold uppercase tracking-[0.28em]"
                     style={{ color: "var(--scheme-surface-muted)" }}
                   >
-                    Directions will appear once a venue location is available.
+                    About this event
                   </p>
-                )}
-              </div>
-            </div>
-          </section>
+                  <h2 className="mt-2 text-3xl font-black tracking-tight">
+                    What you&apos;re booking
+                  </h2>
+                  <div
+                    className="prose mt-6 max-w-none prose-headings:font-black prose-li:mb-0 [&_li_p]:my-1 [&_mark]:bg-[var(--highlight-color)] [&_mark]:text-[var(--scheme-page-bg-start)]"
+                    style={
+                      {
+                        color: "var(--scheme-surface-text)",
+                        "--tw-prose-body": "var(--scheme-surface-text)",
+                        "--tw-prose-headings": "var(--scheme-prose-strong)",
+                        "--tw-prose-links": "var(--scheme-prose-links)",
+                        "--tw-prose-bold": "var(--scheme-prose-strong)",
+                        "--tw-prose-bullets": "var(--highlight-color)",
+                        "--tw-prose-counters": "var(--scheme-surface-muted)",
+                      } as CSSProperties
+                    }
+                    dangerouslySetInnerHTML={{ __html: eventDescription }}
+                  />
+                  <div className="mt-8 px-5 py-4">
+                    <p
+                      className="text-xs font-semibold uppercase tracking-[0.24em]"
+                      style={{ color: "var(--scheme-surface-muted)" }}
+                    >
+                      Schedule
+                    </p>
+                    <p className="mt-2 text-lg font-semibold">
+                      {startDate
+                        ? format(startDate, "EEEE d MMMM yyyy, h:mmaaa")
+                        : "Date TBC"}
+                    </p>
+                    {endDate ? (
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--scheme-surface-muted)" }}
+                      >
+                        Ends {format(endDate, "h:mmaaa")}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div
+                  className="p-3"
+                  style={{ color: "var(--scheme-surface-text)" }}
+                >
+                  <div className="px-3 pb-5">
+                    <p
+                      className="text-xs font-semibold uppercase tracking-[0.24em]"
+                      style={{ color: "var(--scheme-surface-muted)" }}
+                    >
+                      Venue
+                    </p>
+                    <p className="mt-2 text-2xl font-black tracking-tight">
+                      {event.location?.name || "Venue TBC"}
+                    </p>
+                    {event.location?.address ? (
+                      <p
+                        className="mt-2 whitespace-pre-line text-sm leading-6"
+                        style={{ color: "var(--scheme-surface-muted)" }}
+                      >
+                        {event.location.address}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  {typeof event.location?.lat === "number" &&
+                  typeof event.location?.lng === "number" ? (
+                    <MapDisplay lat={event.location.lat} lng={event.location.lng} />
+                  ) : (
+                    <div
+                      className="flex h-[320px] items-center justify-center text-sm"
+                      style={{ color: "var(--scheme-surface-muted)" }}
+                    >
+                      Venue map unavailable
+                    </div>
+                  )}
+
+                  <div className="px-3 pt-5">
+                    {directionsHref ? (
+                      <a
+                        href={directionsHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="cursor-pointer text-sm font-semibold underline underline-offset-4"
+                        style={{ color: "var(--highlight-color)" }}
+                      >
+                        Get directions
+                      </a>
+                    ) : (
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--scheme-surface-muted)" }}
+                      >
+                        Directions will appear once a venue location is available.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </>
+          )}
         </main>
 
         {/* <EventFooter org={org} theme={organisationTheme} /> */}

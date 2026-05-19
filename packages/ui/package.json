@@ -13,6 +13,8 @@
     "./Event": "./src/event/Event.tsx",
     "./EventPreview": "./src/event/EventPreview.tsx",
     "./EventSuccess": "./src/event/EventSuccess.tsx",
+    "./event/EventHeroBanner": "./src/event/EventHeroBanner.tsx",
+    "./event/lib/organisationTheme": "./src/event/lib/organisationTheme.ts",
     "./LocationPicker": "./src/LocationPicker.tsx",
     "./Map": "./src/Map.tsx",
     "./MobileMenu": "./src/MobileMenu.tsx",

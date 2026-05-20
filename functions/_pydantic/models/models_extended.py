@@ -5,9 +5,27 @@ from _pydantic.models.items_models import ItemObject as ItemBase, ItemObjectPubl
 from _pydantic.models.organisation_models import OrganisationObject as OrganisationBase, OrganisationThemeObject as OrganisationThemeBase, Status as OrganisationStatus, OrganisationObjectPublic
 from _pydantic.models.events_models import EventObject as EventBase, LocationObject as LocationBase, Status as EventStatus, EventObjectPublic
 from _pydantic.dynamodb import DynamoModel, HistoryModel
+from _pydantic.shared_models import CapacityObject as CapacityBase
 from datetime import datetime, timezone
 from pydantic import model_validator, field_validator, Field
 from typing import Optional, Literal
+
+class CapacityModel(CapacityBase, DynamoModel):
+    organisation: str
+    created_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    updated_at: datetime = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+    entity_type: Literal["CAPACITY"] = "CAPACITY"
+    parent_type: str
+
+    @property
+    def PK(self): return f"CAPACITY#{self.ksuid}"
+
+    @property
+    def SK(self): return f"{self.parent_type.capitalize}#{self.parent_ksuid}"
+
+    @property
+    def org_slug(self): return self._slugify(self.organisation)
+
 
 class BundleModel(BundleBase, DynamoModel):
     organisation: str

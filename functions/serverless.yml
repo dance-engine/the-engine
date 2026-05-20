@@ -201,6 +201,7 @@ functions:
 
   GeneratePresignedURL: ${file(functions/utils/s3/generate_presigned/sls.generate_presigned.function.yml):GeneratePresignedURL}
   TriggerUploadProcessing: ${file(functions/utils/s3/trigger_upload_processing/sls.trigger_upload_processing.function.yml):TriggerUploadProcessing}
+  DeleteEventPhoto: ${file(functions/utils/s3/trigger_upload_processing/sls.trigger_upload_processing.function.yml):DeleteEventPhoto}
   UploadProcessor: ${file(functions/utils/s3/upload_processor/sls.upload_processor.function.yml):UploadProcessor}
 
 #---------------------- Customers

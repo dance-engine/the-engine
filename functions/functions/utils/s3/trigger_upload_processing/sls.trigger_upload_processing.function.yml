@@ -16,3 +16,24 @@ TriggerUploadProcessing:
         method: post
         authorizer:
           adminAuthorizer
+
+DeleteEventPhoto:
+  runtime: python3.11
+  handler: functions/utils/s3/trigger_upload_processing/lambda_trigger_upload_processing.delete_event_photo
+  name: "${sls:stage}-${self:service}-delete-event-photo"
+  package:
+    patterns:
+      - '!**/**'
+      - "functions/utils/s3/trigger_upload_processing/**"
+      - "_shared/**"
+      - "_pydantic/**"
+  environment:
+    BUCKET_NAME: ${self:custom.upload_bucket}
+  layers:
+    - !Ref PydanticLambdaLayer
+  events:
+    - httpApi:
+        path: /{organisation}/media/event/{ksuid}/photo
+        method: delete
+        authorizer:
+          adminAuthorizer

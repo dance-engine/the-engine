@@ -7,6 +7,8 @@ import { EventType } from '@dance-engine/schemas/events'
 import Link from 'next/link'
 import ActionIconButton from '@dance-engine/ui/actions/ActionIconButton'
 import { MdCloudUpload, MdPhotoLibrary } from 'react-icons/md'
+import { useMemo } from 'react'
+import { useLayoutSearch } from '../components/LayoutSearchContext'
 
 const statusStyles: Record<string, string> = {
   live:     'bg-green-500',
@@ -31,6 +33,15 @@ const MediaEventList = () => {
   const { data, error, isLoading } = useClerkSWR(apiUrl, { suspense: false })
 
   const events: EventType[] = data?.events ?? []
+  const { debouncedQuery } = useLayoutSearch()
+  const filteredEvents = useMemo(() => {
+    const q = debouncedQuery.trim().toLowerCase()
+    if (!q) return events
+    return events.filter(e =>
+      e.name.toLowerCase().includes(q) ||
+      (e.status || '').toLowerCase().includes(q)
+    )
+  }, [events, debouncedQuery])
 
   if (isLoading) {
     return (
@@ -56,7 +67,7 @@ const MediaEventList = () => {
     )
   }
 
-  if (!events.length) {
+  if (!filteredEvents.length) {
     return (
       <p className="px-4 lg:px-8 py-6 text-sm text-gray-500">No events found.</p>
     )
@@ -64,7 +75,7 @@ const MediaEventList = () => {
 
   return (
     <ul className="mt-4 w-full divide-y divide-gray-200 border-t border-gray-200">
-      {events.map((event) => (
+      {filteredEvents.map((event) => (
         <li key={event.ksuid}>
           <div className="flex items-center justify-between px-4 lg:px-8 py-4 hover:bg-gray-50 transition-colors">
             <span className="text-sm font-medium text-gray-900">{event.name}</span>

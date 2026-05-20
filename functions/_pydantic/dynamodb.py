@@ -219,6 +219,136 @@ class DynamoModel(BaseModel):
                     continue
 
         return convert_floats_to_decimals({**base, **props})
+
+    def build_transaction_item(self,
+                               table,
+                               only_set_once: list = [], 
+                               condition_expression: str = None, 
+                               explicit_fields_only: bool = True, 
+                               version_override: bool = False,
+                               ignore_fields: list = [],
+                               **kwargs):
+        """
+        Build a DynamoDB transaction update item for this model instance.
+
+        This helper serializes the model into DynamoDB attributes and
+        constructs the ``Update`` payload expected by
+        ``TransactWriteItems``. It also applies optional conditional
+        writes, supports one-time fields via ``if_not_exists``, and can
+        enforce optimistic version checks for models that define a
+        ``version`` attribute.
+
+        Parameters
+        ----------
+        table : boto3.dynamodb.table.Table
+            The DynamoDB table resource used to resolve the table name
+            and client metadata.
+        only_set_once : list, optional
+            Attribute names that should only be written when they do not
+            already exist on the item. These fields are emitted with
+            ``if_not_exists`` in the update expression. Default is an
+            empty list.
+        condition_expression : str, optional
+            An additional DynamoDB condition expression to append to the
+            generated write conditions. Default is ``None``.
+        explicit_fields_only : bool, optional
+            If ``True``, only fields explicitly set on the model are
+            included in the generated update payload. If ``False``, all
+            serialized fields are included. Default is ``True``.
+        version_override : bool, optional
+            If ``False`` and the model uses versioning, increment the
+            outgoing ``version`` value and add a condition that prevents
+            overwriting a newer stored version. If ``True``, skip this
+            automatic version handling. Default is ``False``.
+        ignore_fields : list, optional
+            Attribute names to exclude from the generated ``SET``
+            clauses, even if they are present in the serialized model.
+            Default is an empty list.
+        **kwargs
+            Additional expression attribute mappings merged into the
+            generated expression attribute names and values.
+
+        Returns
+        -------
+        dict
+            A dictionary containing a DynamoDB ``Update`` transaction
+            item suitable for inclusion in a ``TransactWriteItems``
+            request.
+
+        Raises
+        ------
+        ValueError
+            Raised when no updatable attributes remain after applying the
+            serialization and ignore-field filters.
+        """
+        client = table.meta.client
+
+        only_set_once = list(only_set_once or [])
+        ignore_fields = list(ignore_fields or [])
+
+        conditions: list[str] = []
+        set_parts:  list[str] = []
+
+        extra_expression_attr_names = kwargs.keys()
+        extra_expression_attr_values = kwargs.values() 
+
+        expression_attr_names = {}
+        expression_attr_values = {}
+
+        item_dict = self.to_dynamo(
+            exclude_keys=True,
+            exclude_unset=explicit_fields_only,
+        )
+
+        if self.uses_versioning() and not version_override:
+            incoming_version = item_dict.get('version', 0)
+            item_dict['version'] = incoming_version + 1
+
+            expression_attr_names["#version"] = "version"
+            expression_attr_values[":incoming_version"] = incoming_version
+            conditions.append("attribute_not_exists(#version) OR #version <= :incoming_version")
+
+        if condition_expression:
+            conditions.append(f"{condition_expression}")
+
+        for key, value in item_dict.items():
+            name_placeholder = f"#{key}"
+            value_placeholder = f":{key}"
+            expression_attr_names[name_placeholder] = key
+            expression_attr_values[value_placeholder] = value
+            
+            if key in ignore_fields:
+                continue
+
+            if key in only_set_once:
+                set_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
+            else:
+                set_parts.append(f"{name_placeholder} = {value_placeholder}")
+
+        for k, v in extra_expression_attr_names.items():
+            expression_attr_names.setdefault(k, v)
+        for k, v in extra_expression_attr_values.items():
+            expression_attr_values.setdefault(k, v)
+
+        parts = []
+        if set_parts:
+            parts.append("SET " + ", ".join(set_parts))
+        if not parts:
+            raise ValueError(f"transact_upsert: no updatable attributes for item {self!r}")
+        
+        update_expression = " ".join(parts)
+
+        return {
+                "Update": {
+                    "TableName": table.name,
+                    "Key": {"PK": self.PK, "SK": self.SK},
+                    "UpdateExpression": update_expression,
+                    "ExpressionAttributeNames": expression_attr_names,
+                    "ExpressionAttributeValues": expression_attr_values,
+                    "ReturnValuesOnConditionCheckFailure": "ALL_OLD",
+                    **({"ConditionExpression": " AND ".join(conditions)} if conditions else {})
+                }
+            }
     
     def upsert(self, 
                table, 

@@ -126,3 +126,32 @@ models:
               type: string
               description: Organisation slug (optional, not directly used by the GET logic).
               example: "mlf"
+  - name: "CapacityObject"
+    description: "capacity object"
+    content:
+      application/json:
+        schema:
+          type: object
+          required: ["name"]
+          properties:
+            mode:
+              type: string
+              enum:
+                - "limited"
+                - "unlimited"
+              default: "unlimited"
+            ksuid:
+              type: string
+              description: "ID of the object"
+            capacity:
+              type: integer
+              description: "Total capacity (only relevant if mode is 'limited')"
+            remaining_capacity:
+              type: integer
+              description: "Remaining capacity (only relevant if mode is 'limited')"
+            reserved_capacity:
+              type: integer
+              description: "Reserved capacity (only relevant if mode is 'limited')"
+            allocated_count:
+              type: integer
+              description: "Number of this thing already allocated, probably through a sale (only relevant if mode is 'limited')"

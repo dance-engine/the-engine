@@ -166,7 +166,7 @@ export const Carousel = ({ photos, cdnUrl, eventKsuid, orgSlug }: CarouselProps)
 
       {/* Thumbnail navigation */}
       {photos.length > 1 && (
-        <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
+        <div className="mt-6 flex gap-2 overflow-x-auto pb-2 w-full max-w-full">
           {photos.map((photo, index) => (
             <button
               key={index}

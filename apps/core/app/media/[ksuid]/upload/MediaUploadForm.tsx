@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { FieldValues } from 'react-hook-form'
 import { useAuth } from '@clerk/nextjs'
@@ -23,6 +23,12 @@ const MediaUploadForm = ({ eventKsuid }: Props) => {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Memoize initial form data to prevent form resets on re-renders
+  const initialData = useMemo(
+    () => ({ photos: [], credit_name: '', credit_url: '' }),
+    []
+  )
 
   const handleSubmit = async (data: FieldValues) => {
     setSubmitting(true)
@@ -96,7 +102,7 @@ const MediaUploadForm = ({ eventKsuid }: Props) => {
           metadata={metadata}
           onSubmit={handleSubmit}
           orgSlug={activeOrg ?? ''}
-          data={{ photos: [], credit_name: '', credit_url: '' }}
+          data={initialData}
         />
       </div>
       

@@ -23,7 +23,7 @@ export default function MediaGalleryPageClient({ event, org, eventKsuid, orgSlug
       {eventObj && (
         <EventHeroBanner event={eventObj} org={org} theme={organisationTheme} />
       )}
-      <div className="w-full max-w-4xl mx-auto px-4 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
         <MediaGalleryClient eventKsuid={eventKsuid} orgSlug={orgSlug} />
       </div>
     </div>

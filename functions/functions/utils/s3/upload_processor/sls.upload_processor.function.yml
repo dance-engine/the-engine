@@ -2,6 +2,8 @@ UploadProcessor:
   runtime: python3.11
   handler: functions/utils/s3/upload_processor/lambda_upload_processor.move_upload
   name: "${sls:stage}-${self:service}-upload-processor"
+  timeout: 120
+  memorySize: 256
   package:
     patterns:
       - '!**/**'

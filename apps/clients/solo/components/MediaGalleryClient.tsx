@@ -96,7 +96,7 @@ const MediaGalleryClient = ({ eventKsuid, orgSlug }: Props) => {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <Carousel photos={photos} cdnUrl={cdnUrl} eventKsuid={eventKsuid} orgSlug={orgSlug} />
     </div>
   )

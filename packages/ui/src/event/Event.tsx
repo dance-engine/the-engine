@@ -336,10 +336,34 @@ export default function Event({
   const highlightPassLabel = getHighlightBundleLabel(event);
   const directionsHref = getDirectionsHref(event);
   const eventDescription = safeGenerateEventDescriptionHtml(event.description);
+  const debugEventState = process.env.NEXT_PUBLIC_EVENT_DEBUG === "true";
+  const now = new Date();
 
   // If event has passed, show archive view
-  const hasEventPassed = endDate ? endDate < new Date() : false;
+  // Some events contain inconsistent dates where ends_at is earlier than starts_at.
+  // In that case, prefer starts_at so future events still show ticketing.
+  const hasInconsistentDateRange =
+    Boolean(startDate) && Boolean(endDate) && Boolean(endDate && startDate && endDate < startDate);
+  const effectiveEndDate = hasInconsistentDateRange ? startDate : (endDate || startDate);
+  const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
 
+  if (debugEventState && typeof window !== "undefined") {
+    console.log("Event Debug:", {
+      orgSlug: org.organisation,
+      eventApiUrl: `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org.organisation}/events/${eventKsuid}`,
+      eventKsuid,
+      eventName: event.name,
+      starts_at_raw: event.starts_at,
+      ends_at_raw: event.ends_at,
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
+      hasInconsistentDateRange,
+      effectiveEndDate: effectiveEndDate?.toISOString(),
+      now: now.toISOString(),
+      hasEventPassed,
+    });
+  }
+  
   return (
     <div className="w-full">
       <style dangerouslySetInnerHTML={{ __html: organisationTheme.cssText }} />

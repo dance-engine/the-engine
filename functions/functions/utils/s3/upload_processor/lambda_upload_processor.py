@@ -82,6 +82,16 @@ def move_and_cleanup_uploaded_files(detail, organisationSlug, eventKsuid=None):
         if isinstance(value, str) and value.startswith(prefix):
             logger.info(j({"msg":"Copying file","file": value}))
 
+            # Check if file exists before attempting to copy
+            try:
+                s3.head_object(Bucket=BUCKET_NAME, Key=value)
+            except s3.exceptions.NoSuchKey:
+                logger.error(j({"msg": "File does not exist in S3", "missing_key": value, "key_name": key}))
+                continue  # Skip to next file instead of crashing
+            except Exception as e:
+                logger.error(j({"msg": "Error checking file existence", "key": value, "error": str(e)}))
+                continue
+
             new_key = build_cdn_key(value, prefix, organisationSlug, eventKsuid)
             copy_kwargs = {"Bucket": BUCKET_NAME, "CopySource": {"Bucket": BUCKET_NAME, "Key": value}, "Key": new_key}
             if key == "photos" and eventKsuid:
@@ -98,6 +108,16 @@ def move_and_cleanup_uploaded_files(detail, organisationSlug, eventKsuid=None):
             for item in value:
                 if isinstance(item, str) and item.startswith(prefix):
                     logger.info(j({"msg":"Copying file from array","file": item}))
+                    
+                    # Check if file exists before attempting to copy
+                    try:
+                        s3.head_object(Bucket=BUCKET_NAME, Key=item)
+                    except s3.exceptions.NoSuchKey:
+                        logger.error(j({"msg": "File does not exist in S3", "missing_key": item, "key_name": key}))
+                        continue  # Skip to next file instead of crashing
+                    except Exception as e:
+                        logger.error(j({"msg": "Error checking file existence", "key": item, "error": str(e)}))
+                        continue
                     
                     new_key = build_cdn_key(item, prefix, organisationSlug, eventKsuid)
                     copy_kwargs = {"Bucket": BUCKET_NAME, "CopySource": {"Bucket": BUCKET_NAME, "Key": item}, "Key": new_key}

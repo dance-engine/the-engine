@@ -15,7 +15,7 @@ type Props = {
   eventKsuid: string
 }
 
-const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL ?? ''
+const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL ?? 'https://content.danceengine.co.uk'
 const apiUrl = process.env.NEXT_PUBLIC_DANCE_ENGINE_API ?? ''
 
 // Helper: convert CDN URL to S3 key
@@ -36,7 +36,7 @@ const MediaPhotoList = ({ eventKsuid }: Props) => {
   const [confirming, setConfirming] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
-  const metadataUrl = activeOrg
+  const metadataUrl = activeOrg && cdnUrl
     ? `${cdnUrl}/${activeOrg}/event/${eventKsuid}/photos/metadata.json`
     : null
 

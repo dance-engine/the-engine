@@ -146,6 +146,13 @@ models:
             parent_ksuid:
               type: string
               description: "ID of the parent object this capacity belongs to, e.g. an event or item or bundle"
+            parent_type:
+              type: string
+              enum:
+                - "event"
+                - "item"
+                - "bundle"
+              description: "Type of the parent object this capacity belongs to, e.g. an event or item or bundle"
             capacity:
               type: integer
               description: "Total capacity (only relevant if mode is 'limited')"

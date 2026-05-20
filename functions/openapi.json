@@ -1834,6 +1834,15 @@
             "type": "string",
             "description": "ID of the parent object this capacity belongs to, e.g. an event or item or bundle"
           },
+          "parent_type": {
+            "type": "string",
+            "enum": [
+              "event",
+              "item",
+              "bundle"
+            ],
+            "description": "Type of the parent object this capacity belongs to, e.g. an event or item or bundle"
+          },
           "capacity": {
             "type": "integer",
             "description": "Total capacity (only relevant if mode is 'limited')"
@@ -1996,7 +2005,7 @@
       "post": {
         "summary": "Use a Ticket",
         "description": "Marks a ticket as used and checked in. This should be used when a ticket is scanned for entry to an event.",
-        "operationId": "tickets-549c47c5-6515-4e5b-9b07-98637f6819f8",
+        "operationId": "tickets-51256691-47a6-4f8e-bfdd-755d4463a92d",
         "parameters": [
           {
             "name": "organisation",
@@ -2099,7 +2108,7 @@
       "post": {
         "summary": "Unuse a Ticket",
         "description": "Marks a ticket as unused and not checked in. This can be used to undo a mistaken scan or check-in.",
-        "operationId": "tickets-7ac5fad6-c1c1-488b-a31d-bdc7a7d7c25d",
+        "operationId": "tickets-7b694683-80b3-4529-8b9e-912ba93eab87",
         "parameters": [
           {
             "name": "organisation",
@@ -2191,7 +2200,7 @@
       "post": {
         "summary": "Create a Ticket",
         "description": "Requests creation of a ticket for the selected event. The request is queued and processed asynchronously.",
-        "operationId": "tickets-371823ac-3117-401a-ae27-e3b2c11b6600",
+        "operationId": "tickets-f9aceb56-a919-47a6-a455-098191844787",
         "parameters": [
           {
             "name": "organisation",
@@ -2276,7 +2285,7 @@
       "get": {
         "summary": "Get All Tickets",
         "description": "Returns a list of all tickets for a given organisation and event.",
-        "operationId": "tickets-fd575a52-9a80-4796-9e87-71fb83e422e5",
+        "operationId": "tickets-445c76ca-f02a-4236-a492-e2c6f229d84a",
         "parameters": [
           {
             "name": "organisation",
@@ -2334,7 +2343,7 @@
       "get": {
         "summary": "Get Single Ticket",
         "description": "Fetch details of a specific ticket by its KSUID.",
-        "operationId": "tickets-151f2241-bfac-41f6-8f0d-13abfdb865fb",
+        "operationId": "tickets-d5911b7b-05c8-42cb-82f9-abffbe12dc9c",
         "parameters": [
           {
             "name": "organisation",
@@ -2399,7 +2408,7 @@
       "put": {
         "summary": "Update a Ticket",
         "description": "Update an existing Ticket and its location",
-        "operationId": "tickets-8b836d36-a827-4e7d-abc2-c6ca014aac7b",
+        "operationId": "tickets-49545ce0-635e-4e67-bd81-c765e3e1e0ab",
         "parameters": [
           {
             "name": "organisation",
@@ -2474,7 +2483,7 @@
       "post": {
         "summary": "Send Tickets",
         "description": "Sends tickets emails for tickets that already exist.",
-        "operationId": "tickets-28a09ac8-1387-4a80-a869-24ecce4377cb",
+        "operationId": "tickets-889d3eb0-7ee3-40a2-9e33-31581e7bdb85",
         "parameters": [
           {
             "name": "organisation",
@@ -2536,7 +2545,7 @@
       "post": {
         "summary": "Import Tickets",
         "description": "Requests bulk creation of tickets for an event. Set preview=true to validate the event, the referenced line items and likely duplicate tickets, and return the tickets that would be created without creating them.",
-        "operationId": "tickets-b52bd6ba-b23f-4c96-a644-993a6c4ed5d5",
+        "operationId": "tickets-10b0b7e2-d454-47de-9813-e5d5a20b6b0d",
         "parameters": [
           {
             "name": "organisation",
@@ -2707,7 +2716,7 @@
       "post": {
         "summary": "Create Bundles",
         "description": "Creates a new bundle and stores it for the given event.",
-        "operationId": "bundles-0b7a1db3-6ba0-48dd-96f8-3c40e3d40af7",
+        "operationId": "bundles-b54e571f-0edd-4d79-a765-8e6f05262563",
         "parameters": [
           {
             "name": "organisation",
@@ -2775,7 +2784,7 @@
       "put": {
         "summary": "Update Bundles",
         "description": "Update existing bundles for a given event.",
-        "operationId": "bundles-1e99dea7-c467-4458-8678-97ecb3d4a920",
+        "operationId": "bundles-ee894032-c3ea-4821-a7fa-1735ff4253a9",
         "parameters": [
           {
             "name": "organisation",
@@ -2841,7 +2850,7 @@
       "get": {
         "summary": "Get Single Bundle",
         "description": "Fetch details of a specific bundle by its KSUID.",
-        "operationId": "bundles-73791248-00ea-45ff-98e4-1a6d97bd2ef6",
+        "operationId": "bundles-5aad579d-881a-487f-b058-888bf48909a7",
         "parameters": [
           {
             "name": "organisation",
@@ -2908,7 +2917,7 @@
       "post": {
         "summary": "Publish Bundles",
         "description": "Publishes one or more draft bundles: validates includes, creates Stripe product/prices and sets status to live.",
-        "operationId": "bundles-5bfce823-4c02-4757-a58a-fdb12b78237b",
+        "operationId": "bundles-4a8c7964-557f-42ed-b0ad-bb18be16f77f",
         "parameters": [
           {
             "name": "organisation",
@@ -2971,7 +2980,7 @@
       "get": {
         "summary": "Public Get Bundles",
         "description": "Public endpoint to get a specific bundle by its KSUID.",
-        "operationId": "bundles-1bd6cf16-20ef-4c08-b5be-baaad15e22ec",
+        "operationId": "bundles-3f005e8d-0a5f-436c-a629-214e58cb242f",
         "parameters": [
           {
             "name": "organisation",
@@ -3042,7 +3051,7 @@
       "get": {
         "summary": "Public Get All Bundles",
         "description": "Public endpoint to get all bundles for a given organisation and event.",
-        "operationId": "bundles-f1e918a0-3920-4145-92cb-1b2d5d45005b",
+        "operationId": "bundles-57721a73-919d-4bd8-9b3a-14176182cbbf",
         "parameters": [
           {
             "name": "organisation",
@@ -3160,7 +3169,7 @@
       "post": {
         "summary": "Create Item",
         "description": "Creates a new item and stores it for the given event.",
-        "operationId": "items-4ef8161a-0dfa-440b-aff9-8642186d5962",
+        "operationId": "items-adf8ce71-fd2f-4a45-bfb9-72eeee99785d",
         "parameters": [
           {
             "name": "organisation",
@@ -3228,7 +3237,7 @@
       "put": {
         "summary": "Update Items",
         "description": "Update existing items for a given event.",
-        "operationId": "items-ad65989e-1ae3-456f-9f80-69909573cc01",
+        "operationId": "items-399f5fd0-1ac6-4b58-90b9-c6ebb377c46c",
         "parameters": [
           {
             "name": "organisation",
@@ -3294,7 +3303,7 @@
       "get": {
         "summary": "Get Single Item",
         "description": "Fetch details of a specific item by its KSUID.",
-        "operationId": "items-30ac4979-2234-40da-be41-52a9217eb58f",
+        "operationId": "items-68a6e81c-48f8-43b1-8021-cabb86fd4cf0",
         "parameters": [
           {
             "name": "organisation",
@@ -3361,7 +3370,7 @@
       "post": {
         "summary": "Publish Items",
         "description": "Publishes one or more draft items: creates Stripe product/prices and sets status to live.",
-        "operationId": "items-b1b69602-95da-4c09-8a9a-cc0a8d89c464",
+        "operationId": "items-10678dd4-f310-4507-85e0-13627b23a1cd",
         "parameters": [
           {
             "name": "organisation",
@@ -3424,7 +3433,7 @@
       "get": {
         "summary": "Public Get Item",
         "description": "Public endpoint to get a specific item by its KSUID.",
-        "operationId": "items-8e47408f-d307-49bd-b4c1-b958a88ccb46",
+        "operationId": "items-424531e0-4ba2-4f70-8e41-b4e71ebeeb26",
         "parameters": [
           {
             "name": "organisation",
@@ -3495,7 +3504,7 @@
       "get": {
         "summary": "Public Get All Items",
         "description": "Public endpoint to get all items for a given organisation and event.",
-        "operationId": "items-fd058262-0c7b-4a65-ba02-a9c8d22e6144",
+        "operationId": "items-0e6cb3b7-58d0-4544-ac6b-f4ec65c9ac3e",
         "parameters": [
           {
             "name": "organisation",
@@ -3587,7 +3596,7 @@
       "post": {
         "summary": "POST organisations",
         "description": "Handle POST requests for /organisations",
-        "operationId": "organisations-c2b56b73-962a-4de8-b128-4078c6bb96c0",
+        "operationId": "organisations-5ce655ee-9ccc-4d74-8fa0-3a2bd0460bc2",
         "parameters": [],
         "tags": [
           "Organisations"
@@ -3623,7 +3632,7 @@
       "get": {
         "summary": "Public Get Organisations",
         "description": "Public endpoint to get all organisations.",
-        "operationId": "organisations-8aa5cb4e-6c13-491b-99fe-d1f219992805",
+        "operationId": "organisations-b22e3467-6f14-49c2-8756-fd5e6c3442c7",
         "parameters": [],
         "tags": [
           "Public",
@@ -3666,7 +3675,7 @@
       "get": {
         "summary": "Get organisation stack status",
         "description": "Returns CloudFormation provisioning or teardown progress for an organisation.",
-        "operationId": "organisations-517239f3-0e73-47e3-9590-ed6a825db529",
+        "operationId": "organisations-eba3f12b-3592-441d-a5f7-aac296b4ae4c",
         "parameters": [
           {
             "name": "organisationId",
@@ -3733,7 +3742,7 @@
       "post": {
         "summary": "Initiate organisation stack deletion",
         "description": "Starts CloudFormation stack deletion for an organisation and marks it offboarding.",
-        "operationId": "organisations-65eda6c0-2e4f-4243-9178-b67c412a5bad",
+        "operationId": "organisations-0c52ff65-f7c5-4fe3-80a2-98676e29e8fd",
         "parameters": [
           {
             "name": "organisationId",
@@ -3868,7 +3877,7 @@
       "get": {
         "summary": "Trigger an event",
         "description": "Trigger and event.",
-        "operationId": "eventbridge-366c18ba-ae7f-45dc-aae0-8756fb560013",
+        "operationId": "eventbridge-1a220627-26da-4653-8796-562430116ae5",
         "parameters": [],
         "tags": [
           "Event_Brdige"
@@ -3940,7 +3949,7 @@
       "post": {
         "summary": "Create Event",
         "description": "Creates a new event and stores its location.",
-        "operationId": "events-2531a5a0-9fe6-454f-9d8f-6f8a12aa2a3e",
+        "operationId": "events-43a82773-8b77-456c-8313-ac5aeb273469",
         "parameters": [
           {
             "name": "organisation",
@@ -3997,7 +4006,7 @@
       "get": {
         "summary": "Get Single Event",
         "description": "Fetch details of a specific event by its KSUID.",
-        "operationId": "events-f17a5155-3580-45a0-a235-81e5b4fc34bb",
+        "operationId": "events-a764a76e-8f12-484b-a690-b57936c5e462",
         "parameters": [
           {
             "name": "organisation",
@@ -4053,7 +4062,7 @@
       "put": {
         "summary": "Update an Event",
         "description": "Update an existing event and its location",
-        "operationId": "events-92aed015-a011-47e0-866b-aea01c1bf4eb",
+        "operationId": "events-e078caca-1182-4e68-9087-42170dca0b40",
         "parameters": [
           {
             "name": "organisation",
@@ -4117,7 +4126,7 @@
       "delete": {
         "summary": "Delete an Event",
         "description": "Permanently delete an event and its related entities. Requires super admin privileges.",
-        "operationId": "events-9a69db32-d819-48e5-a03f-0af9fa2ab0e0",
+        "operationId": "events-2a8b53bd-742a-4cff-8b3e-b7c5ce8bac07",
         "parameters": [
           {
             "name": "organisation",
@@ -4183,7 +4192,7 @@
       "get": {
         "summary": "Public Get Event",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-cc2555e8-6ace-4ae7-9b15-eccf7bfe6768",
+        "operationId": "events-7ab1ca61-cdb3-4175-926c-171e3c2edf2e",
         "parameters": [
           {
             "name": "organisation",
@@ -4245,7 +4254,7 @@
       "get": {
         "summary": "Public Get ALL Events",
         "description": "Public endpoint to get a specific event by its KSUID.",
-        "operationId": "events-2767ea30-defe-4791-a005-51e77710eaed",
+        "operationId": "events-bf9fc0f9-83d4-4eed-acfd-2450ab8eaef7",
         "parameters": [
           {
             "name": "organisation",
@@ -4344,7 +4353,7 @@
       "post": {
         "summary": "Generate Presigned Download URL",
         "description": "Generates a presigned GET URL to allow users to download a file from S3.",
-        "operationId": "presigned_url-72c47d8a-0353-4360-91ab-31c2c1823076",
+        "operationId": "presigned_url-08cabcad-9ede-4790-b9ae-87e0d066d983",
         "parameters": [],
         "tags": [
           "S3"
@@ -4427,7 +4436,7 @@
       "post": {
         "summary": "Create Customer",
         "description": "Creates a new customer record under a specific organisation.",
-        "operationId": "customers-ed1d31d6-45cf-4cfb-a64f-f33fa2b49bf1",
+        "operationId": "customers-b4932b04-54ab-4f90-9a3e-a69e5af42c9d",
         "parameters": [
           {
             "name": "organisation",
@@ -4484,7 +4493,7 @@
       "get": {
         "summary": "Get Single Customer",
         "description": "Fetch details of a specific customer by their ksuid in a given organisation.",
-        "operationId": "customers-f158cc30-a9c8-48aa-af30-deaabd237e03",
+        "operationId": "customers-aea67cc8-3c13-487e-a4b8-d202c9fce295",
         "parameters": [
           {
             "name": "organisation",
@@ -4540,7 +4549,7 @@
       "put": {
         "summary": "Update a Customer",
         "description": "Update an existing customer and its location",
-        "operationId": "customers-80356e76-2cd9-4895-aac2-089fb3fe9f7e",
+        "operationId": "customers-e6235bc4-386c-4116-8aa0-437b759e1ca5",
         "parameters": [
           {
             "name": "organisation",
@@ -4653,7 +4662,7 @@
       "put": {
         "summary": "Update Organisation Settings",
         "description": "Update settings for a specific organisation by its slug.",
-        "operationId": "organisation-cf0c2b20-e8ee-49eb-bd6d-559eb4989fe0",
+        "operationId": "organisation-8694895f-c0b3-4e35-9a68-69ee279ea637",
         "parameters": [
           {
             "name": "organisation",
@@ -4717,7 +4726,7 @@
       "get": {
         "summary": "Public Get Organisation Settings",
         "description": "Public endpoint to get the settings for a given organisation.",
-        "operationId": "organisation-ca4be146-aee3-4fba-b2af-e741495bccc2",
+        "operationId": "organisation-7c6d1252-81cb-47e0-b517-79a3536570ff",
         "parameters": [
           {
             "name": "organisation",

@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
 
+
 from ksuid import KsuidMs # utils layer
 
 sys.path.append(os.path.dirname(__file__))

@@ -42,12 +42,32 @@ def move_upload(event,context):
     if not event_ksuid:
         event_ksuid = extract_event_ksuid_from_photo_keys(entity)
 
-    # Copyfile & Delete Files
+    # Copy files first; defer expensive cleanup so metadata write is not blocked.
     new_files = move_and_cleanup_uploaded_files(entity, organisationSlug, event_ksuid)
     logger.info(j({"msg":"Move files","new_files": new_files}))
 
     if contains_photo_uploads(entity):
         write_photo_metadata(entity, organisationSlug, event_ksuid, new_files)
+
+    # Best-effort cleanup of orphaned uploads. Skip when execution time is low.
+    try:
+        remaining_ms = context.get_remaining_time_in_millis() if context else 0
+        if remaining_ms > 15000:
+            prefix = f"uploads/{organisationSlug}/"
+            keep_keys = [
+                item
+                for item in (entity.get("photos", []) if isinstance(entity, dict) else [])
+                if isinstance(item, str)
+            ]
+            cleanup_unused_uploads(prefix, keep_keys=keep_keys)
+        else:
+            logger.warning(j({
+                "msg": "Skipping uploads cleanup due to low remaining time",
+                "remaining_ms": remaining_ms,
+                "organisation": organisationSlug,
+            }))
+    except Exception as cleanup_error:
+        logger.warning(j({"msg": "Uploads cleanup failed", "error": str(cleanup_error)}))
 
     # Get an identifier
     PK = entity.get("PK") if entity.get("PK") else details.get("resource_id")
@@ -82,23 +102,20 @@ def move_and_cleanup_uploaded_files(detail, organisationSlug, eventKsuid=None):
         if isinstance(value, str) and value.startswith(prefix):
             logger.info(j({"msg":"Copying file","file": value}))
 
-            # Check if file exists before attempting to copy
-            try:
-                s3.head_object(Bucket=BUCKET_NAME, Key=value)
-            except s3.exceptions.NoSuchKey:
-                logger.error(j({"msg": "File does not exist in S3", "missing_key": value, "key_name": key}))
-                continue  # Skip to next file instead of crashing
-            except Exception as e:
-                logger.error(j({"msg": "Error checking file existence", "key": value, "error": str(e)}))
-                continue
-
             new_key = build_cdn_key(value, prefix, organisationSlug, eventKsuid)
             copy_kwargs = {"Bucket": BUCKET_NAME, "CopySource": {"Bucket": BUCKET_NAME, "Key": value}, "Key": new_key}
             if key == "photos" and eventKsuid:
                 copy_kwargs.update(build_photo_object_copy_args(detail, organisationSlug, eventKsuid, new_key, value))
             # Move file
-            s3.copy_object(**copy_kwargs)
-            s3.delete_object(Bucket=BUCKET_NAME, Key=value)
+            try:
+                s3.copy_object(**copy_kwargs)
+                s3.delete_object(Bucket=BUCKET_NAME, Key=value)
+            except s3.exceptions.NoSuchKey:
+                logger.error(j({"msg": "File does not exist in S3", "missing_key": value, "key_name": key}))
+                continue
+            except Exception as e:
+                logger.error(j({"msg": "Failed to move file", "key": value, "error": str(e)}))
+                continue
             url = f"{CDN_URL}/{new_key.replace('cdn/','')}"
             moved_files.append([key, url])
         
@@ -109,23 +126,20 @@ def move_and_cleanup_uploaded_files(detail, organisationSlug, eventKsuid=None):
                 if isinstance(item, str) and item.startswith(prefix):
                     logger.info(j({"msg":"Copying file from array","file": item}))
                     
-                    # Check if file exists before attempting to copy
-                    try:
-                        s3.head_object(Bucket=BUCKET_NAME, Key=item)
-                    except s3.exceptions.NoSuchKey:
-                        logger.error(j({"msg": "File does not exist in S3", "missing_key": item, "key_name": key}))
-                        continue  # Skip to next file instead of crashing
-                    except Exception as e:
-                        logger.error(j({"msg": "Error checking file existence", "key": item, "error": str(e)}))
-                        continue
-                    
                     new_key = build_cdn_key(item, prefix, organisationSlug, eventKsuid)
                     copy_kwargs = {"Bucket": BUCKET_NAME, "CopySource": {"Bucket": BUCKET_NAME, "Key": item}, "Key": new_key}
                     if key == "photos" and eventKsuid:
                         copy_kwargs.update(build_photo_object_copy_args(detail, organisationSlug, eventKsuid, new_key, item))
                     # Move file
-                    s3.copy_object(**copy_kwargs)
-                    s3.delete_object(Bucket=BUCKET_NAME, Key=item)
+                    try:
+                        s3.copy_object(**copy_kwargs)
+                        s3.delete_object(Bucket=BUCKET_NAME, Key=item)
+                    except s3.exceptions.NoSuchKey:
+                        logger.error(j({"msg": "File does not exist in S3", "missing_key": item, "key_name": key}))
+                        continue
+                    except Exception as e:
+                        logger.error(j({"msg": "Failed to move file", "key": item, "error": str(e)}))
+                        continue
                     url = f"{CDN_URL}/{new_key.replace('cdn/','')}"
                     moved_urls.append(url)
                 else:
@@ -134,9 +148,6 @@ def move_and_cleanup_uploaded_files(detail, organisationSlug, eventKsuid=None):
             
             if moved_urls:
                 moved_files.append([key, moved_urls])
-
-    # Optional: delete any leftover files in uploads/org/* not used
-    cleanup_unused_uploads(prefix, keep_keys=[f for f, _ in moved_files])
 
     return moved_files
 

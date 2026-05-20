@@ -224,6 +224,7 @@ class DynamoModel(BaseModel):
                                table,
                                only_set_once: list = [], 
                                condition_expression: str = None, 
+                               add_fields: set[str] | None = None,
                                explicit_fields_only: bool = True, 
                                version_override: bool = False,
                                ignore_fields: list = [],
@@ -251,6 +252,11 @@ class DynamoModel(BaseModel):
         condition_expression : str, optional
             An additional DynamoDB condition expression to append to the
             generated write conditions. Default is ``None``.
+        add_fields : set[str], optional
+            Attribute names that should be updated using DynamoDB's
+            ``ADD`` operator instead of ``SET``. This is typically used
+            for numeric counters or set-like attributes. Default is
+            ``None``.
         explicit_fields_only : bool, optional
             If ``True``, only fields explicitly set on the model are
             included in the generated update payload. If ``False``, all
@@ -283,11 +289,13 @@ class DynamoModel(BaseModel):
         """
         client = table.meta.client
 
+        add_fields = set(add_fields or [])
         only_set_once = list(only_set_once or [])
         ignore_fields = list(ignore_fields or [])
 
         conditions: list[str] = []
         set_parts:  list[str] = []
+        add_parts:  list[str] = []
 
         extra_expression_attr_names = kwargs.keys()
         extra_expression_attr_values = kwargs.values() 
@@ -320,6 +328,10 @@ class DynamoModel(BaseModel):
             if key in ignore_fields:
                 continue
 
+            if key in add_fields:
+                add_parts.append(f"{name_placeholder} {value_placeholder}")
+                continue
+
             if key in only_set_once:
                 set_parts.append(f"{name_placeholder} = if_not_exists({name_placeholder}, {value_placeholder})")
             else:
@@ -333,6 +345,8 @@ class DynamoModel(BaseModel):
         parts = []
         if set_parts:
             parts.append("SET " + ", ".join(set_parts))
+        if add_parts:
+            parts.append("ADD " + ", ".join(add_parts))
         if not parts:
             raise ValueError(f"transact_upsert: no updatable attributes for item {self!r}")
         

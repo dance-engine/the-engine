@@ -29,6 +29,7 @@ DeleteEventPhoto:
       - "_pydantic/**"
   environment:
     BUCKET_NAME: ${self:custom.upload_bucket}
+    CDN_URL: ${param:cdn_url}
   layers:
     - !Ref PydanticLambdaLayer
   events:

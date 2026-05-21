@@ -26,6 +26,47 @@ class CapacityModel(CapacityBase, DynamoModel):
     @property
     def org_slug(self): return self._slugify(self.organisation)
 
+    @model_validator(mode="before")
+    def validate_live(self, data) -> 'CapacityModel':
+        '''
+        This function will validate that the capacity is valid based on the current state of other values belonging to this object
+        '''
+        if not isinstance(data, dict):
+            return data
+
+        provided_fields = set(data.keys())
+        tracked_fields = {"capacity", "allocated_count", "reserved_capacity", "mode"}
+
+        if not (provided_fields & tracked_fields):
+            return data
+
+        if data.get("mode", "unlimited") != "limited":
+            return data
+
+        capacity = data.get("capacity")
+        allocated_count = data.get("allocated_count", 0) or 0
+        reserved_capacity = data.get("reserved_capacity", 0) or 0
+
+        if capacity is None:
+            raise ValueError("Capacity must be set when mode is limited.")
+
+        if allocated_count < 0:
+            raise ValueError("allocated_count cannot be negative.")
+
+        if reserved_capacity < 0:
+            raise ValueError("reserved_capacity cannot be negative.")
+
+        if capacity < (allocated_count + reserved_capacity):
+            raise ValueError(
+                "Capacity cannot be less than the sum of allocated_count and reserved_capacity."
+            )
+
+        remaining_capacity = capacity - allocated_count - reserved_capacity
+        if remaining_capacity < 0:
+            raise ValueError("remaining_capacity cannot be negative.")
+
+        data["remaining_capacity"] = remaining_capacity
+        return data
 
 class BundleModel(BundleBase, DynamoModel):
     organisation: str

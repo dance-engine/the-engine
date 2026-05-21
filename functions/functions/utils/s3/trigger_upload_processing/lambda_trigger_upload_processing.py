@@ -1,7 +1,10 @@
 import json
 import os
 import logging
+import time
 import boto3
+from botocore.exceptions import ClientError
+from urllib.parse import urlparse
 from _pydantic.EventBridge import trigger_eventbridge_event, EventType, Action
 
 logger = logging.getLogger()
@@ -12,6 +15,9 @@ s3 = boto3.client("s3")
 
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "")
 
+METADATA_UPDATE_MAX_RETRIES = 4
+METADATA_UPDATE_BASE_DELAY_SECONDS = 0.05
+
 
 def _json_response(status_code, body):
     return {
@@ -19,6 +25,98 @@ def _json_response(status_code, body):
         "headers": {"Content-Type": "application/json"},
         "body": json.dumps(body),
     }
+
+
+def _metadata_entry_matches_file(entry_file: str, file_key: str) -> bool:
+    if not isinstance(entry_file, str) or not entry_file:
+        return False
+
+    normalized_entry = entry_file.rstrip("/")
+    normalized_key = file_key.rstrip("/")
+    normalized_key_path = normalized_key.removeprefix("cdn/")
+    cdn_url = os.environ.get("CDN_URL", "").rstrip("/")
+
+    if normalized_entry == normalized_key:
+        return True
+
+    if cdn_url and normalized_key.startswith("cdn/"):
+        normalized_cdn_url = f"{cdn_url}/{normalized_key_path}"
+        if normalized_entry == normalized_cdn_url:
+            return True
+
+    parsed_entry = urlparse(normalized_entry)
+    if parsed_entry.scheme and parsed_entry.netloc:
+        entry_path = parsed_entry.path.lstrip("/")
+        if entry_path == normalized_key_path:
+            return True
+        if entry_path.endswith(f"/{normalized_key_path}"):
+            return True
+
+    return normalized_entry.endswith(f"/{normalized_key_path}")
+
+
+def _remove_file_from_metadata_with_retry(
+    bucket_name: str,
+    metadata_key: str,
+    file_key: str,
+    max_retries: int = METADATA_UPDATE_MAX_RETRIES,
+) -> bool:
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = s3.get_object(Bucket=bucket_name, Key=metadata_key)
+        except s3.exceptions.NoSuchKey:
+            # Nothing to update.
+            return True
+
+        etag = (response.get("ETag") or "").strip('"')
+        metadata = json.loads(response["Body"].read().decode("utf-8"))
+        if not isinstance(metadata, list):
+            metadata = []
+
+        updated_metadata = [
+            entry for entry in metadata
+            if not _metadata_entry_matches_file(entry.get("file"), file_key)
+        ]
+
+        # Already removed by another request; treat as success.
+        if len(updated_metadata) == len(metadata):
+            return True
+
+        put_kwargs = {
+            "Bucket": bucket_name,
+            "Key": metadata_key,
+            "Body": json.dumps(updated_metadata).encode("utf-8"),
+            "ContentType": "application/json",
+            "CacheControl": "no-cache, no-store, must-revalidate",
+        }
+        if etag:
+            put_kwargs["IfMatch"] = etag
+
+        try:
+            s3.put_object(**put_kwargs)
+            return True
+        except ClientError as exc:
+            error = exc.response.get("Error", {})
+            error_code = error.get("Code")
+            status_code = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+            is_conflict = error_code in {"PreconditionFailed", "ConditionalRequestConflict"} or status_code == 412
+
+            if is_conflict and attempt < max_retries:
+                delay = min(0.5, METADATA_UPDATE_BASE_DELAY_SECONDS * (2 ** (attempt - 1)))
+                time.sleep(delay)
+                continue
+
+            if is_conflict:
+                logger.warning(
+                    "Metadata update conflict persisted after %s attempts for %s",
+                    max_retries,
+                    metadata_key,
+                )
+                return False
+
+            raise
+
+    return False
 
 
 def trigger_upload_processing(event, context):
@@ -109,22 +207,13 @@ def delete_event_photo(event, context):
 
         # Remove entry from metadata.json
         metadata_key = f"cdn/{organisation}/event/{event_ksuid}/photos/metadata.json"
-        try:
-            response = s3.get_object(Bucket=BUCKET_NAME, Key=metadata_key)
-            metadata = json.loads(response["Body"].read().decode("utf-8"))
-            if isinstance(metadata, list):
-                metadata = [e for e in metadata if e.get("file") != file_key]
-            else:
-                metadata = []
-            s3.put_object(
-                Bucket=BUCKET_NAME,
-                Key=metadata_key,
-                Body=json.dumps(metadata).encode("utf-8"),
-                ContentType="application/json",
-                CacheControl="no-cache, no-store, must-revalidate",
-            )
-        except s3.exceptions.NoSuchKey:
-            pass
+        metadata_updated = _remove_file_from_metadata_with_retry(
+            bucket_name=BUCKET_NAME,
+            metadata_key=metadata_key,
+            file_key=file_key,
+        )
+        if not metadata_updated:
+            return _json_response(409, {"message": "Metadata update conflict, please retry"})
 
         return _json_response(200, {"message": "Photo deleted successfully"})
 

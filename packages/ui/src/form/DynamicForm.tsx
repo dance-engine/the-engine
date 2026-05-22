@@ -80,7 +80,11 @@ function getDateFieldKeys(metadata?: MetaData): string[] {
   return metadataDateFields
 }
 
-function transformFormDataForSubmit(formObj: FieldValues, metadata?: MetaData): FieldValues {
+function transformFormDataForSubmit(
+  formObj: FieldValues,
+  metadata?: MetaData,
+  dirtyFields?: Partial<Record<string, unknown>>
+): FieldValues {
   const dateFields = getDateFieldKeys(metadata)
   const newObj = { ...formObj }
 
@@ -93,6 +97,23 @@ function transformFormDataForSubmit(formObj: FieldValues, metadata?: MetaData): 
 
     // datetime-local values are local; normalize to UTC for persistence.
     newObj[field] = date.toISOString()
+  })
+
+  // Currency fields are displayed in pounds but the API expects pennies.
+  Object.keys(metadata || {}).forEach((field) => {
+    const fieldMetadata = getFieldMetadata(metadata, field)
+    if (!fieldMetadata?.currencyField) return
+
+    const value = newObj[field]
+    if (value === null || value === undefined || value === '') return
+
+    const numericValue = typeof value === 'number' ? value : Number(value)
+    if (Number.isNaN(numericValue)) return
+
+    const isDirtyCurrencyField = Boolean(dirtyFields?.[field])
+    newObj[field] = isDirtyCurrencyField
+      ? Math.round(numericValue)
+      : Math.round(numericValue * 100)
   })
 
   return newObj
@@ -149,7 +170,7 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
 
   return (
     <form onSubmit={handleSubmit((data) => {
-      onSubmit(transformFormDataForSubmit(data, metadata))
+      onSubmit(transformFormDataForSubmit(data, metadata, dirtyFields as Partial<Record<string, unknown>>))
         setValue("meta.saved", "saving") 
         setValue("meta.updated_at", new Date().toISOString())
       })} 

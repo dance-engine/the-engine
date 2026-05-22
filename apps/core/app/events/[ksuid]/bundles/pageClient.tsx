@@ -1,7 +1,8 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
+import { useAuth } from '@clerk/nextjs'
 import Spinner from "@dance-engine/ui/general/Spinner";
 import { IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";

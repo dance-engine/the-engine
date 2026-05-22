@@ -42,7 +42,7 @@ export const itemMetadata = {
   ksuid: { hidden: true },
   description: { richText: false },
   status: { hidden: true },
-  individually_purchaseable: { checkboxField: true },
+  individually_purchaseable: { checkboxesField: true },
   primary_price: { currencyField: true },
   stripe_primary_price_id: { hidden: true },
   secondary_price: { currencyField: true },

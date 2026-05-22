@@ -15,7 +15,14 @@ const EventBundlesPage = async ({ params }: { params: Promise<{ ksuid: string }>
             Manage bundles and items for this event
           </p>
         </div>
-        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <div className="mt-4 sm:mt-0 sm:ml-16 flex gap-2 sm:flex-none">
+          <Link 
+            href={`/events/${ksuid}/items/new`}
+            type="button"
+            className="flex w-fit gap-1 items-center rounded-md bg-dark-background px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-dark-highlight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dark-highlight"
+          >
+            <LuCalendarPlus2 className="w-6 h-6"/> Add Item
+          </Link>
           <Link 
             href={`/events/${ksuid}/bundles/new`}
             type="button"

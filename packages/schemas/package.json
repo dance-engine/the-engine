@@ -26,6 +26,9 @@
     "./bundle": {
       "default": "./dist/bundleSchema.js"
     },
+    "./item": {
+      "default": "./dist/itemSchema.js"
+    },
     ".": {
       "default": "./dist/index.js"
     }

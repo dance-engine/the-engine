@@ -82,17 +82,51 @@ export async function POST(req: Request) {
     else { 
       // console.log("Creating checkout session with line items:", lineItems);
       const checkoutSessionApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/:organisation/checkout/start`.replace(':organisation', org.organisation || 'unknown');
-      const line_items = lineItems.map((item: (ItemType | BundleTypeExtended)) => ({
-            "ksuid": item.ksuid,
-            "entity_type": item.entity_type,
-            "name": item.name,
-            "includes": item.entity_type == "BUNDLE" ? (item as BundleTypeExtended)?.includes || [] :   [],
-            "event_ksuid": item.parent_event_ksuid,
-            "price_id": item.stripe_price_id,
-            "quantity": 1
-      }))
+      const line_items = (lineItems || []).map((item: (ItemType | BundleTypeExtended)) => {
+        const rawItem = item as (ItemType | BundleTypeExtended) & {
+          event_ksuid?: string;
+          stripe_primary_price_id?: string;
+        };
 
-      const eventKsuid = lineItems[0]?.parent_event_ksuid || 'unknown';
+        const resolvedEventKsuid = rawItem.parent_event_ksuid || rawItem.event_ksuid || "";
+        const resolvedPriceId = rawItem.stripe_price_id || rawItem.stripe_primary_price_id || "";
+
+        return {
+          "ksuid": rawItem.ksuid,
+          "entity_type": rawItem.entity_type,
+          "name": rawItem.name,
+          "includes": rawItem.entity_type == "BUNDLE" ? (rawItem as BundleTypeExtended)?.includes || [] : [],
+          "event_ksuid": resolvedEventKsuid,
+          "price_id": resolvedPriceId,
+          "quantity": 1
+        };
+      });
+
+      if (!line_items.length) {
+        return NextResponse.json({ message: "No line items selected for checkout." }, { status: 400 });
+      }
+
+      const missingEventKsuid = line_items.find((item) => !item.event_ksuid);
+      if (missingEventKsuid) {
+        return NextResponse.json(
+          { message: `Unable to reserve: missing event reference for item ${missingEventKsuid.ksuid}.` },
+          { status: 400 }
+        );
+      }
+
+      const missingPriceId = line_items.find((item) => !item.price_id);
+      if (missingPriceId) {
+        return NextResponse.json(
+          { message: `Unable to checkout ${missingPriceId.name}: this product has not been published to Stripe yet.` },
+          { status: 400 }
+        );
+      }
+
+      const eventKsuid = line_items[0]?.event_ksuid;
+
+      if (!eventKsuid) {
+        return NextResponse.json({ message: "Unable to reserve: event reference is missing." }, { status: 400 });
+      }
 
       const requestBody = {
         "checkout": [

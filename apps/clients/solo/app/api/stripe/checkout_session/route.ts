@@ -6,6 +6,16 @@ import { fallbackAccountUrls, getSoloEdgeConfig, getUrlOfAccount } from "@dance-
 import { NextResponse } from "next/server"; // for App Router
 import Stripe from "stripe";
 
+type CheckoutLineItem = {
+  ksuid: string;
+  entity_type: string;
+  name: string;
+  includes: BundleTypeExtended["includes"];
+  event_ksuid: string;
+  price_id: string;
+  quantity: number;
+};
+
 const mainStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-06-30.basil", // check current supported version
 });
@@ -82,7 +92,7 @@ export async function POST(req: Request) {
     else { 
       // console.log("Creating checkout session with line items:", lineItems);
       const checkoutSessionApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/:organisation/checkout/start`.replace(':organisation', org.organisation || 'unknown');
-      const line_items = (lineItems || []).map((item: (ItemType | BundleTypeExtended)) => {
+      const line_items: CheckoutLineItem[] = (lineItems || []).map((item: (ItemType | BundleTypeExtended)) => {
         const rawItem = item as (ItemType | BundleTypeExtended) & {
           event_ksuid?: string;
           stripe_primary_price_id?: string;

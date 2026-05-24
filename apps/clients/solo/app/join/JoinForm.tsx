@@ -326,8 +326,8 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
         <div className="rounded-2xl border border-white/20 bg-black/20 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
           <h1 className="text-3xl font-semibold tracking-tight">Join The Community</h1>
           <p className="mt-2 text-sm text-white/80">
-            Complete this short application for <strong>{organisationName}</strong>. If your answers match and you&apos;re not a bot or scammer, you will get instant access.
-            Otherwise your request will be marked pending and an admin will review it, we may message you for more information.
+            Complete this short application for <strong>{organisationName}</strong>. If your answers match and you&apos;re not a bot or scammer, you will get immediately queued for admin approval.
+            Otherwise your request will be marked pending and an admin will review it before sending the whatsapp link and we may message you for more information.
           </p>
 
           {result.status === 'success' ? (

@@ -23,7 +23,7 @@ const DEFAULT_QUESTIONS: JoinQuestionWithAnswers[] = [
   {
     id: 'dance-style',
     prompt: 'What styles do you dance?',
-    acceptedAnswers: ['salsa', 'bachata', 'kizomba', 'semba', 'zouk', 'cha cha', 'cuban', 'on1', 'on2'],
+    acceptedAnswers: ['salsa', 'bachata', 'kizomba', 'semba', 'zouk', 'cha cha', 'cuban', 'on1', 'on2','rueda', 'afro'],
   },
   {
     id: 'experience',
@@ -46,11 +46,6 @@ const DEFAULT_QUESTIONS: JoinQuestionWithAnswers[] = [
     acceptedAnswers: ['visual', 'verbal', 'repetition', 'practice', 'demo', 'i do not know', 'dont know', 'not sure', 'unsure', 'idk'],
   },
   {
-    id: 'local-teacher',
-    prompt: 'Name a local teacher you know.',
-    acceptedAnswers: ['teacher', 'instructor', 'coach', 'mentor'],
-  },
-  {
     id: 'events',
     prompt: 'What kind of events are you most interested in: socials, workshops, or teams?',
     acceptedAnswers: ['social', 'socials', 'workshop', 'workshops', 'team', 'teams'],
@@ -61,7 +56,7 @@ const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
   default: {
     whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
-    localTeacherAliases: ['adam','alex','angel','connor','joey','jp','libby','nicola'],
+    localTeacherAliases: ['adam','alex','angel','connor','joey','jp','libby','nicola',"steve","ant","tee", "ellena","jonathon","johnny" ],
     questions: DEFAULT_QUESTIONS,
   },
   'latin-soul': {

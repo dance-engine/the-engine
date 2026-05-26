@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { MapPickerProps, DanceEngineEntity } from '@dance-engine/ui/types'
 import DynamicForm from "@dance-engine/ui/form/DynamicForm";
-import { eventSchema, eventMetadata } from "@dance-engine/schemas/events"; // Import the schema
+import { eventSchema, eventMetadata, EventResponseType } from "@dance-engine/schemas/events"; // Import the schema
 import { FieldValues } from "react-hook-form";
 import {useOrgContext} from '@dance-engine/utils/OrgContext'
 import { useAuth } from '@clerk/nextjs'
@@ -25,8 +25,41 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const eventsApiUrl = `${baseUrlEndpoint}/${ksuid}`
   const defaultEntity = useMemo(() => ({ type: "EVENT", ksuid }), [ksuid])
   const { data, error, isLoading } = useClerkSWR(eventsApiUrl)
+  const { data: eventsListData } = useClerkSWR(baseUrlEndpoint)
   
   const remoteEntity = data || defaultEntity
+
+  const allEvents = useMemo<EventResponseType[]>(() => {
+    const source = Array.isArray(eventsListData?.events)
+      ? eventsListData.events
+      : eventsListData?.events && typeof eventsListData.events === "object"
+        ? Object.values(eventsListData.events)
+        : []
+    return source as EventResponseType[]
+  }, [eventsListData])
+
+  const previousEventOptions = useMemo(() => {
+    return allEvents
+      .filter((event) => event.ksuid && event.ksuid !== ksuid)
+      .sort((a, b) => {
+        const aTs = a.starts_at ? new Date(a.starts_at).getTime() : 0
+        const bTs = b.starts_at ? new Date(b.starts_at).getTime() : 0
+        return bTs - aTs
+      })
+      .map((event) => ({
+        value: event.ksuid as string,
+        label: event.name ? `${event.name} (${event.ksuid})` : (event.ksuid as string),
+      }))
+  }, [allEvents, ksuid])
+
+  const formMetadata = useMemo(() => ({
+    ...eventMetadata,
+    previous_event_ksuid: {
+      ...(eventMetadata.previous_event_ksuid || {}),
+      selectField: true,
+      selectOptions: previousEventOptions,
+    },
+  }), [previousEventOptions])
   
   const [entity, setEntity] = useState({ksuid: ""} as DanceEngineEntity)
 
@@ -97,7 +130,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     ? <><DynamicForm 
         schema={eventSchema} 
         {...(activeOrg ? {orgSlug: activeOrg} : {})} 
-        metadata={eventMetadata} 
+        metadata={formMetadata} 
         onSubmit={handleSubmit}  
         MapComponent={MapPicker} 
         persistKey={entity} 

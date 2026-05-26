@@ -7,6 +7,7 @@ import { ItemType, BundleTypeExtended } from "./bundleSchema.js";
 export const eventSchema = z.object({
   entity_type: z.literal("EVENT").describe("Entity type").optional(),
   ksuid: z.string().describe("ID of the event").optional(),
+  previous_event_ksuid: z.string().optional().describe("KSUID of the previous related event"),
   name: z.string().min(2, "Name must be at least 2 characters").describe("The name of the event."),
   banner: z.string().optional().describe('Appears at the top of your page'),
   starts_at: z.string().refine((val) => { return val !== undefined || !isNaN(Date.parse(val))}, {
@@ -51,6 +52,7 @@ export const createEvent =(eventData: EventResponseType) => {
 // Additional no validation metadata relating to how we display data in forms
 export const eventMetadata = {
   ksuid: { hidden: true },
+  previous_event_ksuid: { selectField: true },
   banner: { fileUploadField: 'single' },
   description: { richText: true },
   // description: { multiLine: true },

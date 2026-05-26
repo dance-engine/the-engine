@@ -79,7 +79,7 @@ export interface RichTextEditorProps {
 export interface SelectProps {
   label: string;
   name: string;
-  options: string[];
+  options: Array<string | SelectOption>;
   register: UseFormRegister<FieldValues>;
   validate: () => void;
   error?: string;
@@ -155,6 +155,7 @@ export interface DynamicFieldOptions {
   info?: boolean;
   onceOnly?: boolean; // This field can only be set once and is not editable after that
   selectField?: boolean; // show as select input
+  selectOptions?: Array<string | SelectOption>;
   currencyField?: boolean; // render currency formatting
 }
 

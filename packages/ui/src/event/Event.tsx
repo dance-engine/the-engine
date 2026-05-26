@@ -17,6 +17,7 @@ import {
 import EventHeroBanner from "./EventHeroBanner";
 import EventFactsPanel from "./EventFactsPanel";
 import EventTicketing from "./EventTicketing";
+import MediaFilmStrip from "./MediaFilmStrip";
 // import EventFooter from "./EventFooter";
 import DevThemeDebug from "./DevThemeDebug";
 
@@ -337,6 +338,10 @@ export default function Event({
   const directionsHref = getDirectionsHref(event);
   const eventDescription = safeGenerateEventDescriptionHtml(event.description);
   const debugEventState = process.env.NEXT_PUBLIC_EVENT_DEBUG === "true";
+  const previousEventKsuid =
+    typeof event.previous_event_ksuid === "string" && event.previous_event_ksuid.trim().length > 0
+      ? event.previous_event_ksuid
+      : undefined;
   const now = new Date();
 
   // If event has passed, show archive view
@@ -365,7 +370,7 @@ export default function Event({
   }
   
   return (
-    <div className="w-full">
+    <div className="w-full" id="event-page">
       <style dangerouslySetInnerHTML={{ __html: organisationTheme.cssText }} />
       <div
         className="min-h-screen"
@@ -382,6 +387,27 @@ export default function Event({
           event={event}
           highlightedPassLabel={highlightPassLabel}
         />
+
+        {previousEventKsuid ? (
+          <div className="mt-10 w-full p-0 ">
+            <div className=" inset-0 z-10 opacity-50 mx-auto max-w-7xl">
+              <h2 className=" inline text-lg font-bold z-40 bg-black text-white rounded px-4 pt-2 pb-4">Our last event</h2>
+            </div>
+
+            <MediaFilmStrip
+              orgSlug={org.organisation}
+              previousEventKsuid={previousEventKsuid}
+            />
+            <div className="py-0 -z-10 opacity-50 mx-auto max-w-7xl">
+              <NextLink
+                href={`/${previousEventKsuid}/media`}
+                className="inline-block text-lg font-bold z-40 bg-black text-white rounded-b px-4 py-2 m-0"
+              >
+                View all previous event photos
+              </NextLink>
+            </div>
+          </div>
+        ) : null}
 
         <main className="mx-auto mt-10 w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
           {hasEventPassed ? (
@@ -493,7 +519,8 @@ export default function Event({
 
                   {typeof event.location?.lat === "number" &&
                   typeof event.location?.lng === "number" ? (
-                    <MapDisplay lat={event.location.lat} lng={event.location.lng} />
+                    // <MapDisplay lat={event.location.lat} lng={event.location.lng} />
+                    <div>Fake Map</div>
                   ) : (
                     <div
                       className="flex h-[320px] items-center justify-center text-sm"

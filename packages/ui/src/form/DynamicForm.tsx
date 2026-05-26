@@ -116,6 +116,15 @@ function transformFormDataForSubmit(
       : Math.round(numericValue * 100)
   })
 
+  // Optional select fields should send null instead of an empty string.
+  Object.keys(metadata || {}).forEach((field) => {
+    const fieldMetadata = getFieldMetadata(metadata, field)
+    if (!fieldMetadata?.selectField) return
+    if (newObj[field] === '') {
+      newObj[field] = null
+    }
+  })
+
   return newObj
 }
 
@@ -197,6 +206,8 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
         const isDisplayInfo = fieldMetadata?.info
         const isOnceOnly = fieldMetadata?.onceOnly; // Get metadata for the field
         const isCurrency = fieldMetadata?.currencyField; // Get metadata for the field
+        const isSelect = fieldMetadata?.selectField;
+        const selectOptions = fieldMetadata?.selectOptions ?? [];
 
         return (
           <div key={field} className={`flex flex-col ${isDisplayInfo ? "mb-1" : null}`}>
@@ -252,6 +263,16 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
                 register={register} validate={() => {trigger(field)}} 
                 error={errors[field]?.message as string} fieldSchema={fieldSchema} 
                 />
+            ) : isSelect ? (
+              <Select
+                label={field}
+                name={field}
+                options={selectOptions}
+                fieldSchema={fieldSchema}
+                register={register}
+                validate={() => {trigger(field)}}
+                error={errors[field]?.message as string}
+              />
             ) : fieldType === "ZodObject" ? ( //TODO Don't assume all object are LocationPickers
               <div> 
                 {/* {JSON.stringify((errors[field] as unknown as {name: {message:string}})?.name?.message )} */}

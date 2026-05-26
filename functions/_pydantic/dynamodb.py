@@ -259,12 +259,21 @@ class DynamoModel(BaseModel):
             the updated item if successful, and any error message if not successful.
         """
         update_parts = []
+        remove_parts = []
         expression_attr_names = {}
         expression_attr_values = {}
         extra_expression_attr_names = dict(extra_expression_attr_names or {})
         extra_expression_attr_values = dict(extra_expression_attr_values or {})            
         
         item = self.to_dynamo(exclude_unset=explicit_fields_only)
+
+        if explicit_fields_only:
+            explicit_values = self.model_dump(mode="json", exclude_unset=True, exclude_none=False)
+            for key, value in explicit_values.items():
+                if value is None:
+                    name_placeholder = f"#{key}"
+                    expression_attr_names[name_placeholder] = key
+                    remove_parts.append(name_placeholder)
 
         if self.uses_versioning():
             incoming_version = item.get('version', 0)
@@ -286,7 +295,13 @@ class DynamoModel(BaseModel):
         for k, v in extra_expression_attr_values.items():
             expression_attr_values.setdefault(k, v)                
 
-        update_expression = "SET " + ", ".join(update_parts)
+        update_expression_parts = []
+        if update_parts:
+            update_expression_parts.append("SET " + ", ".join(update_parts))
+        if remove_parts:
+            update_expression_parts.append("REMOVE " + ", ".join(remove_parts))
+
+        update_expression = " ".join(update_expression_parts)
 
         kwargs = dict(
             Key={"PK": self.PK, "SK": self.SK},

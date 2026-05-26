@@ -116,12 +116,12 @@ function transformFormDataForSubmit(
       : Math.round(numericValue * 100)
   })
 
-  // Optional select fields should send undefined instead of an empty string.
+  // Optional select fields should send null instead of an empty string.
   Object.keys(metadata || {}).forEach((field) => {
     const fieldMetadata = getFieldMetadata(metadata, field)
     if (!fieldMetadata?.selectField) return
     if (newObj[field] === '') {
-      newObj[field] = undefined
+      newObj[field] = null
     }
   })
 

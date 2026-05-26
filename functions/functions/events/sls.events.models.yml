@@ -41,6 +41,9 @@ EventObject:
           ksuid:
             type: string
             description: "ID of the event"
+          previous_event_ksuid:
+            type: string
+            description: "KSUID of the previous related event"
           banner:
             type: string
             description: "Appears at the top of the event page"
@@ -121,6 +124,9 @@ EventObjectPublic:
           ksuid:
             type: string
             description: "ID of the event"
+          previous_event_ksuid:
+            type: string
+            description: "KSUID of the previous related event"
           banner:
             type: string
             description: "Appears at the top of the event page"

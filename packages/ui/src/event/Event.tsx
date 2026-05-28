@@ -519,8 +519,20 @@ export default function Event({
 
                   {typeof event.location?.lat === "number" &&
                   typeof event.location?.lng === "number" ? (
-                    // <MapDisplay lat={event.location.lat} lng={event.location.lng} />
-                    <div>Fake Map</div>
+                    process.env.NODE_ENV === "development" ? (
+                      <div
+                        className="flex h-[320px] w-full items-center justify-center rounded-md border text-sm font-medium"
+                        style={{
+                          background: "#fff",
+                          borderColor: "var(--scheme-surface-muted)",
+                          color: "var(--scheme-surface-muted)",
+                        }}
+                      >
+                        Map Placeholder (lat: {event.location.lat}, lng: {event.location.lng})
+                      </div>
+                    ) : (
+                      <MapDisplay lat={event.location.lat} lng={event.location.lng} />
+                    )
                   ) : (
                     <div
                       className="flex h-[320px] items-center justify-center text-sm"

@@ -1,7 +1,6 @@
 import os
 import json
 import boto3
-import uuid
 import mimetypes
 import logging
 from _shared.naming import getOrganisationTableName
@@ -73,8 +72,11 @@ def move_upload(event,context):
     PK = entity.get("PK") if entity.get("PK") else details.get("resource_id")
     SK = entity.get("SK") if entity.get("SK") else details.get("resource_id")
 
+    # Keep parent record updates for non-photo fields only.
+    non_photo_files = [item for item in new_files if item[0] != "photos"]
+
     # # Update name
-    response = update_dynamodb_paths(PK, SK, new_files, organisationSlug)
+    response = update_dynamodb_paths(PK, SK, non_photo_files, organisationSlug)
     logger.info(j({"msg":"DynamoDB Response","response": response}))
     # Invalidate CDN?
 
@@ -265,7 +267,6 @@ def write_photo_metadata(detail, organisationSlug, eventKsuid, moved_files):
         ContentType="application/json",
         CacheControl="no-cache, no-store, must-revalidate",
     )
-
 def cleanup_unused_uploads(prefix, keep_keys):
     paginator = s3.get_paginator('list_objects_v2')
     for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix=prefix):

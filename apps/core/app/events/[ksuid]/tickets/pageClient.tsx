@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import Spinner from "@dance-engine/ui/general/Spinner";
 import { IoCheckmarkDoneOutline, IoCloudOffline } from "react-icons/io5";
 import { CorsError } from "@dance-engine/utils/clerkSWR";
@@ -14,6 +14,7 @@ import ActionIconButton from "@dance-engine/ui/actions/ActionIconButton";
 import ActionRow from "@dance-engine/ui/actions/ActionRow";
 import { useLayoutSearch } from "../../../components/LayoutSearchContext";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
+import DestructiveButton from "@dance-engine/ui/general/DestructiveButton";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
   ssr: false,
@@ -25,11 +26,13 @@ interface TicketsClientProps {
 
 const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
   const { getToken } = useAuth();
+  const { user } = useUser();
   const { activeOrg } = useOrgContext();
   const { debouncedQuery, setRawQuery } = useLayoutSearch();
   const baseUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets`;
   const ticketsUrl = baseUrl.replace('/{org}', activeOrg ? `/${activeOrg}` : '');
   const sendTicketsUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets/send`;
+  const deleteTicketsUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${ksuid}/tickets`;
 
   const { data: ticketsData, error, isLoading } = useClerkSWR(
     activeOrg ? ticketsUrl : null,
@@ -40,6 +43,9 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
   const [resendingTicketKsuid, setResendingTicketKsuid] = useState<string | null>(null);
   const [checkingInTicketKsuid, setCheckingInTicketKsuid] = useState<string | null>(null);
   const [resendStatus, setResendStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [ticketDeleteStatus, setTicketDeleteStatus] = useState<"idle" | "deleting" | "deleted" | "error">("idle");
+
+  const canDeleteTickets = Boolean(user?.publicMetadata?.admin);
 
   useEffect(() => {
     const { tickets: eventTickets = [] } = ticketsData || {};
@@ -87,6 +93,40 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
       });
     } finally {
       setResendingTicketKsuid(null);
+    }
+  };
+
+  const deleteAllTickets = async () => {
+    if (!activeOrg || ticketDeleteStatus === "deleting") {
+      return;
+    }
+
+    try {
+      setTicketDeleteStatus("deleting");
+
+      const token = await getToken();
+      const endpoint = deleteTicketsUrl.replace('/{org}', `/${activeOrg}`);
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof payload?.message === 'string'
+            ? payload.message
+            : 'Failed to delete tickets.',
+        );
+      }
+
+      setTicketDeleteStatus('deleted');
+      setTickets([]);
+    } catch (error) {
+      setTicketDeleteStatus('error');
+      console.error('Failed to delete all tickets:', error);
     }
   };
 
@@ -191,14 +231,37 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
       {/* Tickets Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-4 px-4 lg:px-8">
-          <h2 className="text-lg font-semibold text-gray-900">Tickets ({tickets.length})</h2>
-          <Link
-            href={`/tickets/new?event=${encodeURIComponent(ksuid)}&returnTo=${encodeURIComponent(`/events/${ksuid}/tickets`)}`}
-            className="inline-flex items-center rounded-md bg-dark-background px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-dark-highlight"
-          >
-            Create ticket
-          </Link>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Tickets ({tickets.length})</h2>
+            <p className="mt-1 text-sm text-gray-600">View tickets for this event</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {canDeleteTickets ? (
+              ticketDeleteStatus === 'deleted' ? (
+                <span className="text-sm font-semibold text-green-700">Tickets deleted</span>
+              ) : (
+                <DestructiveButton
+                  record={{ eventKsuid: ksuid, organisation: activeOrg }}
+                  onClick={deleteAllTickets}
+                  className="inline-flex items-center rounded-md bg-keppel-on-light px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
+                >
+                  {ticketDeleteStatus === 'deleting' ? 'Deleting tickets...' : 'Delete all tickets'}
+                </DestructiveButton>
+              )
+            ) : null}
+            <Link
+              href={`/tickets/new?event=${encodeURIComponent(ksuid)}&returnTo=${encodeURIComponent(`/events/${ksuid}/tickets`)}`}
+              className="inline-flex items-center rounded-md bg-dark-background px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-dark-highlight"
+            >
+              Create ticket
+            </Link>
+          </div>
         </div>
+        {ticketDeleteStatus === 'error' ? (
+          <div className="mx-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 lg:mx-8">
+            Unable to delete tickets. Check your permissions and try again.
+          </div>
+        ) : null}
         {resendStatus ? (
           <div
             className={`mx-4 rounded px-4 py-3 text-sm lg:mx-8 ${

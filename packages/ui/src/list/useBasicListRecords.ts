@@ -12,6 +12,8 @@ type UseBasicListRecordsParams = {
   searchQuery: string
   searchMinChars: number
   entity: string
+  includeArchived?: boolean
+  archivedOnly?: boolean
 }
 
 const normalizeSearchTerm = (value: string) => {
@@ -30,6 +32,8 @@ export function useBasicListRecords({
   searchQuery,
   searchMinChars,
   entity,
+  includeArchived = false,
+  archivedOnly = false,
 }: UseBasicListRecordsParams) {
   const sortedRecords = useMemo(() => {
     if (!sort.key) return records
@@ -98,12 +102,28 @@ export function useBasicListRecords({
   }, [sortedRecords, columns, columnValueAdapters, searchMinChars, searchQuery])
 
   const totalVisibleRecords = useMemo(() => {
+    if (archivedOnly) {
+      return records.filter((record) => record?.status === 'archived').length
+    }
+
+    if (includeArchived) {
+      return records.length
+    }
+
     return records.filter((record) => record?.status !== 'archived').length
-  }, [records])
+  }, [records, includeArchived, archivedOnly])
 
   const visibleFilteredRecords = useMemo(() => {
+    if (archivedOnly) {
+      return filteredRecords.filter((record) => record?.status === 'archived')
+    }
+
+    if (includeArchived) {
+      return filteredRecords
+    }
+
     return filteredRecords.filter((record) => record?.status !== 'archived')
-  }, [filteredRecords])
+  }, [filteredRecords, includeArchived, archivedOnly])
 
   const groupedVisibleRecords = useMemo(() => {
     return groupByToArray(visibleFilteredRecords, (r) => getNestedValue(r, 'meta.saved'))

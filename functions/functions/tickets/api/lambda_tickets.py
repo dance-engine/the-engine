@@ -182,17 +182,18 @@ def delete_tickets(organisationSlug: str, eventId: str, actor: str = "unknown"):
 
     try:
         for ticket in tickets:
-            related_ticket_rows = ticket.query_gsi(
-                table=table,
-                index_name="gsi2",
-                key_condition=Key("gsi2PK").eq(ticket.gsi2PK),
-            )
+            full_ticket = get_single_ticket(organisationSlug, eventId, str(ticket.ksuid), actor=actor)
+            if full_ticket is None:
+                continue
 
-            if isinstance(related_ticket_rows, TicketModel):
-                related_ticket_rows = [related_ticket_rows]
+            ticket_keys_to_delete.add((full_ticket.PK, full_ticket.SK))
 
-            for related_item in related_ticket_rows or []:
-                ticket_keys_to_delete.add((related_item.PK, related_item.SK))
+            creation_idempotency = getattr(full_ticket, "creation_idempotency", None)
+            if creation_idempotency is not None:
+                ticket_keys_to_delete.add((creation_idempotency.PK, creation_idempotency.SK))
+
+            for child in getattr(full_ticket, "expanded_includes", []) or []:
+                ticket_keys_to_delete.add((child.PK, child.SK))
 
         with table.batch_writer() as batch:
             for pk, sk in ticket_keys_to_delete:

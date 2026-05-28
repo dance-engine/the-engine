@@ -8,6 +8,7 @@ import { BasicListSort, useBasicListRecords } from './useBasicListRecords'
 import BasicListMobileCards from './BasicListMobileCards'
 import BasicListDesktopTable from './BasicListDesktopTable'
 import { useArchiveEntityRecord } from './useArchiveEntityRecord'
+import { useDeleteEntityRecord } from './useDeleteEntityRecord'
 import {
   formatDatePart,
   formatTimePart,
@@ -20,6 +21,8 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   columns,
   formats,
   records,
+  includeArchived = false,
+  archivedOnly = false,
   columnValueAdapters,
   searchQuery = '',
   searchMinChars = 3,
@@ -34,9 +37,12 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
 }: BasicListProps<React.HTMLAttributes<HTMLTableElement>>) => {
   const [sort, setSort] = useState<BasicListSort>({ key: '', direction: 'asc' });
   const [optimisticallyArchivedKeys, setOptimisticallyArchivedKeys] = useState<Set<string>>(new Set())
+  const [optimisticallyDeletedKeys, setOptimisticallyDeletedKeys] = useState<Set<string>>(new Set())
 
   const { archiveRecord } = useArchiveEntityRecord({ entity, activeOrg })
+  const { deleteRecord } = useDeleteEntityRecord({ entity, activeOrg })
   const entityTypeSlug = `${entity?.toLowerCase()}s`
+  const destructiveActionLabel = entity === 'EVENT' && archivedOnly ? 'Delete' : 'Archive'
   const firstHeaderClasses = "pr-3 pl-4 sm:pl-4 lg:pl-8"
   const restHeaderClasses = "px-3"
   const allHeaderClasses = "py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -71,9 +77,16 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
   }
 
   const optimisticRecords = useMemo(() => {
-    if (optimisticallyArchivedKeys.size === 0) return records
+    if (optimisticallyArchivedKeys.size === 0 && optimisticallyDeletedKeys.size === 0) return records
 
-    return records.map((record) => {
+    return records
+      .filter((record) => {
+        const key = getRecordKey(record)
+        if (!key) return true
+
+        return !optimisticallyDeletedKeys.has(key)
+      })
+      .map((record) => {
       const key = getRecordKey(record)
       if (!key || !optimisticallyArchivedKeys.has(key)) return record
 
@@ -81,8 +94,39 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
         ...record,
         status: 'archived',
       }
-    })
-  }, [records, optimisticallyArchivedKeys])
+      })
+  }, [records, optimisticallyArchivedKeys, optimisticallyDeletedKeys])
+
+  const shouldHardDelete = entity === 'EVENT' && archivedOnly
+
+  const handleDelete = async (record: Record<string, unknown>) => {
+    const key = getRecordKey(record)
+
+    if (key) {
+      setOptimisticallyDeletedKeys((previousKeys) => {
+        if (previousKeys.has(key)) return previousKeys
+        const nextKeys = new Set(previousKeys)
+        nextKeys.add(key)
+        return nextKeys
+      })
+    }
+
+    const result = shouldHardDelete ? await deleteRecord(record) : await archiveRecord(record)
+    if (result.ok) return
+
+    if (key) {
+      setOptimisticallyDeletedKeys((previousKeys) => {
+        if (!previousKeys.has(key)) return previousKeys
+        const nextKeys = new Set(previousKeys)
+        nextKeys.delete(key)
+        return nextKeys
+      })
+    }
+
+    if (result.error) {
+      console.error(result.error)
+    }
+  }
 
   const handleArchive = async (record: Record<string, unknown>) => {
     const key = getRecordKey(record)
@@ -147,6 +191,8 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
     searchQuery,
     searchMinChars,
     entity,
+    includeArchived,
+    archivedOnly,
   })
 
 
@@ -166,8 +212,9 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
       parentEntityName={parentEntityName}
       showEditAction={showEditAction}
       showDeleteAction={showDeleteAction}
+      destructiveActionLabel={destructiveActionLabel}
       rowActions={rowActions}
-      onDelete={handleArchive}
+      onDelete={handleDelete}
       getDisplayValue={displayValue}
       toDateOrNull={toDateOrNull}
       formatDatePart={formatDatePart}
@@ -195,8 +242,9 @@ const BasicList: React.FC<BasicListProps<React.HTMLAttributes<HTMLTableElement>>
       parentEntityName={parentEntityName}
       showEditAction={showEditAction}
       showDeleteAction={showDeleteAction}
+      destructiveActionLabel={destructiveActionLabel}
       rowActions={rowActions}
-      onDelete={handleArchive}
+      onDelete={handleDelete}
       emptyStateMessage={emptyStateMessage}
       isFullyFilteredOut={isFullyFilteredOut}
       onClearSearch={onClearSearch}

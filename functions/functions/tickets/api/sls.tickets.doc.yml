@@ -235,6 +235,32 @@ endpoints:
             description: Internal server error.
           responseModels:
             application/json: "ErrorResponse"
+    DELETEall:
+      summary: "Delete All Tickets For Event"
+      description: "Permanently delete all tickets for the selected organisation and event, including related ticket child rows and idempotency records. Requires super admin privileges."
+      tags:
+        - Tickets
+      pathParams:
+        - name: organisation
+          description: Organisation slug
+          schema:
+            type: string
+        - name: event
+          description: Event slug or ID
+          schema:
+            type: string
+      methodResponses:
+        - statusCode: 200
+          responseBody:
+            description: Tickets deleted successfully.
+        - statusCode: 404
+          responseBody:
+            description: No tickets found for this event.
+        - statusCode: 500
+          responseBody:
+            description: Internal server error.
+          responseModels:
+            application/json: "ErrorResponse"
     Send:
       summary: "Send Tickets"
       description: "Sends tickets emails for tickets that already exist."

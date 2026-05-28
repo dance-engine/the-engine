@@ -10,6 +10,8 @@ export type BasicListProps<T extends Record<string, any> = {}> = {
   columns: string[];
   formats?: (string | undefined)[]; 
   records: Record<string, unknown>[];
+  includeArchived?: boolean;
+  archivedOnly?: boolean;
   columnValueAdapters?: Record<string, BasicListColumnValueAdapter>;
   searchQuery?: string;
   searchMinChars?: number;

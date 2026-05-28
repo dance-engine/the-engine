@@ -22,6 +22,7 @@ type BasicListDesktopTableProps = {
   parentEntityName?: string
   showEditAction: boolean
   showDeleteAction: boolean
+  destructiveActionLabel?: string
   rowActions?: (record: Record<string, unknown>) => React.ReactNode
   onDelete: (record: Record<string, unknown>) => void | Promise<void>
   emptyStateMessage: string
@@ -48,6 +49,7 @@ const BasicListDesktopTable: React.FC<BasicListDesktopTableProps> = ({
   parentEntityName,
   showEditAction,
   showDeleteAction,
+  destructiveActionLabel,
   rowActions,
   onDelete,
   emptyStateMessage,
@@ -123,6 +125,7 @@ const BasicListDesktopTable: React.FC<BasicListDesktopTableProps> = ({
                                   parentEntityName={parentEntityName}
                                   showEditAction={showEditAction}
                                   showDeleteAction={showDeleteAction}
+                                  destructiveActionLabel={destructiveActionLabel}
                                   rowActions={rowActions}
                                   onDelete={onDelete}
                                 />

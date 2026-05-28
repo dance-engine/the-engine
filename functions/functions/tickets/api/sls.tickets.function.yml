@@ -72,3 +72,9 @@ Tickets:
         authorizer:
           adminAuthorizer
         documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.PUT}
+    - httpApi:
+        path: /{organisation}/{event}/tickets
+        method: delete
+        authorizer:
+          adminAuthorizer
+        documentation: ${file(functions/tickets/api/sls.tickets.doc.yml):endpoints.Tickets.DELETEall}

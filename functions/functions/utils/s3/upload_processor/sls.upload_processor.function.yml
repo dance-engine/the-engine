@@ -15,6 +15,7 @@ UploadProcessor:
     CORE_TABLE_NAME: ${self:custom.core_table_name}
     CDN_URL: ${param:cdn_url}   
   layers:
+    - !Ref UtilsLambdaLayer
     - !Ref PydanticLambdaLayer
   events:
     - eventBridge:

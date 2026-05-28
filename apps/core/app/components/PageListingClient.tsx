@@ -15,7 +15,7 @@ const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), { //T
 });
 
 
-const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined] }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[] }) => {
+const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefined,undefined], includeArchived = false, archivedOnly = false }: { entity: EntityNameType, columns?: string[], formats?: (string|undefined)[], includeArchived?: boolean, archivedOnly?: boolean }) => {
   const eventsApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/{org}/${entity?.toLowerCase()}s`
   const { activeOrg } = useOrgContext() 
   const { debouncedQuery, setRawQuery } = useLayoutSearch()
@@ -67,8 +67,19 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
         byId.set(`${id}`, { ...remoteEntity, meta: { ...(remoteEntity.meta ?? {}), source: `remote (newer)` } })
       }
     })
-    return Array.from(byId.values())
-  },[remoteEntityData,localEntities,entity])
+    const mergedEntities = Array.from(byId.values())
+    const readStatus = (record: EntityType) => String((record as Record<string, unknown>).status ?? "")
+
+    if (entity === "EVENT" && archivedOnly) {
+      return mergedEntities.filter((record) => readStatus(record) === "archived")
+    }
+
+    if (entity === "EVENT" && !includeArchived) {
+      return mergedEntities.filter((record) => readStatus(record) !== "archived")
+    }
+
+    return mergedEntities
+  },[remoteEntityData,localEntities,entity,includeArchived,archivedOnly])
 
   
   return (
@@ -87,6 +98,8 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
         columns={columns}
         formats={formats}
         records={allEntities}
+        includeArchived={includeArchived}
+        archivedOnly={archivedOnly}
         activeOrg={activeOrg || ''}
         searchQuery={debouncedQuery}
         onClearSearch={() => setRawQuery('')}

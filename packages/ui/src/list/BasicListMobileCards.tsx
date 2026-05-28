@@ -15,6 +15,7 @@ type BasicListMobileCardsProps = {
   parentEntityName?: string
   showEditAction: boolean
   showDeleteAction: boolean
+  destructiveActionLabel?: string
   rowActions?: (record: Record<string, unknown>) => React.ReactNode
   onDelete: (record: Record<string, unknown>) => void | Promise<void>
   getDisplayValue: (col: string, value: unknown, record: Record<string, unknown>) => React.ReactNode
@@ -37,6 +38,7 @@ const BasicListMobileCards: React.FC<BasicListMobileCardsProps> = ({
   parentEntityName,
   showEditAction,
   showDeleteAction,
+  destructiveActionLabel,
   rowActions,
   onDelete,
   getDisplayValue,
@@ -117,6 +119,7 @@ const BasicListMobileCards: React.FC<BasicListMobileCardsProps> = ({
                   parentEntityName={parentEntityName}
                   showEditAction={showEditAction}
                   showDeleteAction={showDeleteAction}
+                  destructiveActionLabel={destructiveActionLabel}
                   rowActions={rowActions}
                   onDelete={onDelete}
                 />

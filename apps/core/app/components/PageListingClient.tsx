@@ -68,13 +68,14 @@ const PageListingClient = ({ entity, columns = ["name","ksuid"], formats=[undefi
       }
     })
     const mergedEntities = Array.from(byId.values())
+    const readStatus = (record: EntityType) => String((record as Record<string, unknown>).status ?? "")
 
     if (entity === "EVENT" && archivedOnly) {
-      return mergedEntities.filter((record) => String(record.status ?? "") === "archived")
+      return mergedEntities.filter((record) => readStatus(record) === "archived")
     }
 
     if (entity === "EVENT" && !includeArchived) {
-      return mergedEntities.filter((record) => String(record.status ?? "") !== "archived")
+      return mergedEntities.filter((record) => readStatus(record) !== "archived")
     }
 
     return mergedEntities

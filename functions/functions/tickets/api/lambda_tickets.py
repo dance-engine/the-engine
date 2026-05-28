@@ -169,6 +169,47 @@ def get_tickets(organisationSlug: str,  eventId: str, public: bool = False, acto
 
     return tickets
 
+def delete_tickets(organisationSlug: str, eventId: str, actor: str = "unknown"):
+    TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
+    table = db.Table(TABLE_NAME)
+    logger.info(f"Deleting tickets for {eventId} of {organisationSlug} from {TABLE_NAME}")
+
+    tickets = get_tickets(organisationSlug, eventId, actor=actor) or []
+    if len(tickets) == 0:
+        return make_response(404, {"message": "No tickets found for this event."})
+
+    ticket_keys_to_delete: set[tuple[str, str]] = set()
+
+    try:
+        for ticket in tickets:
+            related_ticket_rows = ticket.query_gsi(
+                table=table,
+                index_name="gsi2",
+                key_condition=Key("gsi2PK").eq(ticket.gsi2PK),
+            )
+
+            if isinstance(related_ticket_rows, TicketModel):
+                related_ticket_rows = [related_ticket_rows]
+
+            for related_item in related_ticket_rows or []:
+                ticket_keys_to_delete.add((related_item.PK, related_item.SK))
+
+        with table.batch_writer() as batch:
+            for pk, sk in ticket_keys_to_delete:
+                batch.delete_item(Key={"PK": pk, "SK": sk})
+
+        return make_response(200, {
+            "message": "Tickets deleted successfully.",
+            "deleted_ticket_count": len(tickets),
+            "deleted_record_count": len(ticket_keys_to_delete),
+        })
+    except Exception as e:
+        logger.error(f"Failed to delete tickets for {organisationSlug}:{eventId}: {e}", exc_info=True)
+        return make_response(500, {
+            "message": "Failed to delete tickets.",
+            "error": str(e),
+        })
+
 def send_tickets(request_data: SendTicketEmailRequest, organisationSlug: str, eventId: str, actor: str = "unknown"):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name", organisationSlug)
     table = db.Table(TABLE_NAME)
@@ -760,6 +801,8 @@ def lambda_handler(event, context):
         elif http_method == "PUT":
             validated_request = UpdateTicketRequest(**parsed_event)
             return update(validated_request, organisationSlug, eventId, actor)        
+        elif http_method == "DELETE":
+            return delete_tickets(organisationSlug, eventId, actor)
         else:
             return make_response(405, {"message": "Method not allowed."})
     else:

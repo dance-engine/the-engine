@@ -2,7 +2,6 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import Event from '@dance-engine/ui/Event';
 import type { OrganisationType } from '@dance-engine/schemas/organisation';
-import { format } from 'date-fns/format';
 import Header from '@/components/header/Header';
 import DanceEngineFooter from '@/components/footer/DanceEngine';
 
@@ -22,8 +21,8 @@ const EventPage = async ({ params }: {params: Promise<{ ksuid: string }>}) => {
   const orgApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/settings`;
   const orgRes = await fetch(orgApiUrl, {
     next: {
-      revalidate: 120,
-      tags: [format(new Date(), "yyyy-MM-ddTHH:mm:ss.SSSxxx")],
+      revalidate: 30,
+      tags: [`org-settings-${orgSlug}`],
     },
   });
   const orgData = (await orgRes.json()) as {

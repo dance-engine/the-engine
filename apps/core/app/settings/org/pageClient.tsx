@@ -78,6 +78,13 @@ const normalizeThemeValues = (theme: Record<string, unknown>) => {
     normalized.colour_background_light = normalized.colour_background_alt;
   }
 
+  if (
+    normalized.colour_background_dark === undefined &&
+    normalized.colour_background !== undefined
+  ) {
+    normalized.colour_background_dark = normalized.colour_background;
+  }
+
   return normalized;
 };
 

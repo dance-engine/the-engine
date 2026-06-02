@@ -4,7 +4,6 @@ import Link from "next/link";
 import EventPreview from "@dance-engine/ui/EventPreview";
 import { useAuth } from "@clerk/nextjs";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
-import { labelFromSnake } from "@dance-engine/utils/textHelpers";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -18,8 +17,8 @@ type OrgEntity = DanceEngineEntity & {
 const colourFields = [
   "colour_primary",
   "colour_secondary",
-  "colour_background",
-  "colour_background_alt",
+  "colour_background_light",
+  "colour_background_dark",
   "colour_surface_light",
   "colour_surface_dark",
 ] as const;
@@ -46,11 +45,21 @@ const baseOrganisationFields = [
   "version",
 ] as const;
 
+const themeFieldLabels: Record<string, string> = {
+  colour_primary: "Primary",
+  colour_secondary: "Secondary",
+  colour_background_light: "Light background",
+  colour_background_dark: "Dark background",
+  colour_surface_light: "Light surface",
+  colour_surface_dark: "Dark surface",
+  css_vars: "CSS variables",
+};
+
 const themeFieldDescriptions: Record<string, string> = {
   colour_primary: "Main accent colour used for buttons and highlights.",
   colour_secondary: "Supporting accent colour used across the theme.",
-  colour_background: "Primary darker page background colour.",
-  colour_background_alt: "Alternative lighter page background colour.",
+  colour_background_light: "Primary lighter page background colour.",
+  colour_background_dark: "Primary darker page background colour.",
   colour_surface_light: "Light panel and content surface colour.",
   colour_surface_dark: "Dark panel and content surface colour.",
   css_vars: "Optional raw CSS variables for advanced theme overrides.",
@@ -59,11 +68,31 @@ const themeFieldDescriptions: Record<string, string> = {
 const blankTheme: ThemeFormValues = {
   colour_primary: "",
   colour_secondary: "",
-  colour_background: "",
-  colour_background_alt: "",
+  colour_background_light: "",
+  colour_background_dark: "",
   colour_surface_light: "",
   colour_surface_dark: "",
   css_vars: "",
+};
+
+const normalizeIncomingTheme = (theme: Record<string, unknown>) => {
+  const normalized = { ...theme };
+
+  if (
+    normalized.colour_background_light === undefined &&
+    normalized.colour_background_alt !== undefined
+  ) {
+    normalized.colour_background_light = normalized.colour_background_alt;
+  }
+
+  if (
+    normalized.colour_background_dark === undefined &&
+    normalized.colour_background !== undefined
+  ) {
+    normalized.colour_background_dark = normalized.colour_background;
+  }
+
+  return normalized;
 };
 
 const defaultPickerColour = "#000000";
@@ -134,7 +163,7 @@ const ThemeColourField = ({
         htmlFor={field}
         className="block text-sm font-semibold text-gray-900"
       >
-        {labelFromSnake(field)}
+        {themeFieldLabels[field]}
       </label>
       <p className="mt-1 text-sm text-gray-600">
         {themeFieldDescriptions[field]}
@@ -146,7 +175,7 @@ const ThemeColourField = ({
         value={getPickerValue(value)}
         onChange={(event) => onChange(event.target.value)}
         className="h-11 w-14 cursor-pointer rounded-md border border-gray-300 bg-white p-1"
-        aria-label={`${labelFromSnake(field)} picker`}
+        aria-label={`${themeFieldLabels[field]} picker`}
       />
       <input
         id={field}
@@ -267,10 +296,9 @@ const ThemePageClient = () => {
   useEffect(() => {
     const remoteEntity = data || defaultEntity;
     const initEntity = { ...remoteEntity.organisation } as OrgEntity;
-    const nextTheme = (remoteEntity.organisation?.theme || {}) as Record<
-      string,
-      unknown
-    >;
+    const nextTheme = normalizeIncomingTheme(
+      (remoteEntity.organisation?.theme || {}) as Record<string, unknown>,
+    );
 
     setEntity(initEntity);
     setThemeData({
@@ -334,7 +362,7 @@ const ThemePageClient = () => {
                 htmlFor="css_vars"
                 className="block text-sm font-semibold text-gray-900"
               >
-                Css Vars
+                {themeFieldLabels.css_vars}
               </label>
               <p className="text-sm text-gray-600">
                 {themeFieldDescriptions.css_vars}

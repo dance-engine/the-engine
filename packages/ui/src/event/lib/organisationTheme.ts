@@ -12,8 +12,8 @@ type OrganisationThemeFields = Partial<OrganisationTheme> & {
   colour_background_dark?: string;
   colour_surface_light?: string;
   colour_surface_dark?: string;
-  colour_background?: string;
   colour_background_alt?: string;
+  colour_background?: string;
   css_vars?: string;
 };
 

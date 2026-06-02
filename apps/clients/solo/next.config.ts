@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       ...(cdnHostname ? [cdnHostname] : []),
       // add other domains here if needed
     ],
-  },
+  }
   // experimental: {
   //   serverComponentsHmrCache: false, // defaults to true
   // },

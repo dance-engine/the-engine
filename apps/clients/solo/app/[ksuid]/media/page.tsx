@@ -1,6 +1,5 @@
 
 import { headers } from 'next/headers'
-import { format } from 'date-fns/format'
 import type { OrganisationType } from '@dance-engine/schemas/organisation'
 import Header from '@/components/header/Header'
 import DanceEngineFooter from '@/components/footer/DanceEngine'
@@ -15,8 +14,8 @@ const MediaPage = async ({ params }: { params: Promise<{ ksuid: string }> }) => 
   const orgApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/settings`
   const orgRes = await fetch(orgApiUrl, {
     next: {
-      revalidate: 120,
-      tags: [format(new Date(), 'yyyy-MM-ddTHH:mm:ss.SSSxxx')],
+      revalidate: 30,
+      tags: [`org-settings-${orgSlug}`],
     },
   })
   const orgData = (await orgRes.json()) as {
@@ -33,7 +32,7 @@ const MediaPage = async ({ params }: { params: Promise<{ ksuid: string }> }) => 
   // Fetch event details
 
   const eventApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events/${ksuid}`
-  const eventRes = await fetch(eventApiUrl, { next: { revalidate: 120 } })
+  const eventRes = await fetch(eventApiUrl, { next: { revalidate: 30 } })
   const eventData = await eventRes.json()
   const event = eventData?.event || null // pass raw event data
 

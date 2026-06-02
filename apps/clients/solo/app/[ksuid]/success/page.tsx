@@ -1,5 +1,4 @@
 import { headers } from "next/headers";
-import { format } from "date-fns/format";
 import type { OrganisationType } from "@dance-engine/schemas/organisation";
 import EventSuccess from "@dance-engine/ui/event/EventSuccess";
 
@@ -19,8 +18,8 @@ const EventSuccessPage = async ({
     fetch(eventApiUrl, { next: { revalidate: 60 } }),
     fetch(orgApiUrl, {
       next: {
-        revalidate: 120,
-        tags: [format(new Date(), "yyyy-MM-ddTHH:mm:ss.SSSxxx")],
+        revalidate: 30,
+        tags: [`org-settings-${orgSlug}`],
       },
     }),
   ]);

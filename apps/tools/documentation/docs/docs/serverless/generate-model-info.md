@@ -42,7 +42,7 @@ In the same directory as before.
 Make sure you have setup the python virtual environment and that you have activated it. 
 Run the datamodel-codegen to generate the pydantic models:
 ```bash
-datamodel-codegen --input openapi.json --input-file-type openapi --output ./ --snake-case-field --field-constraints --reuse-model --split-by-group --collapse-root-models --class-name pydantic.RootModel --target-python-version 3.11 --output-model-type=pydantic_v2.BaseModel
+datamodel-codegen --input openapi.json --input-file-type openapi --output ./ --snake-case-field --field-constraints --reuse-model --split-by-group --collapse-root-models --class-name pydantic.RootModel --target-python-version 3.11 --output-model-type=pydantic_v2.BaseModel --disable-timestamp
 ```
 
 ### Update API reference

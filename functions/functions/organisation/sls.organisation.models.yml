@@ -8,12 +8,12 @@ _OrganisationThemeCommon: &OrganisationThemeCommon
   colour_secondary:
     type: string
     description: "Secondary colour for the organisation theme, used for supporting accents"
-  colour_background:
+  colour_background_dark:
     type: string
-    description: "Background colour for the organisation theme"
-  colour_background_alt:
+    description: "Dark background colour for the organisation theme"
+  colour_background_light:
     type: string
-    description: "Alternative background colour for the organisation theme"
+    description: "Light background colour for the organisation theme"
   colour_surface_light:
     type: string
     description: "Light surface colour for the organisation theme"
@@ -21,7 +21,7 @@ _OrganisationThemeCommon: &OrganisationThemeCommon
     type: string
     description: "Dark surface colour for the organisation theme"
 
-_OrganisationCommon: &OrganisationCommon
+_OrganisationCommonShared: &OrganisationCommonShared
   status:
     type: string
     enum:
@@ -76,9 +76,15 @@ _OrganisationCommon: &OrganisationCommon
   logo_icon_url:
     type: string
     description: "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+
+_OrganisationCommon: &OrganisationCommon
+  <<: *OrganisationCommonShared
   whatsapp_join_url:
     type: string
     description: "Public WhatsApp join URL for approved members"
+
+_OrganisationCommonPublic: &OrganisationCommonPublic
+  <<: *OrganisationCommonShared
 
 OrganisationThemeObject:
   name: "OrganisationThemeObject"
@@ -116,7 +122,7 @@ OrganisationObjectPublic:
         type: object
         required: ["name"]
         properties:
-          <<: *OrganisationCommon
+          <<: *OrganisationCommonPublic
 
 OrganisationResponse:
   name: "OrganisationResponse"

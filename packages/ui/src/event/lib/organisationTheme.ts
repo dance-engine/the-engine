@@ -12,7 +12,6 @@ type OrganisationThemeFields = Partial<OrganisationTheme> & {
   colour_background_dark?: string;
   colour_surface_light?: string;
   colour_surface_dark?: string;
-  colour_background?: string;
   colour_background_alt?: string;
   css_vars?: string;
 };
@@ -159,9 +158,7 @@ const getThemeInputs = (
     ) || defaults.backgroundLight;
   const backgroundDark =
     normalizeHex(
-      themeFields.backgroundDark ||
-        themeFields.colour_background_dark ||
-        themeFields.colour_background,
+      themeFields.backgroundDark || themeFields.colour_background_dark,
     ) || defaults.backgroundDark;
   const surfaceLight =
     normalizeHex(

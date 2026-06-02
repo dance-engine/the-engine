@@ -51,12 +51,35 @@ const systemFields = ["created_at", "updated_at", "version"] as const;
 const themeFields = [
   "colour_primary",
   "colour_secondary",
-  "colour_background",
-  "colour_background_alt",
+  "colour_background_light",
+  "colour_background_dark",
   "colour_surface_light",
   "colour_surface_dark",
   "css_vars",
 ] as const;
+
+const themeFieldLabels: Record<string, string> = {
+  colour_primary: "Primary",
+  colour_secondary: "Secondary",
+  colour_background_light: "Light background",
+  colour_background_dark: "Dark background",
+  colour_surface_light: "Light surface",
+  colour_surface_dark: "Dark surface",
+  css_vars: "CSS variables",
+};
+
+const normalizeThemeValues = (theme: Record<string, unknown>) => {
+  const normalized = { ...theme };
+
+  if (
+    normalized.colour_background_light === undefined &&
+    normalized.colour_background_alt !== undefined
+  ) {
+    normalized.colour_background_light = normalized.colour_background_alt;
+  }
+
+  return normalized;
+};
 
 const editableBaseFields = [
   ...detailFields,
@@ -277,7 +300,9 @@ const SettingsSection = ({
             className="px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
           >
             <dt className="text-sm font-medium text-gray-700">
-              {labelFromSnake(field)}
+              {section.key === "theme"
+                ? (themeFieldLabels[field] ?? labelFromSnake(field))
+                : labelFromSnake(field)}
             </dt>
             <dd className="mt-1 text-sm sm:col-span-2 sm:mt-0">
               {formatFieldValue(field, values[field])}
@@ -379,7 +404,9 @@ const OrgPageClient = ({ ksuid }: { ksuid?: string }) => {
     return "Loading...";
   }
 
-  const themeValues = (entity.theme || {}) as Record<string, unknown>;
+  const themeValues = normalizeThemeValues(
+    (entity.theme || {}) as Record<string, unknown>,
+  );
 
   return (
     <div className="w-full">

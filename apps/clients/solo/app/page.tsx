@@ -35,78 +35,90 @@ export default async function IndexPage() {
   const eventsServerData = await events_res.json() as EventResponseType[];
 
   console.log("requesting data", ORGS_API_URL) //, 'orgs_data', orgs_data) //, 'eventsServerData', eventsServerData);
-  const css = `
+  const defaultCss = `
     :root {
-      --main-bg-color: black;
+      --main-bg-color: color-mix(in srgb, var(--color-de-background-dark) 95%, transparent);
       --main-text-color: white;
-      --alternate-bg-color: hsl(325, 100%, 20%);
+      --alternate-bg-color:  var(--color-keppel-on-light);
       --highlight-color: hsl(324, 98%, 62%);
     }
   `;
-  const andreasCss = `
-    :root {
-      --main-bg-color: black;
-      --main-text-color: white;
-      --alternate-bg-color: #871d24;
-      --highlight-color: hsla(350, 100%, 23%, 1.00);
-    }
-  `;
+  // const andreasCss = `
+  //   :root {
+  //     // --main-bg-color: black;
+  //     // --main-text-color: white;
+  //     // --alternate-bg-color: #871d24;
+  //     // --highlight-color: hsla(350, 100%, 23%, 1.00);
+  //   }
+  // `;
 
 
 
   const bodyFont = orgSlug == 'power-of-woman' || orgSlug == 'pow' ? 'font-oswald' : 'font-inter';
+  const orgCss = org?.theme?.css_vars || '';
 
-  return <div className={`w-full ${bodyFont}`} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
-      { org.css_vars ? <style dangerouslySetInnerHTML={{ __html: org.css_vars }} /> : <style dangerouslySetInnerHTML={{ __html: orgSlug == 'rebel-sbk' ? andreasCss : css }} /> }
-      
-      <Header org={org}/>
+  return <>
+    { <style dangerouslySetInnerHTML={{ __html: defaultCss }} /> }
+    { orgCss ? <style dangerouslySetInnerHTML={{ __html: orgCss }} /> : null }
 
-      <main className='w-full justify-center'>
-
-        {orgSlug == 'rebel-sbk' ? <RebelHero org={org} /> : 
-          orgSlug == 'power-of-woman' || orgSlug == 'pow' ? <PowHero org={org} orgSlug={orgSlug} theme={theme} /> : null}
-
-        <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
-          
-            <div className={
-              `max-w-4xl w-4xl px-4 lg:px-0 py-12 \
-              prose prose-base prose-p:mb-2 prose-p:mt-0 prose-p:font-extralight prose-p:leading-relaxed prose-headings:font-semibold \
-              prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
-              prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0 \
-               text-white prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]
-              `} 
-                dangerouslySetInnerHTML={{ __html: generateHTML(
-                  JSON.parse(org.description), 
-                  richTextRenderExtensions,) }} 
-              />
-          
-            {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
-            {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
-                <div className='hidden'>
-                  {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
-
-                </div>
-                
-        </div>
-        {
-          {
-            'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
-            'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-            'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-          }[orgSlug] || <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
-        }
-
-        {/* {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 
-          // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
-          <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
-        : orgSlug == 'rebel-sbk' ? 
-          <div className='hidden'><RebelPayment org={org} /></div>
-        :
-        (<POWPayment org={org} />) */}
+      <div className={`w-full ${bodyFont} min-h-screen flex flex-col `} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
         
-      </main>
+        
+        <Header org={org}/>
 
-      <DanceEngineFooter org={orgSlug} mode='dark' />
+        <main className='w-full justify-center flex-grow'>
 
-    </div>
+          {{
+            'rebel-sbk': <RebelHero org={org} />,
+            'power-of-woman': <PowHero org={org} orgSlug={orgSlug} theme={theme} />,
+            'default': null,
+          }[orgSlug || 'default'] || null}
+
+          <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
+            
+              <div className={
+                `max-w-4xl w-4xl px-4 lg:px-0 py-12 \
+                prose prose-base prose-p:mb-2 prose-p:mt-0 prose-p:font-extralight prose-p:leading-relaxed prose-headings:font-semibold \
+                prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
+                prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0 \
+                text-white prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]
+                `} 
+                  dangerouslySetInnerHTML={{ __html: generateHTML(
+                    JSON.parse(org.description), 
+                    richTextRenderExtensions,) }} 
+                />
+            
+              {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
+              {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
+                  <div className='hidden'>
+                    {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
+
+                  </div>
+                  
+          </div>
+          {
+            {
+              'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
+              'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+              'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+            }[orgSlug] || <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
+          }
+
+          {/* {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 
+            // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
+            <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
+          : orgSlug == 'rebel-sbk' ? 
+            <div className='hidden'><RebelPayment org={org} /></div>
+          :
+          (<POWPayment org={org} />) */}
+
+          <div className='hidden'>{JSON.stringify({ defaultCss, orgCss },null,2)}</div>
+          
+        </main>
+
+        
+        <div className='justify-items-end'><DanceEngineFooter org={orgSlug} mode='dark' /></div>
+
+      </div>
+    </>
 }

@@ -18,7 +18,9 @@ export async function middleware(request: NextRequest) {
   const theme = edgeOrgToThemeMap?.[org] || 'default';
 
   // Redirect at the edge before route rendering to avoid first-paint flashes.
-  if (request.method === 'GET' || request.method === 'HEAD') {
+  // /events is a public bypass route that always renders the index page, skipping any configured redirects.
+  const isEventsPage = normalizePath(request.nextUrl.pathname) === '/events';
+  if (!isEventsPage && (request.method === 'GET' || request.method === 'HEAD')) {
     const normalizedPath = normalizePath(request.nextUrl.pathname);
     const orgRedirects = soloEdgeConfig?.redirects?.[org];
 

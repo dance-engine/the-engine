@@ -54,10 +54,31 @@ def get(public: bool = False):
         logger.error(f"DynamoDB query failed to get organisations: {e}")
         raise Exception
     
-    if public:
-        logger.info(f"Returning public organisation objects: {[o.to_public() if public else o for o in orgs]}")
+    if not orgs:
+        return []
 
-    return [o.to_public() if public else o for o in orgs]
+    # query_gsi may return a single model or a list depending on item count.
+    org_list = orgs if isinstance(orgs, list) else [orgs]
+
+    # Public listing needs related theme entities assembled for each organisation.
+    enriched_orgs = []
+    for org in org_list:
+        try:
+            assembled = blank_model.query_gsi(
+                table=table,
+                index_name="IDXinv",
+                key_condition=Key('SK').eq(org.SK),
+                assemble_entites=True,
+            )
+            enriched_orgs.append(assembled if assembled else org)
+        except Exception as e:
+            logger.warning(f"Failed to assemble related entities for {org.organisation}: {e}")
+            enriched_orgs.append(org)
+
+    if public:
+        logger.info(f"Returning public organisation objects: {[o.to_public() if public else o for o in enriched_orgs]}")
+
+    return [o.to_public() if public else o for o in enriched_orgs]
 
 def create_organisation(request_data: CreateOrganisationRequest, actor: str):
     logger.info(f"Create organisation: {request_data}")

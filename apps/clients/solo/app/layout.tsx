@@ -62,9 +62,12 @@ const domainConfig: Record<string, { title: string; favicon: string }> = {
   },
   'cuban-y-dominican': {
     title: 'Cuban y Dominican',
-    favicon: '/favicons/default.ico',
+    favicon: '/favicons/cuban-y-dominican/favicon.ico',
   },  
-
+  default: {
+    title: 'Event powered by Dance Engine',
+    favicon: '/favicons/default.ico',
+  },
 };
 
 export default function RootLayout({
@@ -75,7 +78,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} antialiased min-h-full`}
+        className={`${geistSans.variable} ${geistMono.variable} \
+        ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} \
+        antialiased min-h-full`}
       >
         {children}
       </body>
@@ -89,8 +94,8 @@ export default function RootLayout({
 export async function generateMetadata() {
   const host = (await headers()).get('x-site-org') || '';
   const config = domainConfig[host] || {
-    title: "Powered by Dance Engine",
-    favicon: '/favicons/default.ico',
+    title: "Event powered by Dance Engine",
+    favicon: '/favicons/default/default.ico',
   };
 
   return {

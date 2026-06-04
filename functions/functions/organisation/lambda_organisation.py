@@ -208,7 +208,7 @@ def eventbridge_handler(event, context):
             raise RuntimeError(theme_response.error or "Failed to upsert organisation theme")
 
     org_model = OrganisationModel.model_validate({
-        **org_data,
+        **{k: v for k, v in org_data.items() if k != 'theme'},
         "updated_at":current_time,
         "organisation": organisation_slug
     })

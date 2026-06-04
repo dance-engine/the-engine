@@ -62,7 +62,7 @@ const domainConfig: Record<string, { title: string; favicon: string }> = {
   },
   'cuban-y-dominican': {
     title: 'Cuban y Dominican',
-    favicon: '/favicons/default.ico',
+    favicon: '/favicons/cuban-y-dominican/favicon.ico',
   },  
 
 };

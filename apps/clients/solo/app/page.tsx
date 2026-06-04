@@ -37,28 +37,29 @@ export default async function IndexPage() {
   console.log("requesting data", ORGS_API_URL) //, 'orgs_data', orgs_data) //, 'eventsServerData', eventsServerData);
   const defaultCss = `
     :root {
-      --main-bg-color: black;
+      --main-bg-color: color-mix(in srgb, var(--color-de-background-dark) 95%, transparent);
       --main-text-color: white;
-      // --alternate-bg-color: hsl(325, 100%, 20%);
-      --alternate-bg-color: limegreen;
+      --alternate-bg-color:  var(--color-keppel-on-light);
       --highlight-color: hsl(324, 98%, 62%);
     }
   `;
-  const andreasCss = `
-    :root {
-      // --main-bg-color: black;
-      // --main-text-color: white;
-      // --alternate-bg-color: #871d24;
-      // --highlight-color: hsla(350, 100%, 23%, 1.00);
-    }
-  `;
+  // const andreasCss = `
+  //   :root {
+  //     // --main-bg-color: black;
+  //     // --main-text-color: white;
+  //     // --alternate-bg-color: #871d24;
+  //     // --highlight-color: hsla(350, 100%, 23%, 1.00);
+  //   }
+  // `;
 
 
 
   const bodyFont = orgSlug == 'power-of-woman' || orgSlug == 'pow' ? 'font-oswald' : 'font-inter';
+  const orgCss = org?.theme?.css_vars || '';
 
   return <>
-    { <style dangerouslySetInnerHTML={{ __html: org?.theme?.css_vars || defaultCss }} /> }
+    { <style dangerouslySetInnerHTML={{ __html: defaultCss }} /> }
+    { orgCss ? <style dangerouslySetInnerHTML={{ __html: orgCss }} /> : null }
 
       <div className={`w-full ${bodyFont} min-h-screen flex flex-col `} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
         
@@ -111,7 +112,7 @@ export default async function IndexPage() {
           :
           (<POWPayment org={org} />) */}
 
-          <div className='hidden'>{JSON.stringify( org?.theme?.css_vars || defaultCss,null,2)}</div>
+          <div className='hidden'>{JSON.stringify({ defaultCss, orgCss },null,2)}</div>
           
         </main>
 

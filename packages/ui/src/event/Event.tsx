@@ -350,7 +350,8 @@ export default function Event({
   const hasInconsistentDateRange =
     Boolean(startDate) && Boolean(endDate) && Boolean(endDate && startDate && endDate < startDate);
   const effectiveEndDate = hasInconsistentDateRange ? startDate : (endDate || startDate);
-  const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
+  // const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
+  const hasEventPassed = false;
 
   if (debugEventState && typeof window !== "undefined") {
     console.log("Event Debug:", {

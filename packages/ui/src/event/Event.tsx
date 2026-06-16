@@ -263,6 +263,15 @@ const getDirectionsHref = (event: EventModelType) => {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodedDestination}`;
 };
 
+const parseEventDate = (value?: string): Date | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
 export default function Event({
   org,
   eventKsuid,
@@ -332,8 +341,8 @@ export default function Event({
 
   const event = createEvent(eventData.event);
   const organisationTheme = getOrganisationTheme(org);
-  const startDate = event.starts_at ? new Date(event.starts_at) : undefined;
-  const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
+  const startDate = parseEventDate(event.starts_at);
+  const endDate = parseEventDate(event.ends_at);
   const highlightPassLabel = getHighlightBundleLabel(event);
   const directionsHref = getDirectionsHref(event);
   const eventDescription = safeGenerateEventDescriptionHtml(event.description);
@@ -344,14 +353,15 @@ export default function Event({
       : undefined;
   const now = new Date();
 
-  // If event has passed, show archive view
-  // Some events contain inconsistent dates where ends_at is earlier than starts_at.
-  // In that case, prefer starts_at so future events still show ticketing.
+  // If event has passed, show archive view.
+  // Some payloads can contain timezone-less timestamps, which can parse differently
+  // across environments and make ends_at appear earlier than starts_at.
+  // Fail open for inconsistent ranges to avoid false "Event Concluded" states.
   const hasInconsistentDateRange =
     Boolean(startDate) && Boolean(endDate) && Boolean(endDate && startDate && endDate < startDate);
-  const effectiveEndDate = hasInconsistentDateRange ? startDate : (endDate || startDate);
-  // const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
-  const hasEventPassed = false;
+  const effectiveEndDate = hasInconsistentDateRange ? undefined : endDate;
+  const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
+  // const hasEventPassed = false;
 
   if (debugEventState && typeof window !== "undefined") {
     console.log("Event Debug:", {
@@ -372,6 +382,7 @@ export default function Event({
   
   return (
     <div className="w-full" id="event-page">
+      {/* <div>{JSON.stringify(event, null, 2)}</div> */}
       <style dangerouslySetInnerHTML={{ __html: organisationTheme.cssText }} />
       <div
         className="min-h-screen"

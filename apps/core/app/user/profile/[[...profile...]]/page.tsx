@@ -5,6 +5,7 @@ import { BiSolidLockOpen } from "react-icons/bi";
 import Badge from "@dance-engine/ui/Badge";
 import useClerkSWR from "@dance-engine/utils/clerkSWR";
 import { nameFromHypenated } from "@dance-engine/utils/textHelpers";
+import { isSuperAdmin } from "../../../lib/isSuperAdmin";
 interface UserPermissions {
   admin?: string[]; // The admin key is optional and can be an array of strings, or undefined
   roles: { [key: string]: string[] }; // A dictionary where keys are strings and values are arrays of strings
@@ -57,20 +58,33 @@ const CustomPage = () => {
     user?.publicMetadata && user?.publicMetadata.roles
       ? (user?.publicMetadata as unknown as UserPermissions)
       : ({ admin: [], roles: {} } as UserPermissions);
-  const sitesAdmind = permissions.organisations
+  const specificSitesAdmind = permissions.organisations
     ? Object.keys(permissions.organisations)
     : [];
+  
+    
+  const allSites = specificSitesAdmind.includes("*") && summaryData && summaryData.organisations ? summaryData.organisations.map((site: Record<string, string>) => {
+              const orgSlug = site["organisation"] || "";
+              const active = orgSlug == activeOrg;
+              const siteName = site.name || "Unknown";
+              return orgSlug;
+            }) : ["cheese", "bread", "wine"];
+  const allSitesAdmin = specificSitesAdmind.includes("*") ? [...new Set([...specificSitesAdmind,...allSites].sort())] : specificSitesAdmind;
+
   return (
-    <div>
-      <h2 className="text-xl">Your current privileges</h2>
-      {sitesAdmind.map((site) => {
+    <div className="grid grid-cols-2 gap-4 ">
+      <h2 className="text-xl col-span-full">Your Organisations, Privileges and Roles</h2>
+
+      {isSuperAdmin(user?.publicMetadata) ? <Badge>Super Admin</Badge> : null}
+
+      {allSitesAdmin.map((site) => {
         const siteName = site == "*" ? "All Sites" : site;
         const roles = permissions?.organisations?.[site]
           ? permissions?.organisations?.[site]
           : [];
         const active = site == activeOrg;
         return (
-          <div key={`site-${site}-clerk`} className="pt-3">
+          <div key={`site-${site}-clerk`} className="pt-3 border border-gray-300 rounded-md p-3 bg-gray-100">
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-lg">
@@ -89,14 +103,15 @@ const CustomPage = () => {
                   })}
                 </ul>
               </div>
-              {active || site == "*" ? null : (
+              {active || site == "*" ? <div className="bg-cerise-on-light/10 cursor-not-allowed text-white text-sm rounded-md font-bold px-3 py-1"> Active</div> : (
                 <button
                   className="bg-cerise-on-light text-white text-sm rounded-md font-bold px-3 py-1"
                   onClick={() => {
                     switchOrg(siteName);
                   }}
                 >
-                  Switch to {nameFromHypenated(siteName)}
+                  Switch to
+                   {/* {nameFromHypenated(siteName)} */}
                 </button>
               )}
             </div>
@@ -104,7 +119,7 @@ const CustomPage = () => {
         );
       })}
 
-      {sitesAdmind.includes("*") ? (
+      {/* {sitesAdmind.includes("*") ? (
         <div>
           {summaryData &&
             summaryData.organisations &&
@@ -141,9 +156,23 @@ const CustomPage = () => {
         </div>
       ) : (
         ""
-      )}
+      )} */}
+      
+      <pre className="col-span-full text-left bg-gray-50 p-4 rounded-md overflow-x-auto">
+        
+        allSites
+        {JSON.stringify(allSites, null, 2)}<br/>
+        
+        specificSitesAdmind
+        {JSON.stringify(specificSitesAdmind, null, 2)}<br/>
+        
+        allSitesAdmin
+        {JSON.stringify(allSitesAdmin, null, 2)}<br/>
+        
+        public meta
+        {JSON.stringify(user.publicMetadata, null, 2)}<br/>
 
-      <pre>{JSON.stringify(user.publicMetadata, null, 2)}</pre>
+      </pre>
       {/* <p>This is the content of the custom page.</p> */}
     </div>
   );

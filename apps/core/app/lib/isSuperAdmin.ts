@@ -15,6 +15,7 @@ export const isSuperAdmin = (publicMetadata: unknown): boolean => {
   return (
     adminFlags.includes("superadmin") ||
     adminFlags.includes("*") ||
-    Object.keys(organisations).includes("*")
+    Object.keys(organisations).includes("*") ||
+    false // default to false if none of the conditions are met
   );
 };

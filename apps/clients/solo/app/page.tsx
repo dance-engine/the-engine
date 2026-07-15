@@ -39,8 +39,10 @@ export default async function IndexPage() {
     :root {
       --main-bg-color: color-mix(in srgb, var(--color-de-background-dark) 95%, transparent);
       --main-text-color: white;
-      --alternate-bg-color:  var(--color-keppel-on-light);
-      --highlight-color: hsl(324, 98%, 62%);
+      // --alternate-bg-color:  var(--color-keppel-on-light);
+      --alternate-bg-color: hsl(222, 13%, 19%);
+;      --highlight-color: hsl(240, 10%, 50%);
+
     }
   `;
   // const andreasCss = `
@@ -58,8 +60,8 @@ export default async function IndexPage() {
   const orgCss = org?.theme?.css_vars || '';
 
   return <>
-    { <style dangerouslySetInnerHTML={{ __html: defaultCss }} /> }
-    { orgCss ? <style dangerouslySetInnerHTML={{ __html: orgCss }} /> : null }
+    { defaultCss ? <style id="loadedFromDefault" dangerouslySetInnerHTML={{ __html: defaultCss }} />  : null}
+    { orgCss ? <style id="loadedFromOrg" dangerouslySetInnerHTML={{ __html: orgCss }} /> : null }
 
       <div className={`w-full ${bodyFont} min-h-screen flex flex-col `} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
         
@@ -98,7 +100,7 @@ export default async function IndexPage() {
           </div>
           {
             {
-              'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
+              // 'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
               'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
               'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
             }[orgSlug] || <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
@@ -117,7 +119,7 @@ export default async function IndexPage() {
         </main>
 
         
-        <div className='justify-items-end'><DanceEngineFooter org={orgSlug} mode='dark' /></div>
+        <DanceEngineFooter org={orgSlug} mode='dark' />
 
       </div>
     </>

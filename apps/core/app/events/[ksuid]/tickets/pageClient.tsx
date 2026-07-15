@@ -15,6 +15,7 @@ import ActionRow from "@dance-engine/ui/actions/ActionRow";
 import { useLayoutSearch } from "../../../components/LayoutSearchContext";
 import { FaCheckCircle, FaRegCircle } from "react-icons/fa";
 import DestructiveButton from "@dance-engine/ui/general/DestructiveButton";
+import { isSuperAdmin } from "../../../lib/isSuperAdmin";
 
 const BasicList = dynamic(() => import('@dance-engine/ui/list/BasicList'), {
   ssr: false,
@@ -45,7 +46,7 @@ const PageTicketsClient = ({ ksuid }: TicketsClientProps) => {
   const [resendStatus, setResendStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [ticketDeleteStatus, setTicketDeleteStatus] = useState<"idle" | "deleting" | "deleted" | "error">("idle");
 
-  const canDeleteTickets = Boolean(user?.publicMetadata?.admin);
+  const canDeleteTickets = isSuperAdmin(user?.publicMetadata);
 
   useEffect(() => {
     const { tickets: eventTickets = [] } = ticketsData || {};

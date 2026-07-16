@@ -482,8 +482,17 @@ async function handleJoinRequest(req: Request) {
       }))
       .filter((item) => item.questionId && item.answer && allowedQuestionIds.has(item.questionId));
 
-    if (normalizedAnswers.length !== 2) {
-      return NextResponse.json({ message: 'Please answer exactly two valid questions.' }, { status: 400 });
+    const expectedAnswerCount = publicQuestions.length < 2 ? publicQuestions.length : 2;
+    if (normalizedAnswers.length !== expectedAnswerCount) {
+      return NextResponse.json(
+        {
+          message:
+            expectedAnswerCount === 1
+              ? 'Please answer exactly one valid question.'
+              : `Please answer exactly ${expectedAnswerCount} valid questions.`,
+        },
+        { status: 400 },
+      );
     }
 
     const evaluation = evaluateJoinAnswers(orgSlug, normalizedAnswers);

@@ -14,6 +14,15 @@ import { useEffect, useState, useMemo } from "react";
 
 const MapPicker = dynamic(() => import('@dance-engine/ui/form/fields/MapPicker'), { ssr: false }) as React.FC<MapPickerProps>
 
+const toNumber = (value: unknown, fallback = 0): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  return parsed;
+};
+
 
 const PageClient = ({ ksuid }: { ksuid?: string }) => {
   const router = useRouter()
@@ -68,6 +77,33 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
     const {_meta, ...cleanedData} = data
     console.log("Meta", _meta)
     const eventId = data.ksuid
+    const existingEvent = remoteEntity?.event as Record<string, unknown> | undefined
+    const isExistingEvent = Boolean(existingEvent?.ksuid)
+
+    const capacity = toNumber(cleanedData.capacity, toNumber(existingEvent?.capacity));
+    const numberSold = isExistingEvent
+      ? toNumber(existingEvent?.number_sold)
+      : 0;
+    const reserved = isExistingEvent
+      ? toNumber(existingEvent?.reserved)
+      : 0;
+    const remainingCapacity = capacity - reserved - numberSold;
+
+    if (remainingCapacity < 0) {
+      const message = "More tickets reserved or sold than this amount";
+      alert(message);
+      console.error(message, { capacity, reserved, numberSold, remainingCapacity });
+      return;
+    }
+
+    const eventPayload = {
+      ...cleanedData,
+      capacity,
+      number_sold: numberSold,
+      reserved,
+      remaining_capacity: remainingCapacity,
+    };
+
     try {
       const res = await fetch(eventsApiUrl, {
         method: "PUT",
@@ -76,7 +112,7 @@ const PageClient = ({ ksuid }: { ksuid?: string }) => {
           Authorization: `Bearer ${await getToken()}`
 
         },
-        body: JSON.stringify({event: cleanedData }),
+        body: JSON.stringify({event: eventPayload }),
       })
 
       const result = await res.json()

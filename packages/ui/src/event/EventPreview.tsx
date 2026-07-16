@@ -164,6 +164,8 @@ export default function EventPreview({
   const event = sampleEvent;
   const startDate = event.starts_at ? new Date(event.starts_at) : undefined;
   const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
+  const hasTicketItems = Object.values(event.items || {}).some((item) => Boolean(item));
+  const isFutureEvent = startDate ? startDate > new Date() : false;
   const highlightPassLabel = getHighlightBundleLabel(event);
   const eventDescription = event.description
     ? generateHTML(JSON.parse(event.description), richTextRenderExtensions)
@@ -200,7 +202,12 @@ export default function EventPreview({
             />
 
             <main className="mx-auto mt-10 w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-              <EventTicketing event={event} org={org} />
+              <EventTicketing
+                event={event}
+                org={org}
+                hasTicketItems={hasTicketItems}
+                isFutureEvent={isFutureEvent}
+              />
 
               <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
                 <div

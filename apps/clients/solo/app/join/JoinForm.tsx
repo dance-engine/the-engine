@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { OrganisationType } from '@dance-engine/schemas/organisation';
 
 type JoinQuestion = {
   id: string;
@@ -10,22 +11,23 @@ type JoinQuestion = {
 
 type JoinResult =
   | { status: 'idle' }
-  | { status: 'success'; whatsappJoinCode?: string; whatsappJoinUrl?: string }
+  | { status: 'success'; whatsappJoinUrl?: string }
   | { status: 'pending' };
 
 type JoinResponse = {
   status?: string;
-  whatsappJoinUrl?: string;
   whatsapp_join_url?: string;
-  whatsappJoinCode?: string;
-  whatsapp_join_code?: string;
-  joinCode?: string;
-  whatsappCode?: string;
   message?: string;
 };
 
 type JoinFormProps = {
+  org: OrganisationType;
   orgSlug: string;
+  titleHtml: string;
+  introHtml: string;
+  successHtml: string;
+  pendingHtml: string;
+  failureMessage: string;
   questionBank: JoinQuestion[];
   initialQuestions: JoinQuestion[];
 };
@@ -81,7 +83,17 @@ declare global {
   }
 }
 
-export default function JoinForm({ orgSlug, questionBank, initialQuestions }: JoinFormProps) {
+export default function JoinForm({
+  org,
+  orgSlug,
+  titleHtml,
+  introHtml,
+  successHtml,
+  pendingHtml,
+  failureMessage,
+  questionBank,
+  initialQuestions,
+}: JoinFormProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -140,13 +152,30 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
   }, []);
   const joinApiUrl = useMemo(() => '/api/join', []);
   const organisationName = useMemo(() => {
+    const fromOrg = org?.name?.trim();
+    if (fromOrg) {
+      return fromOrg;
+    }
+
     const normalized = orgSlug.replace(/[-_]+/g, ' ').trim();
     if (!normalized) {
       return 'this organisation';
     }
 
     return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
-  }, [orgSlug]);
+  }, [org, orgSlug]);
+  const resolvedTitleHtml = useMemo(() => {
+    return titleHtml.replace(/\{\{organisationName\}\}/g, organisationName);
+  }, [titleHtml, organisationName]);
+  const resolvedIntroHtml = useMemo(() => {
+    return introHtml.replace(/\{\{organisationName\}\}/g, organisationName);
+  }, [introHtml, organisationName]);
+  const resolvedSuccessHtml = useMemo(() => {
+    return successHtml.replace(/\{\{organisationName\}\}/g, organisationName);
+  }, [successHtml, organisationName]);
+  const resolvedPendingHtml = useMemo(() => {
+    return pendingHtml.replace(/\{\{organisationName\}\}/g, organisationName);
+  }, [pendingHtml, organisationName]);
 
   useEffect(() => {
     const initialAnswers: Record<string, string> = {};
@@ -263,7 +292,12 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
 
     const missingAnswer = normalizedAnswers.some((item) => !item.answer);
     if (missingAnswer) {
-      setErrorMessage('Please answer both entry questions.');
+      const questionCount = questions.length;
+      setErrorMessage(
+        questionCount === 1
+          ? 'Please answer the entry question.'
+          : `Please answer all ${questionCount} entry questions.`,
+      );
       return;
     }
 
@@ -288,22 +322,21 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
       const body = (await response.json().catch(() => ({}))) as JoinResponse;
 
       if (!response.ok) {
-        setErrorMessage(body.message || 'We could not submit your join request. Please try again.');
+        setErrorMessage(body.message || failureMessage);
         return;
       }
 
       const status = (body.status || '').toLowerCase();
 
       if (status === 'success') {
-        const joinUrl = (body.whatsappJoinUrl || body.whatsapp_join_url || '').trim();
-        const code = body.whatsappJoinCode || body.whatsapp_join_code || body.joinCode || body.whatsappCode || '';
+        const joinUrl = (body.whatsapp_join_url || '').trim();
 
-        if (!joinUrl && !code) {
-          setErrorMessage('You were approved, but no WhatsApp join details were returned by the API.');
+        if (!joinUrl) {
+          setErrorMessage('You were approved, but no WhatsApp join URL was returned by the API.');
           return;
         }
 
-        setResult({ status: 'success', whatsappJoinCode: code || undefined, whatsappJoinUrl: joinUrl || undefined });
+        setResult({ status: 'success', whatsappJoinUrl: joinUrl || undefined });
         return;
       }
 
@@ -312,9 +345,9 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
         return;
       }
 
-      setErrorMessage('Unexpected response from join API.');
+      setErrorMessage(failureMessage);
     } catch {
-      setErrorMessage('Network error while submitting join request. Please try again.');
+      setErrorMessage(`Network error while submitting join request. ${failureMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -324,18 +357,37 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
     <main className="flex-grow bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)]">
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="rounded-2xl border border-white/20 bg-black/20 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
-          <h1 className="text-3xl font-semibold tracking-tight">Join The Community</h1>
-          <p className="mt-2 text-sm text-white/80">
-            Complete this short application for <strong>{organisationName}</strong>. If your answers match and you&apos;re not a bot or scammer, you will get immediately queued for admin approval.
-            Otherwise your request will be marked pending and an admin will review it before sending the whatsapp link and we may message you for more information.
-          </p>
+          {org?.organisation !== 'rebel-sbk' ? (
+            <div className="mb-6 border-b border-white/15 pb-5">
+              <Link href="/" className="mx-auto flex w-full items-center justify-center">
+                {org?.logo ? (
+                  <img src={org.logo} alt={org.name || organisationName} className="max-h-16 w-auto max-w-full sm:max-h-20" />
+                ) : (
+                  <span className="text-center text-xl font-semibold tracking-wide uppercase">{org?.name || organisationName}</span>
+                )}
+              </Link>
+            </div>
+          ) : null}
+          <h1
+            className="text-3xl font-semibold tracking-tight"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: resolvedTitleHtml }}
+          />
+          <p
+            className="mt-2 text-sm text-white/80"
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: resolvedIntroHtml }}
+          />
 
           {result.status === 'success' ? (
             <section className="mt-6 rounded-xl border border-emerald-300/30 bg-emerald-900/20 p-5">
-              <h2 className="text-xl font-semibold text-emerald-200">Success</h2>
+              <div
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: resolvedSuccessHtml }}
+              />
               {result.whatsappJoinUrl ? (
                 <div className="mt-3">
-                  <p className="text-sm text-emerald-100/90">You are in. Join WhatsApp using this link:</p>
+                  {/* <p className="text-sm text-emerald-100/90">Join link:</p> */}
                   <a
                     href={result.whatsappJoinUrl}
                     target="_blank"
@@ -344,14 +396,6 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                   >
                     {result.whatsappJoinUrl}
                   </a>
-                </div>
-              ) : null}
-              {result.whatsappJoinCode ? (
-                <div className="mt-3">
-                  <p className="text-sm text-emerald-100/90">Use this WhatsApp join code:</p>
-                  <p className="mt-2 rounded-lg bg-black/40 px-4 py-3 font-mono text-lg tracking-wide text-emerald-100">
-                    {result.whatsappJoinCode}
-                  </p>
                 </div>
               ) : null}
               <button
@@ -366,17 +410,17 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
 
           {result.status === 'pending' ? (
             <section className="mt-6 rounded-xl border border-amber-300/30 bg-amber-800/20 p-5">
-              <h2 className="text-xl font-semibold text-amber-200">Pending Review</h2>
-              <p className="mt-2 text-sm text-amber-100/90">
-                Thanks for applying. Your request is pending admin approval. We will email you once it is approved.
-              </p>
-              <button
+              <div
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: resolvedPendingHtml }}
+              />
+              {/* <button
                 type="button"
                 onClick={resetForm}
                 className="mt-4 inline-flex rounded-lg border border-amber-200/40 px-4 py-2 text-sm font-medium text-amber-100 hover:bg-amber-700/20"
               >
                 Submit Another
-              </button>
+              </button> */}
             </section>
           ) : null}
 
@@ -393,6 +437,7 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                   type="text"
                   required
                   autoComplete="name"
+                  autoCapitalize="words"
                   enterKeyHint="next"
                   aria-required="true"
                   aria-describedby="join-form-help"
@@ -413,6 +458,9 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                   type="email"
                   required
                   autoComplete="email"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
                   inputMode="email"
                   enterKeyHint="next"
                   aria-required="true"
@@ -430,7 +478,7 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                 </label>
                 <input
                   id="join-phone"
-                  name="phone"
+                  name="tel"
                   type="tel"
                   required
                   autoComplete="tel"
@@ -473,14 +521,14 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                   ))}
                 </div>
 
-                <div className="md:pb-1">
-                  <button
+                <div className="md:pb-1 w-40">
+                  {/* <button
                     type="button"
                     onClick={() => setQuestions(selectJoinQuestions(questionBank))}
                     className="inline-flex w-full justify-center rounded-lg border border-white/35 px-3 py-2 text-sm font-medium text-white hover:bg-white/10 md:w-auto"
                   >
                     Change question
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -516,9 +564,9 @@ export default function JoinForm({ orgSlug, questionBank, initialQuestions }: Jo
                 enterKeyHint='done'
                 className="inline-flex w-full items-center justify-center rounded-lg bg-cerise-logo px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-cerise-on-light disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Join Request'}
+                {isSubmitting ? 'Submitting...' : 'Keep in touch'}
               </button>
-              <p>By submitting this form you consent to the   <Link href="/tos" className="underline">terms and conditions</Link>, <Link href="/privacy" className="underline">privacy policy</Link> and to Dance Engine and {organisationName} sending you relevant SBK information.</p>
+              <p>By submitting this form you consent to the   <Link href="/tos" className="underline">terms and conditions</Link>, <Link href="/privacy" className="underline">privacy policy</Link> and to Dance Engine and {organisationName} sending you relevant information.</p>
             </form>
           ) : null}
         </div>

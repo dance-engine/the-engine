@@ -1,8 +1,16 @@
 import { headers } from 'next/headers';
 
 import JoinForm from '@/app/join/JoinForm';
-import { getPublicJoinQuestions } from '@/app/join/question-bank';
+import {
+  getJoinFailureMessage,
+  getJoinIntroHtml,
+  getJoinPendingHtml,
+  getJoinSuccessHtml,
+  getJoinTitleHtml,
+  getPublicJoinQuestions,
+} from '@/app/join/question-bank';
 import Header from '@/components/header/Header';
+import RebelHero from '@/components/legacy/RebelHero';
 import DanceEngineFooter from '@/components/footer/DanceEngine';
 import { OrganisationType } from '@dance-engine/schemas/organisation';
 
@@ -48,11 +56,27 @@ export default async function JoinPage() {
 
   const questionBank = getPublicJoinQuestions(orgSlug);
   const initialQuestions = selectJoinQuestions(questionBank);
+  const titleHtml = getJoinTitleHtml(orgSlug);
+  const introHtml = getJoinIntroHtml(orgSlug);
+  const successHtml = getJoinSuccessHtml(orgSlug);
+  const pendingHtml = getJoinPendingHtml(orgSlug);
+  const failureMessage = getJoinFailureMessage(orgSlug);
 
   return (
     <div className="flex min-h-screen h-full flex-col justify-between">
       <Header org={org} />
-      <JoinForm orgSlug={orgSlug} questionBank={questionBank} initialQuestions={initialQuestions} />
+      {orgSlug === 'rebel-sbk' ? <RebelHero org={org} /> : null}
+      <JoinForm
+        org={org}
+        orgSlug={orgSlug}
+        titleHtml={titleHtml}
+        introHtml={introHtml}
+        successHtml={successHtml}
+        pendingHtml={pendingHtml}
+        failureMessage={failureMessage}
+        questionBank={questionBank}
+        initialQuestions={initialQuestions}
+      />
       <DanceEngineFooter org={orgSlug} mode="dark" />
     </div>
   );

@@ -8,9 +8,13 @@ type JoinQuestionWithAnswers = PublicJoinQuestion & {
 };
 
 type OrgJoinConfig = {
-  whatsappJoinCode: string;
   passThreshold: number;
   localTeacherAliases: string[];
+  titleHtml?: string;
+  introHtml?: string;
+  successHtml?: string;
+  pendingHtml?: string;
+  failureMessage?: string;
   questions: JoinQuestionWithAnswers[];
 };
 
@@ -50,29 +54,54 @@ const DEFAULT_QUESTIONS: JoinQuestionWithAnswers[] = [
     prompt: 'What kind of events are you most interested in: socials, workshops, or teams?',
     acceptedAnswers: ['social', 'socials', 'workshop', 'workshops', 'team', 'teams'],
   },
+  
 ];
+
+const DEFAULT_JOIN_INTRO_HTML =
+  'Complete this short application for <strong>{{organisationName}}</strong>. If your answers match and you are not a bot or scammer, you will get immediately queued for admin approval. Otherwise your request will be marked pending and an admin will review it before sending the WhatsApp link and we may message you for more information.';
+const DEFAULT_JOIN_TITLE_HTML = 'Join <span class="whitespace-nowrap">{{organisationName}}</span>';
+const DEFAULT_JOIN_SUCCESS_HTML =
+  '<h2 class="text-xl font-semibold text-emerald-200">Success</h2><p class="mt-2 text-sm text-emerald-100/90">You are in. Join the <strong>{{organisationName}}</strong> WhatsApp community using the details below.</p>';
+const DEFAULT_JOIN_PENDING_HTML =
+  '<h2 class="text-xl font-semibold text-amber-200">Pending Review</h2><p class="mt-2 text-sm text-amber-100/90">Thanks for applying to <strong>{{organisationName}}</strong>. Your request is pending admin approval and we will email you once it is approved.</p>';
+const DEFAULT_JOIN_FAILURE_MESSAGE = 'We could not submit your join request. Please try again.';
 
 const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
   default: {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['adam','alex','angel','connor','joey','jp','libby','nicola',"steve","ant","tee", "ellena","jonathon","johnny" ],
+    titleHtml: DEFAULT_JOIN_TITLE_HTML,
+    introHtml: DEFAULT_JOIN_INTRO_HTML,
+    successHtml: DEFAULT_JOIN_SUCCESS_HTML,
+    pendingHtml: DEFAULT_JOIN_PENDING_HTML,
+    failureMessage: DEFAULT_JOIN_FAILURE_MESSAGE,
     questions: DEFAULT_QUESTIONS,
   },
   'latin-soul': {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['daniel', 'ana', 'mario', 'sofia'],
+    titleHtml: DEFAULT_JOIN_TITLE_HTML,
+    introHtml: DEFAULT_JOIN_INTRO_HTML,
+    successHtml: DEFAULT_JOIN_SUCCESS_HTML,
+    pendingHtml: DEFAULT_JOIN_PENDING_HTML,
+    failureMessage: DEFAULT_JOIN_FAILURE_MESSAGE,
     questions: DEFAULT_QUESTIONS,
   },
   'rebel-sbk': {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['andreas', 'rebel'],
-    questions: DEFAULT_QUESTIONS,
+    titleHtml: '<span class="">Rebel Tribe</span> Waiting List',
+    introHtml: 'Rebel Tribe is sweeping across the UK! If we don&apos;t have the dates confirmed for your city, fill out this form and as soon as we do we&apos;ll be in touch.',
+    successHtml: '<h2 class="text-xl font-semibold text-emerald-200">You&apos;re in!</h2><p class="mt-2 text-sm text-emerald-100/90">As soon as we have the dates confirmed for your city, we&apos;ll be in touch. Follow up on social media for other updates and announcements.</p>',
+    pendingHtml: '<h2 class="text-xl font-semibold text-amber-200">You&apos;re in!</h2><p class="mt-2 text-sm text-amber-100/90">As soon as we have the dates confirmed for your city, we&apos;ll be in touch.</p>',
+    failureMessage: 'We could not process your request. Please try again.',
+    questions: [{
+      id: 'city-of-interest',
+      prompt: 'What city would are you interested in?',
+      acceptedAnswers: ['manchester','sheffield']
+    }]
   },
   'power-of-woman': {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['pow team', 'pow teacher'],
     questions: DEFAULT_QUESTIONS,
@@ -187,6 +216,26 @@ export function getPublicJoinQuestions(orgSlug: string): PublicJoinQuestion[] {
   }));
 }
 
+export function getJoinIntroHtml(orgSlug: string): string {
+  return getOrgConfig(orgSlug).introHtml || DEFAULT_JOIN_INTRO_HTML;
+}
+
+export function getJoinTitleHtml(orgSlug: string): string {
+  return getOrgConfig(orgSlug).titleHtml || DEFAULT_JOIN_TITLE_HTML;
+}
+
+export function getJoinSuccessHtml(orgSlug: string): string {
+  return getOrgConfig(orgSlug).successHtml || DEFAULT_JOIN_SUCCESS_HTML;
+}
+
+export function getJoinPendingHtml(orgSlug: string): string {
+  return getOrgConfig(orgSlug).pendingHtml || DEFAULT_JOIN_PENDING_HTML;
+}
+
+export function getJoinFailureMessage(orgSlug: string): string {
+  return getOrgConfig(orgSlug).failureMessage || DEFAULT_JOIN_FAILURE_MESSAGE;
+}
+
 export function evaluateJoinAnswers(orgSlug: string, answers: SubmittedAnswer[]): { passed: boolean; score: number } {
   const config = getOrgConfig(orgSlug);
 
@@ -210,15 +259,4 @@ export function evaluateJoinAnswers(orgSlug: string, answers: SubmittedAnswer[])
     passed: score >= config.passThreshold,
     score,
   };
-}
-
-export function getWhatsappJoinCode(orgSlug: string): string {
-  const envKey = `JOIN_WHATSAPP_CODE_${orgSlug.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
-  const envOverride = process.env[envKey];
-
-  if (envOverride) {
-    return envOverride;
-  }
-
-  return process.env.JOIN_WHATSAPP_CODE || getOrgConfig(orgSlug).whatsappJoinCode;
 }

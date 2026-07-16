@@ -46,9 +46,13 @@ const buildCheckoutItem = <T extends ItemType | BundleTypeExtended>(
 function EventTicketingContent({
   event,
   org,
+  hasTicketItems,
+  isFutureEvent,
 }: {
   event: EventModelType;
   org: OrganisationType;
+  hasTicketItems: boolean;
+  isFutureEvent: boolean;
 }) {
   const { selected, included, pricingTier } = usePassSelectorState();
   const { toggleBundle, toggleItem, setPricingTier } = usePassSelectorActions();
@@ -113,7 +117,7 @@ function EventTicketingContent({
   const savings = Math.max(0, directPriceTotal - checkoutTotal);
   const highlightedPassLabel = highlightBundle?.name || "Tickets";
 
-  return items && items.length > 0 ? (
+  return hasTicketItems ? (
     <div className="space-y-8">
       <EventTicketOptionsSection
         event={event}
@@ -141,19 +145,28 @@ function EventTicketingContent({
         highlightedPassLabel={highlightedPassLabel}
       />
     </div>
-  ) : <div className="px-6 py-12 text-center" style={{ color: "var(--scheme-surface-text)" }}>No ticket options available for this event currently.</div>;
+  ) : null
 }
 
 export default function EventTicketing({
   event,
   org,
+  hasTicketItems,
+  isFutureEvent,
 }: {
   event: EventModelType;
   org: OrganisationType;
+  hasTicketItems: boolean;
+  isFutureEvent: boolean;
 }) {
   return (
     <PassSelectorProvider event={event} org={org}>
-      <EventTicketingContent event={event} org={org} />
+      <EventTicketingContent
+        event={event}
+        org={org}
+        hasTicketItems={hasTicketItems}
+        isFutureEvent={isFutureEvent}
+      />
     </PassSelectorProvider>
   );
 }

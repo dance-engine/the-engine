@@ -11,17 +11,12 @@ type JoinQuestion = {
 
 type JoinResult =
   | { status: 'idle' }
-  | { status: 'success'; whatsappJoinCode?: string; whatsappJoinUrl?: string }
+  | { status: 'success'; whatsappJoinUrl?: string }
   | { status: 'pending' };
 
 type JoinResponse = {
   status?: string;
-  whatsappJoinUrl?: string;
   whatsapp_join_url?: string;
-  whatsappJoinCode?: string;
-  whatsapp_join_code?: string;
-  joinCode?: string;
-  whatsappCode?: string;
   message?: string;
 };
 
@@ -334,15 +329,14 @@ export default function JoinForm({
       const status = (body.status || '').toLowerCase();
 
       if (status === 'success') {
-        const joinUrl = (body.whatsappJoinUrl || body.whatsapp_join_url || '').trim();
-        const code = body.whatsappJoinCode || body.whatsapp_join_code || body.joinCode || body.whatsappCode || '';
+        const joinUrl = (body.whatsapp_join_url || '').trim();
 
-        if (!joinUrl && !code) {
-          setErrorMessage('You were approved, but no WhatsApp join details were returned by the API.');
+        if (!joinUrl) {
+          setErrorMessage('You were approved, but no WhatsApp join URL was returned by the API.');
           return;
         }
 
-        setResult({ status: 'success', whatsappJoinCode: code || undefined, whatsappJoinUrl: joinUrl || undefined });
+        setResult({ status: 'success', whatsappJoinUrl: joinUrl || undefined });
         return;
       }
 
@@ -402,14 +396,6 @@ export default function JoinForm({
                   >
                     {result.whatsappJoinUrl}
                   </a>
-                </div>
-              ) : null}
-              {result.whatsappJoinCode ? (
-                <div className="mt-3">
-                  <p className="text-sm text-emerald-100/90">Use this WhatsApp join code:</p>
-                  <p className="mt-2 rounded-lg bg-black/40 px-4 py-3 font-mono text-lg tracking-wide text-emerald-100">
-                    {result.whatsappJoinCode}
-                  </p>
                 </div>
               ) : null}
               <button

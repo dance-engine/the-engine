@@ -8,7 +8,6 @@ type JoinQuestionWithAnswers = PublicJoinQuestion & {
 };
 
 type OrgJoinConfig = {
-  whatsappJoinCode: string;
   passThreshold: number;
   localTeacherAliases: string[];
   titleHtml?: string;
@@ -69,7 +68,6 @@ const DEFAULT_JOIN_FAILURE_MESSAGE = 'We could not submit your join request. Ple
 
 const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
   default: {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['adam','alex','angel','connor','joey','jp','libby','nicola',"steve","ant","tee", "ellena","jonathon","johnny" ],
     titleHtml: DEFAULT_JOIN_TITLE_HTML,
@@ -80,7 +78,6 @@ const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
     questions: DEFAULT_QUESTIONS,
   },
   'latin-soul': {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['daniel', 'ana', 'mario', 'sofia'],
     titleHtml: DEFAULT_JOIN_TITLE_HTML,
@@ -91,7 +88,6 @@ const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
     questions: DEFAULT_QUESTIONS,
   },
   'rebel-sbk': {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['andreas', 'rebel'],
     titleHtml: '<span class="">Rebel Tribe</span> Waiting List',
@@ -106,7 +102,6 @@ const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
     }]
   },
   'power-of-woman': {
-    whatsappJoinCode: 'ASK-ADMIN',
     passThreshold: 0.45,
     localTeacherAliases: ['pow team', 'pow teacher'],
     questions: DEFAULT_QUESTIONS,
@@ -264,15 +259,4 @@ export function evaluateJoinAnswers(orgSlug: string, answers: SubmittedAnswer[])
     passed: score >= config.passThreshold,
     score,
   };
-}
-
-export function getWhatsappJoinCode(orgSlug: string): string {
-  const envKey = `JOIN_WHATSAPP_CODE_${orgSlug.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
-  const envOverride = process.env[envKey];
-
-  if (envOverride) {
-    return envOverride;
-  }
-
-  return process.env.JOIN_WHATSAPP_CODE || getOrgConfig(orgSlug).whatsappJoinCode;
 }

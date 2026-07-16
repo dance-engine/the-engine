@@ -16,15 +16,6 @@ type JoinRequestBody = {
 type OrganisationRecord = {
   organisation?: string;
   whatsapp_join_url?: string;
-  whatsappJoinUrl?: string;
-  settings?: {
-    whatsapp_join_url?: string;
-    whatsappJoinUrl?: string;
-  };
-  meta?: {
-    whatsapp_join_url?: string;
-    whatsappJoinUrl?: string;
-  };
 };
 
 type OrganisationSettingsResponse = {
@@ -107,7 +98,7 @@ const isWhatsappMetadataTable = (node: unknown): boolean => {
 const getDanceEngineApiBase = (): string => (process.env.NEXT_PUBLIC_DANCE_ENGINE_API || '').trim();
 
 const getDanceEngineBearerToken = (): string =>
-  (process.env.DANCE_ENGINE_API_BEARER_TOKEN || process.env.DANCE_ENGINE_BEARER_TOKEN || '').trim();
+  (process.env.DANCE_ENGINE_API_BEARER_TOKEN || '').trim();
 
 const getBearerTokenFromAuthorizationHeader = (headerValue: string | null): string => {
   if (!headerValue) {
@@ -127,15 +118,7 @@ const extractWhatsappJoinUrl = (record?: OrganisationRecord | null): string => {
     return '';
   }
 
-  return (
-    record.whatsapp_join_url
-    || record.whatsappJoinUrl
-    || record.settings?.whatsapp_join_url
-    || record.settings?.whatsappJoinUrl
-    || record.meta?.whatsapp_join_url
-    || record.meta?.whatsappJoinUrl
-    || ''
-  ).trim();
+  return (record.whatsapp_join_url || '').trim();
 };
 
 const parseBioAsJson = (bio: string | undefined): TiptapDoc => {
@@ -520,7 +503,7 @@ async function handleJoinRequest(req: Request) {
 
       return NextResponse.json({
         status: 'success',
-        whatsappJoinUrl,
+        whatsapp_join_url: whatsappJoinUrl,
       });
     }
 

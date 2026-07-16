@@ -268,9 +268,16 @@ const parseEventDate = (value?: string): Date | undefined => {
     return undefined;
   }
 
+  if (value.startsWith("1900-01-01")) {
+    return undefined;
+  }
+
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 };
+
+const isTbcDateValue = (value?: string): boolean =>
+  typeof value === "string" && value.startsWith("1900-01-01");
 
 export default function Event({
   org,
@@ -341,6 +348,7 @@ export default function Event({
 
   const event = createEvent(eventData.event);
   const organisationTheme = getOrganisationTheme(org);
+  const isDateTbc = isTbcDateValue(event.starts_at);
   const startDate = parseEventDate(event.starts_at);
   const endDate = parseEventDate(event.ends_at);
   const highlightPassLabel = getHighlightBundleLabel(event);
@@ -360,11 +368,11 @@ export default function Event({
   const hasInconsistentDateRange =
     Boolean(startDate) && Boolean(endDate) && Boolean(endDate && startDate && endDate < startDate);
   const effectiveEndDate = hasInconsistentDateRange ? undefined : endDate;
-  const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
+  const hasEventPassed = isDateTbc ? false : effectiveEndDate ? effectiveEndDate <= now : false;
   const hasTicketItems = Object.values(event.items || {}).some((item) => Boolean(item));
-  const isFutureEvent = startDate ? startDate > now : false;
-  const canBook = hasTicketItems && !hasEventPassed;
-  const showWaitlistCta = !hasTicketItems && isFutureEvent;
+  const isFutureEvent = isDateTbc ? false : startDate ? startDate > now : false;
+  const canBook = !isDateTbc && hasTicketItems && !hasEventPassed;
+  const showWaitlistCta = isDateTbc || (!hasTicketItems && isFutureEvent);
   // const hasEventPassed = false;
 
   if (debugEventState && typeof window !== "undefined") {
@@ -502,11 +510,20 @@ export default function Event({
                       Schedule
                     </p>
                     <p className="mt-2 text-lg font-semibold">
-                      {startDate
+                      {isDateTbc
+                        ? "TBC"
+                        : startDate
                         ? format(startDate, "EEEE d MMMM yyyy, h:mmaaa")
                         : "Date TBC"}
                     </p>
-                    {endDate ? (
+                    {isDateTbc ? (
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--scheme-surface-muted)" }}
+                      >
+                        Ends TBC
+                      </p>
+                    ) : endDate ? (
                       <p
                         className="text-sm"
                         style={{ color: "var(--scheme-surface-muted)" }}

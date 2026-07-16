@@ -5,6 +5,9 @@ import { CalendarIcon, MapPinIcon, TicketIcon } from "./Icons";
 
 const factCardClasses = "flex items-center gap-4 border p-5";
 
+const isTbcDateValue = (value?: string): boolean =>
+  typeof value === "string" && value.startsWith("1900-01-01");
+
 export default function EventFactsPanel({
   event,
   highlightedPassLabel,
@@ -18,11 +21,17 @@ export default function EventFactsPanel({
   bookingTargetId?: string;
   showWaitlistCta?: boolean;
 }) {
+  const isDateTbc = isTbcDateValue(event.starts_at);
   const startDate = event.starts_at ? new Date(event.starts_at) : undefined;
   const endDate = event.ends_at ? new Date(event.ends_at) : undefined;
-  const start = startDate ? format(startDate, "EEEE d MMMM yyyy") : "Date TBC";
-  const timeRange =
-    startDate && endDate
+  const start = isDateTbc
+    ? "TBC"
+    : startDate
+      ? format(startDate, "EEEE d MMMM yyyy")
+      : "Date TBC";
+  const timeRange = isDateTbc
+    ? "TBC"
+    : startDate && endDate
       ? `${format(startDate, "h:mmaaa")} to ${format(endDate, "h:mmaaa")}`
       : startDate
         ? format(startDate, "h:mmaaa")

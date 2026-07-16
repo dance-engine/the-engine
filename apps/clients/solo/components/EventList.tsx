@@ -9,6 +9,9 @@ import { EventResponseType } from '@dance-engine/schemas/events';
 import { format } from 'date-fns'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
+const isTbcDateValue = (value?: string): boolean =>
+  typeof value === 'string' && value.startsWith('1900-01-01');
+
 export default function EventList({ fallbackData, org, event_ksuid, theme}: { fallbackData: EventResponseType[], org: string, event_ksuid?: string, theme: string}) {
   const { data, isLoading, error} = useSWR(
     event_ksuid ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events/${event_ksuid}` : `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org}/events`,
@@ -56,6 +59,8 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
         <div className="overflow-hidden px-3" ref={emblaRef}>
           <div className={`flex gap-6 ${!canScrollPrev && !canScrollNext ? 'justify-center' : ''}`}>
             {events.map((event) => {
+              const isDateTbc = isTbcDateValue(event.starts_at);
+
               return (
                 <div key={event.ksuid} className="flex-[0_0_88%] sm:flex-[0_0_52%] lg:flex-[0_0_38%] max-w-64 ">
                   <Link href={`/${event.ksuid}`} style={{'--image-url': `url(${event.banner})`} as React.CSSProperties} 
@@ -65,7 +70,11 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
                         {event.category.map((cat) => {return (<span key={cat} className='bg-cerise-on-light text-white text-xs px-2 py-0 rounded-full'>{cat}</span>)})}
                       </div>}
                       <h2 className='text-xl font-bold mt-2'>{event.name}</h2>
-                      <p className=''>{format(event.starts_at, 'do MMM yyyy, HH:mm')} - {format(event.ends_at, 'HH:mm')}</p>
+                      <p className=''>
+                        {isDateTbc
+                          ? 'TBC'
+                          : `${format(event.starts_at, 'do MMM yyyy, HH:mm')} - ${format(event.ends_at, 'HH:mm')}`}
+                      </p>
                     </div>
                   </Link>
                 </div>

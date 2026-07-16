@@ -361,6 +361,10 @@ export default function Event({
     Boolean(startDate) && Boolean(endDate) && Boolean(endDate && startDate && endDate < startDate);
   const effectiveEndDate = hasInconsistentDateRange ? undefined : endDate;
   const hasEventPassed = effectiveEndDate ? effectiveEndDate <= now : false;
+  const hasTicketItems = Object.values(event.items || {}).some((item) => Boolean(item));
+  const isFutureEvent = startDate ? startDate > now : false;
+  const canBook = hasTicketItems && !hasEventPassed;
+  const showWaitlistCta = !hasTicketItems && isFutureEvent;
   // const hasEventPassed = false;
 
   if (debugEventState && typeof window !== "undefined") {
@@ -398,6 +402,9 @@ export default function Event({
         <EventFactsPanel
           event={event}
           highlightedPassLabel={highlightPassLabel}
+          showBookingCta={canBook}
+          bookingTargetId="ticket-options"
+          showWaitlistCta={showWaitlistCta}
         />
 
         {previousEventKsuid ? (
@@ -452,7 +459,12 @@ export default function Event({
             </div>
           ) : (
             <>
-              <EventTicketing event={event} org={org} />
+              <EventTicketing
+                event={event}
+                org={org}
+                hasTicketItems={hasTicketItems}
+                isFutureEvent={isFutureEvent}
+              />
               <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
                 <div
                   className="p-6"

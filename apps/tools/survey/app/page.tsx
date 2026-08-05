@@ -392,7 +392,7 @@ function DanceCategory({ group, substyles, values, onChange }: { group: string; 
       onChange(Object.fromEntries(substyles.map(style => [styleKey(group, style), shortcut])));
       return;
     }
-    const shortcutAnswers = new Set(categoryChoices.flatMap(option => option.storedValue ? [option.storedValue] : []));
+    const shortcutAnswers = new Set<string>(categoryChoices.flatMap(option => option.storedValue ? [option.storedValue] : []));
     onChange(Object.fromEntries(substyles.map(style => {
       const key = styleKey(group, style);
       return [key, shortcutAnswers.has(values[key]) ? "" : values[key] || ""];

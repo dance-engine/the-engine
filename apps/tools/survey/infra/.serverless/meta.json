@@ -1,0 +1,1184 @@
+{
+  "/Users/adamb/Code/the-engine/apps/tools/survey/infra/serverless.yaml": {
+    "versionFramework": "4.40.0",
+    "servicePath": "/Users/adamb/Code/the-engine/apps/tools/survey/infra/serverless.yaml",
+    "serviceConfigFileName": "serverless.yaml",
+    "service": {
+      "service": "core-sbk-survey",
+      "configValidationMode": "error",
+      "params": {
+        "default": {
+          "vercelOidcProviderArn": "arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine",
+          "vercelTeamSlug": "dance-engine",
+          "vercelProjectName": "the-engine-survey",
+          "vercelEnvironment": "preview",
+          "vercelLocalEnvironment": "development"
+        }
+      },
+      "provider": {
+        "name": "aws",
+        "region": "eu-west-1",
+        "stage": "preview",
+        "stackName": "preview-core-sbk-survey",
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "SurveyTable": {
+              "Type": "AWS::DynamoDB::Table",
+              "DeletionPolicy": "Retain",
+              "UpdateReplacePolicy": "Retain",
+              "Properties": {
+                "TableName": "preview-core-sbk-survey",
+                "DeletionProtectionEnabled": {
+                  "Fn::If": [
+                    "IsProduction",
+                    true,
+                    false
+                  ]
+                },
+                "BillingMode": "PAY_PER_REQUEST",
+                "AttributeDefinitions": [
+                  {
+                    "AttributeName": "PK",
+                    "AttributeType": "S"
+                  },
+                  {
+                    "AttributeName": "SK",
+                    "AttributeType": "S"
+                  },
+                  {
+                    "AttributeName": "gsi1PK",
+                    "AttributeType": "S"
+                  },
+                  {
+                    "AttributeName": "gsi1SK",
+                    "AttributeType": "S"
+                  },
+                  {
+                    "AttributeName": "gsi2PK",
+                    "AttributeType": "S"
+                  },
+                  {
+                    "AttributeName": "gsi2SK",
+                    "AttributeType": "S"
+                  },
+                  {
+                    "AttributeName": "entity_type",
+                    "AttributeType": "S"
+                  }
+                ],
+                "KeySchema": [
+                  {
+                    "AttributeName": "PK",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "SK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "GlobalSecondaryIndexes": [
+                  {
+                    "IndexName": "IDXinv",
+                    "KeySchema": [
+                      {
+                        "AttributeName": "SK",
+                        "KeyType": "HASH"
+                      },
+                      {
+                        "AttributeName": "PK",
+                        "KeyType": "RANGE"
+                      }
+                    ],
+                    "Projection": {
+                      "ProjectionType": "ALL"
+                    }
+                  },
+                  {
+                    "IndexName": "gsi1",
+                    "KeySchema": [
+                      {
+                        "AttributeName": "gsi1PK",
+                        "KeyType": "HASH"
+                      },
+                      {
+                        "AttributeName": "gsi1SK",
+                        "KeyType": "RANGE"
+                      }
+                    ],
+                    "Projection": {
+                      "ProjectionType": "ALL"
+                    }
+                  },
+                  {
+                    "IndexName": "gsi1inv",
+                    "KeySchema": [
+                      {
+                        "AttributeName": "gsi1SK",
+                        "KeyType": "HASH"
+                      },
+                      {
+                        "AttributeName": "gsi1PK",
+                        "KeyType": "RANGE"
+                      }
+                    ],
+                    "Projection": {
+                      "ProjectionType": "ALL"
+                    }
+                  },
+                  {
+                    "IndexName": "gsi2",
+                    "KeySchema": [
+                      {
+                        "AttributeName": "gsi2PK",
+                        "KeyType": "HASH"
+                      },
+                      {
+                        "AttributeName": "gsi2SK",
+                        "KeyType": "RANGE"
+                      }
+                    ],
+                    "Projection": {
+                      "ProjectionType": "ALL"
+                    }
+                  },
+                  {
+                    "IndexName": "gsi2inv",
+                    "KeySchema": [
+                      {
+                        "AttributeName": "gsi2SK",
+                        "KeyType": "HASH"
+                      },
+                      {
+                        "AttributeName": "gsi2PK",
+                        "KeyType": "RANGE"
+                      }
+                    ],
+                    "Projection": {
+                      "ProjectionType": "ALL"
+                    }
+                  },
+                  {
+                    "IndexName": "typeIDX",
+                    "KeySchema": [
+                      {
+                        "AttributeName": "entity_type",
+                        "KeyType": "HASH"
+                      },
+                      {
+                        "AttributeName": "PK",
+                        "KeyType": "RANGE"
+                      }
+                    ],
+                    "Projection": {
+                      "ProjectionType": "ALL"
+                    }
+                  }
+                ],
+                "PointInTimeRecoverySpecification": {
+                  "PointInTimeRecoveryEnabled": {
+                    "Fn::If": [
+                      "IsProduction",
+                      true,
+                      false
+                    ]
+                  }
+                },
+                "SSESpecification": {
+                  "SSEEnabled": true
+                },
+                "Tags": [
+                  {
+                    "Key": "STAGE",
+                    "Value": "preview"
+                  },
+                  {
+                    "Key": "DanceEngineVersion",
+                    "Value": "v2"
+                  }
+                ]
+              }
+            },
+            "SurveyApplicationRole": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "RoleName": "preview-sbk-survey-application",
+                "Description": "Allows the Vercel SBK survey application to store contacts and survey responses.",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                  "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:preview\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+                },
+                "Policies": [
+                  {
+                    "PolicyName": "SurveyTableAccess",
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Sid": "WriteContactDetails",
+                          "Effect": "Allow",
+                          "Action": [
+                            "dynamodb:PutItem"
+                          ],
+                          "Resource": {
+                            "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/preview-core-danceengine"
+                          }
+                        },
+                        {
+                          "Sid": "ReadWriteSurveyResponses",
+                          "Effect": "Allow",
+                          "Action": [
+                            "dynamodb:GetItem",
+                            "dynamodb:PutItem",
+                            "dynamodb:UpdateItem",
+                            "dynamodb:Query",
+                            "dynamodb:Scan",
+                            "dynamodb:BatchGetItem"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::GetAtt": [
+                                "SurveyTable",
+                                "Arn"
+                              ]
+                            },
+                            {
+                              "Fn::Sub": [
+                                "${TableArn}/index/*",
+                                {
+                                  "TableArn": {
+                                    "Fn::GetAtt": [
+                                      "SurveyTable",
+                                      "Arn"
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-eu-west-1-0e22de09-8583",
+              "Export": {
+                "Name": "sls-core-sbk-survey-preview-ServerlessDeploymentBucketName"
+              }
+            },
+            "SurveyTableName": {
+              "Description": "DynamoDB table used for survey responses.",
+              "Value": {
+                "Ref": "SurveyTable"
+              }
+            },
+            "SurveyApplicationRoleArn": {
+              "Description": "IAM role for the Vercel survey application.",
+              "Value": {
+                "Fn::GetAtt": [
+                  "SurveyApplicationRole",
+                  "Arn"
+                ]
+              }
+            }
+          },
+          "Conditions": {
+            "IsProduction": {
+              "Fn::Equals": [
+                "preview",
+                "production"
+              ]
+            }
+          }
+        }
+      },
+      "custom": {
+        "core_table_name": "preview-core-danceengine",
+        "survey_table_name": "preview-core-sbk-survey",
+        "vercel_oidc_provider_arn": "arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine",
+        "vercel_team_slug": "dance-engine",
+        "vercel_project_name": "the-engine-survey",
+        "vercel_environment": "preview",
+        "vercel_local_environment": "development"
+      },
+      "resources": {
+        "Conditions": {
+          "IsProduction": {
+            "Fn::Equals": [
+              "preview",
+              "production"
+            ]
+          }
+        },
+        "Resources": {
+          "SurveyTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "DeletionPolicy": "Retain",
+            "UpdateReplacePolicy": "Retain",
+            "Properties": {
+              "TableName": "preview-core-sbk-survey",
+              "DeletionProtectionEnabled": {
+                "Fn::If": [
+                  "IsProduction",
+                  true,
+                  false
+                ]
+              },
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "SK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi1PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi1SK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi2PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi2SK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "entity_type",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "PK",
+                  "KeyType": "HASH"
+                },
+                {
+                  "AttributeName": "SK",
+                  "KeyType": "RANGE"
+                }
+              ],
+              "GlobalSecondaryIndexes": [
+                {
+                  "IndexName": "IDXinv",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "SK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi1",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi1PK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi1SK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi1inv",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi1SK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi1PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi2",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi2PK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi2SK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi2inv",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi2SK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi2PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "typeIDX",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "entity_type",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                }
+              ],
+              "PointInTimeRecoverySpecification": {
+                "PointInTimeRecoveryEnabled": {
+                  "Fn::If": [
+                    "IsProduction",
+                    true,
+                    false
+                  ]
+                }
+              },
+              "SSESpecification": {
+                "SSEEnabled": true
+              },
+              "Tags": [
+                {
+                  "Key": "STAGE",
+                  "Value": "preview"
+                },
+                {
+                  "Key": "DanceEngineVersion",
+                  "Value": "v2"
+                }
+              ]
+            }
+          },
+          "SurveyApplicationRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "RoleName": "preview-sbk-survey-application",
+              "Description": "Allows the Vercel SBK survey application to store contacts and survey responses.",
+              "MaxSessionDuration": 3600,
+              "AssumeRolePolicyDocument": {
+                "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:preview\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+              },
+              "Policies": [
+                {
+                  "PolicyName": "SurveyTableAccess",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "WriteContactDetails",
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:PutItem"
+                        ],
+                        "Resource": {
+                          "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/preview-core-danceengine"
+                        }
+                      },
+                      {
+                        "Sid": "ReadWriteSurveyResponses",
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:GetItem",
+                          "dynamodb:PutItem",
+                          "dynamodb:UpdateItem",
+                          "dynamodb:Query",
+                          "dynamodb:Scan",
+                          "dynamodb:BatchGetItem"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::GetAtt": [
+                              "SurveyTable",
+                              "Arn"
+                            ]
+                          },
+                          {
+                            "Fn::Sub": [
+                              "${TableArn}/index/*",
+                              {
+                                "TableArn": {
+                                  "Fn::GetAtt": [
+                                    "SurveyTable",
+                                    "Arn"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "SurveyTableName": {
+            "Description": "DynamoDB table used for survey responses.",
+            "Value": {
+              "Ref": "SurveyTable"
+            }
+          },
+          "SurveyApplicationRoleArn": {
+            "Description": "IAM role for the Vercel survey application.",
+            "Value": {
+              "Fn::GetAtt": [
+                "SurveyApplicationRole",
+                "Arn"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "region": "eu-west-1",
+      "stage": "preview",
+      "stackName": "preview-core-sbk-survey",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "SurveyTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "DeletionPolicy": "Retain",
+            "UpdateReplacePolicy": "Retain",
+            "Properties": {
+              "TableName": "preview-core-sbk-survey",
+              "DeletionProtectionEnabled": {
+                "Fn::If": [
+                  "IsProduction",
+                  true,
+                  false
+                ]
+              },
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "SK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi1PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi1SK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi2PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "gsi2SK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "entity_type",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "PK",
+                  "KeyType": "HASH"
+                },
+                {
+                  "AttributeName": "SK",
+                  "KeyType": "RANGE"
+                }
+              ],
+              "GlobalSecondaryIndexes": [
+                {
+                  "IndexName": "IDXinv",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "SK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi1",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi1PK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi1SK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi1inv",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi1SK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi1PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi2",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi2PK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi2SK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "gsi2inv",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "gsi2SK",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "gsi2PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                },
+                {
+                  "IndexName": "typeIDX",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "entity_type",
+                      "KeyType": "HASH"
+                    },
+                    {
+                      "AttributeName": "PK",
+                      "KeyType": "RANGE"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                }
+              ],
+              "PointInTimeRecoverySpecification": {
+                "PointInTimeRecoveryEnabled": {
+                  "Fn::If": [
+                    "IsProduction",
+                    true,
+                    false
+                  ]
+                }
+              },
+              "SSESpecification": {
+                "SSEEnabled": true
+              },
+              "Tags": [
+                {
+                  "Key": "STAGE",
+                  "Value": "preview"
+                },
+                {
+                  "Key": "DanceEngineVersion",
+                  "Value": "v2"
+                }
+              ]
+            }
+          },
+          "SurveyApplicationRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "RoleName": "preview-sbk-survey-application",
+              "Description": "Allows the Vercel SBK survey application to store contacts and survey responses.",
+              "MaxSessionDuration": 3600,
+              "AssumeRolePolicyDocument": {
+                "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:preview\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+              },
+              "Policies": [
+                {
+                  "PolicyName": "SurveyTableAccess",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "WriteContactDetails",
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:PutItem"
+                        ],
+                        "Resource": {
+                          "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/preview-core-danceengine"
+                        }
+                      },
+                      {
+                        "Sid": "ReadWriteSurveyResponses",
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:GetItem",
+                          "dynamodb:PutItem",
+                          "dynamodb:UpdateItem",
+                          "dynamodb:Query",
+                          "dynamodb:Scan",
+                          "dynamodb:BatchGetItem"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::GetAtt": [
+                              "SurveyTable",
+                              "Arn"
+                            ]
+                          },
+                          {
+                            "Fn::Sub": [
+                              "${TableArn}/index/*",
+                              {
+                                "TableArn": {
+                                  "Fn::GetAtt": [
+                                    "SurveyTable",
+                                    "Arn"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-eu-west-1-0e22de09-8583",
+            "Export": {
+              "Name": "sls-core-sbk-survey-preview-ServerlessDeploymentBucketName"
+            }
+          },
+          "SurveyTableName": {
+            "Description": "DynamoDB table used for survey responses.",
+            "Value": {
+              "Ref": "SurveyTable"
+            }
+          },
+          "SurveyApplicationRoleArn": {
+            "Description": "IAM role for the Vercel survey application.",
+            "Value": {
+              "Fn::GetAtt": [
+                "SurveyApplicationRole",
+                "Arn"
+              ]
+            }
+          }
+        },
+        "Conditions": {
+          "IsProduction": {
+            "Fn::Equals": [
+              "preview",
+              "production"
+            ]
+          }
+        }
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: core-sbk-survey\nconfigValidationMode: error\n\nparams:\n  default:\n    vercelOidcProviderArn: arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\n    vercelTeamSlug: dance-engine\n    vercelProjectName: the-engine-survey\n    vercelEnvironment: preview\n    vercelLocalEnvironment: development\n\n  production:\n    vercelEnvironment: production\n    vercelLocalEnvironment: production\n\nprovider:\n  name: aws\n  region: ${opt:region, 'eu-west-1'}\n  stage: ${opt:stage, 'preview'}\n  stackName: ${sls:stage}-core-sbk-survey\n\ncustom:\n  core_table_name: \"${sls:stage}-core-danceengine\"\n  survey_table_name: \"${sls:stage}-core-sbk-survey\"\n  vercel_oidc_provider_arn: ${param:vercelOidcProviderArn}\n  vercel_team_slug: ${param:vercelTeamSlug}\n  vercel_project_name: ${param:vercelProjectName}\n  vercel_environment: ${param:vercelEnvironment}\n  vercel_local_environment: ${param:vercelLocalEnvironment}\n\nresources:\n  - ${file(serverless.resource.yaml):resources}",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "orgId": "b2d0ec44-c1b5-48de-bed2-79e9b9cab770",
+    "orgName": "danceenginesystems",
+    "userId": "b9x0zdrD4G0J3l8psq",
+    "userName": "mrbsoftware",
+    "serviceProviderAwsAccountId": "717279731911",
+    "serviceProviderAwsCfStackName": "preview-core-sbk-survey",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-1:717279731911:stack/preview-core-sbk-survey/117be910-91fe-11f1-91a6-06aa0c399eb7",
+    "serviceProviderAwsCfStackCreated": "2026-08-07T01:19:42.700Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "SurveyApplicationRoleArn",
+        "OutputValue": "arn:aws:iam::717279731911:role/preview-sbk-survey-application",
+        "Description": "IAM role for the Vercel survey application."
+      },
+      {
+        "OutputKey": "SurveyTableName",
+        "OutputValue": "preview-core-sbk-survey",
+        "Description": "DynamoDB table used for survey responses."
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-eu-west-1-0e22de09-8583",
+        "ExportName": "sls-core-sbk-survey-preview-ServerlessDeploymentBucketName"
+      }
+    ],
+    "compiledCloudFormationTemplate": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The AWS CloudFormation template for this Serverless application",
+      "Resources": {
+        "SurveyTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "TableName": "preview-core-sbk-survey",
+            "DeletionProtectionEnabled": {
+              "Fn::If": [
+                "IsProduction",
+                true,
+                false
+              ]
+            },
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "PK",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "SK",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsi1PK",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsi1SK",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsi2PK",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "gsi2SK",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "entity_type",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "PK",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "SK",
+                "KeyType": "RANGE"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "IDXinv",
+                "KeySchema": [
+                  {
+                    "AttributeName": "SK",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "PK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              },
+              {
+                "IndexName": "gsi1",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsi1PK",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "gsi1SK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              },
+              {
+                "IndexName": "gsi1inv",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsi1SK",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "gsi1PK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              },
+              {
+                "IndexName": "gsi2",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsi2PK",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "gsi2SK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              },
+              {
+                "IndexName": "gsi2inv",
+                "KeySchema": [
+                  {
+                    "AttributeName": "gsi2SK",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "gsi2PK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              },
+              {
+                "IndexName": "typeIDX",
+                "KeySchema": [
+                  {
+                    "AttributeName": "entity_type",
+                    "KeyType": "HASH"
+                  },
+                  {
+                    "AttributeName": "PK",
+                    "KeyType": "RANGE"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              }
+            ],
+            "PointInTimeRecoverySpecification": {
+              "PointInTimeRecoveryEnabled": {
+                "Fn::If": [
+                  "IsProduction",
+                  true,
+                  false
+                ]
+              }
+            },
+            "SSESpecification": {
+              "SSEEnabled": true
+            },
+            "Tags": [
+              {
+                "Key": "STAGE",
+                "Value": "preview"
+              },
+              {
+                "Key": "DanceEngineVersion",
+                "Value": "v2"
+              }
+            ]
+          }
+        },
+        "SurveyApplicationRole": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "RoleName": "preview-sbk-survey-application",
+            "Description": "Allows the Vercel SBK survey application to store contacts and survey responses.",
+            "MaxSessionDuration": 3600,
+            "AssumeRolePolicyDocument": {
+              "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:preview\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+            },
+            "Policies": [
+              {
+                "PolicyName": "SurveyTableAccess",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "WriteContactDetails",
+                      "Effect": "Allow",
+                      "Action": [
+                        "dynamodb:PutItem"
+                      ],
+                      "Resource": {
+                        "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/preview-core-danceengine"
+                      }
+                    },
+                    {
+                      "Sid": "ReadWriteSurveyResponses",
+                      "Effect": "Allow",
+                      "Action": [
+                        "dynamodb:GetItem",
+                        "dynamodb:PutItem",
+                        "dynamodb:UpdateItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan",
+                        "dynamodb:BatchGetItem"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::GetAtt": [
+                            "SurveyTable",
+                            "Arn"
+                          ]
+                        },
+                        {
+                          "Fn::Sub": [
+                            "${TableArn}/index/*",
+                            {
+                              "TableArn": {
+                                "Fn::GetAtt": [
+                                  "SurveyTable",
+                                  "Arn"
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Outputs": {
+        "ServerlessDeploymentBucketName": {
+          "Value": "serverless-framework-deployments-eu-west-1-0e22de09-8583",
+          "Export": {
+            "Name": "sls-core-sbk-survey-preview-ServerlessDeploymentBucketName"
+          }
+        },
+        "SurveyTableName": {
+          "Description": "DynamoDB table used for survey responses.",
+          "Value": {
+            "Ref": "SurveyTable"
+          }
+        },
+        "SurveyApplicationRoleArn": {
+          "Description": "IAM role for the Vercel survey application.",
+          "Value": {
+            "Fn::GetAtt": [
+              "SurveyApplicationRole",
+              "Arn"
+            ]
+          }
+        }
+      },
+      "Conditions": {
+        "IsProduction": {
+          "Fn::Equals": [
+            "preview",
+            "production"
+          ]
+        }
+      }
+    }
+  }
+}

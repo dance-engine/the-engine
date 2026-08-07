@@ -11,6 +11,7 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.864.0",
         "@aws-sdk/lib-dynamodb": "^3.864.0",
+        "@vercel/oidc-aws-credentials-provider": "^3.3.2",
         "ksuid": "^3.0.0",
         "next": "^15.4.6",
         "react": "^19.1.1",

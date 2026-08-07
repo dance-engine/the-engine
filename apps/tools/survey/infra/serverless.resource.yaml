@@ -2,8 +2,8 @@ resources:
   Conditions:
     IsProduction:
       Fn::Equals:
-        - ${param:isProd, 'false'}
-        - "true"
+        - ${sls:stage}
+        - production
 
   Resources:
     SurveyTable:

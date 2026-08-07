@@ -1,0 +1,50 @@
+custom:
+  core_table_name: "${sls:stage}-core-danceengine"
+  survey_table_name: "${sls:stage}-core-sbk-survey"
+
+resources:
+  Resources:
+    CoreDanceEngineTable: ${file(serverless.resource.yaml):resources.Resources.CoreDanceEngineTable}
+    SurveyTable: ${file(serverless.resource.yaml):resources.Resources.SurveyTable}
+
+    SurveyApplicationRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: "${sls:stage}-sbk-survey-application"
+        AssumeRolePolicyDocument:
+          # Vercel OIDC trust policy goes here
+        Policies:
+          - PolicyName: SurveyTableAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Sid: WriteContactDetails
+                  Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                  Resource:
+                    Fn::GetAtt:
+                      - CoreDanceEngineTable
+                      - Arn
+
+                - Sid: ReadWriteSurveyResponses
+                  Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:PutItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                    - dynamodb:BatchGetItem
+                    - dynamodb:BatchWriteItem
+                  Resource:
+                    - Fn::GetAtt:
+                        - SurveyTable
+                        - Arn
+                    - Fn::Sub:
+                        - "${TableArn}/index/*"
+                        - TableArn:
+                            Fn::GetAtt:
+                              - SurveyTable
+                              - Arn

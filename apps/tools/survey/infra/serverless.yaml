@@ -1,0 +1,32 @@
+service: core-sbk-survey
+configValidationMode: error
+
+params:
+  default:
+    vercelOidcProviderArn: arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine
+    vercelTeamSlug: dance-engine
+    vercelProjectName: the-engine-survey
+    vercelEnvironment: preview
+    vercelLocalEnvironment: development
+
+  production:
+    vercelEnvironment: production
+    vercelLocalEnvironment: production
+
+provider:
+  name: aws
+  region: ${opt:region, 'eu-west-1'}
+  stage: ${opt:stage, 'preview'}
+  stackName: ${sls:stage}-core-sbk-survey
+
+custom:
+  core_table_name: "${sls:stage}-core-danceengine"
+  survey_table_name: "${sls:stage}-core-sbk-survey"
+  vercel_oidc_provider_arn: ${param:vercelOidcProviderArn}
+  vercel_team_slug: ${param:vercelTeamSlug}
+  vercel_project_name: ${param:vercelProjectName}
+  vercel_environment: ${param:vercelEnvironment}
+  vercel_local_environment: ${param:vercelLocalEnvironment}
+
+resources:
+  - ${file(serverless.resource.yaml):resources}

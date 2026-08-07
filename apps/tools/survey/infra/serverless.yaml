@@ -9,7 +9,7 @@ params:
     vercelEnvironment: preview
     vercelLocalEnvironment: development
 
-  production:
+  prod:
     vercelEnvironment: production
     vercelLocalEnvironment: production
 

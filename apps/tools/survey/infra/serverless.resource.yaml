@@ -3,7 +3,7 @@ resources:
     IsProduction:
       Fn::Equals:
         - ${sls:stage}
-        - production
+        - prod
 
   Resources:
     SurveyTable:
@@ -121,7 +121,10 @@ resources:
                   "Condition": {
                     "StringEquals": {
                       "oidc.vercel.com/${self:custom.vercel_team_slug}:aud": "https://vercel.com/${self:custom.vercel_team_slug}",
-                      "oidc.vercel.com/${self:custom.vercel_team_slug}:sub": "owner:${self:custom.vercel_team_slug}:project:${self:custom.vercel_project_name}:environment:${self:custom.vercel_environment}"
+                      "oidc.vercel.com/${self:custom.vercel_team_slug}:sub": [
+                        "owner:${self:custom.vercel_team_slug}:project:${self:custom.vercel_project_name}:environment:${self:custom.vercel_environment}",
+                        "owner:${self:custom.vercel_team_slug}:project:${self:custom.vercel_project_name}:environment:${self:custom.vercel_local_environment}"
+                      ]
                     }
                   }
                 }
@@ -136,6 +139,7 @@ resources:
                   Effect: Allow
                   Action:
                     - dynamodb:PutItem
+                    - dynamodb:UpdateItem
                   Resource:
                     Fn::Sub: "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.core_table_name}"
 

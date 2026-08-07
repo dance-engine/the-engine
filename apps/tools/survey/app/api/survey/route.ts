@@ -12,6 +12,8 @@ export const runtime = "nodejs";
 
 type JsonObject = Record<string, unknown>;
 
+const SURVEY_ORGANISATION = "dance-engine";
+
 const hasVercelOidcToken = Boolean(
   process.env.VERCEL || process.env.VERCEL_OIDC_TOKEN,
 );
@@ -40,6 +42,14 @@ function stringValue(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function invalidResponse(message = "Invalid survey response.") {
   return NextResponse.json({ error: message }, { status: 400 });
 }
@@ -65,7 +75,7 @@ export async function POST(request: Request) {
         hasCoreTable: Boolean(coreTableName),
       });
       return NextResponse.json(
-        { error: "Survey storage is not configured.", hasSurveyTable: Boolean(surveyTableName),  hasCoreTable: Boolean(coreTableName),},
+        { error: "Survey storage is not configured." },
         { status: 500 },
       );
     }
@@ -80,15 +90,16 @@ export async function POST(request: Request) {
     const name = stringValue(contact.name);
     const email = stringValue(contact.email).toLowerCase();
     const phone = stringValue(contact.phone);
-    const hasContact = wantsUpdates === "Yes";
+    const hasCustomer = Boolean(email);
 
-    if (hasContact && (!name || !email || !email.includes("@"))) {
-      return invalidResponse("A name and valid email address are required for updates.");
+    if (hasCustomer && !email.includes("@")) {
+      return invalidResponse("Please enter a valid email address.");
     }
 
-    const id = (await KSUID.random()).string;
+    const ksuid = (await KSUID.random()).string;
     const submittedAt = new Date().toISOString();
-    const surveyKey = `SURVEY#${id}`;
+    const surveyKey = `SURVEY#${ksuid}`;
+    const customerKey = hasCustomer ? `CUSTOMER#${email}` : undefined;
     const { contact: _contact, ...surveyAnswers } = body;
 
     const transactItems: NonNullable<
@@ -100,9 +111,9 @@ export async function POST(request: Request) {
           Item: {
             ...surveyAnswers,
             PK: surveyKey,
-            SK: surveyKey,
-            id,
-            entity_type: "sbk_survey_response",
+            SK: customerKey ?? surveyKey,
+            ksuid,
+            entity_type: "SURVEY_RESPONSE",
             wantsUpdates,
             submittedAt,
             schemaVersion: 2,
@@ -113,26 +124,68 @@ export async function POST(request: Request) {
       },
     ];
 
-    if (hasContact) {
-      const contactKey = `SBK_SURVEY_CONTACT#${id}`;
+    if (customerKey) {
+      const customerUpdates = [
+        "#entityType = if_not_exists(#entityType, :entityType)",
+        "#email = if_not_exists(#email, :email)",
+        "#gsi1PK = if_not_exists(#gsi1PK, :gsi1PK)",
+        "#gsi1SK = if_not_exists(#gsi1SK, :gsi1SK)",
+        "#ksuid = if_not_exists(#ksuid, :ksuid)",
+        "#createdAt = if_not_exists(#createdAt, :createdAt)",
+        "#updatedAt = if_not_exists(#updatedAt, :updatedAt)",
+        "#organisation = if_not_exists(#organisation, :organisation)",
+        "#orgSlug = if_not_exists(#orgSlug, :orgSlug)",
+      ];
+      const customerNames: Record<string, string> = {
+        "#entityType": "entity_type",
+        "#email": "email",
+        "#gsi1PK": "gsi1PK",
+        "#gsi1SK": "gsi1SK",
+        "#ksuid": "ksuid",
+        "#createdAt": "created_at",
+        "#updatedAt": "updated_at",
+        "#organisation": "organisation",
+        "#orgSlug": "org_slug",
+      };
+      const customerValues: Record<string, string> = {
+        ":entityType": "CUSTOMER",
+        ":email": email,
+        ":gsi1PK": `CUSTOMERLIST#${SURVEY_ORGANISATION}`,
+        ":gsi1SK": customerKey,
+        ":ksuid": ksuid,
+        ":createdAt": submittedAt,
+        ":updatedAt": submittedAt,
+        ":organisation": SURVEY_ORGANISATION,
+        ":orgSlug": SURVEY_ORGANISATION,
+      };
+
+      if (name) {
+        customerUpdates.push(
+          "#name = if_not_exists(#name, :name)",
+          "#nameSlug = if_not_exists(#nameSlug, :nameSlug)",
+        );
+        customerNames["#name"] = "name";
+        customerNames["#nameSlug"] = "name_slug";
+        customerValues[":name"] = name;
+        customerValues[":nameSlug"] = slugify(name);
+      }
+
+      if (phone) {
+        customerUpdates.push("#phone = if_not_exists(#phone, :phone)");
+        customerNames["#phone"] = "phone";
+        customerValues[":phone"] = phone;
+      }
 
       transactItems.push({
-        Put: {
+        Update: {
           TableName: coreTableName,
-          Item: {
-            PK: contactKey,
-            SK: contactKey,
-            id,
-            surveyResponseId: id,
-            entity_type: "sbk_survey_contact",
-            name,
-            email,
-            ...(phone ? { phone } : {}),
-            createdAt: submittedAt,
-            source: "sbk_survey",
+          Key: {
+            PK: customerKey,
+            SK: customerKey,
           },
-          ConditionExpression:
-            "attribute_not_exists(PK) AND attribute_not_exists(SK)",
+          UpdateExpression: `SET ${customerUpdates.join(", ")}`,
+          ExpressionAttributeNames: customerNames,
+          ExpressionAttributeValues: customerValues,
         },
       });
     }
@@ -143,7 +196,7 @@ export async function POST(request: Request) {
       }),
     );
 
-    return NextResponse.json({ ok: true, id }, { status: 201 });
+    return NextResponse.json({ ok: true, ksuid }, { status: 201 });
   } catch (error) {
     console.error("Survey submission failed", error);
     return NextResponse.json(

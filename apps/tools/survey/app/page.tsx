@@ -25,7 +25,7 @@ const stages = ["Welcome", "Location", "Dance styles", "Learning", "Favourites",
 type FormData = {
   location: { countryFrom: string; countryCurrent: string; area: string };
   styles: Record<string, string>;
-  learning: { teacher: number; practice: number; social: number; lessonCurrency: string; lessonPrice: string; learningSource: string; congresses: string };
+  learning: { teacher: number; practice: number; social: number; lessonCurrency: string; lessonPrice: string; monthlyDanceSpendCurrency: string; monthlyDanceSpend: string; learningSource: string; congresses: string };
   favourites: { teacher: string; event: string; song: string };
   contact: { wantsUpdates: string; name: string; email: string; phone: string };
 };
@@ -33,7 +33,7 @@ type StageProps = {
   data: FormData;
   update: <K extends keyof FormData>(section: K, values: Partial<FormData[K]>) => void;
 };
-const initial: FormData = { location: { countryFrom: "", countryCurrent: "", area: "" }, styles: {}, learning: { teacher: 0, practice: 0, social: 0, lessonCurrency: "GBP", lessonPrice: "", learningSource: "", congresses: "" }, favourites: { teacher: "", event: "", song: "" }, contact: { wantsUpdates: "", name: "", email: "", phone: "" } };
+const initial: FormData = { location: { countryFrom: "", countryCurrent: "", area: "" }, styles: {}, learning: { teacher: 0, practice: 0, social: 0, lessonCurrency: "GBP", lessonPrice: "", monthlyDanceSpendCurrency: "GBP", monthlyDanceSpend: "", learningSource: "", congresses: "" }, favourites: { teacher: "", event: "", song: "" }, contact: { wantsUpdates: "", name: "", email: "", phone: "" } };
 const STORAGE_KEY = "dance-survey-draft-v1";
 
 const styleKey = (group: string, substyle: string) => `${group}: ${substyle}`;
@@ -452,7 +452,7 @@ function Stage3({ data, update }: StageProps) {
         </label>
       ))}
     </div>
-    <Field label="What do you expect to pay for a one-hour lesson?">
+    <Field label="What do you expect to pay for a one-hour lesson? (optional)">
       <div className="flex">
         <select aria-label="Lesson currency" className="!w-auto !rounded-r-none border-r-0 font-bold" value={data.learning.lessonCurrency} onChange={e => update("learning", { lessonCurrency: e.target.value })}>
           <option value="GBP">£</option>
@@ -461,7 +461,19 @@ function Stage3({ data, update }: StageProps) {
           <option value="CAD">C$</option>
           <option value="AUD">A$</option>
         </select>
-        <input required type="number" min="0" step="0.01" className="!rounded-l-none" value={data.learning.lessonPrice} onChange={e => update("learning", { lessonPrice: e.target.value })} placeholder="Amount" />
+        <input type="number" min="0" step="0.01" className="!rounded-l-none" value={data.learning.lessonPrice} onChange={e => update("learning", { lessonPrice: e.target.value })} placeholder="Amount" />
+      </div>
+    </Field>
+    <Field label="How much do you spend a month on dancing? (optional)">
+      <div className="flex">
+        <select aria-label="Monthly dance spend currency" className="!w-auto !rounded-r-none border-r-0 font-bold" value={data.learning.monthlyDanceSpendCurrency} onChange={e => update("learning", { monthlyDanceSpendCurrency: e.target.value })}>
+          <option value="GBP">£</option>
+          <option value="EUR">€</option>
+          <option value="USD">$</option>
+          <option value="CAD">C$</option>
+          <option value="AUD">A$</option>
+        </select>
+        <input type="number" min="0" step="0.01" className="!rounded-l-none" value={data.learning.monthlyDanceSpend} onChange={e => update("learning", { monthlyDanceSpend: e.target.value })} placeholder="Amount" />
       </div>
     </Field>
     <Field label="Where do you learn the most?">

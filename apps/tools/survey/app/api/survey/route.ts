@@ -135,6 +135,7 @@ export async function POST(request: Request) {
         "#updatedAt = if_not_exists(#updatedAt, :updatedAt)",
         "#organisation = if_not_exists(#organisation, :organisation)",
         "#orgSlug = if_not_exists(#orgSlug, :orgSlug)",
+        "#verificationStatus = if_not_exists(#verificationStatus, :verificationStatus)",
       ];
       const customerNames: Record<string, string> = {
         "#entityType": "entity_type",
@@ -146,6 +147,7 @@ export async function POST(request: Request) {
         "#updatedAt": "updated_at",
         "#organisation": "organisation",
         "#orgSlug": "org_slug",
+        "#verificationStatus": "verification_status",
       };
       const customerValues: Record<string, string> = {
         ":entityType": "CUSTOMER",
@@ -157,6 +159,7 @@ export async function POST(request: Request) {
         ":updatedAt": submittedAt,
         ":organisation": SURVEY_ORGANISATION,
         ":orgSlug": SURVEY_ORGANISATION,
+        ":verificationStatus": "UNVERIFIED",
       };
 
       if (name) {

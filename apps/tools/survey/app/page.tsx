@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { getCountryOptions, getCountyOptions, getFeaturedCountryCodes, getSubdivisionLabel } from "./location-options";
 
 const danceGroups = {
   Salsa: ["Cuban", "Rueda", "LA", "New York"],
@@ -22,6 +23,14 @@ const substyleScale = [
   { value: "A favourite", shortLabel: "Favourite" },
 ] as const;
 const stages = ["Welcome", "Location", "Dance styles", "Learning", "Favourites", "Contact"];
+const countryOptions = getCountryOptions();
+const featuredCountryCodes = getFeaturedCountryCodes();
+const featuredCountryOptions = featuredCountryCodes
+  .map(code => countryOptions.find(country => country.code === code))
+  .filter(country => country !== undefined)
+  .sort((a, b) => a.name.localeCompare(b.name));
+const otherCountryOptions = countryOptions.filter(country => !featuredCountryCodes.includes(country.code));
+
 type FormData = {
   location: { countryFrom: string; countryCurrent: string; area: string };
   styles: Record<string, string>;
@@ -338,12 +347,57 @@ function Stage0() {
 }
 
 function Stage1({ data, update }: StageProps) {
+  const currentCountry = countryOptions.find(country => country.name === data.location.countryCurrent);
+  const countyOptions = getCountyOptions(currentCountry?.code ?? "");
+  const subdivisionLabel = getSubdivisionLabel(currentCountry?.code ?? "");
+
+  useEffect(() => {
+    if (!data.location.countryFrom && data.location.countryCurrent) {
+      update("location", { countryFrom: data.location.countryCurrent });
+    }
+  }, [data.location.countryCurrent, data.location.countryFrom, update]);
+
   return <div>
     <Eyebrow>Where are you from?</Eyebrow>
     <Title>Tell us about your corner of the world.</Title>
-    <Field label="What country are you from?"><input required value={data.location.countryFrom} onChange={e => update("location", { countryFrom: e.target.value })} /></Field>
-    <Field label="What country do you live in now?"><input required value={data.location.countryCurrent} onChange={e => update("location", { countryCurrent: e.target.value })} /></Field>
-    <Field label={`What area of ${data.location.countryCurrent || "that place"} do you live in?`}><input required value={data.location.area} onChange={e => update("location", { area: e.target.value })} />
+    <Field label="What country do you live in now?">
+      <select
+        required
+        value={data.location.countryCurrent}
+        onChange={e => {
+          const countryCurrent = e.target.value;
+          update("location", {
+            countryCurrent,
+            countryFrom: data.location.countryFrom || countryCurrent,
+            area: "",
+          });
+        }}
+      >
+        <option value="">Choose one…</option>
+        {featuredCountryOptions.map(country => <option key={country.code} value={country.name}>{country.name}</option>)}
+        <option disabled>──────────</option>
+        {otherCountryOptions.map(country => <option key={country.code} value={country.name}>{country.name}</option>)}
+      </select>
+    </Field>
+    {data.location.countryCurrent && (
+      <Field label={`What ${subdivisionLabel} of ${data.location.countryCurrent} do you live in?`}>
+        {countyOptions.length > 0 ? (
+          <select required value={data.location.area} onChange={e => update("location", { area: e.target.value })}>
+            <option value="">Choose one…</option>
+            {countyOptions.map(county => <option key={county.code} value={county.name}>{county.name}</option>)}
+          </select>
+        ) : (
+          <input required value={data.location.area} onChange={e => update("location", { area: e.target.value })} />
+        )}
+      </Field>
+    )}
+    <Field label="What country are you originally from?">
+      <select required value={data.location.countryFrom} onChange={e => update("location", { countryFrom: e.target.value })}>
+        <option value="">Choose one…</option>
+        {featuredCountryOptions.map(country => <option key={`from-featured-${country.code}`} value={country.name}>{country.name}</option>)}
+        <option disabled>──────────</option>
+        {otherCountryOptions.map(country => <option key={`from-${country.code}`} value={country.name}>{country.name}</option>)}
+      </select>
     </Field>
   </div>;
 }

@@ -8,8 +8,8 @@ import { ThemeVariables } from "./theme";
 const danceGroups = {
   Salsa: ["Cuban", "Rueda", "LA", "New York"],
   Bachata: ["Dominican", "Moderna", "Sensual"],
-  Kizomba: ["Traditional", "UrbanKiz"],
-  Other: ["Son", "Cha Cha", "Zouk"],
+  Kizomba: ["Traditional", "UrbanKiz", "Semba", "Tarraxinha"],
+  Other: ["Son", "Cha Cha", "Zouk", "Compa", "Merengue"],
 } as const;
 const categoryChoices = [
   { value: "unknown", label: "Don't know…", storedValue: "Don't know about this style" },
@@ -227,8 +227,8 @@ function Stage1({ data, update }: StageProps) {
 
   return <div>
     <Eyebrow>Where are you from?</Eyebrow>
-    <Title>Tell us about your corner of the world.</Title>
-    <Field label="What country do you live in now?">
+    <Title>Tell us about your corner(s) of the world.</Title>
+    <Field label="What do you live?">
       <select
         required
         value={data.location.countryCurrent}
@@ -259,7 +259,7 @@ function Stage1({ data, update }: StageProps) {
         )}
       </Field>
     )}
-    <Field label="What country are you originally from?">
+    <Field label="Where did you grow up?">
       <select required value={data.location.countryFrom} onChange={e => update("location", { countryFrom: e.target.value })}>
         <option value="">Choose one…</option>
         {featuredCountryOptions.map(country => <option key={`from-featured-${country.code}`} value={country.name}>{country.name}</option>)}

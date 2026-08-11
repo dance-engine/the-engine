@@ -150,3 +150,11 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
 - [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
 - [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+
+
+## Random Notes
+
+This Andreas picture 
+- https://content.danceengine.co.uk/rebel-sbk/organtisation/banner_overlay/bf8939e4-3bb2-4f70-af48-0314b89e860c.png
+- https://content.danceengine.co.uk/rebel-sbk/organtisation/banner/dd52af51-9695-40da-b779-c30b0ff086c0.jpg
+

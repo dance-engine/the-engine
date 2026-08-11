@@ -18,6 +18,7 @@ import { OrgProvider } from "@dance-engine/utils/OrgContext"
 import { isSuperAdmin } from "./lib/isSuperAdmin";
 import { LayoutSearchProvider } from "./components/LayoutSearchContext";
 import LayoutSearchInput from "./components/LayoutSearchInput";
+import { CurrentOrganisation } from "@dance-engine/ui/CurrentOrganisation";
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -60,7 +61,9 @@ export default async function ProtectedLayout({
         
         {/* Content */}
         <div className="min-[1150px]:pl-48">
-          <header className="sticky top-0 z-40 flex h-16 shrink-0 dark:bg-uberdark-background bg-white items-center gap-x-4 border-b border-gray-200 shadow-sm \
+          <div className="sticky top-0 z-40">
+          <CurrentOrganisation variant="mobile" />
+          <header className="flex h-16 shrink-0 dark:bg-uberdark-background bg-white items-center gap-x-4 border-b border-gray-200 shadow-sm \
           sm:gap-x-6 \
           px-4 sm:px-6 min-[1150px]:px-8">
             
@@ -78,6 +81,7 @@ export default async function ProtectedLayout({
               <ProfileControl/>
             </div>
           </header>
+          </div>
 
           <main className="py-4 sm:py-6 min-[1150px]:py-10">
             <div className=" #px-4 #sm:px-6 #lg:px-8">
@@ -106,5 +110,4 @@ export default async function ProtectedLayout({
     </html>
   );
 }
-
 

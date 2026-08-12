@@ -1,12 +1,16 @@
-import { headers } from "next/headers";
+import { draftMode, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { OrganisationType } from "@dance-engine/schemas/organisation";
 import Header from "@/components/header/Header";
 import DanceEngineFooter from "@/components/footer/DanceEngine";
 import SanityPage from "@/components/content/SanityPage";
-import { getPublishedContentPage } from "@/lib/sanity/content";
-import { getSanityProjectForOrganisation } from "@/lib/sanity/projects";
+import { getPreviewContentPage, getPublishedContentPage } from "@/lib/sanity/content";
+import {
+  getSanityPreviewToken,
+  getSanityProjectForOrganisation,
+  getSanityStudioUrl,
+} from "@/lib/sanity/projects";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -20,13 +24,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ContentPage({ params }: PageProps) {
-  const [{ slug }, requestHeaders] = await Promise.all([params, headers()]);
+  const [{ slug }, requestHeaders, draftModeStore] = await Promise.all([params, headers(), draftMode()]);
   const organisation = requestHeaders.get("x-site-org") || "default-org";
   const project = await getSanityProjectForOrganisation(organisation);
   if (!project) notFound();
 
+  const previewToken = draftModeStore.isEnabled
+    ? getSanityPreviewToken(project.projectId)
+    : null;
+  const studioUrl = draftModeStore.isEnabled ? getSanityStudioUrl() : null;
+  if (draftModeStore.isEnabled && (!previewToken || !studioUrl)) {
+    throw new Error(`Sanity preview is not fully configured for project ${project.projectId}`);
+  }
+
   const [page, orgResponse] = await Promise.all([
-    getPublishedContentPage(project, slug),
+    previewToken
+      ? getPreviewContentPage(project, slug, previewToken, studioUrl!)
+      : getPublishedContentPage(project, slug),
     fetch(`${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${organisation}/settings`, {
       next: { revalidate: 30, tags: [`org-settings-${organisation}`] },
     }),

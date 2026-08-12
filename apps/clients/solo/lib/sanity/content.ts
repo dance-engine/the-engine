@@ -104,6 +104,32 @@ export async function getPublishedContentPage(
   });
 }
 
+export async function getPreviewContentPage(
+  project: SanityProjectConfig,
+  slug: string,
+  token: string,
+  studioUrl: string,
+): Promise<SanityContentPage | null> {
+  const client = createClient({
+    projectId: project.projectId,
+    dataset: project.dataset,
+    apiVersion: "2026-08-01",
+    useCdn: false,
+    perspective: "drafts",
+    token,
+    stega: {
+      enabled: true,
+      studioUrl,
+    },
+  });
+
+  return client.fetch<SanityContentPage | null>(
+    pageQuery,
+    { slug },
+    { cache: "no-store" },
+  );
+}
+
 export async function getPublishedNavigationPages(
   project: SanityProjectConfig,
 ): Promise<SanityNavigationPage[]> {

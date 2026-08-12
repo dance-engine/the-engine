@@ -1,6 +1,7 @@
 import { PortableText } from "@portabletext/react";
 import imageUrlBuilder from "@sanity/image-url";
 import Link from "next/link";
+import { stegaClean } from "next-sanity";
 import type { PageSection, SanityContentPage } from "@/lib/sanity/content";
 import type { SanityProjectConfig } from "@/lib/sanity/projects";
 
@@ -68,21 +69,23 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
         </section>
       );
     case "imageTextSection": {
-      const imageFirst = section.imagePosition !== "right";
+      const imagePosition = stegaClean(section.imagePosition);
+      const imageAspectRatio = stegaClean(section.imageAspectRatio) || "original";
+      const imageFirst = imagePosition !== "right";
       const ratioDimensions = {
         original: undefined,
         "1:1": { width: 1200, height: 1200 },
         "9:16": { width: 900, height: 1600 },
         "16:9": { width: 1600, height: 900 },
         "4:3": { width: 1200, height: 900 },
-      }[section.imageAspectRatio || "original"];
+      }[imageAspectRatio];
       const imageRatioClass = {
         original: "",
         "1:1": "aspect-square",
         "9:16": "aspect-[9/16]",
         "16:9": "aspect-video",
         "4:3": "aspect-[4/3]",
-      }[section.imageAspectRatio || "original"];
+      }[imageAspectRatio];
       const imageClassName = `w-full rounded-2xl object-cover ${imageRatioClass}`;
       let imageUrl = section.image?.asset?.url;
       if (section.image?.asset?._ref) {
@@ -97,7 +100,7 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
           <div className="mx-auto grid max-w-6xl items-start gap-10 md:grid-cols-2">
             {imageUrl && (
               section.imageHref ? (
-                <Link href={section.imageHref} className={`block rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light ${imageFirst ? "md:order-1" : "md:order-2"}`}>
+                <Link href={stegaClean(section.imageHref)} className={`block rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light ${imageFirst ? "md:order-1" : "md:order-2"}`}>
                   <img src={imageUrl} alt={section.image?.alt || ""} className={`${imageClassName} transition hover:opacity-90`} />
                 </Link>
               ) : (
@@ -118,7 +121,7 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
           <div className="mx-auto max-w-3xl">
             {section.heading && <h2 className="text-3xl font-bold">{section.heading}</h2>}
             {section.body && <p className="mt-4 text-white/80">{section.body}</p>}
-            {section.label && section.href && <Link href={section.href} className="mt-7 inline-flex rounded-lg bg-[#ce037d] px-5 py-3 font-semibold text-white transition hover:bg-[#a90267]">{section.label}</Link>}
+            {section.label && section.href && <Link href={stegaClean(section.href)} className="mt-7 inline-flex rounded-lg bg-[#ce037d] px-5 py-3 font-semibold text-white transition hover:bg-[#a90267]">{section.label}</Link>}
           </div>
         </section>
       );

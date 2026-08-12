@@ -1,4 +1,5 @@
-import { headers } from 'next/headers';
+import { draftMode, headers } from 'next/headers';
+import { VisualEditing } from 'next-sanity/visual-editing';
 import { Geist, Geist_Mono, Luckiest_Guy, Oswald, Yesteryear, Caveat_Brush, Reenie_Beanie, Shadows_Into_Light_Two} from "next/font/google";
 import "./globals.css";
 
@@ -70,11 +71,13 @@ const domainConfig: Record<string, { title: string; favicon: string }> = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const draftModeStore = await draftMode();
+
   return (
     <html lang="en">
       <body
@@ -83,6 +86,7 @@ export default function RootLayout({
         antialiased min-h-full`}
       >
         {children}
+        {draftModeStore.isEnabled && <VisualEditing />}
       </body>
     </html>
   )

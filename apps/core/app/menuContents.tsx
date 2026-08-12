@@ -52,7 +52,7 @@ export const getMenuContents = (isSuperAdmin = false): MenuSection[] => [
       },
       {
         title: "Website",
-        link: "/content",
+        link: "/content/presentation",
         icon: <LuPanelsTopLeft className="size-6"/>
       },
       // { 

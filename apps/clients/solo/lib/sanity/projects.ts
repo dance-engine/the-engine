@@ -73,3 +73,37 @@ export async function isKnownSanityProject(
       project.dataset === dataset,
   );
 }
+
+export function getSanityPreviewToken(projectId: string): string | null {
+  if (!process.env.SANITY_PREVIEW_TOKENS_JSON) return null;
+
+  try {
+    const tokens = JSON.parse(process.env.SANITY_PREVIEW_TOKENS_JSON) as Record<string, unknown>;
+    const token = tokens[projectId];
+    return typeof token === "string" && token.length > 0 ? token : null;
+  } catch {
+    console.error("SANITY_PREVIEW_TOKENS_JSON is not valid JSON");
+    return null;
+  }
+}
+
+export function getSanityStudioUrl(): string | null {
+  const configuredUrl = process.env.SANITY_STUDIO_URL;
+  const value = configuredUrl || (
+    process.env.NODE_ENV === "development"
+      ? "https://local.danceengine.co.uk/content"
+      : null
+  );
+
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.toString()
+      : null;
+  } catch {
+    console.error("SANITY_STUDIO_URL is not a valid URL");
+    return null;
+  }
+}

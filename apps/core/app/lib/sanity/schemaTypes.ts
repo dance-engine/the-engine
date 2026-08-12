@@ -156,7 +156,7 @@ const page = defineType({
       type: "reference",
       to: [{ type: "site" }],
       hidden: true,
-      initialValue: { _ref: "site-primary", _type: "reference" },
+      initialValue: { _ref: "site-primary" },
       validation: (rule) => rule.required(),
     }),
     defineField({ name: "title", title: "Page title", type: "string", validation: (rule) => rule.required() }),

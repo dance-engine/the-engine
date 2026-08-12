@@ -14,7 +14,10 @@ export async function middleware(request: NextRequest) {
   const edgeDomainToOrgMap = soloEdgeConfig?.domains ? toDomainLookupMap(soloEdgeConfig.domains) : null;
   const edgeOrgToThemeMap = soloEdgeConfig?.themes ? toDomainLookupMap(soloEdgeConfig.themes) : null;
 
-  const org = edgeDomainToOrgMap?.[hostname] || 'default-org';
+  const localOrganisation = process.env.NODE_ENV === 'development'
+    ? hostname.match(/^([a-z0-9]+(?:-[a-z0-9]+)*)\.localhost$/)?.[1]
+    : null;
+  const org = localOrganisation || edgeDomainToOrgMap?.[hostname] || 'default-org';
   const theme = edgeOrgToThemeMap?.[org] || 'default';
 
   // Redirect at the edge before route rendering to avoid first-paint flashes.

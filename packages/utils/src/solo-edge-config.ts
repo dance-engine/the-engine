@@ -14,6 +14,10 @@ export type SoloEdgeConfig = {
 type DomainGroups = Record<string, string[]>;
 
 export const getSoloEdgeConfig = async (): Promise<SoloEdgeConfig | null> => {
+  if (!process.env.EDGE_CONFIG) {
+    return null;
+  }
+
   try {
     const edgeConfig = await get<SoloEdgeConfig>("solo");
     return edgeConfig ?? null;

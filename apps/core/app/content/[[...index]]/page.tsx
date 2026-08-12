@@ -1,6 +1,9 @@
 import { currentUser } from "@clerk/nextjs/server";
 import ContentStudio from "./Studio";
-import { getSanityProjectForOrganisation } from "../../lib/sanity/projects";
+import {
+  getSanityPreviewOrigin,
+  getSanityProjectForOrganisation,
+} from "../../lib/sanity/projects";
 
 export default async function ContentPage() {
   const user = await currentUser();
@@ -14,7 +17,9 @@ export default async function ContentPage() {
   if (!activeOrg) return <SetupMessage title="Select an organisation" body="Choose an organisation before opening website content." />;
   if (!project) return <SetupMessage title="Website content is not enabled" body={`${activeOrg} does not have a Sanity project configured yet.`} />;
 
-  return <div className="h-full min-h-0 overflow-hidden"><ContentStudio {...project} /></div>;
+  const previewOrigin = await getSanityPreviewOrigin(activeOrg);
+
+  return <div className="h-full min-h-0 overflow-hidden"><ContentStudio {...project} previewOrigin={previewOrigin} /></div>;
 }
 
 function SetupMessage({ title, body }: { title: string; body: string }) {

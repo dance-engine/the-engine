@@ -68,6 +68,28 @@
             "type": "string",
             "format": "uri"
           }
+        },
+        "sanityProjects": {
+          "type": "object",
+          "description": "Maps Dance Engine organisation slugs to their Sanity project and dataset.",
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["projectId", "dataset"],
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+$"
+              },
+              "dataset": {
+                "type": "string",
+                "pattern": "^[a-z0-9_-]+$"
+              }
+            }
+          }
         }
       }
     }

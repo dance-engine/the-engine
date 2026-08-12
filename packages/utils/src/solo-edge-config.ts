@@ -5,6 +5,10 @@ export type SoloEdgeConfig = {
   domains?: Record<string, string[]>;
   themes?: Record<string, string[]>;
   accountUrls?: Record<string, string>;
+  sanityProjects?: Record<string, {
+    projectId: string;
+    dataset: string;
+  }>;
 };
 
 type DomainGroups = Record<string, string[]>;

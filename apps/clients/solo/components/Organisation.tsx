@@ -21,7 +21,7 @@ export default function Organisation({ fallbackData, org, theme}: { fallbackData
     { data.events.map((event: EventTypeExtended) => {
       return <div key={event.ksuid} className='flex items-center justify-between gap-4 w-full mb-2'>
         <h2 className='text-xl'>{event.name}</h2>
-        <Link href={`/${event.ksuid}`} className='rounded bg-cerise-logo px-4 py-1 text-white'>
+        <Link href={`/events/${event.ksuid}`} className='rounded bg-cerise-logo px-4 py-1 text-white'>
           View
         </Link>
       </div>

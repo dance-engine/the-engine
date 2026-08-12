@@ -63,7 +63,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
 
               return (
                 <div key={event.ksuid} className="flex-[0_0_88%] sm:flex-[0_0_52%] lg:flex-[0_0_38%] max-w-64 ">
-                  <Link href={`/${event.ksuid}`} style={{'--image-url': `url(${event.banner})`} as React.CSSProperties} 
+                  <Link href={`/events/${event.ksuid}`} style={{'--image-url': `url(${event.banner})`} as React.CSSProperties}
                     className='mb-12 rounded-lg bg-[image:var(--image-url)] flex items-end bg-cover bg-center aspect-square min-w-0 w-full max-h-64'>
                     <div className='p-3 w-full bg-black/50'>
                       {event.category && <div className='flex gap-1 flex-wrap'>

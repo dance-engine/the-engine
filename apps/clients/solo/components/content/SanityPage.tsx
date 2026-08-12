@@ -16,18 +16,48 @@ export default function SanityPage({ page, project }: { page: SanityContentPage;
 
 function Section({ section, project }: { section: PageSection; project: SanityProjectConfig }) {
   switch (section._type) {
-    case "heroSection":
+    case "heroSection": {
+      let imageUrl = section.image?.asset?.url;
+      if (section.image?.asset?._ref) {
+        imageUrl = imageUrlBuilder(project)
+          .image(section.image)
+          .width(2000)
+          .fit("max")
+          .auto("format")
+          .url();
+      }
+
+      const crop = section.image?.crop;
+      const hotspot = section.image?.hotspot;
+      const visibleWidth = 1 - (crop?.left || 0) - (crop?.right || 0);
+      const visibleHeight = 1 - (crop?.top || 0) - (crop?.bottom || 0);
+      const hotspotX = hotspot && visibleWidth > 0
+        ? ((hotspot.x - (crop?.left || 0)) / visibleWidth) * 100
+        : 50;
+      const hotspotY = hotspot && visibleHeight > 0
+        ? ((hotspot.y - (crop?.top || 0)) / visibleHeight) * 100
+        : 50;
+      const objectPosition = `${Math.min(100, Math.max(0, hotspotX))}% ${Math.min(100, Math.max(0, hotspotY))}%`;
+
       return (
-        <section
-          className="relative isolate flex min-h-80 items-end overflow-hidden bg-[#01164d] px-6 py-16 text-white sm:px-10"
-          style={section.image?.asset?.url ? { backgroundImage: `linear-gradient(rgb(0 5 34 / 55%), rgb(0 5 34 / 80%)), url(${section.image.asset.url})`, backgroundPosition: "center", backgroundSize: "cover" } : undefined}
-        >
+        <section className="relative isolate flex min-h-80 items-end overflow-hidden bg-[#01164d] px-6 py-16 text-white sm:px-10">
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 -z-20 size-full object-cover"
+              style={{ objectPosition }}
+            />
+          )}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[rgb(0_5_34_/_55%)] to-[rgb(0_5_34_/_80%)]" />
           <div className="mx-auto w-full max-w-4xl">
             {section.heading && <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">{section.heading}</h1>}
             {section.body && <p className="mt-5 max-w-2xl text-lg text-white/85">{section.body}</p>}
           </div>
         </section>
       );
+    }
     case "richTextSection":
       return (
         <section className="px-6 py-14 sm:px-10">

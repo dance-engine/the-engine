@@ -83,10 +83,12 @@ function createPublishedClient(project: SanityProjectConfig) {
     projectId: project.projectId,
     dataset: project.dataset,
     apiVersion: "2026-08-01",
-    useCdn: true,
+    useCdn: process.env.NODE_ENV !== "development",
     perspective: "published",
   });
 }
+
+const publishedContentRevalidate = process.env.NODE_ENV === "development" ? 0 : 60;
 
 export async function getPublishedContentPage(
   project: SanityProjectConfig,
@@ -96,7 +98,7 @@ export async function getPublishedContentPage(
 
   return client.fetch<SanityContentPage | null>(pageQuery, { slug }, {
     next: {
-      revalidate: 60,
+      revalidate: publishedContentRevalidate,
       tags: [`sanity-page:${project.projectId}:${slug}`],
     },
   });
@@ -110,7 +112,7 @@ export async function getPublishedNavigationPages(
     {},
     {
       next: {
-        revalidate: 60,
+        revalidate: publishedContentRevalidate,
         tags: [`sanity-navigation:${project.projectId}`],
       },
     },

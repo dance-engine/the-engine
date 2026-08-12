@@ -30,6 +30,21 @@ function getEnvironmentProject(organisation: string): SanityProjectConfig | null
   }
 }
 
+function getEnvironmentProjects(): Record<string, SanityProjectConfig> {
+  if (!process.env.SANITY_PROJECTS_JSON) return {};
+
+  try {
+    const projects = JSON.parse(process.env.SANITY_PROJECTS_JSON) as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.entries(projects).filter(
+        (entry): entry is [string, SanityProjectConfig] => isSanityProjectConfig(entry[1]),
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
+
 export async function getSanityProjectForOrganisation(
   organisation: string,
 ): Promise<SanityProjectConfig | null> {
@@ -39,4 +54,22 @@ export async function getSanityProjectForOrganisation(
   return isSanityProjectConfig(project)
     ? project
     : getEnvironmentProject(organisation);
+}
+
+export async function isKnownSanityProject(
+  projectId: string,
+  dataset: string,
+): Promise<boolean> {
+  const edgeConfig = await getSoloEdgeConfig() as EdgeConfigWithSanityProjects | null;
+  const configuredProjects = [
+    ...Object.values(edgeConfig?.sanityProjects || {}),
+    ...Object.values(getEnvironmentProjects()),
+  ];
+
+  return configuredProjects.some(
+    (project) =>
+      isSanityProjectConfig(project) &&
+      project.projectId === projectId &&
+      project.dataset === dataset,
+  );
 }

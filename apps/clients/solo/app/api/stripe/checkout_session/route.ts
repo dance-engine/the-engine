@@ -143,8 +143,8 @@ export async function POST(req: Request) {
           {
             "collect_customer_on_stripe": true,
             "coupon_code": couponCode || undefined,
-            "success_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}/success`,
-            "cancel_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/${eventKsuid}`,
+            "success_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/events/${eventKsuid}/success`,
+            "cancel_url": `${getUrlOfAccount(org.account_id || '', accountUrls)}/events/${eventKsuid}`,
             "application_fee_amount": isAndreas ? 0 : platformCharge,
             "stripe_account_id": org.account_id || 'acct_1Ry9rvDqtDds31FK',
             "line_items": line_items

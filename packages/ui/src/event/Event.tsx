@@ -427,7 +427,7 @@ export default function Event({
             />
             <div className="py-0 -z-10 opacity-50 mx-auto max-w-7xl">
               <NextLink
-                href={`/${previousEventKsuid}/media`}
+                href={`/events/${previousEventKsuid}/media`}
                 className="inline-block text-lg font-bold z-40 bg-black text-white rounded-b px-4 py-2 m-0"
               >
                 View all previous event photos
@@ -454,7 +454,7 @@ export default function Event({
                   This event has already taken place. Check out photos from the event below.
                 </p>
                 <NextLink
-                  href={`/${eventKsuid}/media`}
+                  href={`/events/${eventKsuid}/media`}
                   className="inline-block px-8 py-3 font-semibold rounded-lg transition-colors mb-12"
                   style={{
                     background: "#fff",

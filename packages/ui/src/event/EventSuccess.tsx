@@ -85,7 +85,7 @@ export default function EventSuccessExperience({
 
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link
-                  href={`/${eventKsuid}?layout=v2`}
+                  href={`/events/${eventKsuid}?layout=v2`}
                   className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition"
                   style={{
                     backgroundColor: "var(--highlight-color)",

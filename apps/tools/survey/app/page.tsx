@@ -36,14 +36,19 @@ type FormData = {
   location: { countryFrom: string; countryCurrent: string; area: string };
   styles: Record<string, string>;
   learning: { teacher: number; practice: number; social: number; lessonCurrency: string; lessonPrice: string; monthlyDanceSpendCurrency: string; monthlyDanceSpend: string; learningSource: string; congresses: string };
-  favourites: { teacher: string; event: string; song: string };
+  favourites: {
+    teacher: string;
+    event: string;
+    song: string;
+    musicMix: { salsa: number; bachata: number; kizomba: number; policy: string };
+  };
   contact: { wantsUpdates: string; name: string; email: string; phone: string };
 };
 type StageProps = {
   data: FormData;
   update: <K extends keyof FormData>(section: K, values: Partial<FormData[K]>) => void;
 };
-const initial: FormData = { location: { countryFrom: "", countryCurrent: "", area: "" }, styles: {}, learning: { teacher: 0, practice: 0, social: 0, lessonCurrency: "GBP", lessonPrice: "", monthlyDanceSpendCurrency: "GBP", monthlyDanceSpend: "", learningSource: "", congresses: "" }, favourites: { teacher: "", event: "", song: "" }, contact: { wantsUpdates: "", name: "", email: "", phone: "" } };
+const initial: FormData = { location: { countryFrom: "", countryCurrent: "", area: "" }, styles: {}, learning: { teacher: 0, practice: 0, social: 0, lessonCurrency: "GBP", lessonPrice: "", monthlyDanceSpendCurrency: "GBP", monthlyDanceSpend: "", learningSource: "", congresses: "" }, favourites: { teacher: "", event: "", song: "", musicMix: { salsa: 0, bachata: 0, kizomba: 0, policy: "" } }, contact: { wantsUpdates: "", name: "", email: "", phone: "" } };
 const STORAGE_KEY = "dance-survey-draft-v1";
 
 const styleKey = (group: string, substyle: string) => `${group}: ${substyle}`;
@@ -79,7 +84,11 @@ export default function Survey() {
           location: { ...initial.location, ...draft.location },
           styles: migrateStyleKeys(draft.styles),
           learning: { ...initial.learning, ...draft.learning },
-          favourites: { ...initial.favourites, ...draft.favourites },
+          favourites: {
+            ...initial.favourites,
+            ...draft.favourites,
+            musicMix: { ...initial.favourites.musicMix, ...draft.favourites?.musicMix },
+          },
           contact: { ...initial.contact, ...draft.contact },
         });
         setDraftStatus("saved");
@@ -415,6 +424,24 @@ function Stage3({ data, update }: StageProps) {
 }
 
 function Stage4({ data, update }: StageProps) {
+  const musicStyles = [
+    ["salsa", "Salsa"],
+    ["bachata", "Bachata"],
+    ["kizomba", "Kizomba"],
+  ] as const;
+  const musicMix = data.favourites.musicMix;
+  const setMusicMix = (style: "salsa" | "bachata" | "kizomba", value: number) => {
+    const next = { ...musicMix, [style]: value };
+    update("favourites", {
+      musicMix: {
+        ...next,
+        policy: next.salsa && next.bachata && next.kizomba
+          ? `${next.salsa}:${next.bachata}:${next.kizomba}`
+          : "",
+      },
+    });
+  };
+
   return <div>
     <Eyebrow>What’s your favourite?</Eyebrow>
     <Title>Share the names you’d recommend.</Title>
@@ -427,6 +454,48 @@ function Stage4({ data, update }: StageProps) {
     <Field label="Favourite song or band">
       <input  value={data.favourites.song} onChange={e => update("favourites", { song: e.target.value })} />
     </Field>
+    <fieldset className="mt-8 rounded-2xl border border-[var(--sbk-border-soft)] p-5">
+      <legend className="px-1 font-bold">What is your favourite event music mix?</legend>
+      <p className="mt-1 text-sm text-[var(--sbk-text-subtle)]">
+        Give each core style a value from 1 to 4. We’ll show the result as Salsa:Bachata:Kizomba.
+      </p>
+      <div className="mt-5 space-y-4">
+        {musicStyles.map(([key, label]) => (
+          <fieldset key={key}>
+            <legend className="mb-2 font-bold">{label}</legend>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 4].map(value => (
+                <label
+                  key={value}
+                  className={`grid min-h-11 cursor-pointer place-items-center rounded-xl border font-bold transition-colors ${
+                    musicMix[key] === value
+                      ? "border-[var(--sbk-primary)] bg-[var(--sbk-primary)] text-[var(--sbk-on-aside)]"
+                      : "border-[var(--sbk-border)] bg-[var(--sbk-input)] hover:bg-[var(--sbk-hover)]"
+                  }`}
+                >
+                  <input
+                    className="sr-only"
+                    type="radio"
+                    required
+                    name={`music-mix-${key}`}
+                    value={value}
+                    checked={musicMix[key] === value}
+                    onChange={() => setMusicMix(key, value)}
+                  />
+                  {value}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+      <div className="mt-5 flex items-center justify-between rounded-xl bg-[var(--sbk-primary-soft)] px-4 py-3">
+        <span className="text-sm font-bold text-[var(--sbk-primary-soft-text)]">Your music policy</span>
+        <output className="text-xl font-black text-[var(--sbk-primary-soft-text)]">
+          {musicMix.policy || "–:–:–"}
+        </output>
+      </div>
+    </fieldset>
   </div>;
 }
 

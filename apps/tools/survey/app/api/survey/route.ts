@@ -42,6 +42,12 @@ function stringValue(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function musicMixValue(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 4
+    ? value
+    : null;
+}
+
 function slugify(value: string): string {
   return value
     .trim()
@@ -92,6 +98,16 @@ export async function POST(request: Request) {
     const phone = stringValue(contact.phone);
     const hasCustomer = Boolean(email);
 
+    const favourites = isJsonObject(body.favourites) ? body.favourites : {};
+    const submittedMusicMix = isJsonObject(favourites.musicMix) ? favourites.musicMix : {};
+    const salsa = musicMixValue(submittedMusicMix.salsa);
+    const bachata = musicMixValue(submittedMusicMix.bachata);
+    const kizomba = musicMixValue(submittedMusicMix.kizomba);
+
+    if (salsa === null || bachata === null || kizomba === null) {
+      return invalidResponse("Please choose a music mix value from 1 to 4 for Salsa, Bachata and Kizomba.");
+    }
+
     if (hasCustomer && !email.includes("@")) {
       return invalidResponse("Please enter a valid email address.");
     }
@@ -101,6 +117,15 @@ export async function POST(request: Request) {
     const surveyKey = `SURVEY#${ksuid}`;
     const customerKey = hasCustomer ? `CUSTOMER#${email}` : undefined;
     const { contact: _contact, ...surveyAnswers } = body;
+    surveyAnswers.favourites = {
+      ...favourites,
+      musicMix: {
+        salsa,
+        bachata,
+        kizomba,
+        policy: `${salsa}:${bachata}:${kizomba}`,
+      },
+    };
 
     const transactItems: NonNullable<
       TransactWriteCommandInput["TransactItems"]
@@ -116,7 +141,7 @@ export async function POST(request: Request) {
             entity_type: "SURVEY_RESPONSE",
             wantsUpdates,
             submittedAt,
-            schemaVersion: 2,
+            schemaVersion: 3,
           },
           ConditionExpression:
             "attribute_not_exists(PK) AND attribute_not_exists(SK)",

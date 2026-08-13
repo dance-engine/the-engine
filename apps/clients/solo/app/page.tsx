@@ -76,7 +76,8 @@ export default async function IndexPage() {
             'default': null,
           }[orgSlug || 'default'] || null}
 
-          <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
+          {/* <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}> */}
+          <div className=' w-full px-4 lg:px-0 flex justify-center' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
             
               <div className={
                 `max-w-4xl w-4xl px-4 lg:px-0 py-12 \

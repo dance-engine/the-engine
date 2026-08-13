@@ -18,7 +18,7 @@ export default function SanityPage({ page, project }: { page: SanityContentPage;
   );
 }
 
-function Section({ section, project }: { section: PageSection; project: SanityProjectConfig }) {
+function Section({ section, project, compact = false }: { section: PageSection; project: SanityProjectConfig; compact?: boolean }) {
   switch (section._type) {
     case "heroSection": {
       let imageUrl = section.image?.asset?.url;
@@ -64,7 +64,7 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
     }
     case "richTextSection":
       return (
-        <section className="px-6 py-14 sm:px-10">
+        <section className={compact ? "h-full bg-slate-50 p-6" : "px-6 py-14 sm:px-10"}>
           <div className="prose prose-slate mx-auto max-w-4xl">
             {section.heading && <h2>{section.heading}</h2>}
             {section.body && <PortableText value={section.body} />}
@@ -80,6 +80,7 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
         "1:1": { width: 1200, height: 1200 },
         "9:16": { width: 900, height: 1600 },
         "16:9": { width: 1600, height: 900 },
+        "3:1": { width: 1800, height: 600 },
         "4:3": { width: 1200, height: 900 },
       }[imageAspectRatio];
       const imageRatioClass = {
@@ -87,6 +88,7 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
         "1:1": "aspect-square",
         "9:16": "aspect-[9/16]",
         "16:9": "aspect-video",
+        "3:1": "aspect-[3/1]",
         "4:3": "aspect-[4/3]",
       }[imageAspectRatio];
       const imageClassName = `w-full rounded-2xl object-cover ${imageRatioClass}`;
@@ -99,8 +101,8 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
         imageUrl = imageBuilder.url();
       }
       return (
-        <section className="bg-slate-50 px-6 py-14 sm:px-10">
-          <div className="mx-auto grid max-w-6xl items-start gap-10 md:grid-cols-2">
+        <section className={compact ? "h-full bg-slate-50 p-6" : "bg-slate-50 px-6 py-14 sm:px-10"}>
+          <div className={`mx-auto grid max-w-6xl items-start ${compact ? "gap-6" : "gap-10 md:grid-cols-2"}`}>
             {imageUrl && (
               section.imageHref ? (
                 <Link href={stegaClean(section.imageHref)} className={`block rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light ${imageFirst ? "md:order-1" : "md:order-2"}`}>
@@ -118,9 +120,63 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
         </section>
       );
     }
+    case "imageSection": {
+      const aspectRatio = stegaClean(section.aspectRatio) || "original";
+      const ratioDimensions = {
+        original: undefined,
+        "1:1": { width: 1600, height: 1600 },
+        "9:16": { width: 900, height: 1600 },
+        "16:9": { width: 1600, height: 900 },
+        "3:1": { width: 1800, height: 600 },
+        "4:3": { width: 1600, height: 1200 },
+      }[aspectRatio];
+      const ratioClass = {
+        original: "",
+        "1:1": "aspect-square object-cover",
+        "9:16": "aspect-[9/16] object-cover",
+        "16:9": "aspect-video object-cover",
+        "3:1": "aspect-[3/1] object-cover",
+        "4:3": "aspect-[4/3] object-cover",
+      }[aspectRatio];
+      let imageUrl = section.image?.asset?.url;
+      if (section.image?.asset?._ref) {
+        let builder = imageUrlBuilder(project)
+          .image(section.image)
+          .auto("format");
+        builder = ratioDimensions
+          ? builder.width(ratioDimensions.width).height(ratioDimensions.height).fit("crop")
+          : builder.width(2000).fit("max");
+        imageUrl = builder.url();
+      }
+
+      if (!imageUrl) return null;
+
+      const image = (
+        <img
+          src={imageUrl}
+          alt={section.image?.alt || ""}
+          className={compact
+            ? `h-full w-full object-cover ${ratioClass}`
+            : `h-auto w-full ${ratioClass}`}
+        />
+      );
+
+      return (
+        <section className={compact ? "h-full bg-white" : "w-full bg-white"}>
+          {section.href ? (
+            <Link
+              href={stegaClean(section.href)}
+              className="block h-full w-full focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light"
+            >
+              {image}
+            </Link>
+          ) : image}
+        </section>
+      );
+    }
     case "callToActionSection":
       return (
-        <section className="bg-[#01164d] px-6 py-14 text-center text-white sm:px-10">
+        <section className={`bg-[#01164d] px-6 text-center text-white ${compact ? "h-full py-8" : "py-14 sm:px-10"}`}>
           <div className="mx-auto max-w-3xl">
             {section.heading && <h2 className="text-3xl font-bold">{section.heading}</h2>}
             {section.body && <p className="mt-4 text-white/80">{section.body}</p>}
@@ -233,12 +289,14 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
                 return (
                   <figure key={testimonial._id} className="flex h-full flex-col rounded-2xl bg-white/10 p-6 ring-1 ring-white/15">
                     <blockquote className="flex-1">
-                      <p className="text-xl font-semibold leading-snug text-white">“{testimonial.shortQuote}”</p>
                       {testimonial.quote && (
-                        <div className="prose prose-sm prose-invert mt-5 text-white/75 prose-p:my-2">
+                        <div className="prose prose-sm prose-invert text-white/75 prose-p:my-2">
                           <PortableText value={testimonial.quote} />
                         </div>
                       )}
+                      <p className="mt-5 border-l-4 border-cerise-logo bg-white/10 px-4 py-3 text-xl font-semibold leading-snug text-white">
+                        “{testimonial.shortQuote}”
+                      </p>
                     </blockquote>
                     <figcaption className="mt-6 border-t border-white/15 pt-5 text-white/85">
                       {testimonial.link ? (
@@ -248,6 +306,51 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
                       ) : attribution}
                     </figcaption>
                   </figure>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    }
+    case "sectionGrid": {
+      const columns = stegaClean(section.maxColumns) || 3;
+      const gridColumns = {
+        2: "sm:grid-cols-2",
+        3: "sm:grid-cols-2 lg:grid-cols-3",
+        4: "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+        5: "sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5",
+      }[columns];
+
+      if (!section.items?.length) return null;
+
+      return (
+        <section className="bg-white px-6 py-14 sm:px-10">
+          <div className="mx-auto max-w-7xl">
+            {(section.heading || section.body) && (
+              <div className="mx-auto mb-10 max-w-3xl text-center">
+                {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
+                {section.body && <p className="mt-4 text-slate-600">{section.body}</p>}
+              </div>
+            )}
+            <div className={`grid grid-cols-1 gap-6 ${gridColumns}`}>
+              {section.items.map((item) => {
+                const imageRatio = item._type === "imageSection"
+                  ? stegaClean(item.aspectRatio) || "original"
+                  : null;
+                const spanClass = item._type === "threeColumnCalloutSection" || imageRatio === "16:9" || imageRatio === "3:1"
+                  ? "sm:col-span-2"
+                  : imageRatio === "9:16"
+                    ? "sm:row-span-2"
+                    : "";
+
+                return (
+                  <div
+                    key={item._key}
+                    className={`h-full min-w-0 [&>section]:flex [&>section]:h-full [&>section]:w-full [&>section]:items-center [&>section>div]:w-full ${spanClass}`}
+                  >
+                    <Section section={item} project={project} compact />
+                  </div>
                 );
               })}
             </div>

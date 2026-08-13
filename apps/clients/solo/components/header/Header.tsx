@@ -12,7 +12,7 @@ const Header = async ({org}:{org: OrganisationType}) => {
   const pages = project ? await getPublishedNavigationPages(project) : [];
 
   return (
-    <header className='w-full bg-black text-white'>
+    <header className='relative w-full bg-black text-white'>
       <div className="flex justify-center">
         <div className='max-w-4xl w-4xl px-4 uppercase font-black lg:px-0 py-3 '>
           {

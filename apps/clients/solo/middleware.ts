@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   const edgeOrgToThemeMap = soloEdgeConfig?.themes ? toDomainLookupMap(soloEdgeConfig.themes) : null;
 
   const localOrganisation = process.env.NODE_ENV === 'development'
-    ? hostname.match(/^([a-z0-9]+(?:-[a-z0-9]+)*)\.localhost$/)?.[1]
+    ? hostname.match(/^(?:www\.)?([a-z0-9]+(?:-[a-z0-9]+)*)\.localhost$/)?.[1]
     : null;
   const org = localOrganisation || edgeDomainToOrgMap?.[hostname] || 'default-org';
   const theme = edgeOrgToThemeMap?.[org] || 'default';

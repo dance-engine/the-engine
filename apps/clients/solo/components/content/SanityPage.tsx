@@ -2,7 +2,10 @@ import { PortableText } from "@portabletext/react";
 import imageUrlBuilder from "@sanity/image-url";
 import Link from "next/link";
 import { stegaClean } from "next-sanity";
-import type { PageSection, SanityContentPage } from "@/lib/sanity/content";
+import type { IconType } from "react-icons";
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { LuAtSign } from "react-icons/lu";
+import type { PageSection, SanityContentPage, SocialProfile, Testimonial } from "@/lib/sanity/content";
 import type { SanityProjectConfig } from "@/lib/sanity/projects";
 
 export default function SanityPage({ page, project }: { page: SanityContentPage; project: SanityProjectConfig }) {
@@ -125,6 +128,133 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
           </div>
         </section>
       );
+    case "threeColumnCalloutSection":
+      return (
+        <section className="bg-[#1d1719] px-6 py-10 text-white sm:px-10">
+          <div className="mx-auto grid max-w-6xl items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)_minmax(9rem,0.8fr)] md:gap-12">
+            <div>
+              {section.heading && (
+                <h2 className="inline box-decoration-clone bg-cerise-logo px-2 py-1 text-3xl font-black uppercase leading-[1.05] text-[#1d1719] sm:text-4xl">
+                  {section.heading}
+                </h2>
+              )}
+            </div>
+            {section.body && (
+              <div className="prose prose-invert max-w-none text-white/85 prose-p:my-2 prose-p:leading-relaxed">
+                <PortableText value={section.body} />
+              </div>
+            )}
+            <div className="md:text-right">
+              {section.label && section.href && (
+                <Link
+                  href={stegaClean(section.href)}
+                  className="inline-flex rounded-sm bg-lime-300 px-5 py-3 text-sm font-bold uppercase tracking-wide text-slate-950 transition hover:bg-lime-200"
+                >
+                  {section.label}
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+      );
+    case "socialMediaSection": {
+      const iconStyle = stegaClean(section.iconStyle) || "colour";
+      const profiles = section.profiles?.filter(isSocialProfile) || [];
+      if (profiles.length === 0) return null;
+
+      return (
+        <section className="bg-slate-100 px-6 py-14 sm:px-10">
+          <div className="mx-auto max-w-5xl text-center">
+            {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
+            {section.body && <p className="mx-auto mt-4 max-w-2xl text-slate-600">{section.body}</p>}
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              {profiles.map((profile) => {
+                const platform = stegaClean(profile.platform);
+                const Icon = socialPlatformIcon(platform);
+                return (
+                  <a
+                    key={profile._id}
+                    href={stegaClean(profile.url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${profile.label} on ${socialPlatformLabel(platform)}`}
+                    className="group inline-flex items-center gap-2 px-3 py-2 font-semibold text-slate-950 transition hover:text-cerise-on-light"
+                  >
+                    <Icon
+                      aria-hidden="true"
+                      className={`size-6 transition group-hover:scale-110 ${socialIconColour(platform, iconStyle)}`}
+                    />
+                    <span>{profile.label}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    }
+    case "testimonialsSection": {
+      const testimonials = section.testimonials?.filter(isTestimonial) || [];
+      if (testimonials.length === 0) return null;
+
+      return (
+        <section className="bg-[#01164d] px-6 py-16 text-white sm:px-10">
+          <div className="mx-auto max-w-6xl">
+            <div className="mx-auto max-w-3xl text-center">
+              {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
+              {section.body && <p className="mt-4 text-white/75">{section.body}</p>}
+            </div>
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((testimonial) => {
+                let imageUrl = testimonial.image?.asset?.url;
+                if (testimonial.image?.asset?._ref) {
+                  imageUrl = imageUrlBuilder(project)
+                    .image(testimonial.image)
+                    .width(240)
+                    .height(240)
+                    .fit("crop")
+                    .auto("format")
+                    .url();
+                }
+
+                const attribution = (
+                  <span className="inline-flex items-center gap-3">
+                    {imageUrl && (
+                      <img
+                        src={imageUrl}
+                        alt={testimonial.image?.alt || ""}
+                        className="size-12 rounded-full object-cover"
+                      />
+                    )}
+                    <span className="font-semibold">{testimonial.name}</span>
+                  </span>
+                );
+
+                return (
+                  <figure key={testimonial._id} className="flex h-full flex-col rounded-2xl bg-white/10 p-6 ring-1 ring-white/15">
+                    <blockquote className="flex-1">
+                      <p className="text-xl font-semibold leading-snug text-white">“{testimonial.shortQuote}”</p>
+                      {testimonial.quote && (
+                        <div className="prose prose-sm prose-invert mt-5 text-white/75 prose-p:my-2">
+                          <PortableText value={testimonial.quote} />
+                        </div>
+                      )}
+                    </blockquote>
+                    <figcaption className="mt-6 border-t border-white/15 pt-5 text-white/85">
+                      {testimonial.link ? (
+                        <Link href={stegaClean(testimonial.link)} className="transition hover:text-white hover:underline">
+                          {attribution}
+                        </Link>
+                      ) : attribution}
+                    </figcaption>
+                  </figure>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      );
+    }
     case "faqSection":
       return (
         <section className="px-6 py-14 sm:px-10">
@@ -142,4 +272,51 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
         </section>
       );
   }
+}
+
+function socialPlatformLabel(platform: string) {
+  return {
+    facebook: "Facebook",
+    instagram: "Instagram",
+    tiktok: "TikTok",
+    youtube: "YouTube",
+    linkedin: "LinkedIn",
+    x: "X",
+    other: "Social",
+  }[platform] || "Social";
+}
+
+function isSocialProfile(profile: SocialProfile | null): profile is SocialProfile {
+  return Boolean(profile?.platform && profile.url);
+}
+
+function isTestimonial(testimonial: Testimonial | null): testimonial is Testimonial {
+  return Boolean(testimonial?.name && testimonial.shortQuote);
+}
+
+function socialPlatformIcon(platform: string): IconType {
+  return {
+    facebook: FaFacebookF,
+    instagram: FaInstagram,
+    tiktok: FaTiktok,
+    youtube: FaYoutube,
+    linkedin: FaLinkedinIn,
+    x: FaXTwitter,
+    other: LuAtSign,
+  }[platform] || LuAtSign;
+}
+
+function socialIconColour(platform: string, style: string) {
+  if (style === "monochrome") return "text-cerise-on-light";
+  if (style === "blackWhite") return "text-black";
+
+  return {
+    facebook: "text-[#1877f2]",
+    instagram: "text-[#e4405f]",
+    tiktok: "text-black",
+    youtube: "text-[#ff0000]",
+    linkedin: "text-[#0a66c2]",
+    x: "text-black",
+    other: "text-[#01164d]",
+  }[platform] || "text-[#01164d]";
 }

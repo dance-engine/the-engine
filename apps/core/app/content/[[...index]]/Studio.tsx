@@ -3,6 +3,7 @@
 import { defineConfig, Studio } from "sanity";
 import { defineDocuments, defineLocations, presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
+import { MobilePresentationLayout } from "../../lib/sanity/MobilePresentationLayout";
 import { PageEditorShell } from "../../lib/sanity/PageEditorShell";
 import { schemaTypes } from "../../lib/sanity/schemaTypes";
 
@@ -77,6 +78,11 @@ export default function ContentStudio({
     form: {
       components: {
         input: PageEditorShell,
+      },
+    },
+    studio: {
+      components: {
+        activeToolLayout: MobilePresentationLayout,
       },
     },
   });

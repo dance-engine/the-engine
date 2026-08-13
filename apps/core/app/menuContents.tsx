@@ -53,6 +53,7 @@ export const getMenuContents = (isSuperAdmin = false): MenuSection[] => [
       {
         title: "Website",
         link: "/content/presentation",
+        fullPageNavigation: true,
         icon: <LuPanelsTopLeft className="size-6"/>
       },
       // { 

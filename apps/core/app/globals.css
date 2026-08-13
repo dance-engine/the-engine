@@ -5,8 +5,80 @@
 
 /* Distinguish the open section editor from the document behind it. */
 [data-ui="DialogCard"] > [data-ui="Card"] {
-  background-color: #151a2b;
-  border: 1px solid #2e3a5c;
+  background-color: #f5f6f8;
+  border: 1px solid #dfe3eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-ui="DialogCard"] > [data-ui="Card"] {
+    background-color: #151a2b;
+    border-color: #2e3a5c;
+  }
+}
+
+.mobile-presentation-layout,
+.mobile-presentation-content {
+  height: 100%;
+  min-height: 0;
+}
+
+.mobile-presentation-switcher {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  body:has([data-testid="edit-portal-dialog"]) [data-testid="studio-navbar"],
+  body:has([data-testid="edit-portal-dialog"]) [data-testid="pane-header"],
+  body:has([data-testid="edit-portal-dialog"]) [data-testid="pane-footer"] {
+    display: none;
+  }
+
+  .mobile-presentation-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-presentation-switcher {
+    display: grid;
+    flex: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 6px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    background: #11131b;
+  }
+
+  .mobile-presentation-switcher button {
+    border: 0;
+    border-radius: 4px;
+    padding: 7px 12px;
+    color: rgb(255 255 255 / 0.65);
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .mobile-presentation-switcher button[aria-pressed="true"] {
+    color: white;
+    background: #25304a;
+  }
+
+  .mobile-presentation-content {
+    flex: 1;
+  }
+
+  .mobile-presentation-content [data-testid="presentation-root"] > div > * {
+    display: none;
+  }
+
+  .mobile-presentation-layout[data-mobile-view="preview"]
+    [data-testid="presentation-root"] > div > div:has(iframe),
+  .mobile-presentation-layout[data-mobile-view="edit"]
+    [data-testid="presentation-root"] > div > div:last-child {
+    display: block;
+    width: 100%;
+  }
 }
 
 @theme {

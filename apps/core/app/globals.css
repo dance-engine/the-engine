@@ -3,6 +3,12 @@
 @source "../node_modules/@dance-engine/ui/src/";
 @import "@dance-engine/ui/styles.css";
 
+/* Distinguish the open section editor from the document behind it. */
+[data-ui="DialogCard"] > [data-ui="Card"] {
+  background-color: #151a2b;
+  border: 1px solid #2e3a5c;
+}
+
 @theme {
   --font-sans: var(--font-open-sans);
   --font-mono: var(--font-open-mono);

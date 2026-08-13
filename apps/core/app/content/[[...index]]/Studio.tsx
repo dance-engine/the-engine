@@ -1,7 +1,6 @@
 "use client";
 
-import { NextStudio } from "next-sanity/studio";
-import { defineConfig } from "sanity";
+import { defineConfig, Studio } from "sanity";
 import { defineDocuments, defineLocations, presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
 import { PageEditorShell } from "../../lib/sanity/PageEditorShell";
@@ -82,5 +81,5 @@ export default function ContentStudio({
     },
   });
 
-  return <NextStudio config={config} />;
+  return <Studio config={config} />;
 }

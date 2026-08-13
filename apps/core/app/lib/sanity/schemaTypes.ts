@@ -63,6 +63,7 @@ const imageTextSection = defineType({
           { title: "Square (1:1)", value: "1:1" },
           { title: "Portrait (9:16)", value: "9:16" },
           { title: "Widescreen (16:9)", value: "16:9" },
+          { title: "Panorama (3:1)", value: "3:1" },
           { title: "Landscape (4:3)", value: "4:3" },
         ],
       },
@@ -71,6 +72,65 @@ const imageTextSection = defineType({
     defineField({ name: "imagePosition", title: "Image position", type: "string", initialValue: "left", options: { layout: "radio", list: [{ title: "Left", value: "left" }, { title: "Right", value: "right" }] } }),
   ],
   preview: { select: { title: "heading", media: "image" }, prepare: ({ title, media }) => ({ title: title || "Untitled image section", subtitle: "Image and text", media }) },
+});
+
+const imageSection = defineType({
+  name: "imageSection",
+  title: "Image",
+  type: "object",
+  components: { preview: SectionPreview },
+  fields: [
+    defineField({
+      name: "image",
+      title: "Image",
+      type: "image",
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: "alt",
+          title: "Alternative text",
+          description: "Describe the image for people who cannot see it.",
+          type: "string",
+          validation: (rule) => rule.required(),
+        }),
+      ],
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "aspectRatio",
+      title: "Aspect ratio",
+      type: "string",
+      initialValue: "original",
+      options: {
+        list: [
+          { title: "Original", value: "original" },
+          { title: "Square (1:1)", value: "1:1" },
+          { title: "Portrait (9:16)", value: "9:16" },
+          { title: "Widescreen (16:9)", value: "16:9" },
+          { title: "Panorama (3:1)", value: "3:1" },
+          { title: "Landscape (4:3)", value: "4:3" },
+        ],
+      },
+    }),
+    defineField({
+      name: "href",
+      title: "Image link",
+      description: "Optional. Opens this address when the image is selected.",
+      type: "url",
+      validation: (rule) => rule.uri({
+        allowRelative: true,
+        scheme: ["http", "https", "mailto", "tel"],
+      }),
+    }),
+  ],
+  preview: {
+    select: { title: "image.alt", media: "image" },
+    prepare: ({ title, media }) => ({
+      title: title || "Image",
+      subtitle: "Image",
+      media,
+    }),
+  },
 });
 
 const callToActionSection = defineType({
@@ -295,6 +355,58 @@ const testimonialsSection = defineType({
   },
 });
 
+const sectionGrid = defineType({
+  name: "sectionGrid",
+  title: "Section grid",
+  type: "object",
+  components: { preview: SectionPreview },
+  fields: [
+    defineField({ name: "heading", title: "Heading", type: "string" }),
+    defineField({ name: "body", title: "Introduction", type: "text", rows: 3 }),
+    defineField({
+      name: "maxColumns",
+      title: "Maximum columns",
+      description: "The grid automatically uses fewer columns on narrower screens.",
+      type: "number",
+      initialValue: 3,
+      options: {
+        layout: "radio",
+        list: [
+          { title: "2", value: 2 },
+          { title: "3", value: 3 },
+          { title: "4", value: 4 },
+          { title: "5", value: 5 },
+        ],
+      },
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "items",
+      title: "Sections",
+      description: "Add and reorder sections within the grid.",
+      type: "array",
+      of: [
+        defineArrayMember({ type: "heroSection" }),
+        defineArrayMember({ type: "richTextSection" }),
+        defineArrayMember({ type: "imageTextSection" }),
+        defineArrayMember({ type: "imageSection" }),
+        defineArrayMember({ type: "callToActionSection" }),
+        defineArrayMember({ type: "threeColumnCalloutSection" }),
+        defineArrayMember({ type: "socialMediaSection" }),
+        defineArrayMember({ type: "testimonialsSection" }),
+        defineArrayMember({ type: "faqSection" }),
+      ],
+    }),
+  ],
+  preview: {
+    select: { title: "heading", items: "items", maxColumns: "maxColumns" },
+    prepare: ({ title, items, maxColumns }) => ({
+      title: title || "Section grid",
+      subtitle: `${Array.isArray(items) ? items.length : 0} section${Array.isArray(items) && items.length === 1 ? "" : "s"}, up to ${maxColumns || 3} columns`,
+    }),
+  },
+});
+
 const faqItem = defineType({
   name: "faqItem",
   title: "Question and answer",
@@ -370,9 +482,9 @@ const page = defineType({
     defineField({ name: "title", title: "Page title", type: "string", validation: (rule) => rule.required() }),
     defineField({ name: "slug", title: "Page address", type: "slug", options: { source: "title" }, validation: (rule) => rule.required() }),
     defineField({ name: "seoDescription", title: "Search description", type: "text", rows: 3 }),
-    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "faqSection" })] }),
+    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" })] }),
   ],
   preview: { select: { title: "title", subtitle: "slug.current" } },
 });
 
-export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, faqItem, faqSection, site, page];
+export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, site, page];

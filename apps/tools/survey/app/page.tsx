@@ -228,7 +228,7 @@ function Stage1({ data, update }: StageProps) {
   return <div>
     <Eyebrow>Where are you from?</Eyebrow>
     <Title>Tell us about your corner(s) of the world.</Title>
-    <Field label="What do you live?">
+    <Field label="Where do you live?">
       <select
         required
         value={data.location.countryCurrent}

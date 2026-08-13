@@ -13,4 +13,5 @@ export type MenuLinks = {
   icon?: string | ReactNode
   link: string
   title: string
+  fullPageNavigation?: boolean
 }

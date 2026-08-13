@@ -1,10 +1,11 @@
 "use client";
 
-import { NextStudio } from "next-sanity/studio";
-import { defineConfig } from "sanity";
+import { defineConfig, Studio } from "sanity";
 import { defineDocuments, defineLocations, presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
+import { MobilePresentationLayout } from "../../lib/sanity/MobilePresentationLayout";
 import { PageEditorShell } from "../../lib/sanity/PageEditorShell";
+import { createPublishWithLinkedProfilesAction } from "../../lib/sanity/PublishWithLinkedProfilesAction";
 import { schemaTypes } from "../../lib/sanity/schemaTypes";
 
 const mainDocuments = defineDocuments([
@@ -50,6 +51,8 @@ export default function ContentStudio({
             builder.listItem().title("Pages").schemaType("page").child(builder.documentTypeList("page").title("Pages")),
             builder.divider(),
             builder.listItem().title("Site settings").schemaType("site").child(builder.documentTypeList("site").title("Site settings")),
+            builder.listItem().title("Social media").schemaType("socialProfile").child(builder.documentTypeList("socialProfile").title("Social media")),
+            builder.listItem().title("Testimonials").schemaType("testimonial").child(builder.documentTypeList("testimonial").title("Testimonials")),
           ]),
       }),
       ...(previewOrigin ? [presentationTool({
@@ -75,12 +78,30 @@ export default function ContentStudio({
       })] : []),
     ],
     schema: { types: schemaTypes },
+    document: {
+      actions: (previousActions, context) => {
+        if (context.schemaType !== "page") return previousActions;
+
+        const publishAction = previousActions.find((action) => action.action === "publish");
+        if (!publishAction) return previousActions;
+
+        return [
+          ...previousActions,
+          createPublishWithLinkedProfilesAction(publishAction, context),
+        ];
+      },
+    },
     form: {
       components: {
         input: PageEditorShell,
       },
     },
+    studio: {
+      components: {
+        activeToolLayout: MobilePresentationLayout,
+      },
+    },
   });
 
-  return <NextStudio config={config} />;
+  return <Studio config={config} />;
 }

@@ -22,7 +22,7 @@ const Header = async ({org}:{org: OrganisationType}) => {
           }
         </div>
       </div>
-      <TopLevelNavigation pages={pages} />
+      {project && <TopLevelNavigation pages={pages} />}
     </header>
   )
 }

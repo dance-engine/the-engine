@@ -19,10 +19,17 @@ export const MainMenu: React.FC<MenuProps> = ({menuContents}: MenuProps) => {
             <ul role="list" className="-mx-2 mt-2 space-y-1">
               {section.contents.map((menuItem,idx)=>{
                 return (<li key={`menu-item-${idx}`}>
-                  <Link href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
-                    {menuItem.icon}
-                    {menuItem.title}
-                  </Link>
+                  {menuItem.fullPageNavigation ? (
+                    <a href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
+                      {menuItem.icon}
+                      {menuItem.title}
+                    </a>
+                  ) : (
+                    <Link href={menuItem.link} className="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-primary-text hover:bg-dark-highlight hover:text-white">
+                      {menuItem.icon}
+                      {menuItem.title}
+                    </Link>
+                  )}
                 </li>)
               })}
             </ul>

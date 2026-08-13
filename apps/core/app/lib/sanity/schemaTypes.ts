@@ -243,21 +243,21 @@ const testimonial = defineType({
       options: { hotspot: true },
     }),
     defineField({
+      name: "quote",
+      title: "Full testimonial",
+      description: "The complete testimonial from which the short excerpt is taken.",
+      type: "blockContent",
+    }),
+    defineField({
       name: "shortQuote",
-      title: "Short quote",
-      description: "A pithy pull-quote used as the prominent text.",
+      title: "Highlighted excerpt",
+      description: "A short, pithy excerpt copied from the full testimonial.",
       type: "text",
       rows: 2,
       validation: (rule) => [
         rule.required(),
-        rule.max(180).warning("Short quotes work best below 180 characters."),
+        rule.max(180).warning("Highlighted excerpts work best below 180 characters."),
       ],
-    }),
-    defineField({
-      name: "quote",
-      title: "Full testimonial",
-      description: "Optional longer version shown beneath the pull-quote.",
-      type: "blockContent",
     }),
   ],
   preview: {

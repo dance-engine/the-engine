@@ -233,12 +233,14 @@ function Section({ section, project }: { section: PageSection; project: SanityPr
                 return (
                   <figure key={testimonial._id} className="flex h-full flex-col rounded-2xl bg-white/10 p-6 ring-1 ring-white/15">
                     <blockquote className="flex-1">
-                      <p className="text-xl font-semibold leading-snug text-white">“{testimonial.shortQuote}”</p>
                       {testimonial.quote && (
-                        <div className="prose prose-sm prose-invert mt-5 text-white/75 prose-p:my-2">
+                        <div className="prose prose-sm prose-invert text-white/75 prose-p:my-2">
                           <PortableText value={testimonial.quote} />
                         </div>
                       )}
+                      <p className="mt-5 border-l-4 border-cerise-logo bg-white/10 px-4 py-3 text-xl font-semibold leading-snug text-white">
+                        “{testimonial.shortQuote}”
+                      </p>
                     </blockquote>
                     <figcaption className="mt-6 border-t border-white/15 pt-5 text-white/85">
                       {testimonial.link ? (

@@ -354,7 +354,7 @@ export default function JoinForm({
   };
 
   return (
-    <main className="flex-grow bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)] border border-red-500 bg-cover bg-bottom" style={{ backgroundImage: `url(${org.banner})` }}>
+    <main className="flex-grow bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)] bg-cover bg-bottom" style={{ backgroundImage: `url(${org.banner})` }}>
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14 flex flex-col items-center justify-center">
         <img src={org.logo} alt={org.name || organisationName} className="" />
         <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl sm:p-8">

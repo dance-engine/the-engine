@@ -91,7 +91,7 @@ const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
     passThreshold: 0.45,
     localTeacherAliases: ['andreas', 'rebel'],
     titleHtml: 'Waiting List',
-    introHtml: 'LATINO COFFE RAVE is sweeping across the UK! If we don&apos;t have the dates confirmed for your city, fill out this form and as soon as we do we&apos;ll be in touch.',
+    introHtml: 'LATINO COFFEE RAVE is sweeping across the UK! If we don&apos;t have the dates confirmed for your city, fill out this form and as soon as we do we&apos;ll be in touch.',
     successHtml: '<h2 class="text-xl font-semibold text-emerald-900">You&apos;re in!</h2><p class="mt-2 text-sm text-emerald-800">As soon as we have the dates confirmed for your city, we&apos;ll be in touch. Follow up on social media for other updates and announcements.</p>',
     pendingHtml: '<h2 class="text-xl font-semibold text-amber-900">You&apos;re in!</h2><p class="mt-2 text-sm text-amber-800">As soon as we have the dates confirmed for your city, we&apos;ll be in touch.</p>',
     failureMessage: 'We could not process your request. Please try again.',

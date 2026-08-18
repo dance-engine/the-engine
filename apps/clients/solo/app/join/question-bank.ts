@@ -61,9 +61,9 @@ const DEFAULT_JOIN_INTRO_HTML =
   'Complete this short application for <strong>{{organisationName}}</strong>. If your answers match and you are not a bot or scammer, you will get immediately queued for admin approval. Otherwise your request will be marked pending and an admin will review it before sending the WhatsApp link and we may message you for more information.';
 const DEFAULT_JOIN_TITLE_HTML = 'Join <span class="whitespace-nowrap">{{organisationName}}</span>';
 const DEFAULT_JOIN_SUCCESS_HTML =
-  '<h2 class="text-xl font-semibold text-emerald-200">Success</h2><p class="mt-2 text-sm text-emerald-100/90">You are in. Join the <strong>{{organisationName}}</strong> WhatsApp community using the details below.</p>';
+  '<h2 class="text-xl font-semibold text-emerald-900">Success</h2><p class="mt-2 text-sm text-emerald-800">You are in. Join the <strong>{{organisationName}}</strong> WhatsApp community using the details below.</p>';
 const DEFAULT_JOIN_PENDING_HTML =
-  '<h2 class="text-xl font-semibold text-amber-200">Pending Review</h2><p class="mt-2 text-sm text-amber-100/90">Thanks for applying to <strong>{{organisationName}}</strong>. Your request is pending admin approval and we will email you once it is approved.</p>';
+  '<h2 class="text-xl font-semibold text-amber-900">Pending Review</h2><p class="mt-2 text-sm text-amber-800">Thanks for applying to <strong>{{organisationName}}</strong>. Your request is pending admin approval and we will email you once it is approved.</p>';
 const DEFAULT_JOIN_FAILURE_MESSAGE = 'We could not submit your join request. Please try again.';
 
 const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
@@ -90,10 +90,10 @@ const ORG_CONFIGS: Record<string, OrgJoinConfig> = {
   'rebel-sbk': {
     passThreshold: 0.45,
     localTeacherAliases: ['andreas', 'rebel'],
-    titleHtml: '<span class="">Rebel Tribe</span> Waiting List',
-    introHtml: 'Rebel Tribe is sweeping across the UK! If we don&apos;t have the dates confirmed for your city, fill out this form and as soon as we do we&apos;ll be in touch.',
-    successHtml: '<h2 class="text-xl font-semibold text-emerald-200">You&apos;re in!</h2><p class="mt-2 text-sm text-emerald-100/90">As soon as we have the dates confirmed for your city, we&apos;ll be in touch. Follow up on social media for other updates and announcements.</p>',
-    pendingHtml: '<h2 class="text-xl font-semibold text-amber-200">You&apos;re in!</h2><p class="mt-2 text-sm text-amber-100/90">As soon as we have the dates confirmed for your city, we&apos;ll be in touch.</p>',
+    titleHtml: 'Waiting List',
+    introHtml: 'LATINO COFFE RAVE is sweeping across the UK! If we don&apos;t have the dates confirmed for your city, fill out this form and as soon as we do we&apos;ll be in touch.',
+    successHtml: '<h2 class="text-xl font-semibold text-emerald-900">You&apos;re in!</h2><p class="mt-2 text-sm text-emerald-800">As soon as we have the dates confirmed for your city, we&apos;ll be in touch. Follow up on social media for other updates and announcements.</p>',
+    pendingHtml: '<h2 class="text-xl font-semibold text-amber-900">You&apos;re in!</h2><p class="mt-2 text-sm text-amber-800">As soon as we have the dates confirmed for your city, we&apos;ll be in touch.</p>',
     failureMessage: 'We could not process your request. Please try again.',
     questions: [{
       id: 'city-of-interest',

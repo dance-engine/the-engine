@@ -77,14 +77,14 @@ export default async function IndexPage() {
           }[orgSlug || 'default'] || null}
 
           {/* <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}> */}
-          <div className=' w-full px-4 lg:px-0 flex justify-center' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}>
+          <div className=' w-full px-4 lg:px-0 flex justify-center bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]' style={{backgroundColor: '', borderColor: 'var(--highlight-color)'}}>
             
               <div className={
                 `max-w-4xl w-4xl px-4 lg:px-0 py-12 \
                 prose prose-base prose-p:mb-2 prose-p:mt-0 prose-p:font-extralight prose-p:leading-relaxed prose-headings:font-semibold \
                 prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
                 prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0 \
-                text-white prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]
+                dark:text-white dark:prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]
                 `} 
                   dangerouslySetInnerHTML={{ __html: generateHTML(
                     JSON.parse(org.description), 
@@ -102,9 +102,9 @@ export default async function IndexPage() {
           {
             {
               // 'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
-              'demo': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-              'latin-soul': <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-            }[orgSlug] || <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
+              'demo': <div className='mb-12 bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+              'latin-soul': <div className='mb-12 bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
+            }[orgSlug] || <div className='mb-12 bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
           }
 
           {/* {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 

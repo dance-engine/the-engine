@@ -51,7 +51,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
   const eventData = data.events as EventResponseType[];
   const events = eventData ? eventData.filter((event) => event.status === "live").map((item) => { return createEvent(item) }) : []
 
-  return <div className=''>
+  return <div className="w-full bg-black/20">
     {events && events.length > 0 ? (
       <div className="max-w-full w-auto pt-6 ">
         
@@ -65,7 +65,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
                 <div key={event.ksuid} className="flex-[0_0_88%] sm:flex-[0_0_52%] lg:flex-[0_0_38%] max-w-64 ">
                   <Link href={`/events/${event.ksuid}`} style={{'--image-url': `url(${event.banner})`} as React.CSSProperties}
                     className='mb-12 rounded-lg bg-[image:var(--image-url)] flex items-end bg-cover bg-center aspect-square min-w-0 w-full max-h-64'>
-                    <div className='p-3 w-full bg-black/50'>
+                    <div className='p-3 w-full bg-black/50 rounded-b-lg '>
                       {event.category && <div className='flex gap-1 flex-wrap'>
                         {event.category.map((cat) => {return (<span key={cat} className='bg-cerise-on-light text-white text-xs px-2 py-0 rounded-full'>{cat}</span>)})}
                       </div>}

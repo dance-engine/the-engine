@@ -145,7 +145,7 @@ export default function JoinForm({
     if (value === 'light' || value === 'dark' || value === 'auto') {
       return value;
     }
-    return 'dark';
+    return 'light';
   }, []);
   const turnstileSize = useMemo<'normal' | 'compact'>(() => {
     return process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SIZE === 'compact' ? 'compact' : 'normal';
@@ -354,11 +354,12 @@ export default function JoinForm({
   };
 
   return (
-    <main className="flex-grow bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)]">
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
-        <div className="rounded-2xl border border-white/20 bg-black/20 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
+    <main className="flex-grow bg-[var(--main-bg-color,#0b1020)] text-[var(--main-text-color,#f5f7ff)] border border-red-500 bg-cover bg-bottom" style={{ backgroundImage: `url(${org.banner})` }}>
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14 flex flex-col items-center justify-center">
+        <img src={org.logo} alt={org.name || organisationName} className="" />
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl sm:p-8">
           {org?.organisation !== 'rebel-sbk' ? (
-            <div className="mb-6 border-b border-white/15 pb-5">
+            <div className="mb-6 border-b border-slate-200 pb-5">
               <Link href="/" className="mx-auto flex w-full items-center justify-center">
                 {org?.logo ? (
                   <img src={org.logo} alt={org.name || organisationName} className="max-h-16 w-auto max-w-full sm:max-h-20" />
@@ -374,13 +375,13 @@ export default function JoinForm({
             dangerouslySetInnerHTML={{ __html: resolvedTitleHtml }}
           />
           <p
-            className="mt-2 text-sm text-white/80"
+            className="mt-2 text-sm text-slate-600"
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: resolvedIntroHtml }}
           />
 
           {result.status === 'success' ? (
-            <section className="mt-6 rounded-xl border border-emerald-300/30 bg-emerald-900/20 p-5">
+            <section className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-950">
               <div
                 suppressHydrationWarning
                 dangerouslySetInnerHTML={{ __html: resolvedSuccessHtml }}
@@ -392,7 +393,7 @@ export default function JoinForm({
                     href={result.whatsappJoinUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-2 inline-flex break-all rounded-lg bg-black/40 px-4 py-3 text-sm text-emerald-100 underline"
+                    className="mt-2 inline-flex break-all rounded-lg bg-white px-4 py-3 text-sm text-emerald-900 underline"
                   >
                     {result.whatsappJoinUrl}
                   </a>
@@ -401,7 +402,7 @@ export default function JoinForm({
               <button
                 type="button"
                 onClick={resetForm}
-                className="mt-4 inline-flex rounded-lg border border-emerald-200/40 px-4 py-2 text-sm font-medium text-emerald-100 hover:bg-emerald-700/20"
+                className="mt-4 inline-flex rounded-lg border border-emerald-300 px-4 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-100"
               >
                 Submit Another
               </button>
@@ -409,7 +410,7 @@ export default function JoinForm({
           ) : null}
 
           {result.status === 'pending' ? (
-            <section className="mt-6 rounded-xl border border-amber-300/30 bg-amber-800/20 p-5">
+            <section className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-950">
               <div
                 suppressHydrationWarning
                 dangerouslySetInnerHTML={{ __html: resolvedPendingHtml }}
@@ -428,7 +429,7 @@ export default function JoinForm({
             <form className="mt-6 space-y-5" onSubmit={handleSubmit} autoComplete="on" noValidate={false}>
 
               <div className="space-y-2">
-                <label htmlFor="join-name" className="text-sm font-medium text-white/90">
+                <label htmlFor="join-name" className="text-sm font-medium text-slate-800">
                   Name <span aria-hidden="true">*</span>
                 </label>
                 <input
@@ -443,13 +444,13 @@ export default function JoinForm({
                   aria-describedby="join-form-help"
                   value={fullName}
                   onChange={(event) => setFullName(event.target.value)}
-                  className="w-full rounded-lg border border-white/25 bg-black/25 px-3 py-2.5 text-base outline-none transition focus:border-cerise-logo"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cerise-logo"
                   placeholder="Your full name"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="join-email" className="text-sm font-medium text-white/90">
+                <label htmlFor="join-email" className="text-sm font-medium text-slate-800">
                   Email
                 </label>
                 <input
@@ -467,13 +468,13 @@ export default function JoinForm({
                   aria-describedby="join-form-help"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full rounded-lg border border-white/25 bg-black/25 px-3 py-2.5 text-base outline-none transition focus:border-cerise-logo"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cerise-logo"
                   placeholder="you@example.com"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="join-phone" className="text-sm font-medium text-white/90">
+                <label htmlFor="join-phone" className="text-sm font-medium text-slate-800">
                   Phone Number
                 </label>
                 <input
@@ -488,7 +489,7 @@ export default function JoinForm({
                   aria-describedby="join-form-help"
                   value={phoneNumber}
                   onChange={(event) => setPhoneNumber(event.target.value)}
-                  className="w-full rounded-lg border border-white/25 bg-black/25 px-3 py-2.5 text-base outline-none transition focus:border-cerise-logo"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cerise-logo"
                   placeholder="+44 7000 000000"
                 />
               </div>
@@ -497,7 +498,7 @@ export default function JoinForm({
                 <div className="space-y-4">
                   {questions.map((question) => (
                     <div key={question.id} className="space-y-2">
-                      <label htmlFor={`q-${question.id}`} className="block text-sm font-medium text-white/90">
+                      <label htmlFor={`q-${question.id}`} className="block text-sm font-medium text-slate-800">
                         {question.prompt}
                       </label>
                       <input
@@ -515,7 +516,7 @@ export default function JoinForm({
                             [question.id]: event.target.value,
                           }));
                         }}
-                        className="w-full rounded-lg border border-white/25 bg-black/25 px-3 py-2.5 text-base outline-none transition focus:border-cerise-logo"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cerise-logo"
                       />
                     </div>
                   ))}
@@ -533,7 +534,7 @@ export default function JoinForm({
               </div>
 
               <div className="space-y-2">
-                <p id="join-captcha-label" className="text-sm font-medium text-white/90">Just checking your a real person</p>
+                <p id="join-captcha-label" className="text-sm font-medium text-slate-800">Just checking your a real person</p>
                 <div
                   ref={widgetContainerRef}
                   className="min-h-16"
@@ -541,14 +542,14 @@ export default function JoinForm({
                   aria-labelledby="join-captcha-label"
                 />
                 {!siteKey ? (
-                  <p className="text-xs text-amber-200/90">
+                  <p className="text-xs text-amber-800">
                     Turnstile is not configured. Set NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY.
                   </p>
                 ) : null}
               </div>
 
               {errorMessage ? (
-                <p role="alert" aria-live="assertive" className="text-sm text-rose-300">
+                <p role="alert" aria-live="assertive" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
                   {errorMessage}
                 </p>
               ) : (

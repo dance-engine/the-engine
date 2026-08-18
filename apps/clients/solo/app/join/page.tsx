@@ -65,7 +65,7 @@ export default async function JoinPage() {
   return (
     <div className="flex min-h-screen h-full flex-col justify-between">
       <Header org={org} />
-      {orgSlug === 'rebel-sbk' ? <RebelHero org={org} /> : null}
+      {/* {orgSlug === 'rebel-sbk' ? <RebelHero org={org} /> : null} */}
       <JoinForm
         org={org}
         orgSlug={orgSlug}

@@ -282,16 +282,7 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
             <XAxis type="number" domain={[0, total]} allowDecimals={false} tickFormatter={value => `${responsePercentage(Number(value), total)}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
             <YAxis dataKey="danceStyle" type="category" width={165} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
             <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value, name) => [`${value} (${responsePercentage(Number(value), total)}%)`, styleAnswerTitles[String(name)] ?? name]} />
-            {answerGroups.map((group, index) => <Bar key={group.answer} dataKey={group.answer} stackId="styles" fill={styleStackColours[index]}>
-              <LabelList
-                dataKey={group.answer}
-                position="center"
-                formatter={(value: unknown) => Number(value) > 0 ? `${responsePercentage(Number(value), total)}%` : ""}
-                fill="#ffffff"
-                fontSize={10}
-                fontWeight={700}
-              />
-            </Bar>)}
+            {answerGroups.map((group, index) => <Bar key={group.answer} dataKey={group.answer} stackId="styles" fill={styleStackColours[index]} />)}
           </BarChart>
         </ResponsiveContainer>
       </div>

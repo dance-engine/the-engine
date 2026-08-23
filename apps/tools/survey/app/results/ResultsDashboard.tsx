@@ -22,6 +22,7 @@ import type { AverageResult, CountResult, SurveyResults } from "../lib/survey-re
 
 const colours = ["#d61976", "#169c87", "#b4d52f", "#7c5cff", "#ef8c2f"];
 const tooltipStyle = { borderRadius: 12, border: "1px solid var(--sbk-border)", background: "var(--sbk-surface)", color: "var(--sbk-text)" };
+const responsePercentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0;
 
 function ChartCard({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
   return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7">
@@ -57,9 +58,10 @@ const worldCountries = feature(
 ) as unknown as FeatureCollection<Geometry, { name: string }>;
 const worldPath = geoPath(geoNaturalEarth1().fitSize([800, 390], worldCountries));
 
-function CountryMap({ data }: { data: CountResult[] }) {
+function CountryMap({ data, total }: { data: CountResult[]; total: number }) {
   const counts = new Map(data.map(item => [item.name, item.count]));
   const maximum = Math.max(...data.map(item => item.count), 1);
+  const topCountries = data.slice(0, 5);
 
   return <div className="flex h-full flex-col">
     <svg viewBox="0 0 800 390" className="min-h-0 w-full grow" role="img" aria-label="World map shaded by response count">
@@ -76,13 +78,26 @@ function CountryMap({ data }: { data: CountResult[] }) {
           strokeWidth={0.7}
           className="transition-opacity hover:opacity-75"
         >
-          <title>{surveyName}: {count} {count === 1 ? "response" : "responses"}</title>
+          <title>{surveyName}: {responsePercentage(count, total)}% of responses</title>
         </path>;
       })}
     </svg>
     <div className="mt-2 flex items-center justify-end gap-2 text-xs text-[var(--sbk-text-muted)]">
       <span>Fewer</span><span className="h-2.5 w-20 rounded-full" style={{ background: `linear-gradient(to right, color-mix(in srgb, ${colours[1]} 28%, var(--sbk-surface)), ${colours[1]})` }} /><span>More</span>
     </div>
+    <ol className="mt-4 grid gap-x-5 gap-y-2 border-t border-[var(--sbk-border-soft)] pt-4 sm:grid-cols-2">
+      {topCountries.map((country, index) => {
+        const percentage = responsePercentage(country.count, total);
+        return <li key={country.name} className="grid grid-cols-[1.25rem_1fr_auto] items-center gap-2 text-xs">
+          <span className="font-black text-[var(--sbk-text-muted)]">{index + 1}</span>
+          <span className="min-w-0">
+            <span className="block truncate font-bold" title={country.name}>{country.name}</span>
+            <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[var(--sbk-border-soft)]"><span className="block h-full rounded-full bg-[#169c87]" style={{ width: `${percentage}%` }} /></span>
+          </span>
+          <span className="font-black text-[var(--sbk-text)]">{percentage}%</span>
+        </li>;
+      })}
+    </ol>
   </div>;
 }
 
@@ -100,8 +115,9 @@ function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; m
   </ResponsiveContainer>;
 }
 
-function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data: CountResult[] }) {
+function MusicPolicyResults({ averageRatio, data, total }: { averageRatio: string; data: CountResult[]; total: number }) {
   const chartHeight = Math.max(280, data.length * 36);
+  const percentageData = data.map(item => ({ ...item, percentage: responsePercentage(item.count, total) }));
 
   return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Favourite event mix</h2>
@@ -118,17 +134,17 @@ function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data
     </div>
     <div className="border-t border-[var(--sbk-border-soft)] pt-7">
       <h3 className="font-black">Combined responses</h3>
-      <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Number of dancers who selected each exact policy</p>
+      <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Percentage of respondents who selected each exact policy</p>
       {data.length ? <div className="mt-5 max-h-[36rem] overflow-y-auto pr-2">
         <div style={{ height: chartHeight }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 6, right: 42 }}>
+            <BarChart data={percentageData} layout="vertical" margin={{ left: 6, right: 48 }}>
               <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+              <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
               <YAxis dataKey="name" type="category" width={64} tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} />
-              <Bar dataKey="count" name="People" fill={colours[3]} radius={[0, 8, 8, 0]}>
-                <LabelList dataKey="count" position="right" fill="var(--sbk-text)" fontSize={12} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={value => [`${value}%`, "Responses"]} />
+              <Bar dataKey="percentage" name="Responses" fill={colours[3]} radius={[0, 8, 8, 0]}>
+                <LabelList dataKey="percentage" position="right" formatter={(value: unknown) => `${value}%`} fill="var(--sbk-text)" fontSize={12} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -138,11 +154,12 @@ function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data
   </section>;
 }
 
-function SpendingChart({ data, dataKey, name, responseKey }: {
+function SpendingChart({ data, dataKey, name, responseKey, total }: {
   data: SurveyResults["spendingByCurrency"];
   dataKey: "lessonPrice" | "monthlySpend";
   name: string;
   responseKey: "lessonResponses" | "monthlyResponses";
+  total: number;
 }) {
   return <ResponsiveContainer width="100%" height="100%">
     <BarChart data={data} margin={{ left: 4, right: 10, top: 10 }}>
@@ -152,7 +169,7 @@ function SpendingChart({ data, dataKey, name, responseKey }: {
       <Tooltip
         contentStyle={tooltipStyle}
         cursor={{ fill: "var(--sbk-hover)" }}
-        formatter={(value, seriesName, item) => [`${item.payload.currency} ${Number(value).toFixed(2)} (${item.payload[responseKey]} responses)`, seriesName]}
+        formatter={(value, seriesName, item) => [`${item.payload.currency} ${Number(value).toFixed(2)} (${responsePercentage(item.payload[responseKey], total)}% answered)`, seriesName]}
       />
       <Bar dataKey={dataKey} name={name} fill={dataKey === "lessonPrice" ? colours[0] : colours[1]} radius={[7, 7, 0, 0]} />
     </BarChart>
@@ -194,22 +211,22 @@ export default function ResultsDashboard() {
     </div>
 
     <div className="mt-6 grid gap-6 lg:grid-cols-2">
-      <ChartCard title="Where dancers live" description="Countries shaded by current residence; hover for response counts"><CountryMap data={results.currentCountries} /></ChartCard>
-      <ChartCard title="Where dancers grew up" description="Countries represented in the community; hover for response counts"><CountryMap data={results.homeCountries} /></ChartCard>
+      <ChartCard title="Where dancers live" description="Countries shaded by current residence; hover for percentage of responses"><CountryMap data={results.currentCountries} total={results.totalResponses} /></ChartCard>
+      <ChartCard title="Where dancers grew up" description="Countries represented in the community; hover for percentage of responses"><CountryMap data={results.homeCountries} total={results.totalResponses} /></ChartCard>
       <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
       <div className="grid gap-6 sm:grid-cols-2">
         <ChartCard title="Lesson price" description="Average expected hourly lesson price, separated by currency">
-          {results.spendingByCurrency.some(item => item.lessonPrice !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="lessonPrice" name="Lesson price / hour" responseKey="lessonResponses" /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No lesson-price answers have been submitted yet.</div>}
+          {results.spendingByCurrency.some(item => item.lessonPrice !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="lessonPrice" name="Lesson price / hour" responseKey="lessonResponses" total={results.totalResponses} /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No lesson-price answers have been submitted yet.</div>}
         </ChartCard>
         <ChartCard title="Monthly dance spend" description="Average monthly spending on dancing, separated by currency">
-          {results.spendingByCurrency.some(item => item.monthlySpend !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="monthlySpend" name="Monthly dance spend" responseKey="monthlyResponses" /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No monthly-spend answers have been submitted yet.</div>}
+          {results.spendingByCurrency.some(item => item.monthlySpend !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="monthlySpend" name="Monthly dance spend" responseKey="monthlyResponses" total={results.totalResponses} /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No monthly-spend answers have been submitted yet.</div>}
         </ChartCard>
       </div>
-      <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} />
+      <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} total={results.totalResponses} />
       <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} labelWidth={190} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart><Pie data={results.learningSources} dataKey="count" nameKey="name" innerRadius="48%" outerRadius="76%" paddingAngle={2} label={({ name, percent }) => `${name} ${Math.round((percent ?? 0) * 100)}%`} labelLine={false}>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart>
+          <PieChart><Pie data={results.learningSources.map(item => ({ ...item, percentage: responsePercentage(item.count, results.totalResponses) }))} dataKey="percentage" nameKey="name" innerRadius="48%" outerRadius="76%" paddingAngle={2} label={({ name, value }) => `${name} ${value}%`} labelLine={false}>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} formatter={value => [`${value}%`, "Responses"]} /></PieChart>
         </ResponsiveContainer>
       </ChartCard>
     </div>

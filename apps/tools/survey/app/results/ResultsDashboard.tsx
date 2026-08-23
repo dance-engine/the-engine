@@ -82,7 +82,7 @@ function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data
               <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
               <YAxis dataKey="name" type="category" width={64} tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} />
-              <Bar dataKey="count" name="People" fill={colours[1]} radius={[0, 8, 8, 0]}>
+              <Bar dataKey="count" name="People" fill={colours[3]} radius={[0, 8, 8, 0]}>
                 <LabelList dataKey="count" position="right" fill="var(--sbk-text)" fontSize={12} />
               </Bar>
             </BarChart>
@@ -93,7 +93,12 @@ function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data
   </section>;
 }
 
-function SpendingChart({ data }: { data: SurveyResults["spendingByCurrency"] }) {
+function SpendingChart({ data, dataKey, name, responseKey }: {
+  data: SurveyResults["spendingByCurrency"];
+  dataKey: "lessonPrice" | "monthlySpend";
+  name: string;
+  responseKey: "lessonResponses" | "monthlyResponses";
+}) {
   return <ResponsiveContainer width="100%" height="100%">
     <BarChart data={data} margin={{ left: 4, right: 10, top: 10 }}>
       <CartesianGrid stroke="var(--sbk-border-soft)" vertical={false} />
@@ -102,13 +107,9 @@ function SpendingChart({ data }: { data: SurveyResults["spendingByCurrency"] }) 
       <Tooltip
         contentStyle={tooltipStyle}
         cursor={{ fill: "var(--sbk-hover)" }}
-        formatter={(value, name, item) => {
-          const key = name === "Lesson price / hour" ? "lessonResponses" : "monthlyResponses";
-          return [`${item.payload.currency} ${Number(value).toFixed(2)} (${item.payload[key]} responses)`, name];
-        }}
+        formatter={(value, seriesName, item) => [`${item.payload.currency} ${Number(value).toFixed(2)} (${item.payload[responseKey]} responses)`, seriesName]}
       />
-      <Bar dataKey="lessonPrice" name="Lesson price / hour" fill={colours[0]} radius={[7, 7, 0, 0]} />
-      <Bar dataKey="monthlySpend" name="Monthly dance spend" fill={colours[1]} radius={[7, 7, 0, 0]} />
+      <Bar dataKey={dataKey} name={name} fill={dataKey === "lessonPrice" ? colours[0] : colours[1]} radius={[7, 7, 0, 0]} />
     </BarChart>
   </ResponsiveContainer>;
 }
@@ -151,9 +152,14 @@ export default function ResultsDashboard() {
       <ChartCard title="Where dancers live" description="Top countries by current residence"><CountBars data={results.currentCountries} /></ChartCard>
       <ChartCard title="Where dancers grew up" description="Top countries represented in the community"><CountBars data={results.homeCountries} /></ChartCard>
       <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
-      <ChartCard title="What dancers spend" description="Average lesson price and monthly dance spend, kept separate by currency">
-        {results.spendingByCurrency.length ? <SpendingChart data={results.spendingByCurrency} /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No spending answers have been submitted yet.</div>}
-      </ChartCard>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <ChartCard title="Lesson price" description="Average expected hourly lesson price, separated by currency">
+          {results.spendingByCurrency.some(item => item.lessonPrice !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="lessonPrice" name="Lesson price / hour" responseKey="lessonResponses" /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No lesson-price answers have been submitted yet.</div>}
+        </ChartCard>
+        <ChartCard title="Monthly dance spend" description="Average monthly spending on dancing, separated by currency">
+          {results.spendingByCurrency.some(item => item.monthlySpend !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="monthlySpend" name="Monthly dance spend" responseKey="monthlyResponses" /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No monthly-spend answers have been submitted yet.</div>}
+        </ChartCard>
+      </div>
       <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} />
       <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">

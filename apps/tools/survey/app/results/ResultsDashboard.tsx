@@ -234,7 +234,7 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
     const row: Record<string, string | number> = { danceStyle: style };
     for (const group of answerGroups) {
       const count = group.sources.reduce((sum, answer) => sum + countFor(answer, style), 0);
-      row[group.answer] = responsePercentage(count, total);
+      row[group.answer] = count;
     }
     return row;
   });
@@ -242,7 +242,7 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
 
   return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Dance-style breakdown</h2>
-    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Answer distribution for every style, shown as a percentage of all respondents. Each answer is counted only in its selected category.</p>
+    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Number of respondents selecting each answer for every style. Each answer is counted only in its selected category.</p>
     {chartData.length ? <div className="mt-7 overflow-x-auto">
       <div className="mb-4 flex min-w-[760px] flex-wrap justify-center gap-x-5 gap-y-2 text-xs">
         {answerGroups.map((group, index) => <span key={group.answer} className="inline-flex items-center gap-1.5">
@@ -254,10 +254,19 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 24, top: 20, bottom: 10 }}>
             <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
-            <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
+            <XAxis type="number" domain={[0, total]} allowDecimals={false} tickFormatter={value => `${responsePercentage(Number(value), total)}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
             <YAxis dataKey="danceStyle" type="category" width={165} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value, name) => [`${value}%`, styleAnswerTitles[String(name)] ?? name]} />
-            {answerGroups.map((group, index) => <Bar key={group.answer} dataKey={group.answer} stackId="styles" fill={styleStackColours[index]} />)}
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value, name) => [`${value} (${responsePercentage(Number(value), total)}%)`, styleAnswerTitles[String(name)] ?? name]} />
+            {answerGroups.map((group, index) => <Bar key={group.answer} dataKey={group.answer} stackId="styles" fill={styleStackColours[index]}>
+              <LabelList
+                dataKey={group.answer}
+                position="center"
+                formatter={(value: unknown) => Number(value) > 0 ? `${responsePercentage(Number(value), total)}%` : ""}
+                fill="#ffffff"
+                fontSize={10}
+                fontWeight={700}
+              />
+            </Bar>)}
           </BarChart>
         </ResponsiveContainer>
       </div>

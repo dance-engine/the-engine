@@ -1,5 +1,12 @@
 export type CountResult = { name: string; count: number };
 export type AverageResult = { name: string; average: number; responses: number };
+export type SpendingResult = {
+  currency: string;
+  lessonPrice: number | null;
+  lessonResponses: number;
+  monthlySpend: number | null;
+  monthlyResponses: number;
+};
 
 export type SurveyResults = {
   totalResponses: number;
@@ -11,6 +18,7 @@ export type SurveyResults = {
   danceStyles: AverageResult[];
   musicMix: AverageResult[];
   musicPolicies: CountResult[];
+  spendingByCurrency: SpendingResult[];
   averageCongresses: number | null;
 };
 
@@ -84,6 +92,8 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
   ]);
   const musicPolicies = new Map<string, number>();
   const congresses: number[] = [];
+  const lessonPrices = new Map<string, number[]>();
+  const monthlySpending = new Map<string, number[]>();
   let latestSubmission: string | null = null;
 
   for (const item of items) {
@@ -107,12 +117,21 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     }
     const congressCount = numberValue(learning.congresses);
     if (congressCount !== null) congresses.push(congressCount);
+    const lessonPrice = numberValue(learning.lessonPrice);
+    const lessonCurrency = textValue(learning.lessonCurrency);
+    if (lessonPrice !== null && lessonPrice >= 0 && lessonCurrency) {
+      lessonPrices.set(lessonCurrency, [...(lessonPrices.get(lessonCurrency) ?? []), lessonPrice]);
+    }
+    const monthlySpend = numberValue(learning.monthlyDanceSpend);
+    const monthlyCurrency = textValue(learning.monthlyDanceSpendCurrency);
+    if (monthlySpend !== null && monthlySpend >= 0 && monthlyCurrency) {
+      monthlySpending.set(monthlyCurrency, [...(monthlySpending.get(monthlyCurrency) ?? []), monthlySpend]);
+    }
 
     for (const [name, rating] of Object.entries(objectValue(item.styles))) {
       const score = styleScores[textValue(rating)];
       if (score) {
-        const displayName = name.replace(/^[^:]+:\s*/, "");
-        danceStyles.set(displayName, [...(danceStyles.get(displayName) ?? []), score]);
+        danceStyles.set(name, [...(danceStyles.get(name) ?? []), score]);
       }
     }
 
@@ -136,6 +155,23 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     danceStyles: averages(danceStyles).slice(0, 12),
     musicMix: averages(musicMix, ["Salsa", "Bachata", "Kizomba"]),
     musicPolicies: topCounts(musicPolicies, 64),
+    spendingByCurrency: [...new Set([...lessonPrices.keys(), ...monthlySpending.keys()])]
+      .sort()
+      .map(currency => {
+        const lessons = lessonPrices.get(currency) ?? [];
+        const monthly = monthlySpending.get(currency) ?? [];
+        return {
+          currency,
+          lessonPrice: lessons.length
+            ? Number((lessons.reduce((sum, value) => sum + value, 0) / lessons.length).toFixed(2))
+            : null,
+          lessonResponses: lessons.length,
+          monthlySpend: monthly.length
+            ? Number((monthly.reduce((sum, value) => sum + value, 0) / monthly.length).toFixed(2))
+            : null,
+          monthlyResponses: monthly.length,
+        };
+      }),
     averageCongresses: congresses.length
       ? Number((congresses.reduce((sum, value) => sum + value, 0) / congresses.length).toFixed(1))
       : null,

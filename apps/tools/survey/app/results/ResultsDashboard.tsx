@@ -93,6 +93,26 @@ function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data
   </section>;
 }
 
+function SpendingChart({ data }: { data: SurveyResults["spendingByCurrency"] }) {
+  return <ResponsiveContainer width="100%" height="100%">
+    <BarChart data={data} margin={{ left: 4, right: 10, top: 10 }}>
+      <CartesianGrid stroke="var(--sbk-border-soft)" vertical={false} />
+      <XAxis dataKey="currency" tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
+      <YAxis tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+      <Tooltip
+        contentStyle={tooltipStyle}
+        cursor={{ fill: "var(--sbk-hover)" }}
+        formatter={(value, name, item) => {
+          const key = name === "Lesson price / hour" ? "lessonResponses" : "monthlyResponses";
+          return [`${item.payload.currency} ${Number(value).toFixed(2)} (${item.payload[key]} responses)`, name];
+        }}
+      />
+      <Bar dataKey="lessonPrice" name="Lesson price / hour" fill={colours[0]} radius={[7, 7, 0, 0]} />
+      <Bar dataKey="monthlySpend" name="Monthly dance spend" fill={colours[1]} radius={[7, 7, 0, 0]} />
+    </BarChart>
+  </ResponsiveContainer>;
+}
+
 export default function ResultsDashboard() {
   const [results, setResults] = useState<SurveyResults | null>(null);
   const [error, setError] = useState("");
@@ -131,6 +151,9 @@ export default function ResultsDashboard() {
       <ChartCard title="Where dancers live" description="Top countries by current residence"><CountBars data={results.currentCountries} /></ChartCard>
       <ChartCard title="Where dancers grew up" description="Top countries represented in the community"><CountBars data={results.homeCountries} /></ChartCard>
       <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
+      <ChartCard title="What dancers spend" description="Average lesson price and monthly dance spend, kept separate by currency">
+        {results.spendingByCurrency.length ? <SpendingChart data={results.spendingByCurrency} /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No spending answers have been submitted yet.</div>}
+      </ChartCard>
       <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} />
       <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">

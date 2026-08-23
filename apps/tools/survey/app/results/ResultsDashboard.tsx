@@ -46,10 +46,11 @@ function CountBars({ data }: { data: CountResult[] }) {
   </ResponsiveContainer>;
 }
 
-const mapNameAliases: Record<string, string> = {
-  "United States of America": "United States",
-  "Dem. Rep. Congo": "Congo - Kinshasa",
-  Congo: "Congo - Brazzaville",
+const mapNameAliases: Record<string, string[]> = {
+  "United States of America": ["United States"],
+  "Dem. Rep. Congo": ["Congo - Kinshasa", "Democratic Republic of the Congo"],
+  Congo: ["Congo - Brazzaville", "Republic of the Congo"],
+  China: ["China", "China Mainland", "Mainland China"],
 };
 
 const worldCountries = feature(
@@ -67,8 +68,10 @@ function CountryMap({ data, total }: { data: CountResult[]; total: number }) {
     <svg viewBox="0 0 800 390" className="min-h-0 w-full grow" role="img" aria-label="World map shaded by response count">
       {worldCountries.features.map(country => {
         const mapName = country.properties?.name ?? "Unknown";
-        const surveyName = mapNameAliases[mapName] ?? mapName;
-        const count = counts.get(surveyName) ?? 0;
+        const surveyNames = mapNameAliases[mapName] ?? [mapName];
+        const matchedNames = surveyNames.filter(name => counts.has(name));
+        const surveyName = matchedNames[0] ?? surveyNames[0];
+        const count = surveyNames.reduce((sum, name) => sum + (counts.get(name) ?? 0), 0);
         const intensity = count ? 0.28 + (count / maximum) * 0.72 : 0;
         return <path
           key={`${country.id}-${mapName}`}

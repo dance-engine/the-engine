@@ -41,12 +41,12 @@ function CountBars({ data }: { data: CountResult[] }) {
   </ResponsiveContainer>;
 }
 
-function AverageBars({ data, max }: { data: AverageResult[]; max: number }) {
+function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; max: number; labelWidth?: number }) {
   return <ResponsiveContainer width="100%" height="100%">
     <BarChart data={data} layout="vertical" margin={{ left: 12, right: 42 }}>
       <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
       <XAxis type="number" domain={[0, max]} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
-      <YAxis dataKey="name" type="category" width={112} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
+      <YAxis dataKey="name" type="category" width={labelWidth} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
       <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value) => [Number(value).toFixed(1), "Average"]} />
       <Bar dataKey="average" name="Average" fill={colours[0]} radius={[0, 8, 8, 0]}>
         <LabelList dataKey="average" position="right" fill="var(--sbk-text)" fontSize={12} />
@@ -161,7 +161,7 @@ export default function ResultsDashboard() {
         </ChartCard>
       </div>
       <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} />
-      <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} /></ChartCard>
+      <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} labelWidth={190} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart><Pie data={results.learningSources} dataKey="count" nameKey="name" innerRadius="48%" outerRadius="76%" paddingAngle={2} label={({ name, percent }) => `${name} ${Math.round((percent ?? 0) * 100)}%`} labelLine={false}>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart>

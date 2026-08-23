@@ -10,6 +10,7 @@ export type SurveyResults = {
   weeklyActivities: AverageResult[];
   danceStyles: AverageResult[];
   musicMix: AverageResult[];
+  musicPolicies: CountResult[];
   averageCongresses: number | null;
 };
 
@@ -81,6 +82,7 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     ["Bachata", []],
     ["Kizomba", []],
   ]);
+  const musicPolicies = new Map<string, number>();
   const congresses: number[] = [];
   let latestSubmission: string | null = null;
 
@@ -116,6 +118,8 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
 
     const music = objectValue(objectValue(item.favourites).musicMix);
     const mixFields = [["Salsa", music.salsa], ["Bachata", music.bachata], ["Kizomba", music.kizomba]] as const;
+    const submittedPolicy = textValue(music.policy);
+    if (/^[1-4]:[1-4]:[1-4]$/.test(submittedPolicy)) increment(musicPolicies, submittedPolicy);
     for (const [label, rawValue] of mixFields) {
       const value = numberValue(rawValue);
       if (value !== null) musicMix.get(label)!.push(value);
@@ -131,6 +135,7 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     weeklyActivities: averages(weeklyActivities, ["Teacher-led learning", "Active practice", "Social dancing"]),
     danceStyles: averages(danceStyles).slice(0, 12),
     musicMix: averages(musicMix, ["Salsa", "Bachata", "Kizomba"]),
+    musicPolicies: topCounts(musicPolicies, 64),
     averageCongresses: congresses.length
       ? Number((congresses.reduce((sum, value) => sum + value, 0) / congresses.length).toFixed(1))
       : null,

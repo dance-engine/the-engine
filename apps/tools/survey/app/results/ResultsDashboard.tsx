@@ -55,6 +55,44 @@ function AverageBars({ data, max }: { data: AverageResult[]; max: number }) {
   </ResponsiveContainer>;
 }
 
+function MusicPolicyResults({ averageRatio, data }: { averageRatio: string; data: CountResult[] }) {
+  const chartHeight = Math.max(280, data.length * 36);
+
+  return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
+    <h2 className="text-xl font-black">Favourite event mix</h2>
+    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Salsa:Bachata:Kizomba music policy</p>
+    <div className="py-10 text-center">
+      <p className="text-sm font-bold uppercase tracking-[.16em] text-[var(--sbk-text-muted)]">Average policy</p>
+      <p className="mt-3 text-6xl font-black tracking-tight text-[var(--sbk-primary)] sm:text-7xl">{averageRatio}</p>
+      <div className="mx-auto mt-6 grid max-w-md grid-cols-3 gap-5 text-sm font-bold text-[var(--sbk-text-muted)]">
+        {["Salsa", "Bachata", "Kizomba"].map((style, index) => <div key={style}>
+          <span className="mx-auto mb-2 block h-2 w-10 rounded-full" style={{ backgroundColor: colours[index] }} />
+          {style}
+        </div>)}
+      </div>
+    </div>
+    <div className="border-t border-[var(--sbk-border-soft)] pt-7">
+      <h3 className="font-black">Combined responses</h3>
+      <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Number of dancers who selected each exact policy</p>
+      {data.length ? <div className="mt-5 max-h-[36rem] overflow-y-auto pr-2">
+        <div style={{ height: chartHeight }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} layout="vertical" margin={{ left: 6, right: 42 }}>
+              <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+              <YAxis dataKey="name" type="category" width={64} tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
+              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} />
+              <Bar dataKey="count" name="People" fill={colours[1]} radius={[0, 8, 8, 0]}>
+                <LabelList dataKey="count" position="right" fill="var(--sbk-text)" fontSize={12} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div> : <p className="mt-5 text-sm text-[var(--sbk-text-muted)]">No music policies have been submitted yet.</p>}
+    </div>
+  </section>;
+}
+
 export default function ResultsDashboard() {
   const [results, setResults] = useState<SurveyResults | null>(null);
   const [error, setError] = useState("");
@@ -78,6 +116,10 @@ export default function ResultsDashboard() {
   if (!results) return <div className="grid min-h-64 place-items-center rounded-[2rem] bg-[var(--sbk-surface)] text-[var(--sbk-text-muted)]" role="status">Loading community results…</div>;
   if (results.totalResponses === 0) return <div className="rounded-[2rem] bg-[var(--sbk-surface)] p-10 text-center"><h2 className="text-2xl font-black">The first results are on their way.</h2><p className="mt-2 text-[var(--sbk-text-muted)]">No survey responses have been submitted yet.</p></div>;
 
+  const eventMixRatio = results.musicMix.length === 3
+    ? results.musicMix.map(style => Math.round(style.average)).join(":")
+    : "–:–:–";
+
   return <>
     <div className="grid gap-4 sm:grid-cols-3">
       <div className="rounded-2xl bg-[var(--sbk-aside)] p-6 text-[var(--sbk-on-aside)]"><p className="text-sm font-bold uppercase tracking-wider text-[var(--sbk-aside-accent)]">Community voices</p><p className="mt-2 text-5xl font-black">{results.totalResponses}</p><p className="mt-1 text-sm text-[var(--sbk-aside-muted)]">completed responses</p></div>
@@ -89,7 +131,7 @@ export default function ResultsDashboard() {
       <ChartCard title="Where dancers live" description="Top countries by current residence"><CountBars data={results.currentCountries} /></ChartCard>
       <ChartCard title="Where dancers grew up" description="Top countries represented in the community"><CountBars data={results.homeCountries} /></ChartCard>
       <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
-      <ChartCard title="Favourite event mix" description="Average preference score, from 1 to 4"><AverageBars data={results.musicMix} max={4} /></ChartCard>
+      <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} />
       <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">
         <ResponsiveContainer width="100%" height="100%">

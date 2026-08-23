@@ -133,7 +133,7 @@ function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; m
     <BarChart data={data} layout="vertical" margin={{ left: 12, right: 42 }}>
       <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
       <XAxis type="number" domain={[0, max]} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
-      <YAxis dataKey="name" type="category" width={labelWidth} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
+      <YAxis dataKey="name" type="category" width={labelWidth} interval={0} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
       <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value) => [Number(value).toFixed(1), "Average"]} />
       <Bar dataKey="average" name="Average" fill={colours[0]} radius={[0, 8, 8, 0]}>
         <LabelList dataKey="average" position="right" fill="var(--sbk-text)" fontSize={12} />
@@ -205,6 +205,27 @@ function SpendingChart({ data, dataKey, name, responseKey, total }: {
       <Bar dataKey={dataKey} name={name} fill={dataKey === "lessonPrice" ? colours[0] : colours[1]} radius={[7, 7, 0, 0]} />
     </BarChart>
   </ResponsiveContainer>;
+}
+
+function wrapChartLabel(label: string, maximumLength = 16) {
+  return label.split(" ").reduce<string[]>((lines, word) => {
+    const current = lines.at(-1);
+    if (!current || `${current} ${word}`.length > maximumLength) lines.push(word);
+    else lines[lines.length - 1] = `${current} ${word}`;
+    return lines;
+  }, []);
+}
+
+function LearningSourceLabel({ x = 0, y = 0, textAnchor = "start", name = "" }: {
+  x?: number;
+  y?: number;
+  textAnchor?: string;
+  name?: string;
+}) {
+  const lines = wrapChartLabel(name);
+  return <text x={x} y={y} textAnchor={textAnchor} fill="var(--sbk-text)" fontSize={11} fontWeight={600}>
+    {lines.map((line, index) => <tspan key={`${line}-${index}`} x={x} dy={index === 0 ? `${-(lines.length - 1) * 0.55}em` : "1.1em"}>{line}</tspan>)}
+  </text>;
 }
 
 const styleAnswerTitles: Record<string, string> = {
@@ -281,7 +302,12 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
             <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
             <XAxis type="number" domain={[0, total]} allowDecimals={false} tickFormatter={value => `${responsePercentage(Number(value), total)}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
             <YAxis dataKey="danceStyle" type="category" width={165} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value, name) => [`${value} (${responsePercentage(Number(value), total)}%)`, styleAnswerTitles[String(name)] ?? name]} />
+            <Tooltip
+              contentStyle={tooltipStyle}
+              cursor={{ fill: "var(--sbk-hover)" }}
+              itemSorter={item => -answerGroups.findIndex(group => group.answer === item.dataKey)}
+              formatter={(value, name) => [`${responsePercentage(Number(value), total)}%`, styleAnswerTitles[String(name)] ?? name]}
+            />
             {answerGroups.map((group, index) => <Bar key={group.answer} dataKey={group.answer} stackId="styles" fill={styleStackColours[index]} />)}
           </BarChart>
         </ResponsiveContainer>
@@ -316,6 +342,14 @@ export default function ResultsDashboard() {
   const eventMixRatio = results.musicMix.length === 3
     ? results.musicMix.map(style => Math.round(style.average)).join(":")
     : "–:–:–";
+  const orderedDanceStyles = [...results.danceStyles].sort((a, b) => {
+    const aIndex = surveyStyleOrder.indexOf(a.name);
+    const bIndex = surveyStyleOrder.indexOf(b.name);
+    if (aIndex === -1 && bIndex === -1) return a.name.localeCompare(b.name);
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  });
 
   return <>
     <div className="grid gap-4 sm:grid-cols-3">
@@ -337,10 +371,10 @@ export default function ResultsDashboard() {
         </ChartCard>
       </div>
       <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} total={results.totalResponses} />
-      <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} labelWidth={190} /></ChartCard>
+      <ChartCard title="Most-loved dance styles" description="Average interest score from 1 to 5, ordered as shown in the survey"><AverageBars data={orderedDanceStyles} max={5} labelWidth={190} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart><Pie data={results.learningSources.map(item => ({ ...item, percentage: responsePercentage(item.count, results.totalResponses) }))} dataKey="percentage" nameKey="name" innerRadius="48%" outerRadius="76%" paddingAngle={2} label={({ name, value }) => `${name} ${value}%`} labelLine={false}>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} formatter={value => [`${value}%`, "Responses"]} /></PieChart>
+          <PieChart><Pie data={results.learningSources.map(item => ({ ...item, percentage: responsePercentage(item.count, results.totalResponses) }))} dataKey="percentage" nameKey="name" cx="43%" startAngle={-56} endAngle={-416} innerRadius={0} outerRadius="70%" paddingAngle={2} label={LearningSourceLabel} labelLine>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}<LabelList dataKey="percentage" position="inside" formatter={(value: unknown) => `${value}%`} fill="#ffffff" fontSize={12} fontWeight={800} /></Pie><Tooltip contentStyle={tooltipStyle} formatter={value => [`${value}%`, "Responses"]} /></PieChart>
         </ResponsiveContainer>
       </ChartCard>
       <StyleBreakdown data={results.styleBreakdown} total={results.totalResponses} />

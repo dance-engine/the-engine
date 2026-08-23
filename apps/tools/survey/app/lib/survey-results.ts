@@ -48,6 +48,9 @@ const danceSubstyles: Record<string, string[]> = {
   Kizomba: ["Traditional", "UrbanKiz", "Semba", "Tarraxinha"],
   Other: ["Son", "Cha Cha", "Zouk", "Compa", "Merengue"],
 };
+const danceStyleOrder = Object.entries(danceSubstyles).flatMap(([category, substyles]) =>
+  substyles.map(substyle => `${category}: ${substyle}`),
+);
 
 function objectValue(value: unknown): JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -81,14 +84,22 @@ function topCounts(counts: Map<string, number>, limit = 10): CountResult[] {
 }
 
 function averages(values: Map<string, number[]>, order?: string[]): AverageResult[] {
-  const results = [...values.entries()].map(([name, entries]) => ({
-    name,
-    average: Number((entries.reduce((sum, value) => sum + value, 0) / entries.length).toFixed(1)),
-    responses: entries.length,
-  }));
+  const names = order
+    ? [...order, ...[...values.keys()].filter(name => !order.includes(name))]
+    : [...values.keys()];
+  const results = names.map(name => {
+    const entries = values.get(name) ?? [];
+    return {
+      name,
+      average: entries.length
+        ? Number((entries.reduce((sum, value) => sum + value, 0) / entries.length).toFixed(1))
+        : 0,
+      responses: entries.length,
+    };
+  });
 
   return order
-    ? results.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
+    ? results
     : results.sort((a, b) => b.average - a.average || b.responses - a.responses);
 }
 
@@ -186,7 +197,7 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     homeCountries: topCounts(homeCountries, 250),
     learningSources: topCounts(learningSources),
     weeklyActivities: averages(weeklyActivities, ["Teacher-led learning", "Active practice", "Social dancing"]),
-    danceStyles: averages(danceStyles).slice(0, 12),
+    danceStyles: averages(danceStyles, danceStyleOrder),
     styleBreakdown: styleAnswerOrder.map(answer => ({
       answer,
       styles: topCounts(styleBreakdown.get(answer)!, 100),

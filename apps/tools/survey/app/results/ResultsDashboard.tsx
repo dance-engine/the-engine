@@ -217,6 +217,24 @@ const styleAnswerTitles: Record<string, string> = {
   "Learning or dancing": "Learning or dancing",
   "A favourite": "Favourite dances",
 };
+const surveyStyleOrder = [
+  "Salsa: Cuban",
+  "Salsa: Rueda",
+  "Salsa: LA",
+  "Salsa: New York",
+  "Bachata: Dominican",
+  "Bachata: Moderna",
+  "Bachata: Sensual",
+  "Kizomba: Traditional",
+  "Kizomba: UrbanKiz",
+  "Kizomba: Semba",
+  "Kizomba: Tarraxinha",
+  "Other: Son",
+  "Other: Cha Cha",
+  "Other: Zouk",
+  "Other: Compa",
+  "Other: Merengue",
+];
 
 function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]; total: number }) {
   const answerGroups = [
@@ -227,7 +245,14 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
     { answer: "Learning or dancing", sources: ["Learning or dancing"] },
     { answer: "A favourite", sources: ["A favourite"] },
   ];
-  const styles = [...new Set(data.flatMap(group => group.styles.map(style => style.name)))].sort();
+  const styles = [...new Set(data.flatMap(group => group.styles.map(style => style.name)))].sort((a, b) => {
+    const aIndex = surveyStyleOrder.indexOf(a);
+    const bIndex = surveyStyleOrder.indexOf(b);
+    if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  });
   const countFor = (answer: string, style: string) => data
     .find(group => group.answer === answer)?.styles.find(item => item.name === style)?.count ?? 0;
   const chartData = styles.map(style => {

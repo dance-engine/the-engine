@@ -46,32 +46,55 @@ function CountBars({ data }: { data: CountResult[] }) {
   </ResponsiveContainer>;
 }
 
-const mapNameAliases: Record<string, string[]> = {
-  "United States of America": ["United States"],
-  "Dem. Rep. Congo": ["Congo - Kinshasa", "Democratic Republic of the Congo"],
-  Congo: ["Congo - Brazzaville", "Republic of the Congo"],
-  China: ["China", "China Mainland", "Mainland China"],
+const canonicalMapNames: Record<string, string> = {
+  "united states of america": "united states",
+  "dem rep congo": "congo kinshasa",
+  "democratic republic of the congo": "congo kinshasa",
+  congo: "congo brazzaville",
+  "republic of the congo": "congo brazzaville",
 };
+
+function countryMapKey(name: string) {
+  const normalised = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+  if (
+    (normalised.includes("china") && normalised.includes("mainland")) ||
+    normalised === "peoples republic of china"
+  ) return "china";
+
+  return canonicalMapNames[normalised] ?? normalised;
+}
 
 const worldCountries = feature(
   world as never,
   world.objects.countries as never,
 ) as unknown as FeatureCollection<Geometry, { name: string }>;
-const worldPath = geoPath(geoNaturalEarth1().fitSize([800, 390], worldCountries));
+const visibleWorldCountries: FeatureCollection<Geometry, { name: string }> = {
+  ...worldCountries,
+  features: worldCountries.features.filter(country => country.properties?.name !== "Antarctica"),
+};
+const worldPath = geoPath(geoNaturalEarth1().fitExtent([[8, 8], [792, 332]], visibleWorldCountries));
 
 function CountryMap({ data, total }: { data: CountResult[]; total: number }) {
-  const counts = new Map(data.map(item => [item.name, item.count]));
+  const counts = new Map<string, number>();
+  for (const item of data) {
+    const key = countryMapKey(item.name);
+    counts.set(key, (counts.get(key) ?? 0) + item.count);
+  }
   const maximum = Math.max(...data.map(item => item.count), 1);
   const topCountries = data.slice(0, 5);
 
   return <div className="flex h-full flex-col">
-    <svg viewBox="0 0 800 390" className="min-h-0 w-full grow" role="img" aria-label="World map shaded by response count">
-      {worldCountries.features.map(country => {
+    <svg viewBox="0 0 800 340" className="min-h-0 w-full grow" role="img" aria-label="World map shaded by response count">
+      {visibleWorldCountries.features.map(country => {
         const mapName = country.properties?.name ?? "Unknown";
-        const surveyNames = mapNameAliases[mapName] ?? [mapName];
-        const matchedNames = surveyNames.filter(name => counts.has(name));
-        const surveyName = matchedNames[0] ?? surveyNames[0];
-        const count = surveyNames.reduce((sum, name) => sum + (counts.get(name) ?? 0), 0);
+        const mapKey = countryMapKey(mapName);
+        const matchingResponse = data.find(item => countryMapKey(item.name) === mapKey);
+        const surveyName = matchingResponse?.name ?? mapName;
+        const count = counts.get(mapKey) ?? 0;
         const intensity = count ? 0.28 + (count / maximum) * 0.72 : 0;
         return <path
           key={`${country.id}-${mapName}`}

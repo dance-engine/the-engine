@@ -143,25 +143,60 @@ resources:
                   Resource:
                     Fn::Sub: "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${self:custom.core_table_name}"
 
-                - Sid: ReadWriteSurveyResponses
+                - Sid: WriteSurveyResponses
                   Effect: Allow
                   Action:
-                    - dynamodb:GetItem
                     - dynamodb:PutItem
-                    - dynamodb:UpdateItem
-                    - dynamodb:Query
-                    - dynamodb:Scan
-                    - dynamodb:BatchGetItem
                   Resource:
-                    - Fn::GetAtt:
-                        - SurveyTable
-                        - Arn
-                    - Fn::Sub:
-                        - "${TableArn}/index/*"
-                        - TableArn:
-                            Fn::GetAtt:
-                              - SurveyTable
-                              - Arn
+                    Fn::GetAtt:
+                      - SurveyTable
+                      - Arn
+
+    SurveyResultsRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: "${sls:stage}-sbk-survey-results"
+        Description: Allows the Vercel SBK survey results endpoint to query aggregated response data.
+        MaxSessionDuration: 3600
+        AssumeRolePolicyDocument:
+          Fn::Sub: |
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Federated": "${self:custom.vercel_oidc_provider_arn}"
+                  },
+                  "Action": "sts:AssumeRoleWithWebIdentity",
+                  "Condition": {
+                    "StringEquals": {
+                      "oidc.vercel.com/${self:custom.vercel_team_slug}:aud": "https://vercel.com/${self:custom.vercel_team_slug}",
+                      "oidc.vercel.com/${self:custom.vercel_team_slug}:sub": [
+                        "owner:${self:custom.vercel_team_slug}:project:${self:custom.vercel_project_name}:environment:${self:custom.vercel_environment}",
+                        "owner:${self:custom.vercel_team_slug}:project:${self:custom.vercel_project_name}:environment:development"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+        Policies:
+          - PolicyName: QuerySurveyResults
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Sid: QuerySurveyResponseIndex
+                  Effect: Allow
+                  Action:
+                    - dynamodb:Query
+                  Resource:
+                    Fn::Sub:
+                      - "${TableArn}/index/typeIDX"
+                      - TableArn:
+                          Fn::GetAtt:
+                            - SurveyTable
+                            - Arn
 
   Outputs:
     SurveyTableName:
@@ -174,4 +209,11 @@ resources:
       Value:
         Fn::GetAtt:
           - SurveyApplicationRole
+          - Arn
+
+    SurveyResultsRoleArn:
+      Description: Query-only IAM role for the Vercel survey results endpoint.
+      Value:
+        Fn::GetAtt:
+          - SurveyResultsRole
           - Arn

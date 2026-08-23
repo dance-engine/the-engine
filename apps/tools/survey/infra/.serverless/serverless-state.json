@@ -7,8 +7,8 @@
     "provider": {
       "name": "aws",
       "region": "eu-west-1",
-      "stage": "preview",
-      "stackName": "preview-core-sbk-survey",
+      "stage": "prod",
+      "stackName": "prod-core-sbk-survey",
       "versionFunctions": true,
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
@@ -19,7 +19,7 @@
             "DeletionPolicy": "Retain",
             "UpdateReplacePolicy": "Retain",
             "Properties": {
-              "TableName": "preview-core-sbk-survey",
+              "TableName": "prod-core-sbk-survey",
               "DeletionProtectionEnabled": {
                 "Fn::If": [
                   "IsProduction",
@@ -181,7 +181,7 @@
               "Tags": [
                 {
                   "Key": "STAGE",
-                  "Value": "preview"
+                  "Value": "prod"
                 },
                 {
                   "Key": "DanceEngineVersion",
@@ -193,11 +193,11 @@
           "SurveyApplicationRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
-              "RoleName": "preview-sbk-survey-application",
+              "RoleName": "prod-sbk-survey-application",
               "Description": "Allows the Vercel SBK survey application to store contacts and survey responses.",
               "MaxSessionDuration": 3600,
               "AssumeRolePolicyDocument": {
-                "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:preview\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+                "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:production\",\n            \"owner:dance-engine:project:the-engine-survey:environment:production\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
               },
               "Policies": [
                 {
@@ -209,44 +209,66 @@
                         "Sid": "WriteContactDetails",
                         "Effect": "Allow",
                         "Action": [
-                          "dynamodb:PutItem"
+                          "dynamodb:PutItem",
+                          "dynamodb:UpdateItem"
                         ],
                         "Resource": {
-                          "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/preview-core-danceengine"
+                          "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-core-danceengine"
                         }
                       },
                       {
-                        "Sid": "ReadWriteSurveyResponses",
+                        "Sid": "WriteSurveyResponses",
                         "Effect": "Allow",
                         "Action": [
-                          "dynamodb:GetItem",
-                          "dynamodb:PutItem",
-                          "dynamodb:UpdateItem",
-                          "dynamodb:Query",
-                          "dynamodb:Scan",
-                          "dynamodb:BatchGetItem"
+                          "dynamodb:PutItem"
                         ],
-                        "Resource": [
-                          {
-                            "Fn::GetAtt": [
-                              "SurveyTable",
-                              "Arn"
-                            ]
-                          },
-                          {
-                            "Fn::Sub": [
-                              "${TableArn}/index/*",
-                              {
-                                "TableArn": {
-                                  "Fn::GetAtt": [
-                                    "SurveyTable",
-                                    "Arn"
-                                  ]
-                                }
+                        "Resource": {
+                          "Fn::GetAtt": [
+                            "SurveyTable",
+                            "Arn"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "SurveyResultsRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "RoleName": "prod-sbk-survey-results",
+              "Description": "Allows the Vercel SBK survey results endpoint to query aggregated response data.",
+              "MaxSessionDuration": 3600,
+              "AssumeRolePolicyDocument": {
+                "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:production\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+              },
+              "Policies": [
+                {
+                  "PolicyName": "QuerySurveyResults",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Sid": "QuerySurveyResponseIndex",
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:Query"
+                        ],
+                        "Resource": {
+                          "Fn::Sub": [
+                            "${TableArn}/index/typeIDX",
+                            {
+                              "TableArn": {
+                                "Fn::GetAtt": [
+                                  "SurveyTable",
+                                  "Arn"
+                                ]
                               }
-                            ]
-                          }
-                        ]
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
@@ -259,7 +281,7 @@
           "ServerlessDeploymentBucketName": {
             "Value": "serverless-framework-deployments-eu-west-1-0e22de09-8583",
             "Export": {
-              "Name": "sls-core-sbk-survey-preview-ServerlessDeploymentBucketName"
+              "Name": "sls-core-sbk-survey-prod-ServerlessDeploymentBucketName"
             }
           },
           "SurveyTableName": {
@@ -276,26 +298,35 @@
                 "Arn"
               ]
             }
+          },
+          "SurveyResultsRoleArn": {
+            "Description": "Query-only IAM role for the Vercel survey results endpoint.",
+            "Value": {
+              "Fn::GetAtt": [
+                "SurveyResultsRole",
+                "Arn"
+              ]
+            }
           }
         },
         "Conditions": {
           "IsProduction": {
             "Fn::Equals": [
-              "preview",
-              "production"
+              "prod",
+              "prod"
             ]
           }
         }
       }
     },
     "custom": {
-      "core_table_name": "preview-core-danceengine",
-      "survey_table_name": "preview-core-sbk-survey",
+      "core_table_name": "prod-core-danceengine",
+      "survey_table_name": "prod-core-sbk-survey",
       "vercel_oidc_provider_arn": "arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine",
       "vercel_team_slug": "dance-engine",
       "vercel_project_name": "the-engine-survey",
-      "vercel_environment": "preview",
-      "vercel_local_environment": "development"
+      "vercel_environment": "production",
+      "vercel_local_environment": "production"
     },
     "pluginsData": {},
     "functions": {},
@@ -303,8 +334,8 @@
       "Conditions": {
         "IsProduction": {
           "Fn::Equals": [
-            "preview",
-            "production"
+            "prod",
+            "prod"
           ]
         }
       },
@@ -314,7 +345,7 @@
           "DeletionPolicy": "Retain",
           "UpdateReplacePolicy": "Retain",
           "Properties": {
-            "TableName": "preview-core-sbk-survey",
+            "TableName": "prod-core-sbk-survey",
             "DeletionProtectionEnabled": {
               "Fn::If": [
                 "IsProduction",
@@ -476,7 +507,7 @@
             "Tags": [
               {
                 "Key": "STAGE",
-                "Value": "preview"
+                "Value": "prod"
               },
               {
                 "Key": "DanceEngineVersion",
@@ -488,11 +519,11 @@
         "SurveyApplicationRole": {
           "Type": "AWS::IAM::Role",
           "Properties": {
-            "RoleName": "preview-sbk-survey-application",
+            "RoleName": "prod-sbk-survey-application",
             "Description": "Allows the Vercel SBK survey application to store contacts and survey responses.",
             "MaxSessionDuration": 3600,
             "AssumeRolePolicyDocument": {
-              "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:preview\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+              "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:production\",\n            \"owner:dance-engine:project:the-engine-survey:environment:production\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
             },
             "Policies": [
               {
@@ -504,44 +535,66 @@
                       "Sid": "WriteContactDetails",
                       "Effect": "Allow",
                       "Action": [
-                        "dynamodb:PutItem"
+                        "dynamodb:PutItem",
+                        "dynamodb:UpdateItem"
                       ],
                       "Resource": {
-                        "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/preview-core-danceengine"
+                        "Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-core-danceengine"
                       }
                     },
                     {
-                      "Sid": "ReadWriteSurveyResponses",
+                      "Sid": "WriteSurveyResponses",
                       "Effect": "Allow",
                       "Action": [
-                        "dynamodb:GetItem",
-                        "dynamodb:PutItem",
-                        "dynamodb:UpdateItem",
-                        "dynamodb:Query",
-                        "dynamodb:Scan",
-                        "dynamodb:BatchGetItem"
+                        "dynamodb:PutItem"
                       ],
-                      "Resource": [
-                        {
-                          "Fn::GetAtt": [
-                            "SurveyTable",
-                            "Arn"
-                          ]
-                        },
-                        {
-                          "Fn::Sub": [
-                            "${TableArn}/index/*",
-                            {
-                              "TableArn": {
-                                "Fn::GetAtt": [
-                                  "SurveyTable",
-                                  "Arn"
-                                ]
-                              }
+                      "Resource": {
+                        "Fn::GetAtt": [
+                          "SurveyTable",
+                          "Arn"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "SurveyResultsRole": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "RoleName": "prod-sbk-survey-results",
+            "Description": "Allows the Vercel SBK survey results endpoint to query aggregated response data.",
+            "MaxSessionDuration": 3600,
+            "AssumeRolePolicyDocument": {
+              "Fn::Sub": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Federated\": \"arn:aws:iam::717279731911:oidc-provider/oidc.vercel.com/dance-engine\"\n      },\n      \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n      \"Condition\": {\n        \"StringEquals\": {\n          \"oidc.vercel.com/dance-engine:aud\": \"https://vercel.com/dance-engine\",\n          \"oidc.vercel.com/dance-engine:sub\": [\n            \"owner:dance-engine:project:the-engine-survey:environment:production\",\n            \"owner:dance-engine:project:the-engine-survey:environment:development\"\n          ]\n        }\n      }\n    }\n  ]\n}\n"
+            },
+            "Policies": [
+              {
+                "PolicyName": "QuerySurveyResults",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Sid": "QuerySurveyResponseIndex",
+                      "Effect": "Allow",
+                      "Action": [
+                        "dynamodb:Query"
+                      ],
+                      "Resource": {
+                        "Fn::Sub": [
+                          "${TableArn}/index/typeIDX",
+                          {
+                            "TableArn": {
+                              "Fn::GetAtt": [
+                                "SurveyTable",
+                                "Arn"
+                              ]
                             }
-                          ]
-                        }
-                      ]
+                          }
+                        ]
+                      }
                     }
                   ]
                 }
@@ -565,6 +618,15 @@
               "Arn"
             ]
           }
+        },
+        "SurveyResultsRoleArn": {
+          "Description": "Query-only IAM role for the Vercel survey results endpoint.",
+          "Value": {
+            "Fn::GetAtt": [
+              "SurveyResultsRole",
+              "Arn"
+            ]
+          }
         }
       }
     },
@@ -580,6 +642,10 @@
           "vercelProjectName": "the-engine-survey",
           "vercelEnvironment": "preview",
           "vercelLocalEnvironment": "development"
+        },
+        "prod": {
+          "vercelEnvironment": "production",
+          "vercelLocalEnvironment": "production"
         }
       },
       "provider": {
@@ -597,7 +663,7 @@
     "layers": {}
   },
   "package": {
-    "artifactDirectoryName": "serverless/core-sbk-survey/preview/1786066219369-2026-08-07T01:30:19.369Z",
+    "artifactDirectoryName": "serverless/core-sbk-survey/prod/1787526529116-2026-08-23T23:08:49.116Z",
     "artifact": ""
   }
 }

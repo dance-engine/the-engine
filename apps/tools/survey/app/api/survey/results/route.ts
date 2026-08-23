@@ -7,26 +7,24 @@ import { aggregateSurveyResults } from "../../../lib/survey-results";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Deployed functions receive OIDC through Vercel's request context, while
-// linked local development receives it through VERCEL_OIDC_TOKEN.
-const useVercelOidc = Boolean(
-  process.env.AWS_ROLE_ARN &&
-  (process.env.VERCEL === "1" || process.env.VERCEL_OIDC_TOKEN),
-);
-const client = DynamoDBDocumentClient.from(new DynamoDBClient({
-  region: process.env.AWS_REGION,
-  credentials: useVercelOidc
-    ? awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN! })
-    : undefined,
-}));
-
 export async function GET() {
-  const tableName = process.env.DYNAMODB_TABLE_NAME;
-  if (!tableName) {
-    return NextResponse.json({ error: "Survey storage is not configured." }, { status: 500 });
+  const tableName = process.env.SURVEY_RESULTS_DYNAMODB_TABLE_NAME;
+  const roleArn = process.env.AWS_RESULTS_ROLE_ARN;
+  if (!tableName || !roleArn) {
+    console.error("Survey results storage is not configured", {
+      hasResultsTable: Boolean(tableName),
+      hasResultsRole: Boolean(roleArn),
+    });
+    return NextResponse.json({ error: "Survey results storage is not configured." }, { status: 500 });
   }
 
   try {
+    // Results always use their dedicated OIDC role. This prevents the read
+    // endpoint from inheriting the submission route's write credentials.
+    const client = DynamoDBDocumentClient.from(new DynamoDBClient({
+      region: process.env.AWS_REGION,
+      credentials: awsCredentialsProvider({ roleArn }),
+    }));
     const items: Record<string, unknown>[] = [];
     let exclusiveStartKey: Record<string, unknown> | undefined;
 

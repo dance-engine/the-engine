@@ -20,7 +20,8 @@ import {
 } from "recharts";
 import type { AverageResult, CountResult, SurveyResults } from "../lib/survey-results";
 
-const colours = ["#d61976", "#169c87", "#b4d52f", "#7c5cff", "#ef8c2f"];
+const colours = ["#d61976", "#169c87", "#b4d52f", "#7c5cff", "#ef8c2f", "#2f75ef"];
+const styleStackColours = ["#2563eb", "#0891b2", "#10b981", "#eab308", "#f97316", "#dc2626"];
 const tooltipStyle = { borderRadius: 12, border: "1px solid var(--sbk-border)", background: "var(--sbk-surface)", color: "var(--sbk-text)" };
 const responsePercentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0;
 
@@ -207,6 +208,7 @@ function SpendingChart({ data, dataKey, name, responseKey, total }: {
 }
 
 const styleAnswerTitles: Record<string, string> = {
+  "Not for me / Not interested": "Not for me / not interested",
   "Don't know about this style": "Don’t know about",
   "Not interested": "Not interested in",
   "Not for me": "Not for me",
@@ -217,30 +219,49 @@ const styleAnswerTitles: Record<string, string> = {
 };
 
 function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]; total: number }) {
+  const answerGroups = [
+    { answer: "Not for me / Not interested", sources: ["Not for me", "Not interested"] },
+    { answer: "Don't know about this style", sources: ["Don't know about this style"] },
+    { answer: "Curious", sources: ["Curious"] },
+    { answer: "Want to learn", sources: ["Want to learn"] },
+    { answer: "Learning or dancing", sources: ["Learning or dancing"] },
+    { answer: "A favourite", sources: ["A favourite"] },
+  ];
+  const styles = [...new Set(data.flatMap(group => group.styles.map(style => style.name)))].sort();
+  const countFor = (answer: string, style: string) => data
+    .find(group => group.answer === answer)?.styles.find(item => item.name === style)?.count ?? 0;
+  const chartData = styles.map(style => {
+    const row: Record<string, string | number> = { danceStyle: style };
+    for (const group of answerGroups) {
+      const count = group.sources.reduce((sum, answer) => sum + countFor(answer, style), 0);
+      row[group.answer] = responsePercentage(count, total);
+    }
+    return row;
+  });
+  const chartHeight = Math.max(540, styles.length * 38);
+
   return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Dance-style breakdown</h2>
-    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Top dances for every answer, shown as a percentage of all respondents. Favourite dances are also included under learning or dancing.</p>
-    <div className="mt-7 grid gap-8 lg:grid-cols-2">
-      {data.map((group, groupIndex) => {
-        const chartData = group.styles.map(style => ({ ...style, percentage: responsePercentage(style.count, total) }));
-        return <div key={group.answer} className="rounded-2xl border border-[var(--sbk-border-soft)] p-4">
-          <h3 className="font-black">{styleAnswerTitles[group.answer] ?? group.answer}</h3>
-          {chartData.length ? <div className="mt-4 h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ left: 12, right: 48 }}>
-                <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" width={150} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={value => [`${value}%`, "Responses"]} />
-                <Bar dataKey="percentage" name="Responses" fill={colours[groupIndex % colours.length]} radius={[0, 7, 7, 0]}>
-                  <LabelList dataKey="percentage" position="right" formatter={(value: unknown) => `${value}%`} fill="var(--sbk-text)" fontSize={11} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div> : <p className="mt-5 text-sm text-[var(--sbk-text-muted)]">No responses in this category yet.</p>}
-        </div>;
-      })}
-    </div>
+    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Answer distribution for every style, shown as a percentage of all respondents. Each answer is counted only in its selected category.</p>
+    {chartData.length ? <div className="mt-7 overflow-x-auto">
+      <div className="mb-4 flex min-w-[760px] flex-wrap justify-center gap-x-5 gap-y-2 text-xs">
+        {answerGroups.map((group, index) => <span key={group.answer} className="inline-flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: styleStackColours[index] }} />
+          {styleAnswerTitles[group.answer] ?? group.answer}
+        </span>)}
+      </div>
+      <div style={{ height: chartHeight, minWidth: 760 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 24, top: 20, bottom: 10 }}>
+            <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
+            <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
+            <YAxis dataKey="danceStyle" type="category" width={165} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value, name) => [`${value}%`, styleAnswerTitles[String(name)] ?? name]} />
+            {answerGroups.map((group, index) => <Bar key={group.answer} dataKey={group.answer} stackId="styles" fill={styleStackColours[index]} />)}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div> : <p className="mt-5 text-sm text-[var(--sbk-text-muted)]">No dance-style responses have been submitted yet.</p>}
   </section>;
 }
 

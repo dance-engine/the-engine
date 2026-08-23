@@ -167,7 +167,6 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
       }
       const answerCounts = styleBreakdown.get(answer);
       if (answerCounts) increment(answerCounts, name);
-      if (answer === "A favourite") increment(styleBreakdown.get("Learning or dancing")!, name);
     }
 
     const music = objectValue(objectValue(item.favourites).musicMix);
@@ -190,7 +189,7 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     danceStyles: averages(danceStyles).slice(0, 12),
     styleBreakdown: styleAnswerOrder.map(answer => ({
       answer,
-      styles: topCounts(styleBreakdown.get(answer)!, 8),
+      styles: topCounts(styleBreakdown.get(answer)!, 100),
     })),
     musicMix: averages(musicMix, ["Salsa", "Bachata", "Kizomba"]),
     musicPolicies: topCounts(musicPolicies, 64),

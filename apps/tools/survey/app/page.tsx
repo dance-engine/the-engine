@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getCountryOptions, getCountyOptions, getFeaturedCountryCodes, getSubdivisionLabel } from "./location-options";
 import { ThemeVariables } from "./theme";
 
@@ -142,7 +143,7 @@ export default function Survey() {
   }
 
   if (!ready) return null;
-  if (status === "sent") return <><ThemeVariables /><main className="grid min-h-screen place-items-center bg-[var(--sbk-page)] p-6 text-[var(--sbk-text)]"><div className="max-w-xl rounded-[2rem] bg-[var(--sbk-surface)] p-10 shadow-xl"><p className="text-sm font-bold uppercase tracking-[.2em] text-[var(--sbk-primary)]">Response received</p><h1 className="mt-3 text-4xl font-black">Thank you for adding your voice.</h1><p className="mt-4 text-lg text-[var(--sbk-text-muted)]">Your answers have been saved. Together, the results will help paint a more useful picture of our dance community.</p></div></main></>;
+  if (status === "sent") return <><ThemeVariables /><main className="grid min-h-screen place-items-center bg-[var(--sbk-page)] p-6 text-[var(--sbk-text)]"><div className="max-w-xl rounded-[2rem] bg-[var(--sbk-surface)] p-10 shadow-xl"><p className="text-sm font-bold uppercase tracking-[.2em] text-[var(--sbk-primary)]">Response received</p><h1 className="mt-3 text-4xl font-black">Thank you for adding your voice.</h1><p className="mt-4 text-lg text-[var(--sbk-text-muted)]">Your answers have been saved. Together, the results will help paint a more useful picture of our dance community.</p><Link href="/results" className="mt-7 inline-block rounded-full bg-[var(--sbk-primary)] px-6 py-3 font-bold text-[var(--sbk-on-aside)] hover:bg-[var(--sbk-primary-hover)]">Explore the results →</Link></div></main></>;
 
   return <><ThemeVariables /><main className="min-h-screen bg-[var(--sbk-page)] px-4 py-6 text-[var(--sbk-text)] sm:px-8 sm:py-10">
     <div className="mx-auto max-w-5xl">

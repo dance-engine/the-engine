@@ -1,0 +1,102 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { AverageResult, CountResult, SurveyResults } from "../lib/survey-results";
+
+const colours = ["#d61976", "#169c87", "#b4d52f", "#7c5cff", "#ef8c2f"];
+const tooltipStyle = { borderRadius: 12, border: "1px solid var(--sbk-border)", background: "var(--sbk-surface)", color: "var(--sbk-text)" };
+
+function ChartCard({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
+  return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7">
+    <h2 className="text-xl font-black">{title}</h2>
+    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">{description}</p>
+    <div className="mt-5 h-80">{children}</div>
+  </section>;
+}
+
+function CountBars({ data }: { data: CountResult[] }) {
+  return <ResponsiveContainer width="100%" height="100%">
+    <BarChart data={data} layout="vertical" margin={{ left: 10, right: 36 }}>
+      <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
+      <XAxis type="number" allowDecimals={false} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+      <YAxis dataKey="name" type="category" width={105} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
+      <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} />
+      <Bar dataKey="count" name="Responses" fill={colours[1]} radius={[0, 8, 8, 0]}>
+        <LabelList dataKey="count" position="right" fill="var(--sbk-text)" fontSize={12} />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>;
+}
+
+function AverageBars({ data, max }: { data: AverageResult[]; max: number }) {
+  return <ResponsiveContainer width="100%" height="100%">
+    <BarChart data={data} layout="vertical" margin={{ left: 12, right: 42 }}>
+      <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
+      <XAxis type="number" domain={[0, max]} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+      <YAxis dataKey="name" type="category" width={112} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
+      <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value) => [Number(value).toFixed(1), "Average"]} />
+      <Bar dataKey="average" name="Average" fill={colours[0]} radius={[0, 8, 8, 0]}>
+        <LabelList dataKey="average" position="right" fill="var(--sbk-text)" fontSize={12} />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>;
+}
+
+export default function ResultsDashboard() {
+  const [results, setResults] = useState<SurveyResults | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/survey/results", { signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw new Error("Results request failed");
+        return response.json() as Promise<SurveyResults>;
+      })
+      .then(setResults)
+      .catch(requestError => {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+        setError("We couldn't load the results right now. Please try again shortly.");
+      });
+    return () => controller.abort();
+  }, []);
+
+  if (error) return <div className="rounded-2xl bg-[var(--sbk-danger-bg)] p-6 text-[var(--sbk-danger-text)]">{error}</div>;
+  if (!results) return <div className="grid min-h-64 place-items-center rounded-[2rem] bg-[var(--sbk-surface)] text-[var(--sbk-text-muted)]" role="status">Loading community results…</div>;
+  if (results.totalResponses === 0) return <div className="rounded-[2rem] bg-[var(--sbk-surface)] p-10 text-center"><h2 className="text-2xl font-black">The first results are on their way.</h2><p className="mt-2 text-[var(--sbk-text-muted)]">No survey responses have been submitted yet.</p></div>;
+
+  return <>
+    <div className="grid gap-4 sm:grid-cols-3">
+      <div className="rounded-2xl bg-[var(--sbk-aside)] p-6 text-[var(--sbk-on-aside)]"><p className="text-sm font-bold uppercase tracking-wider text-[var(--sbk-aside-accent)]">Community voices</p><p className="mt-2 text-5xl font-black">{results.totalResponses}</p><p className="mt-1 text-sm text-[var(--sbk-aside-muted)]">completed responses</p></div>
+      <div className="rounded-2xl bg-[var(--sbk-surface)] p-6 shadow-sm"><p className="text-sm font-bold text-[var(--sbk-text-muted)]">Congresses per year</p><p className="mt-2 text-4xl font-black">{results.averageCongresses ?? "—"}</p><p className="mt-1 text-sm text-[var(--sbk-text-muted)]">average attendance</p></div>
+      <div className="rounded-2xl bg-[var(--sbk-surface)] p-6 shadow-sm"><p className="text-sm font-bold text-[var(--sbk-text-muted)]">Latest response</p><p className="mt-3 text-xl font-black">{results.latestSubmission ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(results.latestSubmission)) : "—"}</p><p className="mt-2 text-sm text-[var(--sbk-text-muted)]">dashboard refreshes every few minutes</p></div>
+    </div>
+
+    <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <ChartCard title="Where dancers live" description="Top countries by current residence"><CountBars data={results.currentCountries} /></ChartCard>
+      <ChartCard title="Where dancers grew up" description="Top countries represented in the community"><CountBars data={results.homeCountries} /></ChartCard>
+      <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
+      <ChartCard title="Favourite event mix" description="Average preference score, from 1 to 4"><AverageBars data={results.musicMix} max={4} /></ChartCard>
+      <ChartCard title="Most-loved dance styles" description="Highest average interest score, from 1 to 5"><AverageBars data={results.danceStyles} max={5} /></ChartCard>
+      <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart><Pie data={results.learningSources} dataKey="count" nameKey="name" innerRadius="48%" outerRadius="76%" paddingAngle={2} label={({ name, percent }) => `${name} ${Math.round((percent ?? 0) * 100)}%`} labelLine={false}>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart>
+        </ResponsiveContainer>
+      </ChartCard>
+    </div>
+    <p className="mt-8 text-center text-sm text-[var(--sbk-text-muted)]">Only combined, anonymous answers are shown here. Individual responses and contact details are never included.</p>
+  </>;
+}

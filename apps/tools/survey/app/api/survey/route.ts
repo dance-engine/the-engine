@@ -14,14 +14,17 @@ type JsonObject = Record<string, unknown>;
 
 const SURVEY_ORGANISATION = "dance-engine";
 
-const hasVercelOidcToken = Boolean(
-  process.env.VERCEL || process.env.VERCEL_OIDC_TOKEN,
+// VERCEL is also set by some local workflows, where no OIDC token exists.
+// In that case the AWS SDK should use its normal local credential chain.
+const useVercelOidc = Boolean(
+  process.env.VERCEL_OIDC_TOKEN &&
+  process.env.AWS_ROLE_ARN,
 );
 
 const client = DynamoDBDocumentClient.from(
   new DynamoDBClient({
     region: process.env.AWS_REGION,
-    credentials: hasVercelOidcToken
+    credentials: useVercelOidc
       ? awsCredentialsProvider({
           roleArn: process.env.AWS_ROLE_ARN!,
         })

@@ -148,34 +148,38 @@ function MusicPolicyResults({ averageRatio, data, total }: { averageRatio: strin
   return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Favourite event mix</h2>
     <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Salsa:Bachata:Kizomba music policy</p>
-    <div className="py-10 text-center">
-      <p className="text-sm font-bold uppercase tracking-[.16em] text-[var(--sbk-text-muted)]">Average policy</p>
-      <p className="mt-3 text-6xl font-black tracking-tight text-[var(--sbk-primary)] sm:text-7xl">{averageRatio}</p>
-      <div className="mx-auto mt-6 grid max-w-md grid-cols-3 gap-5 text-sm font-bold text-[var(--sbk-text-muted)]">
-        {["Salsa", "Bachata", "Kizomba"].map((style, index) => <div key={style}>
-          <span className="mx-auto mb-2 block h-2 w-10 rounded-full" style={{ backgroundColor: colours[index] }} />
-          {style}
-        </div>)}
-      </div>
-    </div>
-    <div className="border-t border-[var(--sbk-border-soft)] pt-7">
-      <h3 className="font-black">Combined responses</h3>
-      <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Percentage of respondents who selected each exact policy</p>
-      {data.length ? <div className="mt-5 max-h-[36rem] overflow-y-auto pr-2">
-        <div style={{ height: chartHeight }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={percentageData} layout="vertical" margin={{ left: 6, right: 48 }}>
-              <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
-              <YAxis dataKey="name" type="category" width={64} tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
-              <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={value => [`${value}%`, "Responses"]} />
-              <Bar dataKey="percentage" name="Responses" fill={colours[3]} radius={[0, 8, 8, 0]}>
-                <LabelList dataKey="percentage" position="right" formatter={(value: unknown) => `${value}%`} fill="var(--sbk-text)" fontSize={12} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+    <div className="mt-7 grid gap-7 lg:grid-cols-[.75fr_1.25fr] lg:gap-8">
+      <div className="grid min-h-64 place-items-center py-6 text-center">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[.16em] text-[var(--sbk-text-muted)]">Average policy</p>
+          <p className="mt-3 text-6xl font-black tracking-tight text-[var(--sbk-primary)] sm:text-7xl">{averageRatio}</p>
+          <div className="mx-auto mt-6 grid max-w-md grid-cols-3 gap-5 text-sm font-bold text-[var(--sbk-text-muted)]">
+            {["Salsa", "Bachata", "Kizomba"].map((style, index) => <div key={style}>
+              <span className="mx-auto mb-2 block h-2 w-10 rounded-full" style={{ backgroundColor: colours[index] }} />
+              {style}
+            </div>)}
+          </div>
         </div>
-      </div> : <p className="mt-5 text-sm text-[var(--sbk-text-muted)]">No music policies have been submitted yet.</p>}
+      </div>
+      <div className="border-t border-[var(--sbk-border-soft)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+        <h3 className="font-black">Combined responses</h3>
+        <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Percentage of respondents who selected each exact policy</p>
+        {data.length ? <div className="mt-5 max-h-[36rem] overflow-y-auto pr-2">
+          <div style={{ height: chartHeight }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={percentageData} layout="vertical" margin={{ left: 6, right: 48 }}>
+                <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
+                <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" width={64} tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={value => [`${value}%`, "Responses"]} />
+                <Bar dataKey="percentage" name="Responses" fill={colours[3]} radius={[0, 8, 8, 0]}>
+                  <LabelList dataKey="percentage" position="right" formatter={(value: unknown) => `${value}%`} fill="var(--sbk-text)" fontSize={12} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div> : <p className="mt-5 text-sm text-[var(--sbk-text-muted)]">No music policies have been submitted yet.</p>}
+      </div>
     </div>
   </section>;
 }

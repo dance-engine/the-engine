@@ -206,6 +206,44 @@ function SpendingChart({ data, dataKey, name, responseKey, total }: {
   </ResponsiveContainer>;
 }
 
+const styleAnswerTitles: Record<string, string> = {
+  "Don't know about this style": "Don’t know about",
+  "Not interested": "Not interested in",
+  "Not for me": "Not for me",
+  Curious: "Curious about",
+  "Want to learn": "Want to learn",
+  "Learning or dancing": "Learning or dancing",
+  "A favourite": "Favourite dances",
+};
+
+function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]; total: number }) {
+  return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
+    <h2 className="text-xl font-black">Dance-style breakdown</h2>
+    <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Top dances for every answer, shown as a percentage of all respondents. Favourite dances are also included under learning or dancing.</p>
+    <div className="mt-7 grid gap-8 lg:grid-cols-2">
+      {data.map((group, groupIndex) => {
+        const chartData = group.styles.map(style => ({ ...style, percentage: responsePercentage(style.count, total) }));
+        return <div key={group.answer} className="rounded-2xl border border-[var(--sbk-border-soft)] p-4">
+          <h3 className="font-black">{styleAnswerTitles[group.answer] ?? group.answer}</h3>
+          {chartData.length ? <div className="mt-4 h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} layout="vertical" margin={{ left: 12, right: 48 }}>
+                <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
+                <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
+                <YAxis dataKey="name" type="category" width={150} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={value => [`${value}%`, "Responses"]} />
+                <Bar dataKey="percentage" name="Responses" fill={colours[groupIndex % colours.length]} radius={[0, 7, 7, 0]}>
+                  <LabelList dataKey="percentage" position="right" formatter={(value: unknown) => `${value}%`} fill="var(--sbk-text)" fontSize={11} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div> : <p className="mt-5 text-sm text-[var(--sbk-text-muted)]">No responses in this category yet.</p>}
+        </div>;
+      })}
+    </div>
+  </section>;
+}
+
 export default function ResultsDashboard() {
   const [results, setResults] = useState<SurveyResults | null>(null);
   const [error, setError] = useState("");
@@ -259,6 +297,7 @@ export default function ResultsDashboard() {
           <PieChart><Pie data={results.learningSources.map(item => ({ ...item, percentage: responsePercentage(item.count, results.totalResponses) }))} dataKey="percentage" nameKey="name" innerRadius="48%" outerRadius="76%" paddingAngle={2} label={({ name, value }) => `${name} ${value}%`} labelLine={false}>{results.learningSources.map((item, index) => <Cell key={item.name} fill={colours[index % colours.length]} />)}</Pie><Tooltip contentStyle={tooltipStyle} formatter={value => [`${value}%`, "Responses"]} /></PieChart>
         </ResponsiveContainer>
       </ChartCard>
+      <StyleBreakdown data={results.styleBreakdown} total={results.totalResponses} />
     </div>
     <p className="mt-8 text-center text-sm text-[var(--sbk-text-muted)]">Only combined, anonymous answers are shown here. Individual responses and contact details are never included.</p>
   </>;

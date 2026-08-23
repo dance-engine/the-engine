@@ -7,6 +7,7 @@ export type SpendingResult = {
   monthlySpend: number | null;
   monthlyResponses: number;
 };
+export type StyleBreakdownResult = { answer: string; styles: CountResult[] };
 
 export type SurveyResults = {
   totalResponses: number;
@@ -16,6 +17,7 @@ export type SurveyResults = {
   learningSources: CountResult[];
   weeklyActivities: AverageResult[];
   danceStyles: AverageResult[];
+  styleBreakdown: StyleBreakdownResult[];
   musicMix: AverageResult[];
   musicPolicies: CountResult[];
   spendingByCurrency: SpendingResult[];
@@ -30,6 +32,21 @@ const styleScores: Record<string, number> = {
   "Want to learn": 3,
   "Learning or dancing": 4,
   "A favourite": 5,
+};
+const styleAnswerOrder = [
+  "Don't know about this style",
+  "Not interested",
+  "Not for me",
+  "Curious",
+  "Want to learn",
+  "Learning or dancing",
+  "A favourite",
+];
+const danceSubstyles: Record<string, string[]> = {
+  Salsa: ["Cuban", "Rueda", "LA", "New York"],
+  Bachata: ["Dominican", "Moderna", "Sensual"],
+  Kizomba: ["Traditional", "UrbanKiz", "Semba", "Tarraxinha"],
+  Other: ["Son", "Cha Cha", "Zouk", "Compa", "Merengue"],
 };
 
 function objectValue(value: unknown): JsonObject {
@@ -85,6 +102,7 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     ["Social dancing", []],
   ]);
   const danceStyles = new Map<string, number[]>();
+  const styleBreakdown = new Map(styleAnswerOrder.map(answer => [answer, new Map<string, number>()]));
   const musicMix = new Map<string, number[]>([
     ["Salsa", []],
     ["Bachata", []],
@@ -128,11 +146,28 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
       monthlySpending.set(monthlyCurrency, [...(monthlySpending.get(monthlyCurrency) ?? []), monthlySpend]);
     }
 
-    for (const [name, rating] of Object.entries(objectValue(item.styles))) {
-      const score = styleScores[textValue(rating)];
+    const submittedStyles = objectValue(item.styles);
+    const expandedStyles = new Map<string, string>();
+    for (const [name, rating] of Object.entries(submittedStyles)) {
+      if (!danceSubstyles[name]) expandedStyles.set(name, textValue(rating));
+    }
+    for (const [category, substyles] of Object.entries(danceSubstyles)) {
+      const categoryAnswer = textValue(submittedStyles[category]);
+      if (!categoryAnswer) continue;
+      for (const substyle of substyles) {
+        const name = `${category}: ${substyle}`;
+        if (!expandedStyles.has(name)) expandedStyles.set(name, categoryAnswer);
+      }
+    }
+
+    for (const [name, answer] of expandedStyles) {
+      const score = styleScores[answer];
       if (score) {
         danceStyles.set(name, [...(danceStyles.get(name) ?? []), score]);
       }
+      const answerCounts = styleBreakdown.get(answer);
+      if (answerCounts) increment(answerCounts, name);
+      if (answer === "A favourite") increment(styleBreakdown.get("Learning or dancing")!, name);
     }
 
     const music = objectValue(objectValue(item.favourites).musicMix);
@@ -153,6 +188,10 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
     learningSources: topCounts(learningSources),
     weeklyActivities: averages(weeklyActivities, ["Teacher-led learning", "Active practice", "Social dancing"]),
     danceStyles: averages(danceStyles).slice(0, 12),
+    styleBreakdown: styleAnswerOrder.map(answer => ({
+      answer,
+      styles: topCounts(styleBreakdown.get(answer)!, 8),
+    })),
     musicMix: averages(musicMix, ["Salsa", "Bachata", "Kizomba"]),
     musicPolicies: topCounts(musicPolicies, 64),
     spendingByCurrency: [...new Set([...lessonPrices.keys(), ...monthlySpending.keys()])]

@@ -7,11 +7,11 @@ import { aggregateSurveyResults } from "../../../lib/survey-results";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// VERCEL can be set locally even when the project is not linked and no OIDC
-// token is available. Fall back to the standard AWS credential chain locally.
+// Deployed functions receive OIDC through Vercel's request context, while
+// linked local development receives it through VERCEL_OIDC_TOKEN.
 const useVercelOidc = Boolean(
-  process.env.VERCEL_OIDC_TOKEN &&
-  process.env.AWS_ROLE_ARN,
+  process.env.AWS_ROLE_ARN &&
+  (process.env.VERCEL === "1" || process.env.VERCEL_OIDC_TOKEN),
 );
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({
   region: process.env.AWS_REGION,

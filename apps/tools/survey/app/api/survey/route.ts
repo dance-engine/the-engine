@@ -14,11 +14,11 @@ type JsonObject = Record<string, unknown>;
 
 const SURVEY_ORGANISATION = "dance-engine";
 
-// VERCEL is also set by some local workflows, where no OIDC token exists.
-// In that case the AWS SDK should use its normal local credential chain.
+// Deployed functions receive OIDC through Vercel's request context, while
+// linked local development receives it through VERCEL_OIDC_TOKEN.
 const useVercelOidc = Boolean(
-  process.env.VERCEL_OIDC_TOKEN &&
-  process.env.AWS_ROLE_ARN,
+  process.env.AWS_ROLE_ARN &&
+  (process.env.VERCEL === "1" || process.env.VERCEL_OIDC_TOKEN),
 );
 
 const client = DynamoDBDocumentClient.from(

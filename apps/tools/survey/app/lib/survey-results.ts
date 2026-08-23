@@ -148,8 +148,8 @@ export function aggregateSurveyResults(items: JsonObject[]): SurveyResults {
   return {
     totalResponses: items.length,
     latestSubmission,
-    currentCountries: topCounts(currentCountries),
-    homeCountries: topCounts(homeCountries),
+    currentCountries: topCounts(currentCountries, 250),
+    homeCountries: topCounts(homeCountries, 250),
     learningSources: topCounts(learningSources),
     weeklyActivities: averages(weeklyActivities, ["Teacher-led learning", "Active practice", "Social dancing"]),
     danceStyles: averages(danceStyles).slice(0, 12),

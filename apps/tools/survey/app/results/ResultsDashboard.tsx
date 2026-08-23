@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { geoNaturalEarth1, geoPath } from "d3-geo";
+import { feature } from "topojson-client";
+import type { FeatureCollection, Geometry } from "geojson";
+import world from "world-atlas/countries-110m.json";
 import {
   Bar,
   BarChart,
@@ -39,6 +43,47 @@ function CountBars({ data }: { data: CountResult[] }) {
       </Bar>
     </BarChart>
   </ResponsiveContainer>;
+}
+
+const mapNameAliases: Record<string, string> = {
+  "United States of America": "United States",
+  "Dem. Rep. Congo": "Congo - Kinshasa",
+  Congo: "Congo - Brazzaville",
+};
+
+const worldCountries = feature(
+  world as never,
+  world.objects.countries as never,
+) as unknown as FeatureCollection<Geometry, { name: string }>;
+const worldPath = geoPath(geoNaturalEarth1().fitSize([800, 390], worldCountries));
+
+function CountryMap({ data }: { data: CountResult[] }) {
+  const counts = new Map(data.map(item => [item.name, item.count]));
+  const maximum = Math.max(...data.map(item => item.count), 1);
+
+  return <div className="flex h-full flex-col">
+    <svg viewBox="0 0 800 390" className="min-h-0 w-full grow" role="img" aria-label="World map shaded by response count">
+      {worldCountries.features.map(country => {
+        const mapName = country.properties?.name ?? "Unknown";
+        const surveyName = mapNameAliases[mapName] ?? mapName;
+        const count = counts.get(surveyName) ?? 0;
+        const intensity = count ? 0.28 + (count / maximum) * 0.72 : 0;
+        return <path
+          key={`${country.id}-${mapName}`}
+          d={worldPath(country) ?? undefined}
+          fill={count ? `color-mix(in srgb, ${colours[1]} ${Math.round(intensity * 100)}%, var(--sbk-surface))` : "var(--sbk-border-soft)"}
+          stroke="var(--sbk-surface)"
+          strokeWidth={0.7}
+          className="transition-opacity hover:opacity-75"
+        >
+          <title>{surveyName}: {count} {count === 1 ? "response" : "responses"}</title>
+        </path>;
+      })}
+    </svg>
+    <div className="mt-2 flex items-center justify-end gap-2 text-xs text-[var(--sbk-text-muted)]">
+      <span>Fewer</span><span className="h-2.5 w-20 rounded-full" style={{ background: `linear-gradient(to right, color-mix(in srgb, ${colours[1]} 28%, var(--sbk-surface)), ${colours[1]})` }} /><span>More</span>
+    </div>
+  </div>;
 }
 
 function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; max: number; labelWidth?: number }) {
@@ -149,8 +194,8 @@ export default function ResultsDashboard() {
     </div>
 
     <div className="mt-6 grid gap-6 lg:grid-cols-2">
-      <ChartCard title="Where dancers live" description="Top countries by current residence"><CountBars data={results.currentCountries} /></ChartCard>
-      <ChartCard title="Where dancers grew up" description="Top countries represented in the community"><CountBars data={results.homeCountries} /></ChartCard>
+      <ChartCard title="Where dancers live" description="Countries shaded by current residence; hover for response counts"><CountryMap data={results.currentCountries} /></ChartCard>
+      <ChartCard title="Where dancers grew up" description="Countries represented in the community; hover for response counts"><CountryMap data={results.homeCountries} /></ChartCard>
       <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
       <div className="grid gap-6 sm:grid-cols-2">
         <ChartCard title="Lesson price" description="Average expected hourly lesson price, separated by currency">

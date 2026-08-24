@@ -1,5 +1,5 @@
 export type CountResult = { name: string; count: number };
-export type AverageResult = { name: string; average: number; responses: number };
+export type AverageResult = { name: string; average: number; median: number; responses: number };
 export type SpendingResult = {
   currency: string;
   lessonPrice: number | null;
@@ -89,11 +89,20 @@ function averages(values: Map<string, number[]>, order?: string[]): AverageResul
     : [...values.keys()];
   const results = names.map(name => {
     const entries = values.get(name) ?? [];
+    const average = entries.length
+      ? entries.reduce((sum, value) => sum + value, 0) / entries.length
+      : 0;
+    const sortedEntries = [...entries].sort((a, b) => a - b);
+    const middle = Math.floor(sortedEntries.length / 2);
+    const median = sortedEntries.length === 0
+      ? 0
+      : sortedEntries.length % 2
+        ? sortedEntries[middle]
+        : (sortedEntries[middle - 1] + sortedEntries[middle]) / 2;
     return {
       name,
-      average: entries.length
-        ? Number((entries.reduce((sum, value) => sum + value, 0) / entries.length).toFixed(1))
-        : 0,
+      average: Number(average.toFixed(1)),
+      median,
       responses: entries.length,
     };
   });

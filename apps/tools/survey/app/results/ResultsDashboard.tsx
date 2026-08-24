@@ -142,9 +142,11 @@ function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; m
   </ResponsiveContainer>;
 }
 
-function MusicPolicyResults({ averageRatio, data, total }: { averageRatio: string; data: CountResult[]; total: number }) {
+function MusicPolicyResults({ averageRatio, headlineRatio, data, total }: { averageRatio: string; headlineRatio: string; data: CountResult[]; total: number }) {
   const chartHeight = Math.max(280, data.length * 36);
   const percentageData = data.map(item => ({ ...item, percentage: responsePercentage(item.count, total) }));
+  const ratioParts = averageRatio.split(":");
+  const headlineParts = headlineRatio.split(":");
 
   return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Favourite event mix</h2>
@@ -152,13 +154,23 @@ function MusicPolicyResults({ averageRatio, data, total }: { averageRatio: strin
     <div className="mt-7 grid gap-7 lg:grid-cols-[.75fr_1.25fr] lg:gap-8">
       <div className="grid min-h-64 place-items-center py-6 text-center">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[.16em] text-[var(--sbk-text-muted)]">Average policy</p>
-          <p className="mt-3 text-6xl font-black tracking-tight text-[var(--sbk-primary)] sm:text-7xl">{averageRatio}</p>
-          <div className="mx-auto mt-6 grid max-w-md grid-cols-3 gap-5 text-sm font-bold text-[var(--sbk-text-muted)]">
-            {["Salsa", "Bachata", "Kizomba"].map((style, index) => <div key={style}>
-              <span className="mx-auto mb-2 block h-2 w-10 rounded-full" style={{ backgroundColor: colours[index] }} />
-              {style}
-            </div>)}
+          <p className="text-sm font-bold uppercase tracking-[.16em] text-[var(--sbk-text-muted)]">Community music policy</p>
+          <div className="mx-auto mt-3 grid max-w-md grid-cols-[1fr_auto_1fr_auto_1fr] items-start text-[var(--sbk-primary)]">
+            {ratioParts.map((part, index) => {
+              const preciseAverage = Number(part);
+              const whole = headlineParts[index] || (Number.isFinite(preciseAverage) ? Math.round(preciseAverage) : part);
+              const decimalValue = Number.isFinite(preciseAverage) ? preciseAverage.toFixed(1) : undefined;
+              const styleName = ["Salsa", "Bachata", "Kizomba"][index];
+              return <span key={`${part}-${index}`} className="contents">
+                {index > 0 && <span className="mx-[.08em] self-start pt-1 text-4xl font-normal leading-none text-[var(--sbk-text)] opacity-60 sm:text-5xl">:</span>}
+                <span className="inline-flex min-w-0 flex-col items-center leading-none">
+                  <span className="text-6xl font-black tracking-tight sm:text-7xl">{whole}</span>
+                  {decimalValue !== undefined && <span className="mt-[.16em] text-lg font-medium opacity-60 sm:text-xl">{decimalValue}</span>}
+                  <span className="mt-5 h-2 w-10 rounded-full" style={{ backgroundColor: colours[index] }} />
+                  <span className="mt-2 text-sm font-bold leading-normal text-[var(--sbk-text-muted)]">{styleName}</span>
+                </span>
+              </span>;
+            })}
           </div>
         </div>
       </div>
@@ -340,7 +352,10 @@ export default function ResultsDashboard() {
   if (results.totalResponses === 0) return <div className="rounded-[2rem] bg-[var(--sbk-surface)] p-10 text-center"><h2 className="text-2xl font-black">The first results are on their way.</h2><p className="mt-2 text-[var(--sbk-text-muted)]">No survey responses have been submitted yet.</p></div>;
 
   const eventMixRatio = results.musicMix.length === 3
-    ? results.musicMix.map(style => Math.round(style.average)).join(":")
+    ? results.musicMix.map(style => style.average.toFixed(1)).join(":")
+    : "–:–:–";
+  const eventMixHeadlineRatio = results.musicMix.length === 3
+    ? results.musicMix.map(style => Math.round(style.median ?? style.average)).join(":")
     : "–:–:–";
   const orderedDanceStyles = [...results.danceStyles].sort((a, b) => {
     const aIndex = surveyStyleOrder.indexOf(a.name);
@@ -370,7 +385,7 @@ export default function ResultsDashboard() {
           {results.spendingByCurrency.some(item => item.monthlySpend !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="monthlySpend" name="Monthly dance spend" responseKey="monthlyResponses" total={results.totalResponses} /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No monthly-spend answers have been submitted yet.</div>}
         </ChartCard>
       </div>
-      <MusicPolicyResults averageRatio={eventMixRatio} data={results.musicPolicies} total={results.totalResponses} />
+      <MusicPolicyResults averageRatio={eventMixRatio} headlineRatio={eventMixHeadlineRatio} data={results.musicPolicies} total={results.totalResponses} />
       <ChartCard title="Most-loved dance styles" description="Average interest score from 1 to 5, ordered as shown in the survey"><AverageBars data={orderedDanceStyles} max={5} labelWidth={190} /></ChartCard>
       <ChartCard title="Where people learn most" description="Primary learning source selected by respondents">
         <ResponsiveContainer width="100%" height="100%">

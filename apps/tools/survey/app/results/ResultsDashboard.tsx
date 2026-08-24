@@ -143,10 +143,12 @@ function CountryMap({ data, total }: { data: CountResult[]; total: number }) {
 function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; max: number; labelWidth?: number }) {
   const isMobile = useMobileLayout();
   const responsiveLabelWidth = isMobile ? Math.min(labelWidth, 112) : labelWidth;
+  const highestAverage = Math.max(...data.map(item => item.average), 0);
+  const axisMaximum = Math.min(max, Math.max(1, Math.ceil(highestAverage)));
   return <ResponsiveContainer width="100%" height="100%">
     <BarChart data={data} layout="vertical" margin={{ left: isMobile ? 0 : 12, right: isMobile ? 28 : 42 }}>
       <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
-      <XAxis type="number" domain={[0, max]} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+      <XAxis type="number" domain={[0, axisMaximum]} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
       <YAxis dataKey="name" type="category" width={responsiveLabelWidth} interval={0} tick={{ fill: "var(--sbk-text)", fontSize: isMobile ? 9 : 12 }} />
       <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value) => [Number(value).toFixed(1), "Average"]} />
       <Bar dataKey="average" name="Average" fill={colours[0]} radius={[0, 8, 8, 0]}>
@@ -159,6 +161,8 @@ function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; m
 function MusicPolicyResults({ averageRatio, headlineRatio, data, total }: { averageRatio: string; headlineRatio: string; data: CountResult[]; total: number }) {
   const chartHeight = Math.max(280, data.length * 36);
   const percentageData = data.map(item => ({ ...item, percentage: responsePercentage(item.count, total) }));
+  const highestPolicyPercentage = Math.max(...percentageData.map(item => item.percentage), 0);
+  const policyAxisMaximum = Math.max(10, Math.ceil(highestPolicyPercentage / 10) * 10);
   const ratioParts = averageRatio.split(":");
   const headlineParts = headlineRatio.split(":");
 
@@ -191,12 +195,12 @@ function MusicPolicyResults({ averageRatio, headlineRatio, data, total }: { aver
       <div className="min-w-0 border-t border-[var(--sbk-border-soft)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
         <h3 className="font-black">Combined responses</h3>
         <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Percentage of respondents who selected each exact policy</p>
-        {data.length ? <div className="mt-5 max-h-[36rem] overflow-y-auto pr-2">
+        {data.length ? <div className="mt-5 pr-2">
           <div style={{ height: chartHeight }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={percentageData} layout="vertical" margin={{ left: 6, right: 48 }}>
                 <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
+                <XAxis type="number" domain={[0, policyAxisMaximum]} tickFormatter={value => `${value}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
                 <YAxis dataKey="name" type="category" width={64} tick={{ fill: "var(--sbk-text)", fontSize: 12, fontWeight: 700 }} />
                 <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={value => [`${value}%`, "Responses"]} />
                 <Bar dataKey="percentage" name="Responses" fill={colours[3]} radius={[0, 8, 8, 0]}>

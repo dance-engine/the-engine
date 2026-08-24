@@ -25,8 +25,20 @@ const styleStackColours = ["#2563eb", "#0891b2", "#10b981", "#eab308", "#f97316"
 const tooltipStyle = { borderRadius: 12, border: "1px solid var(--sbk-border)", background: "var(--sbk-surface)", color: "var(--sbk-text)" };
 const responsePercentage = (count: number, total: number) => total ? Math.round((count / total) * 100) : 0;
 
+function useMobileLayout() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return isMobile;
+}
+
 function ChartCard({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
-  return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7">
+  return <section className="min-w-0 overflow-hidden rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7">
     <h2 className="text-xl font-black">{title}</h2>
     <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">{description}</p>
     <div className="mt-5 h-80">{children}</div>
@@ -129,11 +141,13 @@ function CountryMap({ data, total }: { data: CountResult[]; total: number }) {
 }
 
 function AverageBars({ data, max, labelWidth = 112 }: { data: AverageResult[]; max: number; labelWidth?: number }) {
+  const isMobile = useMobileLayout();
+  const responsiveLabelWidth = isMobile ? Math.min(labelWidth, 112) : labelWidth;
   return <ResponsiveContainer width="100%" height="100%">
-    <BarChart data={data} layout="vertical" margin={{ left: 12, right: 42 }}>
+    <BarChart data={data} layout="vertical" margin={{ left: isMobile ? 0 : 12, right: isMobile ? 28 : 42 }}>
       <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
       <XAxis type="number" domain={[0, max]} tick={{ fill: "var(--sbk-text-muted)", fontSize: 12 }} />
-      <YAxis dataKey="name" type="category" width={labelWidth} interval={0} tick={{ fill: "var(--sbk-text)", fontSize: 12 }} />
+      <YAxis dataKey="name" type="category" width={responsiveLabelWidth} interval={0} tick={{ fill: "var(--sbk-text)", fontSize: isMobile ? 9 : 12 }} />
       <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--sbk-hover)" }} formatter={(value) => [Number(value).toFixed(1), "Average"]} />
       <Bar dataKey="average" name="Average" fill={colours[0]} radius={[0, 8, 8, 0]}>
         <LabelList dataKey="average" position="right" fill="var(--sbk-text)" fontSize={12} />
@@ -148,12 +162,12 @@ function MusicPolicyResults({ averageRatio, headlineRatio, data, total }: { aver
   const ratioParts = averageRatio.split(":");
   const headlineParts = headlineRatio.split(":");
 
-  return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
+  return <section className="min-w-0 overflow-hidden rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Favourite event mix</h2>
     <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Salsa:Bachata:Kizomba music policy</p>
-    <div className="mt-7 grid gap-7 lg:grid-cols-[.75fr_1.25fr] lg:gap-8">
-      <div className="grid min-h-64 place-items-center py-6 text-center">
-        <div>
+    <div className="mt-7 grid min-w-0 gap-7 lg:grid-cols-[.75fr_1.25fr] lg:gap-8">
+      <div className="grid min-w-0 min-h-64 place-items-center py-6 text-center">
+        <div className="min-w-0 max-w-full">
           <p className="text-sm font-bold uppercase tracking-[.16em] text-[var(--sbk-text-muted)]">Community music policy</p>
           <div className="mx-auto mt-3 grid max-w-md grid-cols-[1fr_auto_1fr_auto_1fr] items-start text-[var(--sbk-primary)]">
             {ratioParts.map((part, index) => {
@@ -174,7 +188,7 @@ function MusicPolicyResults({ averageRatio, headlineRatio, data, total }: { aver
           </div>
         </div>
       </div>
-      <div className="border-t border-[var(--sbk-border-soft)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+      <div className="min-w-0 border-t border-[var(--sbk-border-soft)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
         <h3 className="font-black">Combined responses</h3>
         <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Percentage of respondents who selected each exact policy</p>
         {data.length ? <div className="mt-5 max-h-[36rem] overflow-y-auto pr-2">
@@ -270,6 +284,7 @@ const surveyStyleOrder = [
 ];
 
 function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]; total: number }) {
+  const isMobile = useMobileLayout();
   const answerGroups = [
     { answer: "Not for me / Not interested", sources: ["Not for me", "Not interested"] },
     { answer: "Don't know about this style", sources: ["Don't know about this style"] },
@@ -298,22 +313,22 @@ function StyleBreakdown({ data, total }: { data: SurveyResults["styleBreakdown"]
   });
   const chartHeight = Math.max(540, styles.length * 38);
 
-  return <section className="rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
+  return <section className="min-w-0 overflow-hidden rounded-[1.5rem] bg-[var(--sbk-surface)] p-5 shadow-[0_14px_40px_var(--sbk-shadow)] sm:p-7 lg:col-span-2">
     <h2 className="text-xl font-black">Dance-style breakdown</h2>
     <p className="mt-1 text-sm text-[var(--sbk-text-muted)]">Number of respondents selecting each answer for every style. Each answer is counted only in its selected category.</p>
-    {chartData.length ? <div className="mt-7 overflow-x-auto">
-      <div className="mb-4 flex min-w-[760px] flex-wrap justify-center gap-x-5 gap-y-2 text-xs">
+    {chartData.length ? <div className="mt-7 min-w-0">
+      <div className="mb-4 flex flex-wrap justify-center gap-x-3 gap-y-2 text-[10px] sm:gap-x-5 sm:text-xs">
         {answerGroups.map((group, index) => <span key={group.answer} className="inline-flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: styleStackColours[index] }} />
           {styleAnswerTitles[group.answer] ?? group.answer}
         </span>)}
       </div>
-      <div style={{ height: chartHeight, minWidth: 760 }}>
+      <div className="min-w-0" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 24, top: 20, bottom: 10 }}>
+          <BarChart data={chartData} layout="vertical" margin={{ left: isMobile ? 0 : 20, right: isMobile ? 4 : 24, top: 20, bottom: 10 }}>
             <CartesianGrid stroke="var(--sbk-border-soft)" horizontal={false} />
             <XAxis type="number" domain={[0, total]} allowDecimals={false} tickFormatter={value => `${responsePercentage(Number(value), total)}%`} tick={{ fill: "var(--sbk-text-muted)", fontSize: 11 }} />
-            <YAxis dataKey="danceStyle" type="category" width={165} tick={{ fill: "var(--sbk-text)", fontSize: 11 }} />
+            <YAxis dataKey="danceStyle" type="category" width={isMobile ? 105 : 165} interval={0} tick={{ fill: "var(--sbk-text)", fontSize: isMobile ? 8 : 11 }} />
             <Tooltip
               contentStyle={tooltipStyle}
               cursor={{ fill: "var(--sbk-hover)" }}
@@ -373,11 +388,11 @@ export default function ResultsDashboard() {
       <div className="rounded-2xl bg-[var(--sbk-surface)] p-6 shadow-sm"><p className="text-sm font-bold text-[var(--sbk-text-muted)]">Latest response</p><p className="mt-3 text-xl font-black">{results.latestSubmission ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(results.latestSubmission)) : "—"}</p><p className="mt-2 text-sm text-[var(--sbk-text-muted)]">dashboard refreshes every few minutes</p></div>
     </div>
 
-    <div className="mt-6 grid gap-6 lg:grid-cols-2">
+    <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
       <ChartCard title="Where dancers live" description="Countries shaded by current residence; hover for percentage of responses"><CountryMap data={results.currentCountries} total={results.totalResponses} /></ChartCard>
       <ChartCard title="Where dancers grew up" description="Countries represented in the community; hover for percentage of responses"><CountryMap data={results.homeCountries} total={results.totalResponses} /></ChartCard>
       <ChartCard title="A typical dance week" description="Average sessions per person, from 0 to 7"><AverageBars data={results.weeklyActivities} max={7} /></ChartCard>
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid min-w-0 gap-6 sm:grid-cols-2 [&>*]:min-w-0">
         <ChartCard title="Lesson price" description="Average expected hourly lesson price, separated by currency">
           {results.spendingByCurrency.some(item => item.lessonPrice !== null) ? <SpendingChart data={results.spendingByCurrency} dataKey="lessonPrice" name="Lesson price / hour" responseKey="lessonResponses" total={results.totalResponses} /> : <div className="grid h-full place-items-center text-sm text-[var(--sbk-text-muted)]">No lesson-price answers have been submitted yet.</div>}
         </ChartCard>

@@ -20,7 +20,7 @@ const substyleScale = [
   { value: "Not for me", shortLabel: "Not for me" },
   { value: "Curious", shortLabel: "Curious" },
   { value: "Want to learn", shortLabel: "Want to learn" },
-  { value: "Learning or dancing", shortLabel: "Learning" },
+  { value: "Learning or dancing", shortLabel: "Learning/Dancing Socially" },
   { value: "A favourite", shortLabel: "Favourite" },
 ] as const;
 const stages = ["Welcome", "Location", "Dance styles", "Learning", "Favourites", "Contact"];

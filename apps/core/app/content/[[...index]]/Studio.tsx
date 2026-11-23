@@ -50,7 +50,7 @@ export default function ContentStudio({
           builder.list().title("Website").items([
             builder.listItem().title("Pages").schemaType("page").child(builder.documentTypeList("page").title("Pages")),
             builder.divider(),
-            builder.listItem().title("Site settings").schemaType("site").child(builder.documentTypeList("site").title("Site settings")),
+            builder.listItem().title("Site settings").schemaType("site").child(builder.document().schemaType("site").documentId("site-primary").title("Site settings")),
             builder.listItem().title("Social media").schemaType("socialProfile").child(builder.documentTypeList("socialProfile").title("Social media")),
             builder.listItem().title("Testimonials").schemaType("testimonial").child(builder.documentTypeList("testimonial").title("Testimonials")),
           ]),

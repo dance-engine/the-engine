@@ -475,6 +475,8 @@ const page = defineType({
       title: "Site",
       type: "reference",
       to: [{ type: "site" }],
+      // Weak so pages can be saved before the site-primary settings document exists.
+      weak: true,
       hidden: true,
       initialValue: { _ref: "site-primary" },
       validation: (rule) => rule.required(),

@@ -505,6 +505,22 @@ const menuJumpSection = defineType({
   },
 });
 
+// Live events for the organisation, loaded from Dance Engine (not edited in Sanity).
+const eventListSection = defineType({
+  name: "eventListSection",
+  title: "Events listing",
+  type: "object",
+  components: { preview: SectionPreview },
+  fields: [
+    defineField({ name: "heading", title: "Heading", type: "string" }),
+    defineField({ name: "body", title: "Body", type: "text", rows: 3 }),
+  ],
+  preview: {
+    select: { title: "heading" },
+    prepare: ({ title }) => ({ title: title || "Events listing", subtitle: "Live events from Dance Engine" }),
+  },
+});
+
 const site = defineType({
   name: "site",
   title: "Site settings",
@@ -543,9 +559,9 @@ const page = defineType({
     defineField({ name: "title", title: "Page title", type: "string", validation: (rule) => rule.required() }),
     defineField({ name: "slug", title: "Page address", type: "slug", options: { source: "title" }, validation: (rule) => rule.required() }),
     defineField({ name: "seoDescription", title: "Search description", type: "text", rows: 3 }),
-    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuJumpSection" })] }),
+    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuJumpSection" }), defineArrayMember({ type: "eventListSection" })] }),
   ],
   preview: { select: { title: "title", subtitle: "slug.current" } },
 });
 
-export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, menuJumpSection, site, page];
+export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, menuJumpSection, eventListSection, site, page];

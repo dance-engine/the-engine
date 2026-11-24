@@ -107,7 +107,8 @@ const contrastRatio = (a: string, b: string) => {
 
 const isDark = (value: string) => luminance(value) < 0.42;
 
-const readableText = (background: string) =>
+/** White or near-black, whichever contrasts more with the given hex background. */
+export const readableText = (background: string) =>
   contrastRatio("#ffffff", background) >= contrastRatio("#0f172a", background)
     ? "#ffffff"
     : "#0f172a";

@@ -1,0 +1,58 @@
+import { stegaClean } from "next-sanity";
+import { isSocialProfile, socialPlatformIcon, socialPlatformLabel } from "../shared";
+import type { SectionProps } from "../types";
+
+// Same as the default social section, but hovering a link shows a block in the org's primary colour,
+// matching the menu. --org-color-* are set by SanityContentRoute from the org's theme.
+export default function SocialMediaSection({ section }: SectionProps<"socialMediaSection">) {
+  const iconStyle = stegaClean(section.iconStyle) || "colour";
+  const profiles = section.profiles?.filter(isSocialProfile) || [];
+  if (profiles.length === 0) return null;
+
+  return (
+    <section className="bg-slate-100 px-6 py-14 sm:px-10">
+      <div className="mx-auto max-w-5xl text-center">
+        {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
+        {section.body && <p className="mx-auto mt-4 max-w-2xl text-slate-600">{section.body}</p>}
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {profiles.map((profile) => {
+            const platform = stegaClean(profile.platform);
+            const Icon = socialPlatformIcon(platform);
+            return (
+              <a
+                key={profile._id}
+                href={stegaClean(profile.url)}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${profile.label} on ${socialPlatformLabel(platform)}`}
+                className="group inline-flex items-center gap-2 px-3 py-2 font-semibold text-slate-950 transition hover:bg-(--org-color-primary) hover:text-(--org-color-primary-text)"
+              >
+                <Icon
+                  aria-hidden="true"
+                  // On hover the icon takes the link's text colour, as brand colours can clash with the block.
+                  className={`size-6 transition group-hover:scale-110 group-hover:text-current ${socialIconColour(platform, iconStyle)}`}
+                />
+                <span>{profile.label}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function socialIconColour(platform: string, style: string) {
+  if (style === "monochrome") return "text-(--org-color-primary)";
+  if (style === "blackWhite") return "text-black";
+
+  return {
+    facebook: "text-[#1877f2]",
+    instagram: "text-[#e4405f]",
+    tiktok: "text-black",
+    youtube: "text-[#ff0000]",
+    linkedin: "text-[#0a66c2]",
+    x: "text-black",
+    other: "text-[#01164d]",
+  }[platform] || "text-[#01164d]";
+}

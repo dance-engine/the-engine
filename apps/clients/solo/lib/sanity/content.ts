@@ -41,6 +41,7 @@ export type GridSectionItem =
 export type PageSection =
   | GridSectionItem
   | { _key: string; _type: "menuJumpSection"; title?: string; showTitle?: boolean; anchor?: { current?: string } }
+  | { _key: string; _type: "eventListSection"; heading?: string; body?: string }
   | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; items?: GridSectionItem[] };
 
 export type SocialProfile = {

@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { SanityNavigationPage } from "@/lib/sanity/content";
 
-export default function TopLevelNavigation({ pages }: { pages: SanityNavigationPage[] }) {
+export type NavigationLink = { key: string; title: string; href: string };
+
+export default function TopLevelNavigation({ links }: { links: NavigationLink[] }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const links = [{ _id: "home", title: "Home", slug: "" }, ...pages];
 
   useEffect(() => setIsOpen(false), [pathname]);
 
@@ -41,14 +41,15 @@ export default function TopLevelNavigation({ pages }: { pages: SanityNavigationP
         className={`${isOpen ? "block" : "hidden"} absolute right-0 top-12 w-64 bg-keppel-logo md:static md:block md:w-full`}
       >
         <ul className="flex flex-col md:flex-row md:items-stretch md:justify-center">
-          {links.map((page) => {
-            const href = page.slug ? `/${page.slug}` : "/";
-            const isCurrent = pathname === href;
+          {links.map((link) => {
+            const isCurrent = pathname === link.href;
 
             return (
-              <li key={page._id}>
+              <li key={link.key}>
                 <Link
-                  href={href}
+                  href={link.href}
+                  // Same-page #anchor links don't change the pathname, so close the mobile menu here too.
+                  onClick={() => setIsOpen(false)}
                   aria-current={isCurrent ? "page" : undefined}
                   className={`block px-4 py-3 text-sm font-semibold transition-colors md:py-2.5 ${
                     isCurrent
@@ -56,7 +57,7 @@ export default function TopLevelNavigation({ pages }: { pages: SanityNavigationP
                       : "text-white hover:bg-cerise-logo hover:text-slate-950"
                   }`}
                 >
-                  {page.title}
+                  {link.title}
                 </Link>
               </li>
             );

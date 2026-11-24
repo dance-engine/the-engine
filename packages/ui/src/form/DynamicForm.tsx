@@ -12,6 +12,7 @@ import NumberInput from "@dance-engine/ui/form/fields/NumberInput";
 import DateInput from "@dance-engine/ui/form/fields/DateInput";
 import Select from "@dance-engine/ui/form/fields/Select";
 import CheckboxGroup from "@dance-engine/ui/form/fields/CheckBoxes";
+import Checkbox from "@dance-engine/ui/form/fields/Checkbox";
 import LocationPicker from "@dance-engine/ui/form/fields/LocationPicker"
 import FileUploader from "./fields/FileUploader";
 import MultiFileUploader from "./fields/MultiFileUploader";
@@ -300,6 +301,10 @@ const DynamicForm: React.FC<DynamicFormProps<ZodObject<ZodRawShape>>> = ({ schem
               <Select label={field} name={field} options={Object.values(fieldSchema._def.values)} fieldSchema={fieldSchema}
               register={register} validate={() => {trigger(field)}}
               error={errors[field]?.message as string}  />
+            ) : fieldType === "ZodBoolean" ? (
+              <Checkbox label={field} name={field} fieldSchema={fieldSchema}
+              register={register}
+              error={errors[field]?.message as string} />
             ) : fieldType === "ZodString" ?(
               <TextInput label={field} name={field} fieldSchema={fieldSchema}
               register={register} validate={() => {trigger(field)}}

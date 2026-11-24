@@ -39,6 +39,7 @@ const detailFields = [
   "status",
   "account_id",
   "whatsapp_join_url",
+  "single_page_site",
 ] as const;
 const brandingFields = [
   "banner",
@@ -135,6 +136,7 @@ const detailSchema = organisationSchema.pick({
   status: true,
   account_id: true,
   whatsapp_join_url: true,
+  single_page_site: true,
 });
 
 const brandingSchema = organisationSchema.pick({
@@ -156,6 +158,7 @@ const sectionMetadata = {
     organisation: organisationMetadata.organisation,
     account_id: organisationMetadata.account_id,
     whatsapp_join_url: organisationMetadata.whatsapp_join_url,
+    single_page_site: organisationMetadata.single_page_site,
   },
   branding: {
     banner: organisationMetadata.banner,
@@ -211,6 +214,10 @@ const formatFieldValue = (field: string, value: unknown) => {
         </Link>
       </div>
     );
+  }
+
+  if (typeof value === "boolean") {
+    return <span className="text-gray-900">{value ? "Yes" : "No"}</span>;
   }
 
   if (field === "description" && typeof value === "string") {

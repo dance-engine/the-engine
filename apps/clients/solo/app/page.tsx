@@ -1,127 +1,35 @@
 export const dynamic = 'force-dynamic';
-import { headers } from 'next/headers';
-import EventList from '../components/EventList'
-import DanceEngineFooter from '../components/footer/DanceEngine';
-import Header from '@/components/header/Header';
-import RebelHero from '../components/legacy/RebelHero';
-import PowHero from '../components/legacy/PowHero';
 
-import { generateHTML } from '@tiptap/html'
-import { richTextRenderExtensions } from '@dance-engine/ui/richText';
+import { headers } from "next/headers";
+import type { Metadata } from "next";
+import EventsIndexPage from "./EventsIndexPage";
+import {
+  HOME_PAGE_SLUG,
+  SanityContentRoute,
+  getOrganisationSettings,
+  getSanityPageMetadata,
+} from "@/components/content/SanityContentRoute";
 
-import { OrganisationType } from '@dance-engine/schemas/organisation';
-import { EventResponseType } from '@dance-engine/schemas/events';
+async function getOrganisation() {
+  const requestHeaders = await headers();
+  return requestHeaders.get("x-site-org") || "default-org";
+}
 
-// Legacy Code from site launches
-import RebelPayment from "../components/legacy/RebelPayment";
-// import POWPayment from "../components/legacy/POWPayment";
+export async function generateMetadata(): Promise<Metadata> {
+  const organisation = await getOrganisation();
+  const org = await getOrganisationSettings(organisation);
+  return org?.single_page_site ? getSanityPageMetadata(organisation, HOME_PAGE_SLUG) : {};
+}
 
-
+// Organisations with single_page_site enabled get their Sanity "home" page at "/".
+// Everyone else (setting absent or false) keeps the events landing page.
 export default async function IndexPage() {
-  const h = await headers();
-  const orgSlug = h.get('x-site-org') || 'default-org';
-  const theme = h.get('x-site-theme') || 'default';
-  const domain = h.get('x-site-domain') || 'unknown';
-  const coreEvent = orgSlug == 'demo2' ? "2vOyCJojl8ozmjx11c1tqwViE5O" : "cheese" ;
+  const organisation = await getOrganisation();
+  const org = await getOrganisationSettings(organisation);
 
+  if (org?.single_page_site) {
+    return <SanityContentRoute organisation={organisation} slug={HOME_PAGE_SLUG} org={org} />;
+  }
 
-  const EVENTS_API_URL = coreEvent == "cheese" ? `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events` : `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${orgSlug}/events/${coreEvent}`
-  const events_res = await fetch(EVENTS_API_URL, { next: { revalidate: 60 } });
-  const ORGS_API_URL = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/organisations`
-  const orgs_res = await fetch(ORGS_API_URL, { next: { revalidate: 120 } });
-  const orgs_data = await orgs_res.json()
-  const org_details= orgs_data.organisations.filter((org_check: OrganisationType) => org_check.organisation && org_check.organisation == orgSlug)
-  const org = org_details[0] || {name: 'Unknown Organisation', slug: 'unknown-org', description: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"No organisation found for this domain"}]}]}'};
-  const eventsServerData = await events_res.json() as EventResponseType[];
-
-  console.log("requesting data", ORGS_API_URL) //, 'orgs_data', orgs_data) //, 'eventsServerData', eventsServerData);
-  const defaultCss = `
-    :root {
-      --main-bg-color: color-mix(in srgb, var(--color-de-background-dark) 95%, transparent);
-      --main-text-color: white;
-      // --alternate-bg-color:  var(--color-keppel-on-light);
-      --alternate-bg-color: hsl(222, 13%, 19%);
-;      --highlight-color: hsl(240, 10%, 50%);
-
-    }
-  `;
-  // const andreasCss = `
-  //   :root {
-  //     // --main-bg-color: black;
-  //     // --main-text-color: white;
-  //     // --alternate-bg-color: #871d24;
-  //     // --highlight-color: hsla(350, 100%, 23%, 1.00);
-  //   }
-  // `;
-
-
-
-  const bodyFont = orgSlug == 'power-of-woman' || orgSlug == 'pow' ? 'font-oswald' : 'font-inter';
-  const orgCss = org?.theme?.css_vars || '';
-
-  return <>
-    { defaultCss ? <style id="loadedFromDefault" dangerouslySetInnerHTML={{ __html: defaultCss }} />  : null}
-    { orgCss ? <style id="loadedFromOrg" dangerouslySetInnerHTML={{ __html: orgCss }} /> : null }
-
-      <div className={`w-full ${bodyFont} min-h-screen flex flex-col `} style={{ backgroundColor: 'var(--main-bg-color)', color: 'var(--main-text-color)' }}>
-        
-        
-        <Header org={org}/>
-
-        <main className='w-full justify-center flex-grow'>
-
-          {{
-            'rebel-sbk': <RebelHero org={org} />,
-            'power-of-woman': <PowHero org={org} orgSlug={orgSlug} theme={theme} />,
-            'default': null,
-          }[orgSlug || 'default'] || null}
-
-          {/* <div className=' w-full px-4 lg:px-0 flex justify-center border-t-6' style={{backgroundColor: 'var(--alternate-bg-color)', borderColor: 'var(--highlight-color)'}}> */}
-          <div className=' w-full px-4 lg:px-0 flex justify-center bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]' style={{backgroundColor: '', borderColor: 'var(--highlight-color)'}}>
-            
-              <div className={
-                `max-w-4xl w-4xl px-4 lg:px-0 py-12 \
-                prose prose-base prose-p:mb-2 prose-p:mt-0 prose-p:font-extralight prose-p:leading-relaxed prose-headings:font-semibold \
-                prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg \
-                prose-headings:mb-1 prose-headings:mt-4 prose-h4:mb-0 \
-                dark:text-white dark:prose-invert text-xl prose-li:marker:text-[var(--highlight-color)]
-                `} 
-                  dangerouslySetInnerHTML={{ __html: generateHTML(
-                    JSON.parse(org.description), 
-                    richTextRenderExtensions,) }} 
-                />
-            
-              {/* <pre className='w-full'>{JSON.stringify(org_details,null,2)}</pre> */}
-              {/* <strong>headers</strong>: {domain}/{orgSlug}/{theme} */}
-                  <div className='hidden'>
-                    {domain}/{orgSlug}/{theme} - VERCEL_ENV:{process.env.VERCEL_ENV}  VERCEL:{process.env.VERCEL} NODE_ENV:{process.env.NODE_ENV}
-
-                  </div>
-                  
-          </div>
-          {
-            {
-              // 'rebel-sbk': <div className='hidden'><RebelPayment org={org} /></div>,
-              'demo': <div className='mb-12 bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-              'latin-soul': <div className='mb-12 bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>,
-            }[orgSlug] || <div className='mb-12 bg-[var(--alternate-bg-color)] dark:bg-[var(--alternate-dark-bg-color)]'>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div>
-          }
-
-          {/* {orgSlug == 'demo' || orgSlug == 'latin-soul' ? 
-            // <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} event_ksuid={coreEvent} org={orgSlug} theme={theme} /> } </div> 
-            <div className='mb-12 '>{ eventsServerData && <EventList fallbackData={eventsServerData} org={orgSlug} theme={theme} /> } </div> 
-          : orgSlug == 'rebel-sbk' ? 
-            <div className='hidden'><RebelPayment org={org} /></div>
-          :
-          (<POWPayment org={org} />) */}
-
-          <div className='hidden'>{JSON.stringify({ defaultCss, orgCss },null,2)}</div>
-          
-        </main>
-
-        
-        <DanceEngineFooter org={orgSlug} mode='dark' />
-
-      </div>
-    </>
+  return <EventsIndexPage />;
 }

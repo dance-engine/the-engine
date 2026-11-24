@@ -3,6 +3,9 @@ import "server-only";
 import { createClient } from "next-sanity";
 import type { SanityProjectConfig } from "./projects";
 
+// Slug of the Sanity page shown at "/" when an organisation has single_page_site enabled.
+export const HOME_PAGE_SLUG = "home";
+
 export type PortableTextBlock = {
   _key: string;
   _type: "block";
@@ -37,6 +40,7 @@ export type GridSectionItem =
 
 export type PageSection =
   | GridSectionItem
+  | { _key: string; _type: "menuJumpSection"; title?: string; showTitle?: boolean; anchor?: { current?: string } }
   | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; items?: GridSectionItem[] };
 
 export type SocialProfile = {
@@ -62,6 +66,12 @@ export type SanityContentPage = {
   slug: string;
   seoDescription?: string;
   sections?: PageSection[];
+};
+
+export type SanityMenuJump = {
+  _key: string;
+  title: string;
+  anchor: string;
 };
 
 export type SanityNavigationPage = {
@@ -164,6 +174,19 @@ const navigationQuery = `*[
   "slug": slug.current
 }`;
 
+const menuJumpsQuery = `*[
+  _type == "page" &&
+  slug.current == $slug
+][0].sections[
+  _type == "menuJumpSection" &&
+  defined(title) &&
+  defined(anchor.current)
+]{
+  _key,
+  title,
+  "anchor": anchor.current
+}`;
+
 function createPublishedClient(project: SanityProjectConfig) {
   return createClient({
     projectId: project.projectId,
@@ -229,4 +252,22 @@ export async function getPublishedNavigationPages(
       },
     },
   );
+}
+
+// Menu jump sections on one page, in page order; used as the menu for single-page sites.
+export async function getPublishedMenuJumps(
+  project: SanityProjectConfig,
+  slug: string,
+): Promise<SanityMenuJump[]> {
+  const jumps = await createPublishedClient(project).fetch<SanityMenuJump[] | null>(
+    menuJumpsQuery,
+    { slug },
+    {
+      next: {
+        revalidate: publishedContentRevalidate,
+        tags: [`sanity-page:${project.projectId}:${slug}`],
+      },
+    },
+  );
+  return jumps || [];
 }

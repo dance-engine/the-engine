@@ -110,6 +110,10 @@ class OrganisationObject(BaseModel):
         None,
         description='URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed',
     )
+    single_page_site: Optional[bool] = Field(
+        None,
+        description="When true, the site root renders the Sanity page with slug 'home' instead of the default events page",
+    )
     whatsapp_join_url: Optional[str] = Field(
         None, description='Public WhatsApp join URL for approved members'
     )
@@ -147,6 +151,10 @@ class OrganisationObjectPublic(BaseModel):
     logo_icon_url: Optional[str] = Field(
         None,
         description='URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed',
+    )
+    single_page_site: Optional[bool] = Field(
+        None,
+        description="When true, the site root renders the Sanity page with slug 'home' instead of the default events page",
     )
 
 

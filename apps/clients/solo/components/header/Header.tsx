@@ -2,14 +2,31 @@ import Link from "next/link"
 import { headers } from "next/headers"
 
 import { OrganisationType } from "@dance-engine/schemas/organisation"
-import { getPublishedNavigationPages } from "@/lib/sanity/content"
+import { HOME_PAGE_SLUG, getPublishedMenuJumps, getPublishedNavigationPages } from "@/lib/sanity/content"
 import { getSanityProjectForOrganisation } from "@/lib/sanity/projects"
-import TopLevelNavigation from "./TopLevelNavigation"
+import TopLevelNavigation, { type NavigationLink } from "./TopLevelNavigation"
+
+// Single-page sites link to the home page's menu jumps; other sites link to their top-level pages.
+async function getNavigationLinks(
+  project: NonNullable<Awaited<ReturnType<typeof getSanityProjectForOrganisation>>>,
+  singlePageSite: boolean,
+): Promise<NavigationLink[]> {
+  if (singlePageSite) {
+    const jumps = await getPublishedMenuJumps(project, HOME_PAGE_SLUG);
+    return jumps.map((jump) => ({ key: jump._key, title: jump.title, href: `/#${jump.anchor}` }));
+  }
+
+  const pages = await getPublishedNavigationPages(project);
+  return [
+    { key: "home", title: "Home", href: "/" },
+    ...pages.map((page) => ({ key: page._id, title: page.title, href: `/${page.slug}` })),
+  ];
+}
 
 const Header = async ({org}:{org: OrganisationType}) => {
   const organisation = (await headers()).get("x-site-org") || "default-org";
   const project = await getSanityProjectForOrganisation(organisation);
-  const pages = project ? await getPublishedNavigationPages(project) : [];
+  const links = project ? await getNavigationLinks(project, Boolean(org?.single_page_site)) : [];
 
   return (
     <header className='relative w-full bg-black text-white'>
@@ -22,7 +39,7 @@ const Header = async ({org}:{org: OrganisationType}) => {
           }
         </div>
       </div>
-      {project && <TopLevelNavigation pages={pages} />}
+      {links.length > 0 && <TopLevelNavigation links={links} />}
     </header>
   )
 }

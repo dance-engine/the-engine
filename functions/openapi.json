@@ -388,6 +388,10 @@
             "type": "string",
             "description": "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
           },
+          "single_page_site": {
+            "type": "boolean",
+            "description": "When true, the site root renders the Sanity page with slug 'home' instead of the default events page"
+          },
           "whatsapp_join_url": {
             "type": "string",
             "description": "Public WhatsApp join URL for approved members"
@@ -473,6 +477,10 @@
           "logo_icon_url": {
             "type": "string",
             "description": "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+          },
+          "single_page_site": {
+            "type": "boolean",
+            "description": "When true, the site root renders the Sanity page with slug 'home' instead of the default events page"
           }
         },
         "x-internal-group": "organisation",

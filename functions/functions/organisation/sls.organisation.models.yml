@@ -76,6 +76,9 @@ _OrganisationCommonShared: &OrganisationCommonShared
   logo_icon_url:
     type: string
     description: "URL to the icon version of the logo for the organisation, used in places where a smaller or simplified logo is needed"
+  single_page_site:
+    type: boolean
+    description: "When true, the site root renders the Sanity page with slug 'home' instead of the default events page"
 
 _OrganisationCommon: &OrganisationCommon
   <<: *OrganisationCommonShared

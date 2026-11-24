@@ -447,6 +447,64 @@ const faqSection = defineType({
   },
 });
 
+type MenuJumpSectionValue = { _key?: string; anchor?: { current?: string } };
+
+// Invisible #anchor on the page; single-page sites build their header menu from these.
+const menuJumpSection = defineType({
+  name: "menuJumpSection",
+  title: "Menu jump",
+  type: "object",
+  components: { preview: SectionPreview },
+  fields: [
+    defineField({
+      name: "title",
+      title: "Title",
+      type: "string",
+      description: "Used as the menu label.",
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "showTitle",
+      title: "Show title on page",
+      type: "boolean",
+      initialValue: false,
+    }),
+    defineField({
+      name: "anchor",
+      title: "Anchor",
+      type: "slug",
+      description: "The #link for this point on the page. Generate it from the title.",
+      options: {
+        source: (_document, context) => (context.parent as { title?: string } | undefined)?.title || "",
+        // Anchors only need to be unique within their own page (checked below), not across documents.
+        isUnique: () => true,
+      },
+      validation: (rule) =>
+        rule.required().custom((value, context) => {
+          const anchor = value?.current;
+          if (!anchor) return true;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(anchor)) {
+            return "Use lowercase letters, numbers and dashes only";
+          }
+
+          const sections = (context.document?.sections || []) as MenuJumpSectionValue[];
+          const ownKey = (context.parent as MenuJumpSectionValue | undefined)?._key;
+          const duplicate = sections.some(
+            (section) => section?._key !== ownKey && section?.anchor?.current === anchor,
+          );
+          return duplicate ? "Another menu jump on this page already uses this anchor" : true;
+        }),
+    }),
+  ],
+  preview: {
+    select: { title: "title", anchor: "anchor.current", showTitle: "showTitle" },
+    prepare: ({ title, anchor, showTitle }) => ({
+      title: `Menu jump: ${title || "Untitled"}`,
+      subtitle: `${anchor ? `#${anchor}` : "No anchor yet"}${showTitle ? " · title shown" : " · hidden"}`,
+    }),
+  },
+});
+
 const site = defineType({
   name: "site",
   title: "Site settings",
@@ -478,15 +536,16 @@ const page = defineType({
       // Weak so pages can be saved before the site-primary settings document exists.
       weak: true,
       hidden: true,
-      initialValue: { _ref: "site-primary" },
+      // initialValue is used verbatim, so the reference must be marked weak here too.
+      initialValue: { _ref: "site-primary", _weak: true },
       validation: (rule) => rule.required(),
     }),
     defineField({ name: "title", title: "Page title", type: "string", validation: (rule) => rule.required() }),
     defineField({ name: "slug", title: "Page address", type: "slug", options: { source: "title" }, validation: (rule) => rule.required() }),
     defineField({ name: "seoDescription", title: "Search description", type: "text", rows: 3 }),
-    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" })] }),
+    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuJumpSection" })] }),
   ],
   preview: { select: { title: "title", subtitle: "slug.current" } },
 });
 
-export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, site, page];
+export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, menuJumpSection, site, page];

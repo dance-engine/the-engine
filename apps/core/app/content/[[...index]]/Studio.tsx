@@ -8,7 +8,14 @@ import { PageEditorShell } from "../../lib/sanity/PageEditorShell";
 import { createPublishWithLinkedProfilesAction } from "../../lib/sanity/PublishWithLinkedProfilesAction";
 import { schemaTypes } from "../../lib/sanity/schemaTypes";
 
+// Organisations with single_page_site enabled serve the "home" page at the site root.
+const HOME_PAGE_SLUG = "home";
+
 const mainDocuments = defineDocuments([
+  {
+    route: "/",
+    filter: `_type == "page" && slug.current == "${HOME_PAGE_SLUG}"`,
+  },
   {
     route: "/:slug",
     filter: `_type == "page" && slug.current == $slug`,
@@ -23,7 +30,12 @@ const locations = {
     },
     resolve: (document) => ({
       locations: document?.slug
-        ? [{ title: document.title || "Untitled page", href: `/${document.slug}` }]
+        ? [
+            ...(document.slug === HOME_PAGE_SLUG
+              ? [{ title: `${document.title || "Home"} (site root)`, href: "/" }]
+              : []),
+            { title: document.title || "Untitled page", href: `/${document.slug}` },
+          ]
         : [],
     }),
   }),

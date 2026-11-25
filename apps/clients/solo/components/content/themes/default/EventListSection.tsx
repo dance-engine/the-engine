@@ -26,7 +26,7 @@ export default async function EventListSection({ section, organisation }: Sectio
 }
 
 // Same request as the legacy events page. EventList reads `.events` from this response, despite its prop type.
-async function getPublicEvents(organisation: string): Promise<EventResponseType[]> {
+export async function getPublicEvents(organisation: string): Promise<EventResponseType[]> {
   const fallback = { events: [] } as unknown as EventResponseType[];
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${organisation}/events`, {

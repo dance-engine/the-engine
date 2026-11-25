@@ -36,7 +36,13 @@ export default function Header({ org, links }: HeaderProps) {
             blends into black instead of showing a light seam. */}
         <div aria-hidden="true" className="absolute inset-x-0 -top-[10vw] -bottom-1 origin-right -skew-y-[2.5deg] bg-black" />
         <div className="relative max-w-6xl w-full px-4 uppercase font-black md:px-0 py-3">
-          <Link href="/" className="flex w-full items-center justify-center md:justify-start">
+          {/* The skew drops the band's bottom edge by (distance from the right) × tan(2.5deg) under the
+              logo, while its top stays off-screen. Moving the logo down by half that drop centres it
+              vertically in the visible black. 0.0218 = tan(2.5deg) / 2; keep it in sync with the skew.
+              Mobile: logo centre is 50vw from the right.
+              Desktop: logo centre is ml-10 + w-32/2 = 104px into the max-w-6xl (1152px) column, so
+              100vw - 104px below 1152px wide, and 50vw + 576px - 104px above it. */}
+          <Link href="/" className="flex w-full items-center justify-center md:justify-start translate-y-[calc(50vw*0.0218)] md:translate-y-[calc(min(100vw_-_104px,50vw_+_472px)*0.0218)]">
             {org.logo ? <img src={org.logo} alt={org.name} className="max-w-full md:w-32 md:ml-10 w-16" /> : org.name}
           </Link>
         </div>

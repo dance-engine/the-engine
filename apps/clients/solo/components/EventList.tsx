@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import {createEvent} from '@dance-engine/schemas/events';
 import Link from 'next/link';
 import useEmblaCarousel from 'embla-carousel-react';
+import { LuCalendarClock } from 'react-icons/lu';
 
 import { EventResponseType } from '@dance-engine/schemas/events';
 import { format } from 'date-fns'
@@ -51,7 +52,8 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
   const eventData = data.events as EventResponseType[];
   const events = eventData ? eventData.filter((event) => event.status === "live").map((item) => { return createEvent(item) }) : []
 
-  return <div className="w-full bg-black/20">
+  // The full-width tinted band only when there are events; the empty message has its own box.
+  return <div className={events.length > 0 ? "w-full bg-black/20" : "w-full"}>
     {events && events.length > 0 ? (
       <div className="max-w-full w-auto pt-6 ">
         
@@ -109,7 +111,13 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
         )}
 
       </div>
-    ) : <div className='text-center'>Check back for a list of classes and events coming soon</div>}
+    ) : (
+      // A centred box capped at max-w-md, rather than a full-width band.
+      <div className='mx-auto flex w-fit max-w-md items-center gap-4 rounded-lg bg-black/20 px-5 py-4 text-left'>
+        <LuCalendarClock aria-hidden="true" className='size-8 shrink-0' />
+        <p>Check back soon for our upcoming classes and events.</p>
+      </div>
+    )}
       
     {/* <PassPicker event={event}/> */}
     {/* <h2 className='text-2xl '>Purchase Options</h2>

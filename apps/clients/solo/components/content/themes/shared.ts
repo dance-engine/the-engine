@@ -1,13 +1,13 @@
 // Theme-independent helpers. Keep data logic here so every theme renders the same content
 // and a fix applies to all of them; theme components should only decide layout and styling.
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import type { IconType } from "react-icons";
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { LuAtSign } from "react-icons/lu";
 import type { SocialProfile, Testimonial } from "@/lib/sanity/content";
 import type { SanityProjectConfig } from "@/lib/sanity/projects";
 
-type SanityImageSource = Parameters<ReturnType<typeof imageUrlBuilder>["image"]>[0];
+type SanityImageSource = Parameters<ReturnType<typeof createImageUrlBuilder>["image"]>[0];
 
 /**
  * Full-size URL for opening an image on its own (e.g. in a new tab): the editor's crop is kept,
@@ -17,7 +17,7 @@ export function fullSizeImageUrl(
   project: SanityProjectConfig,
   image?: (SanityImageSource & { asset?: { _ref?: string; url?: string } }) | null,
 ) {
-  if (image?.asset?._ref) return imageUrlBuilder(project).image(image).auto("format").url();
+  if (image?.asset?._ref) return createImageUrlBuilder(project).image(image).auto("format").url();
   return image?.asset?.url;
 }
 

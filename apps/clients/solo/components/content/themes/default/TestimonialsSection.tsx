@@ -1,7 +1,7 @@
 import { PortableText } from "@portabletext/react";
-import imageUrlBuilder from "@sanity/image-url";
 import Link from "next/link";
 import { stegaClean } from "next-sanity";
+import SanityPicture from "../SanityPicture";
 import { isTestimonial } from "../shared";
 import type { SectionProps } from "../types";
 
@@ -18,26 +18,18 @@ export default function TestimonialsSection({ section, project }: SectionProps<"
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial) => {
-            let imageUrl = testimonial.image?.asset?.url;
-            if (testimonial.image?.asset?._ref) {
-              imageUrl = imageUrlBuilder(project)
-                .image(testimonial.image)
-                .width(240)
-                .height(240)
-                .fit("crop")
-                .auto("format")
-                .url();
-            }
-
             const attribution = (
               <span className="inline-flex items-center gap-3">
-                {imageUrl && (
-                  <img
-                    src={imageUrl}
-                    alt={testimonial.image?.alt || ""}
-                    className="size-12 rounded-full object-cover"
-                  />
-                )}
+                {/* Drawn at 48px (size-12); 96 and 144 cover 2x and 3x screens. */}
+                <SanityPicture
+                  project={project}
+                  image={testimonial.image}
+                  shape={{ aspect: 1, widths: [48, 96, 144] }}
+                  sizes="48px"
+                  loading="lazy"
+                  alt={testimonial.image?.alt || ""}
+                  className="size-12 rounded-full object-cover"
+                />
                 <span className="font-semibold">{testimonial.name}</span>
               </span>
             );

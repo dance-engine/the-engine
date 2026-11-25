@@ -1,14 +1,14 @@
 import type { NextConfig } from "next";
-import { parse } from 'url';
 
 const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL || '';
-const cdnHostname = cdnUrl ? parse(cdnUrl).hostname : undefined;
+const cdnHostname = cdnUrl ? new URL(cdnUrl).hostname : undefined;
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      ...(cdnHostname ? [cdnHostname] : []),
-      // add other domains here if needed
+    // Hosts next/image may load from. Any path, http or https, as images.domains allowed before.
+    remotePatterns: [
+      ...(cdnHostname ? [{ hostname: cdnHostname }] : []),
+      // add other hosts here if needed
     ],
   }
   // experimental: {

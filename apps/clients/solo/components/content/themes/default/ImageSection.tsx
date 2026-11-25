@@ -1,18 +1,19 @@
-import imageUrlBuilder from "@sanity/image-url";
 import Link from "next/link";
 import { stegaClean } from "next-sanity";
+import SanityPicture from "../SanityPicture";
 import { fullSizeImageUrl } from "../shared";
 import type { SectionProps } from "../types";
 
 export default function ImageSection({ section, project, compact = false }: SectionProps<"imageSection">) {
   const aspectRatio = stegaClean(section.aspectRatio) || "original";
-  const ratioDimensions = {
+  // Width / height to crop to; undefined keeps the original shape.
+  const aspect = {
     original: undefined,
-    "1:1": { width: 1600, height: 1600 },
-    "9:16": { width: 900, height: 1600 },
-    "16:9": { width: 1600, height: 900 },
-    "3:1": { width: 1800, height: 600 },
-    "4:3": { width: 1600, height: 1200 },
+    "1:1": 1,
+    "9:16": 9 / 16,
+    "16:9": 16 / 9,
+    "3:1": 3,
+    "4:3": 4 / 3,
   }[aspectRatio];
   const ratioClass = {
     original: "",
@@ -22,22 +23,16 @@ export default function ImageSection({ section, project, compact = false }: Sect
     "3:1": "aspect-[3/1] object-cover",
     "4:3": "aspect-[4/3] object-cover",
   }[aspectRatio];
-  let imageUrl = section.image?.asset?.url;
-  if (section.image?.asset?._ref) {
-    let builder = imageUrlBuilder(project)
-      .image(section.image)
-      .auto("format");
-    builder = ratioDimensions
-      ? builder.width(ratioDimensions.width).height(ratioDimensions.height).fit("crop")
-      : builder.width(2000).fit("max");
-    imageUrl = builder.url();
-  }
-
-  if (!imageUrl) return null;
+  if (!section.image?.asset?._ref && !section.image?.asset?.url) return null;
 
   const image = (
-    <img
-      src={imageUrl}
+    <SanityPicture
+      project={project}
+      image={section.image}
+      shape={{ aspect, widths: [640, 1024, 1600, 2000] }}
+      // Full width on its own; in a section grid it's one of up to two columns from md up.
+      sizes={compact ? "(min-width: 768px) 50vw, 100vw" : "100vw"}
+      loading="lazy"
       alt={section.image?.alt || ""}
       className={compact
         ? `h-full w-full object-cover ${ratioClass}`
@@ -57,7 +52,7 @@ export default function ImageSection({ section, project, compact = false }: Sect
       ) : (
         // No link set in Sanity: clicking opens the full-size image in a new tab.
         <a
-          href={fullSizeImageUrl(project, section.image) || imageUrl}
+          href={fullSizeImageUrl(project, section.image)}
           target="_blank"
           rel="noreferrer"
           className="block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light"

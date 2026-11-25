@@ -154,6 +154,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
     }
   };
 
+  // Clears the field. The image is only removed from the entity when the form is saved.
+  const removeFile = () => {
+    setFile(null);
+    setFilePreview(null);
+    setUploadProgress(0);
+    setHasUploaded(false);
+    setValue(name, "", { shouldDirty: true });
+  };
+
   // Clean up preview URL on unmount
   useEffect(() => {
     return () => {
@@ -204,6 +213,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ label, name, entity, regist
           </div>
         )}
       </div>
+      {/* Outside the drop zone, so clicking it doesn't open the file picker. */}
+      {filePreview && !uploading && (
+        <button
+          type="button"
+          onClick={removeFile}
+          className="mt-2 self-start text-sm font-medium text-red-600 hover:text-red-500 hover:underline dark:text-red-400"
+        >
+          Remove image
+        </button>
+      )}
       {filePreview}
     </CustomComponent>
   );

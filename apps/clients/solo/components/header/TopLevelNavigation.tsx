@@ -4,7 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type CSSProperties } from "react";
 
-export type NavigationLink = { key: string; title: string; href: string };
+export type NavigationLink = {
+  key: string;
+  title: string;
+  href: string;
+  /** Opens in a new tab (links to other websites). */
+  external?: boolean;
+};
 
 export type NavigationColours = {
   /** Menu background: any CSS colour, e.g. "var(--color-sky-300)" or "#4de1ff". */
@@ -89,6 +95,8 @@ export default function TopLevelNavigation({
               <li key={link.key}>
                 <Link
                   href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
                   // Same-page #anchor links don't change the pathname, so close the mobile menu here too.
                   onClick={() => setIsOpen(false)}
                   aria-current={isCurrent ? "page" : undefined}

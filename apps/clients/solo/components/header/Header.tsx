@@ -2,18 +2,18 @@ import { headers } from "next/headers"
 
 import { OrganisationType } from "@dance-engine/schemas/organisation"
 import { resolveTheme } from "@/components/content/themes/registry"
-import { HOME_PAGE_SLUG, getPublishedMenuJumps, getPublishedNavigationPages } from "@/lib/sanity/content"
+import { HOME_PAGE_SLUG, getPublishedMenu, getPublishedNavigationPages } from "@/lib/sanity/content"
 import { getSanityProjectForOrganisation } from "@/lib/sanity/projects"
 import type { NavigationLink } from "./TopLevelNavigation"
 
-// Single-page sites link to the home page's menu jumps; other sites link to their top-level pages.
+// Single-page sites use the home page's Menu section; other sites link to their top-level pages.
 async function getNavigationLinks(
   project: NonNullable<Awaited<ReturnType<typeof getSanityProjectForOrganisation>>>,
   singlePageSite: boolean,
 ): Promise<NavigationLink[]> {
   if (singlePageSite) {
-    const jumps = await getPublishedMenuJumps(project, HOME_PAGE_SLUG);
-    return jumps.map((jump) => ({ key: jump._key, title: jump.title, href: `/#${jump.anchor}` }));
+    const menu = await getPublishedMenu(project, HOME_PAGE_SLUG);
+    return menu.map((link) => ({ key: link._key, title: link.title, href: link.href, external: link.external }));
   }
 
   const pages = await getPublishedNavigationPages(project);

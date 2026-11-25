@@ -40,9 +40,18 @@ export type GridSectionItem =
 
 export type PageSection =
   | GridSectionItem
+  | { _key: string; _type: "menuSection"; items?: MenuLinkItem[] }
   | { _key: string; _type: "menuJumpSection"; title?: string; showTitle?: boolean; anchor?: { current?: string } }
   | { _key: string; _type: "eventListSection"; heading?: string; body?: string }
   | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; items?: GridSectionItem[] };
+
+export type MenuLinkItem = {
+  _key: string;
+  label?: string;
+  linkType?: "jump" | "url";
+  jump?: string;
+  url?: string;
+};
 
 export type SocialProfile = {
   _id: string;
@@ -69,10 +78,12 @@ export type SanityContentPage = {
   sections?: PageSection[];
 };
 
-export type SanityMenuJump = {
+export type SanityMenuLink = {
   _key: string;
   title: string;
-  anchor: string;
+  href: string;
+  /** Full http(s) address: opened in a new tab. */
+  external: boolean;
 };
 
 export type SanityNavigationPage = {
@@ -175,17 +186,15 @@ const navigationQuery = `*[
   "slug": slug.current
 }`;
 
-const menuJumpsQuery = `*[
+const menuQuery = `*[
   _type == "page" &&
   slug.current == $slug
-][0].sections[
-  _type == "menuJumpSection" &&
-  defined(title) &&
-  defined(anchor.current)
-]{
+][0].sections[_type == "menuSection"][0].items[]{
   _key,
-  title,
-  "anchor": anchor.current
+  label,
+  linkType,
+  jump,
+  url
 }`;
 
 function createPublishedClient(project: SanityProjectConfig) {
@@ -255,13 +264,14 @@ export async function getPublishedNavigationPages(
   );
 }
 
-// Menu jump sections on one page, in page order; used as the menu for single-page sites.
-export async function getPublishedMenuJumps(
+// Links from the first Menu section on one page, in order; used as the menu for single-page sites.
+// Incomplete links (no label, or no target) are skipped.
+export async function getPublishedMenu(
   project: SanityProjectConfig,
   slug: string,
-): Promise<SanityMenuJump[]> {
-  const jumps = await createPublishedClient(project).fetch<SanityMenuJump[] | null>(
-    menuJumpsQuery,
+): Promise<SanityMenuLink[]> {
+  const items = await createPublishedClient(project).fetch<MenuLinkItem[] | null>(
+    menuQuery,
     { slug },
     {
       next: {
@@ -270,5 +280,15 @@ export async function getPublishedMenuJumps(
       },
     },
   );
-  return jumps || [];
+  return (items || []).flatMap((item): SanityMenuLink[] => {
+    if (!item?.label) return [];
+    if (item.linkType === "url") {
+      return item.url
+        ? [{ _key: item._key, title: item.label, href: item.url, external: /^https?:\/\//i.test(item.url) }]
+        : [];
+    }
+    return item.jump
+      ? [{ _key: item._key, title: item.label, href: `/#${item.jump}`, external: false }]
+      : [];
+  });
 }

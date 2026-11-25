@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
+import { MenuJumpSelectInput } from "./MenuJumpSelectInput";
 import { SectionPreview } from "./PageEditorShell";
 
 const blockContent = defineType({
@@ -449,7 +450,7 @@ const faqSection = defineType({
 
 type MenuJumpSectionValue = { _key?: string; anchor?: { current?: string } };
 
-// Invisible #anchor on the page; single-page sites build their header menu from these.
+// Invisible #anchor on the page; a Menu section's links can point to it.
 const menuJumpSection = defineType({
   name: "menuJumpSection",
   title: "Menu jump",
@@ -460,7 +461,7 @@ const menuJumpSection = defineType({
       name: "title",
       title: "Title",
       type: "string",
-      description: "Used as the menu label.",
+      description: "Names this point on the page when you pick it in a Menu section link.",
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -502,6 +503,102 @@ const menuJumpSection = defineType({
       title: `Menu jump: ${title || "Untitled"}`,
       subtitle: `${anchor ? `#${anchor}` : "No anchor yet"}${showTitle ? " · title shown" : " · hidden"}`,
     }),
+  },
+});
+
+type MenuLinkValue = { linkType?: "jump" | "url"; jump?: string; url?: string };
+type PageSectionValue = MenuJumpSectionValue & { _type?: string };
+
+const menuLink = defineType({
+  name: "menuLink",
+  title: "Menu link",
+  type: "object",
+  fields: [
+    defineField({ name: "label", title: "Label", type: "string", validation: (rule) => rule.required() }),
+    defineField({
+      name: "linkType",
+      title: "Links to",
+      type: "string",
+      options: {
+        list: [
+          { title: "A menu jump on this page", value: "jump" },
+          { title: "A web address", value: "url" },
+        ],
+        layout: "radio",
+        direction: "horizontal",
+      },
+      initialValue: "jump",
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "jump",
+      title: "Menu jump",
+      type: "string",
+      components: { input: MenuJumpSelectInput },
+      hidden: ({ parent }) => (parent as MenuLinkValue | undefined)?.linkType !== "jump",
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          if ((context.parent as MenuLinkValue | undefined)?.linkType !== "jump") return true;
+          if (!value) return "Choose a menu jump";
+          const sections = (context.document?.sections || []) as PageSectionValue[];
+          const exists = sections.some(
+            (section) => section?._type === "menuJumpSection" && section.anchor?.current === value,
+          );
+          return exists ? true : "That menu jump is no longer on this page";
+        }),
+    }),
+    defineField({
+      name: "url",
+      title: "Web address",
+      description: "Full addresses (https://…) open in a new tab. Use a path such as /events for pages on this site.",
+      type: "url",
+      hidden: ({ parent }) => (parent as MenuLinkValue | undefined)?.linkType !== "url",
+      validation: (rule) =>
+        rule
+          .uri({ allowRelative: true, scheme: ["http", "https", "mailto", "tel"] })
+          .custom((value, context) =>
+            (context.parent as MenuLinkValue | undefined)?.linkType === "url" && !value
+              ? "Enter a web address"
+              : true,
+          ),
+    }),
+  ],
+  preview: {
+    select: { title: "label", linkType: "linkType", jump: "jump", url: "url" },
+    prepare: ({ title, linkType, jump, url }) => ({
+      title: title || "Untitled link",
+      subtitle: linkType === "url" ? url || "No address yet" : jump ? `#${jump}` : "No menu jump chosen",
+    }),
+  },
+});
+
+// Not shown on the page: its links form the header menu on single-page sites.
+const menuSection = defineType({
+  name: "menuSection",
+  title: "Menu",
+  type: "object",
+  components: { preview: SectionPreview },
+  fields: [
+    defineField({
+      name: "items",
+      title: "Links",
+      description: "Shown in the header menu in this order.",
+      type: "array",
+      of: [defineArrayMember({ type: "menuLink" })],
+    }),
+  ],
+  validation: (rule) =>
+    rule.custom((_value, context) => {
+      const sections = (context.document?.sections || []) as PageSectionValue[];
+      const menus = sections.filter((section) => section?._type === "menuSection").length;
+      return menus > 1 ? "Only one Menu section is used per page (the first one)" : true;
+    }).warning(),
+  preview: {
+    select: { items: "items" },
+    prepare: ({ items }) => {
+      const count = Array.isArray(items) ? items.length : 0;
+      return { title: "Menu", subtitle: `${count} link${count === 1 ? "" : "s"} · header menu, not shown on the page` };
+    },
   },
 });
 
@@ -559,9 +656,9 @@ const page = defineType({
     defineField({ name: "title", title: "Page title", type: "string", validation: (rule) => rule.required() }),
     defineField({ name: "slug", title: "Page address", type: "slug", options: { source: "title" }, validation: (rule) => rule.required() }),
     defineField({ name: "seoDescription", title: "Search description", type: "text", rows: 3 }),
-    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuJumpSection" }), defineArrayMember({ type: "eventListSection" })] }),
+    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuSection" }), defineArrayMember({ type: "menuJumpSection" }), defineArrayMember({ type: "eventListSection" })] }),
   ],
   preview: { select: { title: "title", subtitle: "slug.current" } },
 });
 
-export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, menuJumpSection, eventListSection, site, page];
+export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, menuLink, menuSection, menuJumpSection, eventListSection, site, page];

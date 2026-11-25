@@ -7,6 +7,7 @@ import HeroSection from "./HeroSection";
 import ImageSection from "./ImageSection";
 import ImageTextSection from "./ImageTextSection";
 import MenuJumpSection from "./MenuJumpSection";
+import MenuSection from "./MenuSection";
 import PageShell from "./PageShell";
 import RichTextSection from "./RichTextSection";
 import SectionGrid from "./SectionGrid";
@@ -29,6 +30,7 @@ const defaultTheme: ResolvedTheme = {
     socialMediaSection: SocialMediaSection,
     testimonialsSection: TestimonialsSection,
     sectionGrid: SectionGrid,
+    menuSection: MenuSection,
     menuJumpSection: MenuJumpSection,
     faqSection: FaqSection,
     eventListSection: EventListSection,

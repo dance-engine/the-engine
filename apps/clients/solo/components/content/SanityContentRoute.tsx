@@ -9,6 +9,7 @@ import type { OrganisationType } from "@dance-engine/schemas/organisation";
 import Header from "@/components/header/Header";
 import DanceEngineFooter from "@/components/footer/DanceEngine";
 import SanityPage from "@/components/content/SanityPage";
+import { orgCustomColourVariables } from "@/components/content/themes/shared";
 import { getPreviewContentPage, getPublishedContentPage } from "@/lib/sanity/content";
 import {
   getSanityPreviewToken,
@@ -79,6 +80,8 @@ export async function SanityContentRoute({
     "--org-color-primary-text": readableText(orgTheme.primary),
     "--org-color-secondary": orgTheme.secondary,
     "--org-color-secondary-text": readableText(orgTheme.secondary),
+    // Only the colours the org has set, for the default theme to use over its own colours.
+    ...orgCustomColourVariables(org),
   } as CSSProperties;
 
   return (

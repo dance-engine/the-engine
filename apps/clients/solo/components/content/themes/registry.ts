@@ -1,5 +1,6 @@
 import defaultTheme from "./default";
 import modernEdge from "./modern-edge";
+import ruedx from "./ruedx";
 import type { ResolvedTheme, Theme } from "./types";
 
 // Themes are imported statically (never by a computed path) so a missing theme is a build
@@ -7,6 +8,7 @@ import type { ResolvedTheme, Theme } from "./types";
 // with only the sections it changes, then register it here under the name used in Vercel config.
 const themes: Record<string, Theme> = {
   [modernEdge.name]: modernEdge,
+  [ruedx.name]: ruedx,
 };
 
 /** The org's theme merged over the default theme. Unknown or missing names use the default. */

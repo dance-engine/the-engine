@@ -113,7 +113,7 @@ export default function EventList({ fallbackData, org, event_ksuid, theme}: { fa
       </div>
     ) : (
       // A centred box capped at max-w-md, rather than a full-width band.
-      <div className='mx-auto flex w-fit max-w-md items-center gap-4 rounded-lg bg-black/20 px-5 py-4 text-left'>
+      <div className='mx-auto flex w-fit max-w-md items-center gap-4 rounded-lg bg-sky-950/10 px-5 py-4 text-left'>
         <LuCalendarClock aria-hidden="true" className='size-8 shrink-0' />
         <p>Check back soon for our upcoming classes and events.</p>
       </div>

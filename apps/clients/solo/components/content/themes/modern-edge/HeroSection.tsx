@@ -29,7 +29,7 @@ export default function HeroSection({ section, project }: SectionProps<"heroSect
         {section.body && (
           // The highlight sits on an inline span so it wraps with the text, one box per line;
           // box-decoration-clone gives every line its own padding, and leading-loose leaves a gap between the boxes.
-          <p className="mt-5 max-w-2xl text-lg leading-loose">
+          <p className="mt-5 max-w-2xl text-lg leading-loose whitespace-pre-line">
             <span className="bg-black/40 box-decoration-clone px-2 py-1">{section.body}</span>
           </p>
         )}

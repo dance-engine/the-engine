@@ -1,7 +1,10 @@
 // Theme-independent helpers. Keep data logic here so every theme renders the same content
 // and a fix applies to all of them; theme components should only decide layout and styling.
 import { createImageUrlBuilder } from "@sanity/image-url";
+import type { CSSProperties } from "react";
 import type { IconType } from "react-icons";
+import type { OrganisationType } from "@dance-engine/schemas/organisation";
+import { readableText } from "@dance-engine/ui/event/lib/organisationTheme";
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { LuAtSign } from "react-icons/lu";
 import type { SocialProfile, Testimonial } from "@/lib/sanity/content";
@@ -71,4 +74,39 @@ export function isSocialProfile(profile: SocialProfile | null): profile is Socia
 
 export function isTestimonial(testimonial: Testimonial | null): testimonial is Testimonial {
   return Boolean(testimonial?.name && testimonial.shortQuote);
+}
+
+type OrgColourKey = "colour_primary" | "colour_secondary" | "colour_background_dark";
+
+/** An org theme colour (core app → Settings → Theme) as #rrggbb, or undefined if the org hasn't set a valid one. */
+function orgColour(org: OrganisationType | null | undefined, key: OrgColourKey) {
+  const theme = (org as { theme?: Partial<Record<OrgColourKey, string>> } | null | undefined)?.theme;
+  const value = theme?.[key]?.trim();
+  if (!value || !/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)) return undefined;
+  return value.length === 4
+    ? `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`.toLowerCase()
+    : value.toLowerCase();
+}
+
+/** The theme colours the org has actually chosen. Unlike getOrganisationTheme, nothing is filled in with defaults. */
+export function orgCustomColours(org: OrganisationType | null | undefined) {
+  return {
+    primary: orgColour(org, "colour_primary"),
+    secondary: orgColour(org, "colour_secondary"),
+    backgroundDark: orgColour(org, "colour_background_dark"),
+  };
+}
+
+/**
+ * CSS variables for the colours the org has chosen, each with a readable text colour (white or near-black).
+ * A variable is left out when the org hasn't set that colour, so the default theme can give each one a
+ * fallback that keeps its own look: bg-[var(--org-custom-primary,#ce037d)].
+ */
+export function orgCustomColourVariables(org: OrganisationType | null | undefined): CSSProperties {
+  const { primary, secondary, backgroundDark } = orgCustomColours(org);
+  return {
+    ...(primary && { "--org-custom-primary": primary, "--org-custom-primary-text": readableText(primary) }),
+    ...(secondary && { "--org-custom-secondary": secondary, "--org-custom-secondary-text": readableText(secondary) }),
+    ...(backgroundDark && { "--org-custom-background-dark": backgroundDark }),
+  } as CSSProperties;
 }

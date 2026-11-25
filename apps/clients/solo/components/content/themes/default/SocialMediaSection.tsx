@@ -23,7 +23,7 @@ export default function SocialMediaSection({ section }: SectionProps<"socialMedi
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`${profile.label} on ${socialPlatformLabel(platform)}`}
-                className="group inline-flex items-center gap-2 px-3 py-2 font-semibold text-slate-950 transition hover:text-cerise-on-light"
+                className="group inline-flex items-center gap-2 px-3 py-2 font-semibold text-slate-950 transition hover:text-[var(--org-custom-primary,var(--color-cerise-on-light))]"
               >
                 <Icon
                   aria-hidden="true"
@@ -40,7 +40,7 @@ export default function SocialMediaSection({ section }: SectionProps<"socialMedi
 }
 
 function socialIconColour(platform: string, style: string) {
-  if (style === "monochrome") return "text-cerise-on-light";
+  if (style === "monochrome") return "text-[var(--org-custom-primary,var(--color-cerise-on-light))]";
   if (style === "blackWhite") return "text-black";
 
   return {

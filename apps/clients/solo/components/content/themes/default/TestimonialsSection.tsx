@@ -10,7 +10,7 @@ export default function TestimonialsSection({ section, project }: SectionProps<"
   if (testimonials.length === 0) return null;
 
   return (
-    <section className="bg-[#01164d] px-6 py-16 text-white sm:px-10">
+    <section className="bg-[var(--org-custom-background-dark,#01164d)] px-6 py-16 text-white sm:px-10">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
@@ -42,7 +42,7 @@ export default function TestimonialsSection({ section, project }: SectionProps<"
                       <PortableText value={testimonial.quote} />
                     </div>
                   )}
-                  <p className="mt-5 border-l-4 border-cerise-logo bg-white/10 px-4 py-3 text-xl font-semibold leading-snug text-white">
+                  <p className="mt-5 border-l-4 border-[var(--org-custom-secondary,var(--color-cerise-logo))] bg-white/10 px-4 py-3 text-xl font-semibold leading-snug text-white">
                     “{testimonial.shortQuote}”
                   </p>
                 </blockquote>

@@ -45,7 +45,7 @@ export default function ImageSection({ section, project, compact = false }: Sect
       {section.href ? (
         <Link
           href={stegaClean(section.href)}
-          className="block h-full w-full focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light"
+          className="block h-full w-full focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--org-custom-primary,var(--color-keppel-on-light))]"
         >
           {image}
         </Link>
@@ -55,7 +55,7 @@ export default function ImageSection({ section, project, compact = false }: Sect
           href={fullSizeImageUrl(project, section.image)}
           target="_blank"
           rel="noreferrer"
-          className="block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light"
+          className="block h-full w-full cursor-zoom-in focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--org-custom-primary,var(--color-keppel-on-light))]"
         >
           {image}
         </a>

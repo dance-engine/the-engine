@@ -10,7 +10,7 @@ export default async function EventListSection({ section, organisation }: Sectio
 
   return (
     <section
-      className="bg-de-background-dark px-6 py-14 text-white sm:px-10"
+      className="bg-[var(--org-custom-background-dark,var(--color-de-background-dark))] px-6 py-14 text-white sm:px-10"
       // EventList's Prev/Next buttons use --highlight-color; point it at the org's primary colour.
       style={{ "--highlight-color": "var(--org-color-primary)" } as CSSProperties}
     >

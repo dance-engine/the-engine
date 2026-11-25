@@ -43,7 +43,7 @@ export default function ImageTextSection({ section, project, compact = false }: 
       <div className={`mx-auto grid max-w-6xl items-start ${compact ? "gap-6" : "gap-10 md:grid-cols-2"}`}>
         {hasImage && (
           section.imageHref ? (
-            <Link href={stegaClean(section.imageHref)} className={`block rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light ${imageFirst ? "md:order-1" : "md:order-2"}`}>
+            <Link href={stegaClean(section.imageHref)} className={`block rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--org-custom-primary,var(--color-keppel-on-light))] ${imageFirst ? "md:order-1" : "md:order-2"}`}>
               <SanityPicture {...pictureProps} className={`${imageClassName} transition hover:opacity-90`} />
             </Link>
           ) : (
@@ -52,7 +52,7 @@ export default function ImageTextSection({ section, project, compact = false }: 
               href={fullSizeImageUrl(project, section.image)}
               target="_blank"
               rel="noreferrer"
-              className={`block cursor-zoom-in rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-keppel-on-light ${imageFirst ? "md:order-1" : "md:order-2"}`}
+              className={`block cursor-zoom-in rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--org-custom-primary,var(--color-keppel-on-light))] ${imageFirst ? "md:order-1" : "md:order-2"}`}
             >
               <SanityPicture {...pictureProps} className={imageClassName} />
             </a>

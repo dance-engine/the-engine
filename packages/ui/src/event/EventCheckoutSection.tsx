@@ -18,12 +18,15 @@ export default function EventCheckoutSection({
   checkoutTotal,
   savings,
   highlightedPassLabel,
+  salesDisabled = false,
 }: {
   org: OrganisationType;
   lineItems: CheckoutLineItem[];
   checkoutTotal: number;
   savings: number;
   highlightedPassLabel: string;
+  /** Show the order summary but keep the buy button disabled (preview of a draft event). */
+  salesDisabled?: boolean;
 }) {
   return (
     <section id="checkout" className="p-6">
@@ -131,11 +134,13 @@ export default function EventCheckoutSection({
             org={org}
             lineItems={lineItems}
             cartValue={checkoutTotal}
-            disabled={lineItems.length === 0}
+            disabled={salesDisabled || lineItems.length === 0}
             label={
-              lineItems.length > 0
-                ? `Buy now · ${highlightedPassLabel}`
-                : "Buy now"
+              salesDisabled
+                ? "Sales disabled for preview"
+                : lineItems.length > 0
+                  ? `Buy now · ${highlightedPassLabel}`
+                  : "Buy now"
             }
             className="mt-8 inline-flex w-full cursor-pointer items-center justify-center rounded-lg px-5 py-4 text-base font-semibold shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
             style={{

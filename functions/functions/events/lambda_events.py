@@ -194,7 +194,7 @@ def get_events(organisationSlug: str, public: bool = False):
 
     return [e.to_public() if public else e for e in events]
 
-def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
+def get_single_event(organisationSlug: str, eventId: str, public: bool = False, preview: bool = False):
     TABLE_NAME = ORG_TABLE_NAME_TEMPLATE.replace("org_name",organisationSlug)
     table = db.Table(TABLE_NAME)
     logger.info(f"Getting events for {organisationSlug} from {TABLE_NAME}")
@@ -225,10 +225,15 @@ def get_single_event(organisationSlug: str, eventId: str, public: bool = False):
         raise Exception
     
     if public:
-        if getattr(result, "status", None) != Status.live:
+        # ?preview on the public URL also lets draft events, items and bundles through, so the event can be
+        # checked on the website before it goes live. The website disables buying in preview.
+        allowed_statuses = {Status.live, Status.draft} if preview else {Status.live}
+        item_statuses = PUBLIC_ITEM_STATUSES | {ItemStatus.draft} if preview else PUBLIC_ITEM_STATUSES
+        bundle_statuses = {BundleStatus.live, BundleStatus.draft} if preview else {BundleStatus.live}
+        if getattr(result, "status", None) not in allowed_statuses:
             return None
-        result.items = [i for i in result.items if getattr(i, "status", None) in PUBLIC_ITEM_STATUSES] if result.items else []
-        result.bundles = [b for b in result.bundles if getattr(b, "status", None) == BundleStatus.live] if result.bundles else []
+        result.items = [i for i in result.items if getattr(i, "status", None) in item_statuses] if result.items else []
+        result.bundles = [b for b in result.bundles if getattr(b, "status", None) in bundle_statuses] if result.bundles else []
 
     if not result:
         return None
@@ -324,6 +329,8 @@ def lambda_handler(event, context):
         organisationSlug = event.get("pathParameters", {}).get("organisation")
         eventId          = event.get("pathParameters", {}).get("ksuid",None)
         is_public        = event.get("rawPath", "").startswith("/public")
+        # ?preview (any value, or none) on GET /public/{organisation}/events/{ksuid}: include draft events.
+        is_preview       = "preview" in (event.get("queryStringParameters") or {})
         actor            = event.get("requestContext", {}).get("accountId", "unknown")
 
         # POST /{organisation}/events
@@ -338,7 +345,7 @@ def lambda_handler(event, context):
             list_response_cls = EventListResponsePublic if is_public else EventListResponse
 
             if eventId:
-                result = get_single_event(organisationSlug, eventId, public=is_public)
+                result = get_single_event(organisationSlug, eventId, public=is_public, preview=is_preview)
                 if result is None:
                     return make_response(404, {"message": "Event not found."})
                 response = response_cls(event=result)

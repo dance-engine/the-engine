@@ -48,11 +48,13 @@ function EventTicketingContent({
   org,
   hasTicketItems,
   isFutureEvent,
+  salesDisabled = false,
 }: {
   event: EventModelType;
   org: OrganisationType;
   hasTicketItems: boolean;
   isFutureEvent: boolean;
+  salesDisabled?: boolean;
 }) {
   const { selected, included, pricingTier } = usePassSelectorState();
   const { toggleBundle, toggleItem, setPricingTier } = usePassSelectorActions();
@@ -143,6 +145,7 @@ function EventTicketingContent({
         checkoutTotal={checkoutTotal}
         savings={savings}
         highlightedPassLabel={highlightedPassLabel}
+        salesDisabled={salesDisabled}
       />
     </div>
   ) : null
@@ -153,11 +156,14 @@ export default function EventTicketing({
   org,
   hasTicketItems,
   isFutureEvent,
+  salesDisabled = false,
 }: {
   event: EventModelType;
   org: OrganisationType;
   hasTicketItems: boolean;
   isFutureEvent: boolean;
+  /** Tickets can be picked but not bought (the event page was opened with ?preview). */
+  salesDisabled?: boolean;
 }) {
   return (
     <PassSelectorProvider event={event} org={org}>
@@ -166,6 +172,7 @@ export default function EventTicketing({
         org={org}
         hasTicketItems={hasTicketItems}
         isFutureEvent={isFutureEvent}
+        salesDisabled={salesDisabled}
       />
     </PassSelectorProvider>
   );

@@ -282,16 +282,20 @@ const isTbcDateValue = (value?: string): boolean =>
 export default function Event({
   org,
   eventKsuid,
+  preview = false,
 }: {
   org: OrganisationType;
   eventKsuid: string;
+  /** Also load the event while it is still a draft (the page was opened with ?preview). */
+  preview?: boolean;
 }) {
+  const eventApiUrl = `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org.organisation}/events/${eventKsuid}${preview ? "?preview" : ""}`;
   const {
     data: eventData,
     isLoading,
     error,
   } = useSWR(
-    `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org.organisation}/events/${eventKsuid}`,
+    eventApiUrl,
     fetcher,
   );
 
@@ -378,7 +382,7 @@ export default function Event({
   if (debugEventState && typeof window !== "undefined") {
     console.log("Event Debug:", {
       orgSlug: org.organisation,
-      eventApiUrl: `${process.env.NEXT_PUBLIC_DANCE_ENGINE_API}/public/${org.organisation}/events/${eventKsuid}`,
+      eventApiUrl,
       eventKsuid,
       eventName: event.name,
       starts_at_raw: event.starts_at,
@@ -472,6 +476,7 @@ export default function Event({
                 org={org}
                 hasTicketItems={hasTicketItems}
                 isFutureEvent={isFutureEvent}
+                salesDisabled={preview}
               />
               <section className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
                 <div

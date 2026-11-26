@@ -6,10 +6,14 @@ import DanceEngineFooter from "@/components/footer/DanceEngine";
 
 export default async function EventPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ ksuid: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { ksuid } = await params;
+  // /events/<ksuid>?preview also shows the event while it is still a draft.
+  const preview = "preview" in (await searchParams);
   const requestHeaders = await headers();
   const orgSlug = requestHeaders.get("x-site-org") || "default-org";
   const orgResponse = await fetch(
@@ -38,7 +42,7 @@ export default async function EventPage({
         {orgSlug === "default-org" ? (
           <div>Loading Event</div>
         ) : (
-          <Event org={org} eventKsuid={ksuid} />
+          <Event org={org} eventKsuid={ksuid} preview={preview} />
         )}
       </main>
       <DanceEngineFooter />

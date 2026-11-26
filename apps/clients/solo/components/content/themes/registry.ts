@@ -1,5 +1,6 @@
 import defaultTheme from "./default";
 import modernEdge from "./modern-edge";
+import classyCandela from "./classy-candela";
 import ruedx from "./ruedx";
 import merseysideLatinFestival from "./merseyside-latin-festival";
 import type { SoloThemeName } from "@dance-engine/utils/solo-themes";
@@ -13,6 +14,7 @@ import type { ResolvedTheme, Theme } from "./types";
 //      solo-themes.ts is a type error.
 const themes: Partial<Record<SoloThemeName, Theme>> = {
   "modern-edge": modernEdge,
+  "classy-candela": classyCandela,
   ruedx: ruedx,
   "merseyside-latin-festival": merseysideLatinFestival,
 };

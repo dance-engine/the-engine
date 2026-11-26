@@ -11,6 +11,7 @@ import MenuSection from "./MenuSection";
 import PageShell from "./PageShell";
 import RichTextSection from "./RichTextSection";
 import SectionGrid from "./SectionGrid";
+import SidebarSection from "./SidebarSection";
 import SocialMediaSection from "./SocialMediaSection";
 import TestimonialsSection from "./TestimonialsSection";
 import ThreeColumnCalloutSection from "./ThreeColumnCalloutSection";
@@ -30,6 +31,7 @@ const defaultTheme: ResolvedTheme = {
     socialMediaSection: SocialMediaSection,
     testimonialsSection: TestimonialsSection,
     sectionGrid: SectionGrid,
+    sidebarSection: SidebarSection,
     menuSection: MenuSection,
     menuJumpSection: MenuJumpSection,
     faqSection: FaqSection,

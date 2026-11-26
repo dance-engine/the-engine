@@ -76,7 +76,13 @@ export function isTestimonial(testimonial: Testimonial | null): testimonial is T
   return Boolean(testimonial?.name && testimonial.shortQuote);
 }
 
-type OrgColourKey = "colour_primary" | "colour_secondary" | "colour_background_light" | "colour_background_dark";
+type OrgColourKey =
+  | "colour_primary"
+  | "colour_secondary"
+  | "colour_background_light"
+  | "colour_background_dark"
+  | "colour_surface_light"
+  | "colour_surface_dark";
 
 /** An org theme colour (core app → Settings → Theme) as #rrggbb, or undefined if the org hasn't set a valid one. */
 function orgColour(org: OrganisationType | null | undefined, key: OrgColourKey) {
@@ -95,19 +101,25 @@ export function orgCustomColours(org: OrganisationType | null | undefined) {
     secondary: orgColour(org, "colour_secondary"),
     backgroundLight: orgColour(org, "colour_background_light"),
     backgroundDark: orgColour(org, "colour_background_dark"),
+    surfaceLight: orgColour(org, "colour_surface_light"),
+    surfaceDark: orgColour(org, "colour_surface_dark"),
   };
 }
 
 /**
- * CSS variables for the colours the org has chosen, each with a readable text colour (white or near-black).
+ * CSS variables for the colours the org has chosen, each with a readable text colour (white or near-black)
+ * in a matching "-text" variable, so text on any of them always comes from the colour it sits on.
  * A variable is left out when the org hasn't set that colour, so the default theme can give each one a
  * fallback that keeps its own look: bg-[var(--org-custom-primary,#ce037d)].
  */
 export function orgCustomColourVariables(org: OrganisationType | null | undefined): CSSProperties {
-  const { primary, secondary, backgroundDark } = orgCustomColours(org);
+  const { primary, secondary, backgroundLight, backgroundDark, surfaceLight, surfaceDark } = orgCustomColours(org);
   return {
     ...(primary && { "--org-custom-primary": primary, "--org-custom-primary-text": readableText(primary) }),
     ...(secondary && { "--org-custom-secondary": secondary, "--org-custom-secondary-text": readableText(secondary) }),
-    ...(backgroundDark && { "--org-custom-background-dark": backgroundDark }),
+    ...(backgroundLight && { "--org-custom-background-light": backgroundLight, "--org-custom-background-light-text": readableText(backgroundLight) }),
+    ...(backgroundDark && { "--org-custom-background-dark": backgroundDark, "--org-custom-background-dark-text": readableText(backgroundDark) }),
+    ...(surfaceLight && { "--org-custom-surface-light": surfaceLight, "--org-custom-surface-light-text": readableText(surfaceLight) }),
+    ...(surfaceDark && { "--org-custom-surface-dark": surfaceDark, "--org-custom-surface-dark-text": readableText(surfaceDark) }),
   } as CSSProperties;
 }

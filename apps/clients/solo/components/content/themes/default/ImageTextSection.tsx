@@ -9,6 +9,9 @@ export default function ImageTextSection({ section, project, compact = false }: 
   const imagePosition = stegaClean(section.imagePosition);
   const imageAspectRatio = stegaClean(section.imageAspectRatio) || "original";
   const imageFirst = imagePosition !== "right";
+  // Sanity "Text alignment": the text level with the top of the image (the default) or centred on it.
+  // Only matters side by side (md up); stacked, the text is under the image either way.
+  const alignText = stegaClean(section.verticalAlignment) === "center" ? "md:items-center" : "md:items-start";
   // Share of the row the image takes from md up (Sanity "Image width"); the text gets the rest.
   // Columns are listed in screen order, so the image column comes first or last with the image.
   const imageWidth = stegaClean(section.imageWidth) || "1/2";
@@ -53,7 +56,7 @@ export default function ImageTextSection({ section, project, compact = false }: 
 
   return (
     <section className={compact ? "h-full bg-(--section-bg,var(--color-slate-50)) p-6" : "bg-(--section-bg,var(--color-slate-50)) px-6 py-14 sm:px-10"}>
-      <div className={`mx-auto grid max-w-6xl items-start ${compact ? "gap-6" : `gap-10 ${columns}`}`}>
+      <div className={`mx-auto grid max-w-6xl items-start ${compact ? "gap-6" : `gap-10 ${columns} ${alignText}`}`}>
         {hasImage && (
           section.imageHref ? (
             <Link href={stegaClean(section.imageHref)} className={`block rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-[var(--org-custom-primary,var(--color-keppel-on-light))] ${imageFirst ? "md:order-1" : "md:order-2"}`}>

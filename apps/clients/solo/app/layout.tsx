@@ -1,6 +1,6 @@
 import { draftMode, headers } from 'next/headers';
 import { VisualEditing } from 'next-sanity/visual-editing';
-import { Geist, Geist_Mono, Luckiest_Guy, Oswald, Yesteryear, Caveat_Brush, Reenie_Beanie, Shadows_Into_Light_Two} from "next/font/google";
+import { Geist, Geist_Mono, Luckiest_Guy, Oswald, Yesteryear, Caveat_Brush, Reenie_Beanie, Shadows_Into_Light_Two, Cormorant_Garamond} from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,6 +48,14 @@ const shadowsIntoLightTwo = Shadows_Into_Light_Two({
   subsets: ["latin"],
 });
 
+// classy-candela theme: an elegant serif for headings, with italics.
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant-garamond",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+});
+
 const domainConfig: Record<string, { title: string; favicon: string }> = {
   'power-of-woman': {
     title: 'Power of Woman',
@@ -82,7 +90,7 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} \
-        ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} \
+        ${yesteryear.variable} ${shadowsIntoLightTwo.variable} ${reenieBeanie.variable} ${caveatBrush.variable} ${oswald.variable} ${luckiestGuy.variable} ${cormorantGaramond.variable} \
         antialiased min-h-full`}
       >
         {children}

@@ -30,6 +30,7 @@ const privateTo = (...orgs: string[]): SoloThemeAccess => ({ visibility: "privat
 export const soloThemes = {
   default: { name: "default", label: "Default", access: PUBLIC },
   "modern-edge": { name: "modern-edge", label: "Modern Edge", access: PUBLIC },
+  "classy-candela": { name: "classy-candela", label: "Classy Candela", access: PUBLIC },
   ruedx: { name: "ruedx", label: "RuedX", access: privateTo("ruedx") },
   "merseyside-latin-festival": {
     name: "merseyside-latin-festival",

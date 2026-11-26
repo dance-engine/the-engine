@@ -102,6 +102,21 @@ const imageTextSection = defineType({
       initialValue: "1/2",
     }),
     defineField({ name: "imagePosition", title: "Image position", type: "string", initialValue: "left", options: { layout: "radio", list: [{ title: "Left", value: "left" }, { title: "Right", value: "right" }] } }),
+    defineField({
+      name: "verticalAlignment",
+      title: "Text alignment",
+      description: "Where the text sits next to the image on larger screens: level with the top of the image, or centred on it. On phones the image and text stack.",
+      type: "string",
+      options: {
+        layout: "radio",
+        direction: "horizontal",
+        list: [
+          { title: "Top", value: "top" },
+          { title: "Centred", value: "center" },
+        ],
+      },
+      initialValue: "top",
+    }),
   ],
   preview: { select: { title: "heading", media: "image" }, prepare: ({ title, media }) => ({ title: title || "Untitled image section", subtitle: "Image and text", media }) },
 });
@@ -446,6 +461,69 @@ const sectionGrid = defineType({
   },
 });
 
+// The sections that can go inside a sidebar's columns: the same ones a section grid takes.
+const columnSectionMembers = () => [
+  defineArrayMember({ type: "heroSection" }),
+  defineArrayMember({ type: "richTextSection" }),
+  defineArrayMember({ type: "imageTextSection" }),
+  defineArrayMember({ type: "imageSection" }),
+  defineArrayMember({ type: "callToActionSection" }),
+  defineArrayMember({ type: "threeColumnCalloutSection" }),
+  defineArrayMember({ type: "socialMediaSection" }),
+  defineArrayMember({ type: "testimonialsSection" }),
+  defineArrayMember({ type: "faqSection" }),
+];
+
+const sectionCount = (sections: unknown) => {
+  const count = Array.isArray(sections) ? sections.length : 0;
+  return `${count} section${count === 1 ? "" : "s"}`;
+};
+
+const sidebarSection = defineType({
+  name: "sidebarSection",
+  title: "Sidebar",
+  type: "object",
+  components: { preview: SectionPreview },
+  fields: [
+    defineField({
+      name: "sidebarPosition",
+      title: "Sidebar side",
+      description: "The sidebar takes a third of the width and the main column the other two thirds. On smaller screens they stack, main column first.",
+      type: "string",
+      initialValue: "right",
+      options: {
+        layout: "radio",
+        direction: "horizontal",
+        list: [
+          { title: "Left", value: "left" },
+          { title: "Right", value: "right" },
+        ],
+      },
+    }),
+    defineField({
+      name: "main",
+      title: "Main column",
+      description: "Sections in the wider, two-thirds column.",
+      type: "array",
+      of: columnSectionMembers(),
+    }),
+    defineField({
+      name: "sidebar",
+      title: "Sidebar",
+      description: "Sections in the narrower, one-third column.",
+      type: "array",
+      of: columnSectionMembers(),
+    }),
+  ],
+  preview: {
+    select: { main: "main", sidebar: "sidebar", sidebarPosition: "sidebarPosition" },
+    prepare: ({ main, sidebar, sidebarPosition }) => ({
+      title: "Sidebar",
+      subtitle: `Main: ${sectionCount(main)} · Sidebar (${sidebarPosition === "left" ? "left" : "right"}): ${sectionCount(sidebar)}`,
+    }),
+  },
+});
+
 const faqItem = defineType({
   name: "faqItem",
   title: "Question and answer",
@@ -694,9 +772,9 @@ const page = defineType({
     defineField({ name: "title", title: "Page title", type: "string", validation: (rule) => rule.required() }),
     defineField({ name: "slug", title: "Page address", type: "slug", options: { source: "title" }, validation: (rule) => rule.required() }),
     defineField({ name: "seoDescription", title: "Search description", type: "text", rows: 3 }),
-    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuSection" }), defineArrayMember({ type: "menuJumpSection" }), defineArrayMember({ type: "eventListSection" })] }),
+    defineField({ name: "sections", title: "Page sections", description: "Drag sections to change their order.", type: "array", of: [defineArrayMember({ type: "heroSection" }), defineArrayMember({ type: "richTextSection" }), defineArrayMember({ type: "imageTextSection" }), defineArrayMember({ type: "imageSection" }), defineArrayMember({ type: "callToActionSection" }), defineArrayMember({ type: "threeColumnCalloutSection" }), defineArrayMember({ type: "socialMediaSection" }), defineArrayMember({ type: "testimonialsSection" }), defineArrayMember({ type: "sectionGrid" }), defineArrayMember({ type: "sidebarSection" }), defineArrayMember({ type: "faqSection" }), defineArrayMember({ type: "menuSection" }), defineArrayMember({ type: "menuJumpSection" }), defineArrayMember({ type: "eventListSection" })] }),
   ],
   preview: { select: { title: "title", subtitle: "slug.current" } },
 });
 
-export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, faqItem, faqSection, menuLink, menuSection, menuJumpSection, eventListSection, site, page];
+export const schemaTypes = [blockContent, heroSection, richTextSection, imageTextSection, imageSection, callToActionSection, threeColumnCalloutSection, socialProfile, socialMediaSection, testimonial, testimonialsSection, sectionGrid, sidebarSection, faqItem, faqSection, menuLink, menuSection, menuJumpSection, eventListSection, site, page];

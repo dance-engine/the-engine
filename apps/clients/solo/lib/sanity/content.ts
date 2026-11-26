@@ -34,7 +34,7 @@ type SanityImage = {
 export type GridSectionItem =
   | { _key: string; _type: "heroSection"; heading?: string; body?: PlainOrRichTextValue; image?: SanityImage; featureImage?: SanityImage; featureImagePosition?: "left" | "right" }
   | { _key: string; _type: "richTextSection"; heading?: string; body?: PortableTextBlock[] }
-  | { _key: string; _type: "imageTextSection"; heading?: string; body?: PortableTextBlock[]; image?: SanityImage; imageHref?: string; imageAspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; imagePosition?: "left" | "right"; imageWidth?: "1/3" | "1/2" | "2/3" }
+  | { _key: string; _type: "imageTextSection"; heading?: string; body?: PortableTextBlock[]; image?: SanityImage; imageHref?: string; imageAspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; imagePosition?: "left" | "right"; imageWidth?: "1/3" | "1/2" | "2/3"; verticalAlignment?: "top" | "center" }
   | { _key: string; _type: "imageSection"; image?: SanityImage; aspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; href?: string }
   | { _key: string; _type: "callToActionSection"; heading?: string; body?: PlainOrRichTextValue; label?: string; href?: string }
   | { _key: string; _type: "threeColumnCalloutSection"; heading?: string; body?: PortableTextBlock[]; label?: string; href?: string }
@@ -47,7 +47,9 @@ export type PageSection =
   | { _key: string; _type: "menuSection"; items?: MenuLinkItem[] }
   | { _key: string; _type: "menuJumpSection"; title?: string; showTitle?: boolean; anchor?: { current?: string } }
   | { _key: string; _type: "eventListSection"; heading?: string; body?: PlainOrRichTextValue }
-  | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; cards?: boolean; items?: GridSectionItem[] };
+  | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; cards?: boolean; items?: GridSectionItem[] }
+  // Two columns of sections: main (two thirds) and sidebar (one third), with the sidebar on either side.
+  | { _key: string; _type: "sidebarSection"; sidebarPosition?: "left" | "right"; main?: GridSectionItem[] | null; sidebar?: GridSectionItem[] | null };
 
 export type MenuLinkItem = {
   _key: string;
@@ -96,6 +98,43 @@ export type SanityNavigationPage = {
   slug: string;
 };
 
+// Image fields with the asset URL, so images render without a second lookup.
+const imageProjection = `{
+  _type,
+  alt,
+  crop,
+  hotspot,
+  asset{
+    _ref,
+    "url": @->url
+  }
+}`;
+
+// One section's fields, with its referenced social profiles and testimonials pulled in and image URLs added.
+const sectionFields = `
+  ...,
+  profiles[]-> {
+    _id,
+    platform,
+    label,
+    url,
+    showInFooter
+  },
+  testimonials[]-> {
+    _id,
+    name,
+    link,
+    shortQuote,
+    quote,
+    image${imageProjection}
+  },
+  image${imageProjection},
+  featureImage${imageProjection}
+`;
+const sectionProjection = `{${sectionFields}}`;
+
+// Sections that hold other sections: a section grid's items and a sidebar's two columns.
+// Each nested section gets the same treatment as a top-level one.
 const pageQuery = `*[
   _type == "page" &&
   slug.current == $slug
@@ -105,98 +144,10 @@ const pageQuery = `*[
   "slug": slug.current,
   seoDescription,
   sections[]{
-    ...,
-    profiles[]-> {
-      _id,
-      platform,
-      label,
-      url,
-      showInFooter
-    },
-    testimonials[]-> {
-      _id,
-      name,
-      link,
-      shortQuote,
-      quote,
-      image{
-        _type,
-        alt,
-        crop,
-        hotspot,
-        asset{
-          _ref,
-          "url": @->url
-        }
-      }
-    },
-    items[]{
-      ...,
-      profiles[]-> {
-        _id,
-        platform,
-        label,
-        url,
-        showInFooter
-      },
-      testimonials[]-> {
-        _id,
-        name,
-        link,
-        shortQuote,
-        quote,
-        image{
-          _type,
-          alt,
-          crop,
-          hotspot,
-          asset{
-            _ref,
-            "url": @->url
-          }
-        }
-      },
-      image{
-        _type,
-        alt,
-        crop,
-        hotspot,
-        asset{
-          _ref,
-          "url": @->url
-        }
-      },
-      featureImage{
-        _type,
-        alt,
-        crop,
-        hotspot,
-        asset{
-          _ref,
-          "url": @->url
-        }
-      }
-    },
-    image{
-      _type,
-      alt,
-      crop,
-      hotspot,
-      asset{
-        _ref,
-        "url": @->url
-      }
-    },
-    featureImage{
-      _type,
-      alt,
-      crop,
-      hotspot,
-      asset{
-        _ref,
-        "url": @->url
-      }
-    }
+    ${sectionFields},
+    items[]${sectionProjection},
+    main[]${sectionProjection},
+    sidebar[]${sectionProjection}
   }
 }`;
 

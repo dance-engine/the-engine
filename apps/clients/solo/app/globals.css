@@ -44,6 +44,13 @@ body {
 --color-keppel-on-dark: #00BD9D;
 
 --color-de-background-dark: #01164D;
+
+/* classy-candela theme: fallbacks for colours the org hasn't set, and the gold accent (rules and
+   outlines), which belongs to the theme rather than to an org colour. */
+--color-candela-gold: #c6a15b;
+--color-candela-cream: #f7efe4;
+--color-candela-espresso: #1d1412;
+--color-candela-wine: #6f1d2c;
 }
 
 @theme inline {
@@ -53,4 +60,5 @@ body {
   --font-mono: var(--font-roboto-mono); */
   --font-oswald: var(--font-oswald);
   --font-heading-latin-soul: var(--font-shadows-into-light-two);
+  --font-classy: var(--font-cormorant-garamond);
 }

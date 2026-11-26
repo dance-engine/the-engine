@@ -20,13 +20,14 @@ export const OrgContext = createContext<OrgContextType | undefined>(undefined)
 export const updateLastOrg = async (
   slug: string
 ) => {
-  // await setLastOrg(slug)
-  const response = fetch('/api/user/meta',{
+  // Awaited so callers can refresh server-rendered pages once Clerk has the new org.
+  const response = await fetch('/api/user/meta',{
     method: 'POST',
     body: JSON.stringify({ slug })
   })
-  console.log(response)
-
+  if (!response.ok) {
+    console.error('Failed to save last organisation', response.status)
+  }
 }
 
 export const useOrgContext = () => {

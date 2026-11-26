@@ -11,19 +11,20 @@ export default function SectionGrid({ section, renderSection }: SectionProps<"se
     5: "sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5",
   }[columns];
 
-  // "Show as cards" in Sanity: each item gets a lightly frosted panel with rounded corners, a faint light
-  // outline and a shadow, like the testimonial cards, so it lifts off the grid's gradient.
+  // "Show as cards" in Sanity: each item gets a slightly darkened panel with rounded corners, a faint light
+  // outline and a shadow, so it reads as a recessed panel in the grid's gradient.
   // Tighter than a plain grid item: 16px padding inside the card and between the image and text.
-  const cardClass = section.cards ? "overflow-hidden rounded-2xl bg-white/10 shadow-lg ring-1 ring-white/15 [&>section]:p-4 [&>section>div]:gap-4" : "";
+  // Card corners 16px, image (and its link, for the focus ring) 8px.
+  const cardClass = section.cards ? "overflow-hidden rounded-2xl bg-black/20 shadow-lg ring-1 ring-white/15 [&>section]:p-4 [&>section>div]:gap-4 [&_a]:rounded-lg [&_img]:rounded-lg" : "";
 
   if (!section.items?.length) return null;
 
   return (
     // Gradient from a slightly lighter blue at the top to a darker one at the bottom, either side of the
-    // page blue (#243d82), with a faint light line along the top and a dark one along the bottom, so the
+    // page blue (#18378e), with a faint light line along the top and a dark one along the bottom, so the
     // grid looks like a raised panel. --section-bg is cleared for the cards inside so the gradient shows
     // through them instead of each card being a flat block of page blue.
-    <section className="border-t border-b border-t-white/15 border-b-black/40 bg-linear-to-b from-[#2b4794] to-[#1c3170] px-6 py-14 [--section-bg:transparent] sm:px-10">
+    <section className="border-t border-b border-t-white/15 border-b-black/40 bg-linear-to-b from-[#1d40a2] to-[#112c7b] px-6 py-14 [--section-bg:transparent] sm:px-10">
       <div className="mx-auto max-w-7xl">
         {(section.heading || section.body) && (
           <div className="mx-auto mb-10 max-w-3xl text-center">

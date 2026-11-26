@@ -5,7 +5,7 @@ import type { PageShellProps } from "../types";
 // so the page sections stand apart from them. The default sections read it through the --section-* variables.
 const shellClasses = [
   "bg-(--section-bg) text-(--section-fg)",
-  "[--section-bg:#243d82]",
+  "[--section-bg:#18378e]",
   "[--section-fg:var(--color-white)]",
   // Secondary text and dividing lines: the text colour, faded.
   "[--section-muted:color-mix(in_srgb,var(--section-fg)_75%,transparent)]",

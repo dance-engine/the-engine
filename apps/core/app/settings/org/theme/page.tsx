@@ -1,12 +1,6 @@
-import React from "react";
-import ThemePageClient from "./pageClient";
+import { redirect } from "next/navigation";
 
-const OrgThemePage = () => {
-  return (
-    <div className="flex flex-col justify-start items-center px-4 lg:px-8">
-      <ThemePageClient />
-    </div>
-  );
-};
+// The theme editor moved to its own menu section.
+const OrgThemeRedirect = () => redirect("/theme");
 
-export default OrgThemePage;
+export default OrgThemeRedirect;

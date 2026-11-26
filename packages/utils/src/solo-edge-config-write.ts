@@ -24,6 +24,7 @@ import addFormatsModule from "ajv-formats";
 import { z } from "zod";
 import soloEdgeConfigJsonSchema from "@dance-engine/schemas/solo-edge-config.schema.json";
 import type { SoloEdgeConfig } from "./solo-edge-config.js";
+import { canOrgUseTheme, getThemesForOrg, soloThemeList } from "./solo-themes.js";
 
 const SOLO_KEY = "solo";
 
@@ -219,6 +220,11 @@ const mutateForOrg = async (
 export type OrgSoloSettings = {
   domains: string[];
   theme: string | null;
+  /**
+   * Themes this org may switch to, from the theme definitions in ./solo-themes:
+   * every public theme plus private themes that list this org.
+   */
+  availableThemes: { name: string; label: string; private: boolean }[];
   redirects: Record<string, string>;
   accountUrls: Record<string, string>;
   sanityProject: { projectId: string; dataset: string } | null;
@@ -233,6 +239,12 @@ export const getOrgSoloSettings = async (org: string): Promise<OrgSoloSettings> 
   return {
     domains,
     theme: Object.entries(config.themes ?? {}).find(([, orgs]) => orgs.includes(org))?.[0] ?? null,
+    // Other orgs' private themes are left out entirely, so their names aren't exposed.
+    availableThemes: getThemesForOrg(org).map((theme) => ({
+      name: theme.name,
+      label: theme.label,
+      private: theme.access.visibility === "private",
+    })),
     redirects: config.redirects?.[org] ?? {},
     // An account URL belongs to the org when its host is one of the org's domains.
     accountUrls: Object.fromEntries(
@@ -248,9 +260,8 @@ export const getOrgSoloSettings = async (org: string): Promise<OrgSoloSettings> 
   };
 };
 
-/** Lists theme keys an org can choose from. */
-export const getAvailableThemes = async (): Promise<string[]> =>
-  Object.keys((await readSoloEdgeConfigFresh()).themes ?? {});
+/** Lists every defined theme name, public and private (for super-admin tooling). */
+export const getAvailableThemes = (): string[] => soloThemeList.map((theme) => theme.name);
 
 // ---------------------------------------------------------------------------
 // Writers
@@ -285,10 +296,24 @@ export const setOrgDomains = (org: string, domains: string[]) =>
 
 /**
  * Moves the org to an existing theme (removing it from any other theme group).
- * Only super admins can create a new theme group. Pass null to clear (falls back to "default").
+ * Access comes from the theme definitions in ./solo-themes: private themes can only be
+ * chosen by the orgs they list. Super admins may assign any theme to any org.
+ * Pass null to clear (falls back to "default").
  */
 export const setOrgTheme = (org: string, theme: string | null) =>
   mutateForOrg(org, (config, actor) => {
+    if (theme !== null) {
+      if (!slug.safeParse(theme).success) {
+        throw new EdgeConfigValidationError(`Invalid theme "${theme}"`);
+      }
+      if (!actor.superAdmin) {
+        // Same message for unknown and other orgs' private themes, so private names can't be probed.
+        if (!canOrgUseTheme(org, theme)) {
+          throw new EdgeConfigValidationError(`Theme "${theme}" is not available to this organisation`);
+        }
+      }
+    }
+
     const themes: Record<string, string[]> = {};
     for (const [key, orgs] of Object.entries(config.themes ?? {})) {
       const remaining = orgs.filter((member) => member !== org);
@@ -296,12 +321,6 @@ export const setOrgTheme = (org: string, theme: string | null) =>
     }
 
     if (theme !== null) {
-      if (!slug.safeParse(theme).success) {
-        throw new EdgeConfigValidationError(`Invalid theme "${theme}"`);
-      }
-      if (!config.themes?.[theme] && !actor.superAdmin) {
-        throw new EdgeConfigValidationError(`Unknown theme "${theme}"`);
-      }
       themes[theme] = [...(themes[theme] ?? []), org];
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import SiteThemeSwitcher from "./SiteThemeSwitcher";
 import EventPreview from "@dance-engine/ui/EventPreview";
 import { useAuth } from "@clerk/nextjs";
 import { useOrgContext } from "@dance-engine/utils/OrgContext";
@@ -323,22 +323,18 @@ const ThemePageClient = () => {
 
   return (
     <div className="w-full">
-      <div className="sm:flex sm:items-start sm:justify-between w-full pb-6">
-        <div className="sm:flex-auto">
-          <p className="text-sm font-medium text-gray-500">
-            <Link href="/settings/org" className="hover:text-gray-700">
-              Organisation Settings
-            </Link>{" "}
-            / Theme
-          </p>
-          <h1 className="mt-2 text-base font-semibold text-gray-900">
-            Theme Editor
-          </h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Update theme tokens separately from the main organisation record.
-          </p>
-        </div>
+      <div className="w-full pb-6">
+        <h1 className="text-base font-semibold text-gray-900">Theme</h1>
+        <p className="mt-2 text-sm text-gray-700">
+          Choose your site&apos;s theme, then fine-tune its colours below.
+        </p>
       </div>
+
+      <section className="mb-6 rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
+        <SiteThemeSwitcher org={activeOrg} />
+      </section>
+
+      <h2 className="pb-4 text-sm font-semibold text-gray-900">Colours</h2>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
         <section className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">

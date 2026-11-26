@@ -31,8 +31,8 @@
     },
     ".": {
       "default": "./dist/index.js"
-    }
-    
+    },
+    "./solo-edge-config.schema.json": "./json/solo-edge-config.schema.json"
   },
   "devDependencies": {
     "@dance-engine/typescript-config": "workspace:*",

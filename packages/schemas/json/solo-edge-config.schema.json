@@ -1,0 +1,107 @@
+{
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Solo Edge Config",
+  "type": "object",
+  "required": [
+    "solo"
+  ],
+  "properties": {
+    "solo": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "domains",
+        "themes",
+        "redirects",
+        "accountUrls"
+      ],
+      "properties": {
+        "accountUrls": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^acct_[A-Za-z0-9]+$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "domains": {
+          "additionalProperties": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "minProperties": 1
+        },
+        "themes": {
+          "additionalProperties": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            "uniqueItems": true
+          },
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "minProperties": 1
+        },
+        "sanityProjects": {
+          "description": "Maps Dance Engine organisation slugs to their Sanity project and dataset.",
+          "additionalProperties": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "projectId",
+              "dataset"
+            ],
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+$"
+              },
+              "dataset": {
+                "type": "string",
+                "pattern": "^[a-z0-9_-]+$"
+              }
+            }
+          },
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "redirects": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "additionalProperties": {
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^(?:/|https?://)"
+            },
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^/([a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*)?$"
+            },
+            "minProperties": 1
+          }
+        }
+      }
+    }
+  }
+}

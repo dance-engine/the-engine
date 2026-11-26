@@ -413,6 +413,13 @@ const sectionGrid = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: "cards",
+      title: "Show as cards",
+      description: "Puts each section in the grid in its own card, with rounded corners and an outline.",
+      type: "boolean",
+      initialValue: false,
+    }),
+    defineField({
       name: "items",
       title: "Sections",
       description: "Add and reorder sections within the grid.",

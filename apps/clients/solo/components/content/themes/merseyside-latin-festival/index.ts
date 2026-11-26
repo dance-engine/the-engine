@@ -1,6 +1,7 @@
 import type { Theme } from "../types";
 import Header from "./Header";
 import PageShell from "./PageShell";
+import SectionGrid from "./SectionGrid";
 import ThreeColumnCalloutSection from "./ThreeColumnCalloutSection";
 
 // Starting point for a new theme. As it stands it changes nothing: anything left out of the theme
@@ -28,6 +29,7 @@ const merseysideLatinFestival = {
   // e.g. SectionProps<"heroSection">. The full list of keys is in themes/default/index.ts.
   // Keep data logic in ../shared.ts and only change layout and styling here.
   sections: {
+    sectionGrid: SectionGrid,
     threeColumnCalloutSection: ThreeColumnCalloutSection,
   },
 } satisfies Theme;

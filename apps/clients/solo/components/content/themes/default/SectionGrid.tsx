@@ -10,6 +10,9 @@ export default function SectionGrid({ section, renderSection }: SectionProps<"se
     5: "sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5",
   }[columns];
 
+  // "Show as cards" in Sanity: each item gets rounded corners, a thin outline and a soft shadow.
+  const cardClass = section.cards ? "overflow-hidden rounded-2xl shadow-sm ring-1 ring-(--section-border,var(--color-slate-200))" : "";
+
   if (!section.items?.length) return null;
 
   return (
@@ -35,7 +38,7 @@ export default function SectionGrid({ section, renderSection }: SectionProps<"se
             return (
               <div
                 key={item._key}
-                className={`h-full min-w-0 [&>section]:flex [&>section]:h-full [&>section]:w-full [&>section]:items-start [&>section>div]:w-full ${spanClass}`}
+                className={`h-full min-w-0 [&>section]:flex [&>section]:h-full [&>section]:w-full [&>section]:items-start [&>section>div]:w-full ${spanClass} ${cardClass}`}
               >
                 {renderSection(item, { compact: true })}
               </div>

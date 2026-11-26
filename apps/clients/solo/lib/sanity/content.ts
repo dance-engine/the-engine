@@ -47,7 +47,7 @@ export type PageSection =
   | { _key: string; _type: "menuSection"; items?: MenuLinkItem[] }
   | { _key: string; _type: "menuJumpSection"; title?: string; showTitle?: boolean; anchor?: { current?: string } }
   | { _key: string; _type: "eventListSection"; heading?: string; body?: PlainOrRichTextValue }
-  | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; items?: GridSectionItem[] };
+  | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; cards?: boolean; items?: GridSectionItem[] };
 
 export type MenuLinkItem = {
   _key: string;

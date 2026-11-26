@@ -9,6 +9,10 @@ export default function HeroSection({ section, project, compact = false }: Secti
   // Side by side from md up (not in a section grid, where the column is too narrow); stacked above the text otherwise.
   const sideBySide = hasFeatureImage && !compact;
   const imageOnLeft = section.featureImagePosition === "left";
+  // With a feature image, the stacked layout (phones, section grids) centres the image and the text
+  // under it; side by side (md up) the text goes back to left-aligned next to the image.
+  const stackCentred = hasFeatureImage ? `items-center text-center ${sideBySide ? "md:text-left" : ""}` : "";
+  const textCentred = hasFeatureImage ? `w-full [&>*]:mx-auto ${sideBySide ? "md:[&>*]:mx-0" : ""}` : "";
 
   return (
     <section className="relative isolate flex min-h-80 items-end overflow-hidden bg-[var(--org-custom-background-dark,#01164d)] px-6 py-16 text-white sm:px-10">
@@ -29,7 +33,7 @@ export default function HeroSection({ section, project, compact = false }: Secti
       />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[rgb(0_5_34_/_55%)] to-[rgb(0_5_34_/_80%)]" />
       <div
-        className={`mx-auto flex w-full max-w-4xl flex-col gap-8 ${
+        className={`mx-auto flex w-full max-w-4xl flex-col gap-8 ${stackCentred} ${
           sideBySide ? `md:items-center md:gap-10 ${imageOnLeft ? "md:flex-row" : "md:flex-row-reverse"}` : ""
         }`}
       >
@@ -45,7 +49,7 @@ export default function HeroSection({ section, project, compact = false }: Secti
             className={`h-auto w-full max-w-md rounded-lg shadow-lg ${sideBySide ? "md:w-2/5 md:max-w-none md:shrink-0" : ""}`}
           />
         )}
-        <div className="min-w-0 flex-1">
+        <div className={`min-w-0 flex-1 ${textCentred}`}>
           {section.heading && <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl text-shadow-[3px_3px_0_rgb(0_0_0/0.6)]">{section.heading}</h1>}
           <PlainOrRichText value={section.body} className="mt-5 max-w-2xl text-lg text-white/85" />
         </div>

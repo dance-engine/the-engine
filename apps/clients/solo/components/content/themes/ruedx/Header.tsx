@@ -20,7 +20,7 @@ export default function Header({ org, links }: HeaderProps) {
           // On mobile it runs the full width of the screen instead (clipped at the band's top if it's too tall).
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 overflow-hidden md:px-10 borde-b-5 border-(--menu-bar) md:border-none"
+            className="pointer-events-none absolute inset-0 overflow-hidden md:px-10 border-b-5 border-(--menu-bar) md:border-none"
             style={{ "--menu-bar": menuBarColour } as CSSProperties}
           >
             <div className="relative mx-auto h-full max-w-4xl">

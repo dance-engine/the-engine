@@ -1,5 +1,6 @@
 import { LuChevronDown } from "react-icons/lu";
 import type { SectionProps } from "../types";
+import PlainOrRichText from "../PlainOrRichText";
 
 export default function FaqSection({ section }: SectionProps<"faqSection">) {
   return (
@@ -21,7 +22,7 @@ export default function FaqSection({ section }: SectionProps<"faqSection">) {
                 <LuChevronDown aria-hidden="true" className="mt-1 size-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 <span>{item.question}</span>
               </summary>
-              {item.answer && <p className="mt-3 pl-7 text-(--section-muted,var(--color-slate-600))">{item.answer}</p>}
+              <PlainOrRichText value={item.answer} className="mt-3 pl-7 text-(--section-muted,var(--color-slate-600))" />
             </details>
           ))}
         </div>

@@ -1,6 +1,7 @@
 import SanityPicture from "../SanityPicture";
 import { hotspotObjectPosition } from "../shared";
 import type { SectionProps } from "../types";
+import PlainOrRichText from "../PlainOrRichText";
 
 export default function HeroSection({ section, project, compact = false }: SectionProps<"heroSection">) {
   const objectPosition = hotspotObjectPosition(section.image);
@@ -46,7 +47,7 @@ export default function HeroSection({ section, project, compact = false }: Secti
         )}
         <div className="min-w-0 flex-1">
           {section.heading && <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl text-shadow-[3px_3px_0_rgb(0_0_0/0.6)]">{section.heading}</h1>}
-          {section.body && <p className="mt-5 max-w-2xl text-lg text-white/85 whitespace-pre-line">{section.body}</p>}
+          <PlainOrRichText value={section.body} className="mt-5 max-w-2xl text-lg text-white/85" />
         </div>
       </div>
     </section>

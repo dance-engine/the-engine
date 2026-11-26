@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import EventList from "@/components/EventList";
 import type { EventResponseType } from "@dance-engine/schemas/events";
 import type { SectionProps } from "../types";
+import PlainOrRichText from "../PlainOrRichText";
 
 // The org's live events from Dance Engine: the same carousel as the legacy events page.
 // Loaded on the server so the events are in the first render; EventList then refreshes them in the browser.
@@ -17,7 +18,7 @@ export default async function EventListSection({ section, organisation }: Sectio
       {(section.heading || section.body) && (
         <div className="mx-auto mb-8 max-w-4xl text-center">
           {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
-          {section.body && <p className="mx-auto mt-4 max-w-2xl text-white/80">{section.body}</p>}
+          <PlainOrRichText value={section.body} className="mx-auto mt-4 max-w-2xl text-white/80" />
         </div>
       )}
       <EventList fallbackData={events} org={organisation} theme="content" />

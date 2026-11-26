@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { stegaClean } from "next-sanity";
 import type { SectionProps } from "../types";
+import PlainOrRichText from "../PlainOrRichText";
 
 // A band in the org's secondary colour, sloped like the header, with a primary-colour button.
 // The slope is a skewed background layer (centre origin, so top and bottom stay parallel). It spills a little
@@ -12,7 +13,7 @@ export default function CallToActionSection({ section, compact = false }: Sectio
       {!compact && <div aria-hidden="true" className="absolute inset-0 -z-10 -skew-y-[2.5deg] bg-(--org-color-secondary)" />}
       <div className="mx-auto max-w-3xl">
         {section.heading && <h2 className="text-3xl font-black uppercase">{section.heading}</h2>}
-        {section.body && <p className="mt-4 opacity-80">{section.body}</p>}
+        <PlainOrRichText value={section.body} className="mt-4 opacity-80" />
         {section.label && section.href && (
           <Link
             href={stegaClean(section.href)}

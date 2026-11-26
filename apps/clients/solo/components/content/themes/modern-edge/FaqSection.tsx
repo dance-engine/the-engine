@@ -1,5 +1,6 @@
 import { LuChevronDown } from "react-icons/lu";
 import type { SectionProps } from "../types";
+import PlainOrRichText from "../PlainOrRichText";
 
 // Same as the default FAQ, without the dividing lines, with a bold chevron in the org's primary colour (it's the
 // clickable part) and a short bar under the heading in secondary. Open animation: see the default FaqSection.
@@ -22,7 +23,7 @@ export default function FaqSection({ section }: SectionProps<"faqSection">) {
                 <LuChevronDown aria-hidden="true" strokeWidth={3.5} className="mt-0.5 size-5 shrink-0 text-(--org-color-primary) transition-transform duration-200 group-open:rotate-180" />
                 <span>{item.question}</span>
               </summary>
-              {item.answer && <p className="mt-3 pl-8 text-slate-600">{item.answer}</p>}
+              <PlainOrRichText value={item.answer} className="mt-3 pl-8 text-slate-600" />
             </details>
           ))}
         </div>

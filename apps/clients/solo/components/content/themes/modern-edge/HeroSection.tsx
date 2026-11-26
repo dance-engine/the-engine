@@ -1,6 +1,9 @@
 import SanityPicture from "../SanityPicture";
 import { hotspotObjectPosition } from "../shared";
+import PlainOrRichText from "../PlainOrRichText";
 import type { SectionProps } from "../types";
+
+const highlight = "bg-black/40 box-decoration-clone px-2 py-1";
 
 // Same as the default hero (including the optional side image), with the body text highlighted
 // line by line like selected text.
@@ -48,12 +51,21 @@ export default function HeroSection({ section, project, compact = false }: Secti
         )}
         <div className="min-w-0 flex-1">
           {section.heading && <h1 className={`max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl text-shadow-[3px_3px_0_rgb(0_0_0/0.6)] ${hasFeatureImage ? "" : "mt-12"}`}>{section.heading}</h1>}
-          {section.body && (
-            // The highlight sits on an inline span so it wraps with the text, one box per line;
-            // box-decoration-clone gives every line its own padding, and leading-loose leaves a gap between the boxes.
-            <p className="mt-5 max-w-2xl text-lg leading-loose whitespace-pre-line">
-              <span className="bg-black/40 box-decoration-clone px-2 py-1">{section.body}</span>
-            </p>
+          {/* The highlight sits on an inline span so it wraps with the text, one box per line;
+              box-decoration-clone gives every line its own padding, and leading-loose leaves a gap between the boxes.
+              Plain text gets one highlighted paragraph; rich text gets the highlight inside each paragraph. */}
+          {typeof section.body === "string" ? (
+            section.body.trim() && (
+              <p className="mt-5 max-w-2xl text-lg leading-loose whitespace-pre-line">
+                <span className={highlight}>{section.body}</span>
+              </p>
+            )
+          ) : (
+            <PlainOrRichText
+              value={section.body}
+              className="mt-5 max-w-2xl text-lg leading-loose"
+              components={{ block: { normal: ({ children }) => <p><span className={highlight}>{children}</span></p> } }}
+            />
           )}
         </div>
       </div>

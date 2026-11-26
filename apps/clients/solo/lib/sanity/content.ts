@@ -19,6 +19,10 @@ export type PortableTextBlock = {
   style?: string;
 };
 
+// A text field that is plain text now and may later become rich text (blockContent) in the schema.
+// Render it with themes/PlainOrRichText, which handles both.
+export type PlainOrRichTextValue = string | PortableTextBlock[];
+
 type SanityImage = {
   _type?: "image";
   alt?: string;
@@ -28,21 +32,21 @@ type SanityImage = {
 };
 
 export type GridSectionItem =
-  | { _key: string; _type: "heroSection"; heading?: string; body?: string; image?: SanityImage; featureImage?: SanityImage; featureImagePosition?: "left" | "right" }
+  | { _key: string; _type: "heroSection"; heading?: string; body?: PlainOrRichTextValue; image?: SanityImage; featureImage?: SanityImage; featureImagePosition?: "left" | "right" }
   | { _key: string; _type: "richTextSection"; heading?: string; body?: PortableTextBlock[] }
   | { _key: string; _type: "imageTextSection"; heading?: string; body?: PortableTextBlock[]; image?: SanityImage; imageHref?: string; imageAspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; imagePosition?: "left" | "right" }
   | { _key: string; _type: "imageSection"; image?: SanityImage; aspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; href?: string }
-  | { _key: string; _type: "callToActionSection"; heading?: string; body?: string; label?: string; href?: string }
+  | { _key: string; _type: "callToActionSection"; heading?: string; body?: PlainOrRichTextValue; label?: string; href?: string }
   | { _key: string; _type: "threeColumnCalloutSection"; heading?: string; body?: PortableTextBlock[]; label?: string; href?: string }
   | { _key: string; _type: "socialMediaSection"; heading?: string; body?: string; iconStyle?: "colour" | "monochrome" | "blackWhite"; profiles?: Array<SocialProfile | null> }
   | { _key: string; _type: "testimonialsSection"; heading?: string; body?: string; testimonials?: Array<Testimonial | null> }
-  | { _key: string; _type: "faqSection"; heading?: string; items?: Array<{ _key: string; question?: string; answer?: string }> };
+  | { _key: string; _type: "faqSection"; heading?: string; items?: Array<{ _key: string; question?: string; answer?: PlainOrRichTextValue }> };
 
 export type PageSection =
   | GridSectionItem
   | { _key: string; _type: "menuSection"; items?: MenuLinkItem[] }
   | { _key: string; _type: "menuJumpSection"; title?: string; showTitle?: boolean; anchor?: { current?: string } }
-  | { _key: string; _type: "eventListSection"; heading?: string; body?: string }
+  | { _key: string; _type: "eventListSection"; heading?: string; body?: PlainOrRichTextValue }
   | { _key: string; _type: "sectionGrid"; heading?: string; body?: string; maxColumns?: 2 | 3 | 4 | 5; items?: GridSectionItem[] };
 
 export type MenuLinkItem = {

@@ -35,7 +35,7 @@ export default function SectionGrid({ section, renderSection }: SectionProps<"se
             return (
               <div
                 key={item._key}
-                className={`h-full min-w-0 [&>section]:flex [&>section]:h-full [&>section]:w-full [&>section]:items-center [&>section>div]:w-full ${spanClass}`}
+                className={`h-full min-w-0 [&>section]:flex [&>section]:h-full [&>section]:w-full [&>section]:items-start [&>section>div]:w-full ${spanClass}`}
               >
                 {renderSection(item, { compact: true })}
               </div>

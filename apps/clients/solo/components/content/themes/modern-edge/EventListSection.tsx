@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import EventList from "@/components/EventList";
 import { getPublicEvents } from "../default/EventListSection";
 import type { SectionProps } from "../types";
+import PlainOrRichText from "../PlainOrRichText";
 
 // Same as the default events section, on the org's secondary colour instead of the dark navy.
 // Only the Prev/Next buttons use the primary colour, as they're clickable.
@@ -20,7 +21,7 @@ export default async function EventListSection({ section, organisation }: Sectio
               {section.heading}
             </h2>
           )}
-          {section.body && <p className="mx-auto mt-4 max-w-2xl opacity-80">{section.body}</p>}
+          <PlainOrRichText value={section.body} className="mx-auto mt-4 max-w-2xl opacity-80" />
         </div>
       )}
       <EventList fallbackData={events} org={organisation} theme="content" />

@@ -11,7 +11,8 @@ export default function ThreeColumnCalloutSection({ section }: SectionProps<"thr
     // Two shadows below (negative spreads hide both at the top), so the callout looks like it floats over the page
     // blue: a short, darker one close to the edge for lift, and a long, faint one that fades out about 44px down.
     // relative z-10 draws them over the next section, which would otherwise cover them.
-    <section className="relative z-10 bg-[var(--org-custom-background-dark,#1d1719)] px-6 py-10 text-white shadow-[0_8px_12px_-8px_rgb(0_0_0/0.4),0_24px_40px_-20px_rgb(0_0_0/0.3)] sm:px-10">
+    // A light 1px line inside the top edge (inset shadow) catches the light, for a slight 3D bevel.
+    <section className="relative z-10 bg-[var(--org-custom-background-dark,#1d1719)] px-6 py-10 text-white shadow-[0_8px_12px_-8px_rgb(0_0_0/0.4),0_24px_40px_-20px_rgb(0_0_0/0.3)] inset-shadow-[0_1px_0_rgb(255_255_255/0.15)] sm:px-10">
       <div className="mx-auto grid max-w-6xl items-center gap-8 md:grid-cols-[minmax(min-content,1fr)_minmax(0,2.4fr)_minmax(9rem,0.8fr)] md:gap-12">
         <div>
           {section.heading && (

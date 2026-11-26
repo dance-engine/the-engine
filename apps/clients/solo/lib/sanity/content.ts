@@ -28,7 +28,7 @@ type SanityImage = {
 };
 
 export type GridSectionItem =
-  | { _key: string; _type: "heroSection"; heading?: string; body?: string; image?: SanityImage }
+  | { _key: string; _type: "heroSection"; heading?: string; body?: string; image?: SanityImage; featureImage?: SanityImage; featureImagePosition?: "left" | "right" }
   | { _key: string; _type: "richTextSection"; heading?: string; body?: PortableTextBlock[] }
   | { _key: string; _type: "imageTextSection"; heading?: string; body?: PortableTextBlock[]; image?: SanityImage; imageHref?: string; imageAspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; imagePosition?: "left" | "right" }
   | { _key: string; _type: "imageSection"; image?: SanityImage; aspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; href?: string }
@@ -161,9 +161,29 @@ const pageQuery = `*[
           _ref,
           "url": @->url
         }
+      },
+      featureImage{
+        _type,
+        alt,
+        crop,
+        hotspot,
+        asset{
+          _ref,
+          "url": @->url
+        }
       }
     },
     image{
+      _type,
+      alt,
+      crop,
+      hotspot,
+      asset{
+        _ref,
+        "url": @->url
+      }
+    },
+    featureImage{
       _type,
       alt,
       crop,

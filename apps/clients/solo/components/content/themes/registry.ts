@@ -1,6 +1,7 @@
 import defaultTheme from "./default";
 import modernEdge from "./modern-edge";
 import ruedx from "./ruedx";
+import merseysideLatinFestival from "./merseyside-latin-festival";
 import type { ResolvedTheme, Theme } from "./types";
 
 // Themes are imported statically (never by a computed path) so a missing theme is a build
@@ -9,6 +10,7 @@ import type { ResolvedTheme, Theme } from "./types";
 const themes: Record<string, Theme> = {
   [modernEdge.name]: modernEdge,
   [ruedx.name]: ruedx,
+  [merseysideLatinFestival.name]: merseysideLatinFestival
 };
 
 /** The org's theme merged over the default theme. Unknown or missing names use the default. */

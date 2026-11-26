@@ -18,6 +18,22 @@ const heroSection = defineType({
     defineField({ name: "heading", title: "Heading", type: "string" }),
     defineField({ name: "body", title: "Introduction", type: "text", rows: 3 }),
     defineField({ name: "image", title: "Background image", type: "image", options: { hotspot: true } }),
+    defineField({
+      name: "featureImage",
+      title: "Side image",
+      description: "Optional. Shown beside the heading and introduction (above them on phones).",
+      type: "image",
+      options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", description: "Describe the image for people who can't see it.", type: "string" })],
+    }),
+    defineField({
+      name: "featureImagePosition",
+      title: "Side image position",
+      type: "string",
+      initialValue: "right",
+      options: { layout: "radio", list: [{ title: "Left", value: "left" }, { title: "Right", value: "right" }] },
+      hidden: ({ parent }) => !parent?.featureImage,
+    }),
   ],
   preview: { select: { title: "heading", media: "image" }, prepare: ({ title, media }) => ({ title: title || "Untitled hero", subtitle: "Hero", media }) },
 });

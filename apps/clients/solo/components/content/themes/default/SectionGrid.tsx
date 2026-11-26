@@ -13,12 +13,12 @@ export default function SectionGrid({ section, renderSection }: SectionProps<"se
   if (!section.items?.length) return null;
 
   return (
-    <section className="bg-white px-6 py-14 sm:px-10">
+    <section className="bg-(--section-bg,var(--color-white)) px-6 py-14 sm:px-10">
       <div className="mx-auto max-w-7xl">
         {(section.heading || section.body) && (
           <div className="mx-auto mb-10 max-w-3xl text-center">
             {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
-            {section.body && <p className="mt-4 text-slate-600">{section.body}</p>}
+            {section.body && <p className="mt-4 text-(--section-muted,var(--color-slate-600))">{section.body}</p>}
           </div>
         )}
         <div className={`grid grid-cols-1 gap-6 ${gridColumns}`}>

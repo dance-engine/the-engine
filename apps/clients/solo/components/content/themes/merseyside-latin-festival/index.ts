@@ -1,4 +1,6 @@
 import type { Theme } from "../types";
+import Header from "./Header";
+import PageShell from "./PageShell";
 
 // Starting point for a new theme. As it stands it changes nothing: anything left out of the theme
 // object falls back to the default theme. See "Themes" in docs/WebsiteSetup.md for the full steps.
@@ -15,11 +17,11 @@ import type { Theme } from "../types";
 const merseysideLatinFestival = {
   name: "merseyside-latin-festival",
 
-  // Site header. Props: HeaderProps ({ org, links }). See themes/ruedx/Header.tsx for an example.
-  // Header,
+  // Site header. Props: HeaderProps ({ org, links }).
+  Header,
 
   // Wraps every page's sections: page-wide background, text colour or fonts. Props: PageShellProps ({ children }).
-  // PageShell,
+  PageShell,
 
   // One component per Sanity section type, keyed by the type name. Props: SectionProps<"<type>">,
   // e.g. SectionProps<"heroSection">. The full list of keys is in themes/default/index.ts.

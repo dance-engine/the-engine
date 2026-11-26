@@ -6,7 +6,7 @@ export default function FaqSection({ section }: SectionProps<"faqSection">) {
     <section className="px-6 py-14 sm:px-10">
       <div className="mx-auto max-w-4xl">
         {section.heading && <h2 className="text-3xl font-bold">{section.heading}</h2>}
-        <div className="mt-8 divide-y divide-slate-200 border-y border-slate-200">
+        <div className="mt-8 divide-y divide-(--section-border,var(--color-slate-200)) border-y border-(--section-border,var(--color-slate-200))">
           {section.items?.map((item) => (
             // Open/close animation on the answer's ::details-content box: height and opacity transition between
             // closed (h-0, transparent) and open (h-auto, opaque). [interpolate-size:allow-keywords] lets height
@@ -21,7 +21,7 @@ export default function FaqSection({ section }: SectionProps<"faqSection">) {
                 <LuChevronDown aria-hidden="true" className="mt-1 size-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
                 <span>{item.question}</span>
               </summary>
-              {item.answer && <p className="mt-3 pl-7 text-slate-600">{item.answer}</p>}
+              {item.answer && <p className="mt-3 pl-7 text-(--section-muted,var(--color-slate-600))">{item.answer}</p>}
             </details>
           ))}
         </div>

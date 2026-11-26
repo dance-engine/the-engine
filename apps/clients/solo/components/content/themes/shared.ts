@@ -76,7 +76,7 @@ export function isTestimonial(testimonial: Testimonial | null): testimonial is T
   return Boolean(testimonial?.name && testimonial.shortQuote);
 }
 
-type OrgColourKey = "colour_primary" | "colour_secondary" | "colour_background_dark";
+type OrgColourKey = "colour_primary" | "colour_secondary" | "colour_background_light" | "colour_background_dark";
 
 /** An org theme colour (core app → Settings → Theme) as #rrggbb, or undefined if the org hasn't set a valid one. */
 function orgColour(org: OrganisationType | null | undefined, key: OrgColourKey) {
@@ -93,6 +93,7 @@ export function orgCustomColours(org: OrganisationType | null | undefined) {
   return {
     primary: orgColour(org, "colour_primary"),
     secondary: orgColour(org, "colour_secondary"),
+    backgroundLight: orgColour(org, "colour_background_light"),
     backgroundDark: orgColour(org, "colour_background_dark"),
   };
 }

@@ -8,10 +8,10 @@ export default function SocialMediaSection({ section }: SectionProps<"socialMedi
   if (profiles.length === 0) return null;
 
   return (
-    <section className="bg-slate-100 px-6 py-14 sm:px-10">
+    <section className="bg-(--section-bg,var(--color-slate-100)) px-6 py-14 sm:px-10">
       <div className="mx-auto max-w-5xl text-center">
         {section.heading && <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{section.heading}</h2>}
-        {section.body && <p className="mx-auto mt-4 max-w-2xl text-slate-600">{section.body}</p>}
+        {section.body && <p className="mx-auto mt-4 max-w-2xl text-(--section-muted,var(--color-slate-600))">{section.body}</p>}
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           {profiles.map((profile) => {
             const platform = stegaClean(profile.platform);
@@ -23,7 +23,7 @@ export default function SocialMediaSection({ section }: SectionProps<"socialMedi
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`${profile.label} on ${socialPlatformLabel(platform)}`}
-                className="group inline-flex items-center gap-2 px-3 py-2 font-semibold text-slate-950 transition hover:text-[var(--org-custom-primary,var(--color-cerise-on-light))]"
+                className="group inline-flex items-center gap-2 px-3 py-2 font-semibold text-(--section-fg,var(--color-slate-950)) transition hover:text-[var(--org-custom-primary,var(--color-cerise-on-light))]"
               >
                 <Icon
                   aria-hidden="true"

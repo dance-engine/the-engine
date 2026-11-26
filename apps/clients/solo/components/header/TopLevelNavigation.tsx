@@ -35,6 +35,10 @@ type TopLevelNavigationProps = {
   textSizeClassName?: string;
   /** Extra classes on each link's label (an inline-block span), e.g. to counter a theme's skew. */
   labelClassName?: string;
+  /** Where the links sit in the bar on desktop. Defaults to centred. */
+  align?: "center" | "end";
+  /** Classes for the link to the current page. Defaults to a pear-green block. */
+  currentClassName?: string;
 };
 
 export default function TopLevelNavigation({
@@ -42,6 +46,8 @@ export default function TopLevelNavigation({
   colours,
   textSizeClassName = "text-sm",
   labelClassName = "",
+  align = "center",
+  currentClassName = "bg-pear-logo text-slate-950",
 }: TopLevelNavigationProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -87,7 +93,7 @@ export default function TopLevelNavigation({
         id="mobile-website-menu"
         className={`${isOpen ? "block" : "hidden"} absolute right-0 top-12 w-64 bg-(--menu-bg) md:static md:block md:w-full`}
       >
-        <ul className="flex flex-col md:flex-row md:items-stretch md:justify-center">
+        <ul className={`flex flex-col md:flex-row md:items-stretch ${align === "end" ? "md:justify-end" : "md:justify-center"}`}>
           {links.map((link) => {
             const isCurrent = pathname === link.href;
 
@@ -102,7 +108,7 @@ export default function TopLevelNavigation({
                   aria-current={isCurrent ? "page" : undefined}
                   className={`block px-4 py-3 ${textSizeClassName} font-semibold transition-colors md:py-2.5 ${
                     isCurrent
-                      ? "bg-pear-logo text-slate-950"
+                      ? currentClassName
                       : "text-(--menu-fg) hover:bg-(--menu-hover-bg) hover:text-(--menu-hover-fg)"
                   }`}
                 >

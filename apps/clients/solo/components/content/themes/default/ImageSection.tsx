@@ -41,7 +41,7 @@ export default function ImageSection({ section, project, compact = false }: Sect
   );
 
   return (
-    <section className={compact ? "h-full bg-white" : "w-full bg-white"}>
+    <section className={compact ? "h-full bg-(--section-bg,var(--color-white))" : "w-full bg-(--section-bg,var(--color-white))"}>
       {section.href ? (
         <Link
           href={stegaClean(section.href)}

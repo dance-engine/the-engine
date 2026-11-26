@@ -39,7 +39,7 @@ export default function ImageTextSection({ section, project, compact = false }: 
   } as const;
 
   return (
-    <section className={compact ? "h-full bg-slate-50 p-6" : "bg-slate-50 px-6 py-14 sm:px-10"}>
+    <section className={compact ? "h-full bg-(--section-bg,var(--color-slate-50)) p-6" : "bg-(--section-bg,var(--color-slate-50)) px-6 py-14 sm:px-10"}>
       <div className={`mx-auto grid max-w-6xl items-start ${compact ? "gap-6" : "gap-10 md:grid-cols-2"}`}>
         {hasImage && (
           section.imageHref ? (

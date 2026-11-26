@@ -86,6 +86,21 @@ const imageTextSection = defineType({
       },
       initialValue: "original",
     }),
+    defineField({
+      name: "imageWidth",
+      title: "Image width",
+      description: "How much of the row the image takes on larger screens; the text gets the rest. On phones the image and text stack.",
+      type: "string",
+      options: {
+        layout: "radio",
+        list: [
+          { title: "One third", value: "1/3" },
+          { title: "Half", value: "1/2" },
+          { title: "Two thirds", value: "2/3" },
+        ],
+      },
+      initialValue: "1/2",
+    }),
     defineField({ name: "imagePosition", title: "Image position", type: "string", initialValue: "left", options: { layout: "radio", list: [{ title: "Left", value: "left" }, { title: "Right", value: "right" }] } }),
   ],
   preview: { select: { title: "heading", media: "image" }, prepare: ({ title, media }) => ({ title: title || "Untitled image section", subtitle: "Image and text", media }) },

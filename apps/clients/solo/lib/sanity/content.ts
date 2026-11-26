@@ -34,7 +34,7 @@ type SanityImage = {
 export type GridSectionItem =
   | { _key: string; _type: "heroSection"; heading?: string; body?: PlainOrRichTextValue; image?: SanityImage; featureImage?: SanityImage; featureImagePosition?: "left" | "right" }
   | { _key: string; _type: "richTextSection"; heading?: string; body?: PortableTextBlock[] }
-  | { _key: string; _type: "imageTextSection"; heading?: string; body?: PortableTextBlock[]; image?: SanityImage; imageHref?: string; imageAspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; imagePosition?: "left" | "right" }
+  | { _key: string; _type: "imageTextSection"; heading?: string; body?: PortableTextBlock[]; image?: SanityImage; imageHref?: string; imageAspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; imagePosition?: "left" | "right"; imageWidth?: "1/3" | "1/2" | "2/3" }
   | { _key: string; _type: "imageSection"; image?: SanityImage; aspectRatio?: "original" | "1:1" | "9:16" | "16:9" | "3:1" | "4:3"; href?: string }
   | { _key: string; _type: "callToActionSection"; heading?: string; body?: PlainOrRichTextValue; label?: string; href?: string }
   | { _key: string; _type: "threeColumnCalloutSection"; heading?: string; body?: PortableTextBlock[]; label?: string; href?: string }

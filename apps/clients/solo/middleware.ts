@@ -46,8 +46,15 @@ export async function middleware(request: NextRequest) {
         }
 
         if (target) {
-          target.search = request.nextUrl.search;
-          return NextResponse.redirect(target);
+          const redirectUrl = target;
+          // Keep the target's own query params and pass through incoming ones;
+          // params configured on the redirect target win on conflict.
+          request.nextUrl.searchParams.forEach((value, key) => {
+            if (!redirectUrl.searchParams.has(key)) {
+              redirectUrl.searchParams.append(key, value);
+            }
+          });
+          return NextResponse.redirect(redirectUrl);
         }
       }
     }
